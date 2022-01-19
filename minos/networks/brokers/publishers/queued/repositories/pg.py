@@ -4,11 +4,11 @@ from __future__ import (
 
 import logging
 from asyncio import (
+    CancelledError,
+    Queue,
     TimeoutError,
+    create_task,
     wait_for,
-)
-from collections.abc import (
-    AsyncIterator,
 )
 from contextlib import (
     suppress,
@@ -53,13 +53,29 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
         self.retry = retry
         self.records = records
 
+        self._queue = Queue(maxsize=records)
+
+        self._run_task = None
+
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlBrokerPublisherRepository:
         # noinspection PyProtectedMember
         return cls(**config.broker.queue._asdict(), **kwargs)
 
     async def _setup(self) -> None:
+        await super()._setup()
         await self._create_broker_table()
+        if self._run_task is None:
+            self._run_task = create_task(self._run())
+
+    async def _destroy(self) -> None:
+        if self._run_task is not None:
+            self._run_task.cancel()
+            with suppress(TimeoutError, CancelledError):
+                await wait_for(self._run_task, 0.5)
+            self._run_task = None
+
+        await super()._destroy()
 
     async def _create_broker_table(self) -> None:
         await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("producer_queue"))
@@ -72,22 +88,22 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
         await self.submit_query_and_fetchone(_INSERT_ENTRY_QUERY, params)
         await self.submit_query(_NOTIFY_QUERY)
 
-    async def dequeue_all(self, max_wait: Optional[float] = 60.0) -> AsyncIterator[BrokerMessage]:
-        """Dispatch the items in the publishing queue forever.
+    async def dequeue(self) -> BrokerMessage:
+        """Dequeue method."""
+        message = await self._queue.get()
+        logger.info(f"Dequeuing {message!r} message...")
+        return message
 
-        :param max_wait: Maximum seconds to wait for notifications. If ``None`` the wait is performed until infinity.
-        :return: This method does not return anything.
-        """
+    async def _run(self, max_wait: Optional[float] = 60.0) -> None:
         async with self.cursor() as cursor:
             await cursor.execute(self._queries["listen"])
             try:
                 while True:
                     await self._wait_for_entries(cursor, max_wait)
-                    async for message in self._dequeue_batch(cursor):
-                        logger.info(f"Dequeuing {message!r} message...")
-                        yield message
+                    await self._dequeue_batch(cursor)
             finally:
-                await cursor.execute(self._queries["unlisten"])
+                if not cursor.closed:
+                    await cursor.execute(self._queries["unlisten"])
 
     async def _wait_for_entries(self, cursor: Cursor, max_wait: Optional[float]) -> None:
         while True:
@@ -102,14 +118,14 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
         count = (await cursor.fetchone())[0]
         return count
 
-    async def _dequeue_batch(self, cursor: Cursor) -> AsyncIterator[BrokerMessage]:
+    async def _dequeue_batch(self, cursor: Cursor) -> None:
         async with cursor.begin():
             await cursor.execute(self._queries["select_not_processed"], (self.retry, self.records))
             rows = await cursor.fetchall()
             for row in rows:
 
                 try:
-                    yield self._dispatch_one(row)
+                    await self._dispatch_one(row)
                     ok = True
                 except Exception as exc:
                     logger.warning(f"There was an exception while trying to dequeue the row with {row[0]} id: {exc}")
@@ -120,10 +136,10 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
                 else:
                     await cursor.execute(self._queries["update_not_processed"], (row[0],))
 
-    @staticmethod
-    def _dispatch_one(row: tuple) -> BrokerMessage:
+    async def _dispatch_one(self, row: tuple) -> None:
         bytes_ = row[2]
-        return BrokerMessage.from_avro_bytes(bytes_)
+        message = BrokerMessage.from_avro_bytes(bytes_)
+        await self._queue.put(message)
 
     @cached_property
     def _queries(self) -> dict[str, str]:

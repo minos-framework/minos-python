@@ -4,7 +4,9 @@ from asyncio import (
     create_task,
     gather,
 )
-from contextlib import suppress
+from contextlib import (
+    suppress,
+)
 from typing import (
     NoReturn,
 )
@@ -65,7 +67,7 @@ class QueuedBrokerPublisher(BrokerPublisher):
 
     async def _run(self) -> NoReturn:
         while True:
-            async for message in self.repository.dequeue_all():
+            async for message in self.repository:
                 await self._queue.put(message)
 
     async def _create_consumers(self):
