@@ -4,6 +4,7 @@ from asyncio import (
     create_task,
     gather,
 )
+from contextlib import suppress
 from typing import (
     NoReturn,
 )
@@ -35,13 +36,24 @@ class QueuedBrokerPublisher(BrokerPublisher):
         self._consumers = list()
         self._consumer_concurrency = 15
 
+        self._run_task = None
+
     async def _setup(self) -> None:
         await super()._setup()
         await self.repository.setup()
         await self.impl.setup()
         await self._create_consumers()
 
+        if self._run_task is None:
+            self._run_task = create_task(self._run())
+
     async def _destroy(self) -> None:
+        if self._run_task is not None:
+            self._run_task.cancel()
+            with suppress(CancelledError):
+                await self._run_task
+            self._run_task = None
+
         await self._destroy_consumers()
         await self.impl.destroy()
         await self.repository.destroy()
@@ -51,8 +63,7 @@ class QueuedBrokerPublisher(BrokerPublisher):
         """Send method."""
         await self.repository.enqueue(message)
 
-    async def run(self) -> NoReturn:
-        """Run method."""
+    async def _run(self) -> NoReturn:
         while True:
             async for message in self.repository.dequeue_all():
                 await self._queue.put(message)
