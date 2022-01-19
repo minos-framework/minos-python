@@ -4,6 +4,9 @@ from asyncio import (
     create_task,
     gather,
 )
+from contextlib import (
+    suppress,
+)
 from typing import (
     AsyncIterator,
     NoReturn,
@@ -47,12 +50,14 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
         await self.impl.setup()
         await self._create_consumers()
 
-        self._run_task = create_task(self._run())
+        if self._run_task is None:
+            self._run_task = create_task(self._run())
 
     async def _destroy(self) -> None:
         if self._run_task is not None:
             self._run_task.cancel()
-            await self._run_task
+            with suppress(CancelledError):
+                await self._run_task
             self._run_task = None
 
         await self._destroy_consumers()
