@@ -66,7 +66,7 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
 
     async def enqueue(self, message: BrokerMessage) -> None:
         """Enqueue method."""
-        # TODO
+        logger.info(f"Enqueuing {message!r} message...")
 
         params = (message.topic, message.avro_bytes, message.strategy)
         await self.submit_query_and_fetchone(_INSERT_ENTRY_QUERY, params)
@@ -84,6 +84,7 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
                 while True:
                     await self._wait_for_entries(cursor, max_wait)
                     async for message in self._dequeue_batch(cursor):
+                        logger.info(f"Dequeuing {message!r} message...")
                         yield message
             finally:
                 await cursor.execute(self._queries["unlisten"])
