@@ -1,6 +1,9 @@
 from .abc import (
     BrokerSubscriber,
 )
+from .compositions import (
+    InMemoryQueuedKafkaBrokerSubscriber,
+)
 from .kafka import (
     KafkaBrokerSubscriber,
 )
@@ -9,6 +12,6 @@ from .memory import (
 )
 from .queued import (
     BrokerSubscriberRepository,
-    InMemoryQueuedBrokerSubscriberRepository,
+    InMemoryBrokerSubscriberRepository,
     QueuedBrokerSubscriber,
 )

@@ -13,7 +13,7 @@ from .abc import (
 )
 
 
-class InMemoryQueuedBrokerSubscriberRepository(BrokerSubscriberRepository):
+class InMemoryBrokerSubscriberRepository(BrokerSubscriberRepository):
     """TODO"""
 
     queue: Queue[BrokerMessage]

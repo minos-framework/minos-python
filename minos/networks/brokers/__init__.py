@@ -37,7 +37,8 @@ from .subscribers import (
     BrokerSubscriber,
     BrokerSubscriberRepository,
     InMemoryBrokerSubscriber,
-    InMemoryQueuedBrokerSubscriberRepository,
+    InMemoryBrokerSubscriberRepository,
+    InMemoryQueuedKafkaBrokerSubscriber,
     KafkaBrokerSubscriber,
     QueuedBrokerSubscriber,
 )

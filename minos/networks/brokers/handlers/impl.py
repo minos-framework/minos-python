@@ -47,11 +47,11 @@ class BrokerHandler(MinosSetup):
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerHandler:
         from ..subscribers import (
-            KafkaBrokerSubscriber,
+            InMemoryQueuedKafkaBrokerSubscriber,
         )
 
         dispatcher = cls._get_dispatcher(config, **kwargs)
-        subscriber = KafkaBrokerSubscriber.from_config(config, topics=set(dispatcher.actions.keys()))
+        subscriber = InMemoryQueuedKafkaBrokerSubscriber.from_config(config, topics=set(dispatcher.actions.keys()))
 
         return cls(dispatcher, subscriber, **kwargs)
 

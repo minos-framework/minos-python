@@ -26,7 +26,7 @@ from .brokers import (
     InMemoryBrokerPublisher,
     InMemoryBrokerPublisherRepository,
     InMemoryBrokerSubscriber,
-    InMemoryQueuedBrokerSubscriberRepository,
+    InMemoryBrokerSubscriberRepository,
     InMemoryQueuedKafkaBrokerPublisher,
     KafkaBrokerPublisher,
     KafkaBrokerSubscriber,

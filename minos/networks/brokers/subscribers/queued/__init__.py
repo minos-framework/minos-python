@@ -3,5 +3,5 @@ from .impl import (
 )
 from .repositories import (
     BrokerSubscriberRepository,
-    InMemoryQueuedBrokerSubscriberRepository,
+    InMemoryBrokerSubscriberRepository,
 )
