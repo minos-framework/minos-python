@@ -76,5 +76,5 @@ class ModelRefResolver:
 
     @staticmethod
     async def _get_response(broker: DynamicBroker, count: int, **kwargs) -> Iterable[Model]:
-        messages = await broker.receive_many(count, **kwargs)
+        messages = [message async for message in broker.receive_many(count, **kwargs)]
         return chain(*(message.content for message in messages))
