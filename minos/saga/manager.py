@@ -227,11 +227,11 @@ class SagaManager(MinosSetup):
             raise exc
 
     @staticmethod
-    async def _get_response(handler: DynamicBroker, execution: SagaExecution, **kwargs) -> SagaResponse:
+    async def _get_response(broker: DynamicBroker, execution: SagaExecution, **kwargs) -> SagaResponse:
         message: Optional[BrokerMessage] = None
         while message is None or "saga" not in message.headers or UUID(message.headers["saga"]) != execution.uuid:
             try:
-                message = await handler.get_one(**kwargs)
+                message = await broker.receive(**kwargs)
             except Exception as exc:
                 execution.status = SagaStatus.Errored
                 raise SagaFailedExecutionException(exc)
