@@ -96,7 +96,7 @@ class DynamicBroker(BrokerHandlerSetup):
         message.set_reply_topic(self.topic)
         await self.publisher.send(message)
 
-    async def get_one(self, *args, **kwargs) -> BrokerHandlerEntry:
+    async def get_one(self, *args, **kwargs) -> BrokerMessage:
         """Get one handler entry from the given topics.
 
         :param args: Additional positional parameters to be passed to get_many.
@@ -105,7 +105,7 @@ class DynamicBroker(BrokerHandlerSetup):
         """
         return (await self.get_many(*args, **(kwargs | {"count": 1})))[0]
 
-    async def get_many(self, count: int, timeout: float = 60, **kwargs) -> list[BrokerHandlerEntry]:
+    async def get_many(self, count: int, timeout: float = 60, **kwargs) -> list[BrokerMessage]:
         """Get multiple handler entries from the given topics.
 
         :param timeout: Maximum time in seconds to wait for messages.
@@ -119,9 +119,11 @@ class DynamicBroker(BrokerHandlerSetup):
                 f"Timeout exceeded while trying to fetch {count!r} entries from {self.topic!r}."
             )
 
-        logger.info(f"Dispatching '{entries if count > 1 else entries[0]!s}'...")
+        messages = [entry.data for entry in entries]
 
-        return entries
+        logger.info(f"Dispatching '{messages if count > 1 else messages[0]!s}'...")
+
+        return messages
 
     async def _get_many(self, count: int, max_wait: Optional[float] = 10.0) -> list[BrokerHandlerEntry]:
         result = list()

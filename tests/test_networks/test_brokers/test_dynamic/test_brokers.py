@@ -3,9 +3,6 @@ from asyncio import (
     gather,
     sleep,
 )
-from datetime import (
-    timedelta,
-)
 from unittest.mock import (
     AsyncMock,
     call,
@@ -20,7 +17,6 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    BrokerHandlerEntry,
     BrokerHandlerSetup,
     BrokerMessageV1,
     BrokerMessageV1Payload,
@@ -79,20 +75,20 @@ class TestDynamicBroker(PostgresAsyncTestCase):
         self.assertEqual([call(expected)], mock.call_args_list)
 
     async def test_get_one(self):
-        expected = BrokerHandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes)
+        expected = FakeModel("test1")
         await self._insert_one("fooReply", FakeModel("test1").avro_bytes)
         await self._insert_one("fooReply", FakeModel("test2").avro_bytes)
 
         observed = await self.handler.get_one()
 
-        self._assert_equal_entries(expected, observed)
+        self.assertEqual(expected, observed)
 
     async def test_get_many(self):
         expected = [
-            BrokerHandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes),
-            BrokerHandlerEntry(2, "fooReply", 0, FakeModel("test2").avro_bytes),
-            BrokerHandlerEntry(3, "fooReply", 0, FakeModel("test3").avro_bytes),
-            BrokerHandlerEntry(4, "fooReply", 0, FakeModel("test4").avro_bytes),
+            FakeModel("test1"),
+            FakeModel("test2"),
+            FakeModel("test3"),
+            FakeModel("test4"),
         ]
 
         async def _fn():
@@ -104,9 +100,7 @@ class TestDynamicBroker(PostgresAsyncTestCase):
 
         observed, _ = await gather(self.handler.get_many(count=4, max_wait=0.1), _fn())
 
-        self.assertEqual(len(expected), len(observed))
-        for e, o in zip(expected, observed):
-            self._assert_equal_entries(e, o)
+        self.assertEqual(expected, observed)
 
     async def test_get_many_raises(self):
         with self.assertRaises(MinosHandlerNotFoundEnoughEntriesException):
@@ -120,14 +114,6 @@ class TestDynamicBroker(PostgresAsyncTestCase):
                     (topic, 0, bytes_),
                 )
                 return (await cur.fetchone())[0]
-
-    def _assert_equal_entries(self, expected: BrokerHandlerEntry, observed: BrokerHandlerEntry):
-        self.assertEqual(expected.id, observed.id)
-        self.assertEqual(expected.topic, observed.topic)
-        self.assertEqual(expected.partition, observed.partition)
-        self.assertEqual(expected.data, observed.data)
-        self.assertEqual(expected.retry, observed.retry)
-        self.assertAlmostEqual(expected.created_at, observed.created_at, delta=timedelta(seconds=2))
 
 
 if __name__ == "__main__":
