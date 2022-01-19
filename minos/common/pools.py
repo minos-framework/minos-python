@@ -2,7 +2,9 @@ import logging
 from abc import (
     ABC,
 )
-from asyncio import sleep
+from asyncio import (
+    sleep,
+)
 from typing import (
     Any,
     Generic,

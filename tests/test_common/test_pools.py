@@ -3,8 +3,13 @@ import unittest
 from abc import (
     ABC,
 )
-from asyncio import sleep, gather
-from unittest.mock import MagicMock
+from asyncio import (
+    gather,
+    sleep,
+)
+from unittest.mock import (
+    MagicMock,
+)
 
 from aiomisc import (
     PoolBase,
