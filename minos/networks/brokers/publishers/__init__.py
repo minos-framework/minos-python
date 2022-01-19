@@ -2,8 +2,8 @@ from .abc import (
     BrokerPublisher,
 )
 from .compositions import (
-    PostgreSqlQueuedKafkaBrokerPublisher,
     InMemoryQueuedKafkaBrokerPublisher,
+    PostgreSqlQueuedKafkaBrokerPublisher,
 )
 from .kafka import (
     KafkaBrokerPublisher,
@@ -16,7 +16,4 @@ from .queued import (
     InMemoryBrokerPublisherRepository,
     PostgreSqlBrokerPublisherRepository,
     QueuedBrokerPublisher,
-)
-from .services import (
-    BrokerPublisherService,
 )

@@ -15,7 +15,6 @@ from .brokers import (
     BrokerMessageV1Strategy,
     BrokerPublisher,
     BrokerPublisherRepository,
-    BrokerPublisherService,
     BrokerRequest,
     BrokerResponse,
     BrokerResponseException,

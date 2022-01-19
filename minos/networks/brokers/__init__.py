@@ -24,7 +24,6 @@ from .messages import (
 from .publishers import (
     BrokerPublisher,
     BrokerPublisherRepository,
-    BrokerPublisherService,
     InMemoryBrokerPublisher,
     InMemoryBrokerPublisherRepository,
     InMemoryQueuedKafkaBrokerPublisher,
