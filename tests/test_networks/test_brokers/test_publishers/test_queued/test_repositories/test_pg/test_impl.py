@@ -1,7 +1,11 @@
 import unittest
+from asyncio import (
+    sleep,
+)
 from unittest.mock import (
     AsyncMock,
-    MagicMock,
+    call,
+    patch,
 )
 
 from minos.common.testing import (
@@ -15,24 +19,11 @@ from minos.networks import (
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
-    FakeAsyncIterator,
 )
 
 
 class TestPostgreSqlBrokerPublisherRepository(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
-    def setUp(self) -> None:
-        super().setUp()
-        self.repository = PostgreSqlBrokerPublisherRepository.from_config(self.config)
-
-    async def asyncSetUp(self) -> None:
-        await super().asyncSetUp()
-        await self.repository.setup()
-
-    async def asyncTearDown(self) -> None:
-        await self.repository.destroy()
-        await super().asyncTearDown()
 
     def test_is_subclass(self):
         self.assertTrue(issubclass(PostgreSqlBrokerPublisherRepository, BrokerPublisherRepository))
@@ -40,83 +31,66 @@ class TestPostgreSqlBrokerPublisherRepository(PostgresAsyncTestCase):
     async def test_enqueue(self):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
 
-        await self.repository.enqueue(message)
+        async with PostgreSqlBrokerPublisherRepository.from_config(self.config) as repository:
+            await repository.enqueue(message)
 
-    async def test_dequeue_all(self):
-        messages = [
-            BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
-            BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
-        ]
-        get_count_mock = AsyncMock(side_effect=[2, InterruptedError])
-        self.repository._get_count = get_count_mock
-
-        await self.repository.enqueue(messages[0])
-        await self.repository.enqueue(messages[1])
-
-        with self.assertRaises(InterruptedError):
-            observed = list()
-            async for message in self.repository.dequeue_all():
-                observed.append(message)
-
-        self.assertEqual(messages, observed)
-
-    async def test_dequeue_all_with_exception(self):
-        messages = [
-            BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
-            BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
-        ]
-        get_count_mock = AsyncMock(side_effect=[2, 2, InterruptedError])
-        self.repository._get_count = get_count_mock
-
-        dispatch_one_mock = MagicMock(side_effect=[messages[0], ValueError, messages[1]])
-        self.repository._dispatch_one = dispatch_one_mock
-
-        await self.repository.enqueue(messages[0])
-        await self.repository.enqueue(messages[1])
-
-        with self.assertRaises(InterruptedError):
-            observed = list()
-            async for message in self.repository.dequeue_all():
-                observed.append(message)
-
-        self.assertEqual(messages, observed)
-
-    async def test_dequeue_all_with_notify(self):
+    async def test_iter(self):
         messages = [
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
 
-        get_count = AsyncMock(side_effect=[2, 0, InterruptedError])
-        self.repository._get_count = get_count
+        async with PostgreSqlBrokerPublisherRepository.from_config(self.config) as repository:
+            await repository.enqueue(messages[0])
+            await repository.enqueue(messages[1])
 
-        await self.repository.enqueue(messages[0])
-
-        with self.assertRaises(InterruptedError):
             observed = list()
-            async for message in self.repository.dequeue_all():
-                await self.repository.enqueue(messages[1])
+            async for message in repository:
                 observed.append(message)
+                if len(messages) == len(observed):
+                    break
 
         self.assertEqual(messages, observed)
 
-    async def test_dequeue_all_with_count(self):
+    async def test_run_with_count(self):
         messages = [
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
+        put_mock = AsyncMock()
 
-        dequeue_batch = MagicMock(side_effect=[FakeAsyncIterator(messages), InterruptedError])
-        self.repository._dequeue_batch = dequeue_batch
+        with patch(
+            "aiopg.Cursor.fetchall",
+            return_value=[
+                [None, None, messages[0].avro_bytes],
+                [None, None, bytes()],
+                [None, None, messages[1].avro_bytes],
+            ],
+        ):
+            repository = PostgreSqlBrokerPublisherRepository.from_config(self.config)
+            repository._queue.put = put_mock
+            repository._get_count = AsyncMock(side_effect=[3, 0])
 
-        await self.repository.enqueue(messages[0])
+            async with repository:
+                await sleep(0.5)
 
-        with self.assertRaises(InterruptedError):
-            observed = list()
-            async for message in self.repository.dequeue_all():
-                observed.append(message)
+        self.assertEqual([call(messages[0]), call(messages[1])], put_mock.call_args_list)
 
-        self.assertEqual(messages, observed)
+    async def test_run_with_notify(self):
+        messages = [
+            BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
+            BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
+        ]
+        put_mock = AsyncMock()
+        async with PostgreSqlBrokerPublisherRepository.from_config(self.config) as repository:
+            repository._queue.put = put_mock
+
+            await repository.enqueue(messages[0])
+            await repository.enqueue(messages[1])
+
+            await sleep(0.5)
+
+        self.assertEqual([call(messages[0]), call(messages[1])], put_mock.call_args_list)
 
 
 if __name__ == "__main__":
