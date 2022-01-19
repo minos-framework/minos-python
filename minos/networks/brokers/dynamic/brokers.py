@@ -7,6 +7,9 @@ from asyncio import (
     TimeoutError,
     wait_for,
 )
+from collections.abc import (
+    AsyncIterator,
+)
 from typing import (
     Optional,
 )
@@ -103,9 +106,9 @@ class DynamicBroker(BrokerHandlerSetup):
         :param kwargs: Additional named parameters to be passed to receive_many.
         :return: A ``HandlerEntry`` instance.
         """
-        return (await self.receive_many(*args, **(kwargs | {"count": 1})))[0]
+        return await self.receive_many(*args, **(kwargs | {"count": 1})).__anext__()
 
-    async def receive_many(self, count: int, timeout: float = 60, **kwargs) -> list[BrokerMessage]:
+    async def receive_many(self, count: int, timeout: float = 60, **kwargs) -> AsyncIterator[BrokerMessage]:
         """Get multiple handler entries from the given topics.
 
         :param timeout: Maximum time in seconds to wait for messages.
@@ -119,11 +122,10 @@ class DynamicBroker(BrokerHandlerSetup):
                 f"Timeout exceeded while trying to fetch {count!r} entries from {self.topic!r}."
             )
 
-        messages = [entry.data for entry in entries]
-
-        logger.info(f"Dispatching '{messages if count > 1 else messages[0]!s}'...")
-
-        return messages
+        for entry in entries:
+            message = entry.data
+            logger.info(f"Dispatching '{message!s}'...")
+            yield message
 
     async def _get_many(self, count: int, max_wait: Optional[float] = 10.0) -> list[BrokerHandlerEntry]:
         result = list()

@@ -91,20 +91,27 @@ class TestDynamicBroker(PostgresAsyncTestCase):
             FakeModel("test4"),
         ]
 
-        async def _fn():
+        async def _fn1():
+            messages = list()
+            async for message in self.handler.receive_many(count=4, max_wait=0.1):
+                messages.append(message)
+            return messages
+
+        async def _fn2():
             await self._insert_one("fooReply", FakeModel("test1").avro_bytes)
             await self._insert_one("fooReply", FakeModel("test2").avro_bytes)
             await sleep(0.5)
             await self._insert_one("fooReply", FakeModel("test3").avro_bytes)
             await self._insert_one("fooReply", FakeModel("test4").avro_bytes)
 
-        observed, _ = await gather(self.handler.receive_many(count=4, max_wait=0.1), _fn())
+        observed, _ = await gather(_fn1(), _fn2())
 
         self.assertEqual(expected, observed)
 
     async def test_receive_many_raises(self):
         with self.assertRaises(MinosHandlerNotFoundEnoughEntriesException):
-            await self.handler.receive_many(count=3, timeout=0.1)
+            async for _ in self.handler.receive_many(count=3, timeout=0.1):
+                pass
 
     async def _insert_one(self, topic: str, bytes_: bytes):
         async with aiopg.connect(**self.broker_queue_db) as connect:
