@@ -76,5 +76,5 @@ class ModelRefResolver:
 
     @staticmethod
     async def _get_response(handler: DynamicBroker, count: int, **kwargs) -> Iterable[Model]:
-        entries = await handler.get_many(count, **kwargs)
-        return chain(*(entry.data.data for entry in entries))
+        messages = await handler.get_many(count, **kwargs)
+        return chain(*(message.content for message in messages))

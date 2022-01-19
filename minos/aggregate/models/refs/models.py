@@ -191,9 +191,8 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
     @staticmethod
     async def _get_response(handler: DynamicBroker, **kwargs) -> MT:
-        handler_entry = await handler.get_one(**kwargs)
-        response = handler_entry.data
-        return response.data
+        message = await handler.get_one(**kwargs)
+        return message.content
 
     @property
     def resolved(self) -> bool:
