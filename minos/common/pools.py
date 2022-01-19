@@ -1,6 +1,8 @@
+import logging
 from abc import (
     ABC,
 )
+from asyncio import sleep
 from typing import (
     Any,
     Generic,
@@ -18,6 +20,8 @@ from aiomisc.pool import (
 from .setup import (
     MinosSetup,
 )
+
+logger = logging.getLogger(__name__)
 
 P = TypeVar("P")
 
@@ -59,6 +63,11 @@ class MinosPool(MinosSetup, PoolBase, Generic[P], ABC):
         return ContextManager(self.__acquire, self._PoolBase__release)
 
     async def _destroy(self) -> None:
+        if len(self._used):
+            logger.info("Waiting for instances releasing...")
+            while len(self._used):
+                await sleep(0.1)
+
         await self.close()
 
     async def _check_instance(self, instance: P) -> bool:

@@ -3,6 +3,8 @@ import unittest
 from abc import (
     ABC,
 )
+from asyncio import sleep, gather
+from unittest.mock import MagicMock
 
 from aiomisc import (
     PoolBase,
@@ -47,6 +49,21 @@ class TestMinosPool(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual("foo", observed)
         self.assertEqual(1, pool.create_instance_call_count)
         self.assertLess(0, pool.destroy_instance_call_count)
+
+    async def test_close(self):
+        async def _fn1(p):
+            async with p.acquire():
+                await sleep(0.5)
+
+        async def _fn2(p):
+            await p.destroy()
+
+        async with _Pool() as pool:
+            pool_mock = MagicMock(side_effect=pool.close)
+            pool.close = pool_mock
+            await gather(_fn1(pool), _fn2(pool))
+
+        self.assertEqual(1, pool_mock.call_count)
 
 
 if __name__ == "__main__":
