@@ -44,7 +44,7 @@ from ..abc import (
     BrokerSubscriberRepository,
 )
 from .entries import (
-    BrokerHandlerEntry,
+    PostgreSqlBrokerSubscriberRepositoryEntry,
 )
 
 logger = logging.getLogger(__name__)
@@ -164,7 +164,7 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
             result = await cursor.fetchall()
 
             if len(result):
-                entries = [BrokerHandlerEntry(*row) for row in result]
+                entries = [PostgreSqlBrokerSubscriberRepositoryEntry(*row) for row in result]
 
                 await cursor.execute(self._queries["mark_processing"], (tuple(e.id for e in entries),))
 

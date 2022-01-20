@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 @total_ordering
-class BrokerHandlerEntry:
+class PostgreSqlBrokerSubscriberRepositoryEntry:
     """Handler Entry class."""
 
     def __init__(
