@@ -3,7 +3,6 @@ from __future__ import (
 )
 
 from asyncio import (
-    CancelledError,
     Queue,
     create_task,
     gather,
@@ -112,11 +111,6 @@ class BrokerHandler(MinosSetup):
     async def _consume_one(self) -> None:
         message = await self._queue.get()
         try:
-            try:
-                await self._dispatcher.dispatch(message)
-            except (CancelledError, Exception) as exc:
-                # await self.submit_query(self._queries["update_not_processed"], (entry.id,))
-                raise exc
-            # await self.submit_query(self._queries["delete_processed"], (entry.id,))
+            await self._dispatcher.dispatch(message)
         finally:
             self._queue.task_done()
