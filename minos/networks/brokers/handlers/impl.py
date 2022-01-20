@@ -4,7 +4,7 @@ from __future__ import (
 
 from asyncio import (
     CancelledError,
-    PriorityQueue,
+    Queue,
     create_task,
     gather,
 )
@@ -42,7 +42,7 @@ class BrokerHandler(MinosSetup):
         self._dispatcher = dispatcher
         self._subscriber = subscriber
 
-        self._queue = PriorityQueue(maxsize=1)
+        self._queue = Queue(maxsize=1)
         self._consumers = list()
         self._concurrency = concurrency
 
