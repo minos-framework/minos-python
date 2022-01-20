@@ -167,9 +167,7 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
     async def _dequeue_batch(self, cursor: Cursor) -> None:
         async with cursor.begin():
             # noinspection PyTypeChecker
-            await cursor.execute(
-                _SELECT_NOT_PROCESSED_QUERY, (self._retry, tuple(self._topics), self._records)
-            )
+            await cursor.execute(_SELECT_NOT_PROCESSED_QUERY, (self._retry, tuple(self._topics), self._records))
             result = await cursor.fetchall()
 
             if len(result):
