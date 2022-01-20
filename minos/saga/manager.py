@@ -1,22 +1,14 @@
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
 import warnings
-from functools import (
-    reduce,
-)
-from operator import (
-    or_,
-)
+from functools import reduce
+from operator import or_
 from typing import (
     Optional,
     Union,
 )
-from uuid import (
-    UUID,
-)
+from uuid import UUID
 
 from dependency_injector.wiring import (
     Provide,
@@ -36,12 +28,8 @@ from minos.networks import (
     BrokerPool,
 )
 
-from .context import (
-    SagaContext,
-)
-from .definitions import (
-    Saga,
-)
+from .context import SagaContext
+from .definitions import Saga
 from .exceptions import (
     SagaFailedExecutionException,
     SagaPausedExecutionStepException,
@@ -51,9 +39,7 @@ from .executions import (
     SagaExecutionStorage,
     SagaStatus,
 )
-from .messages import (
-    SagaResponse,
-)
+from .messages import SagaResponse
 
 logger = logging.getLogger(__name__)
 
