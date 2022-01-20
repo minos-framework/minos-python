@@ -92,8 +92,8 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
     async def _stop_run(self):
         if self._run_task is not None:
             self._run_task.cancel()
-            with suppress(TimeoutError, CancelledError):
-                await wait_for(self._run_task, 0.5)
+            with suppress(CancelledError):
+                await self._run_task
             self._run_task = None
 
     async def _flush_queue(self):

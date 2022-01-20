@@ -18,14 +18,6 @@ from ....messages import (
 class BrokerSubscriberRepository(ABC, MinosSetup):
     """TODO"""
 
-    @abstractmethod
-    async def enqueue(self, message: BrokerMessage) -> None:
-        """TODO
-
-        :param message: TODO
-        :return: TODO
-        """
-
     def __aiter__(self) -> AsyncIterator[BrokerMessage]:
         return self
 
@@ -33,6 +25,14 @@ class BrokerSubscriberRepository(ABC, MinosSetup):
         if self.already_destroyed:
             raise StopAsyncIteration
         return await self.dequeue()
+
+    @abstractmethod
+    async def enqueue(self, message: BrokerMessage) -> None:
+        """TODO
+
+        :param message: TODO
+        :return: TODO
+        """
 
     @abstractmethod
     async def dequeue(self) -> BrokerMessage:

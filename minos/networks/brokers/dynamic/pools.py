@@ -61,9 +61,9 @@ class _ReplyTopicContextManager:
         self._token = None
 
     async def __aenter__(self) -> DynamicBroker:
-        handler = await self.wrapper.__aenter__()
-        self._token = REQUEST_REPLY_TOPIC_CONTEXT_VAR.set(handler.topic)
-        return handler
+        broker = await self.wrapper.__aenter__()
+        self._token = REQUEST_REPLY_TOPIC_CONTEXT_VAR.set(broker.topic)
+        return broker
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         REQUEST_REPLY_TOPIC_CONTEXT_VAR.reset(self._token)
