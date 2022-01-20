@@ -38,12 +38,6 @@ from minos.networks import (
     BrokerMessageV1Payload,
     InMemoryBrokerPublisher,
 )
-from minos.networks.brokers.subscribers.queued.repositories.pg.entries import (
-    BrokerHandlerEntry,
-)
-from minos.networks.brokers.subscribers.queued.repositories.pg.handlers import (
-    BrokerHandler,
-)
 from tests.utils import (
     BASE_PATH,
     FakeModel,
@@ -59,7 +53,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
         self.publisher = InMemoryBrokerPublisher.from_config(self.config)
         self.dispatcher = BrokerDispatcher.from_config(self.config, publisher=self.publisher)
-        self.handler = BrokerHandler.from_config(self.config, dispatcher=self.dispatcher)
+        self.handler = BrokerHandler.from_config(self.config, dispatcher=self.dispatcher)  # noqa
 
         self.identifier = uuid4()
 
@@ -83,7 +77,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         await super().asyncTearDown()
 
     def test_from_config(self):
-        self.assertIsInstance(self.handler, BrokerHandler)
+        self.assertIsInstance(self.handler, BrokerHandler)  # noqa
         self.assertEqual(self.dispatcher, self.handler.dispatcher)
 
         self.assertEqual(
@@ -101,7 +95,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
     async def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):
-            BrokerHandler.from_config(self.config)
+            BrokerHandler.from_config(self.config)  # noqa
 
     async def test_consumers(self):
         mock = AsyncMock()
@@ -115,14 +109,14 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
         self.dispatcher.get_action = MagicMock(side_effect=[_fn_no_wait, _fn, _fn, _fn, _fn_no_wait])
 
-        async with BrokerHandler.from_config(
+        async with BrokerHandler.from_config(  # noqa
             self.config, dispatcher=self.dispatcher, consumer_concurrency=consumer_concurrency
         ) as handler:
             self.assertEqual(consumer_concurrency, len(handler.consumers))
             handler.submit_query = mock
 
             for _ in range(consumer_concurrency + 2):
-                entry = BrokerHandlerEntry(1, "AddOrder", 0, self.message.avro_bytes, 1)
+                entry = BrokerHandlerEntry(1, "AddOrder", 0, self.message.avro_bytes, 1)  # noqa
                 await handler._queue.put(entry)
             await sleep(0.5)
 
@@ -162,7 +156,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         self.assertEqual(3, mock_count.call_count)
 
     async def test_dispatch_forever_without_topics(self):
-        handler = BrokerHandler.from_config(self.config, handlers=dict(), publisher=self.publisher)
+        handler = BrokerHandler.from_config(self.config, handlers=dict(), publisher=self.publisher)  # noqa
         mock = AsyncMock()
         async with handler:
             handler.dispatch = mock

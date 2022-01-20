@@ -40,18 +40,18 @@ class BrokerHandler(MinosSetup):
         self._dispatcher = dispatcher
         self._subscriber = subscriber
 
-        self._queue = PriorityQueue(maxsize=1000)
+        self._queue = PriorityQueue()
         self._consumers = list()
         self._consumer_concurrency = 15
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerHandler:
         from ..subscribers import (
-            InMemoryQueuedKafkaBrokerSubscriber,
+            PostgreSqlQueuedKafkaBrokerSubscriber,
         )
 
         dispatcher = cls._get_dispatcher(config, **kwargs)
-        subscriber = InMemoryQueuedKafkaBrokerSubscriber.from_config(config, topics=set(dispatcher.actions.keys()))
+        subscriber = PostgreSqlQueuedKafkaBrokerSubscriber.from_config(config, topics=set(dispatcher.actions.keys()))
 
         return cls(dispatcher, subscriber, **kwargs)
 
@@ -86,6 +86,7 @@ class BrokerHandler(MinosSetup):
     async def run(self) -> NoReturn:
         """TODO"""
         async for message in self._subscriber:
+            await self._queue.join()
             await self._queue.put(message)
 
     async def _create_consumers(self):

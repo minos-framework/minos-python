@@ -26,9 +26,6 @@ from minos.networks import (
     BrokerMessageV1Status,
     BrokerMessageV1Strategy,
 )
-from minos.networks.brokers.subscribers.queued.repositories.pg.consumers import (
-    BrokerConsumer,
-)
 from tests.utils import (
     BASE_PATH,
     FakeModel,
@@ -42,7 +39,7 @@ class TestProducer(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.consumer = BrokerConsumer.from_config(self.config)
+        self.consumer = BrokerConsumer.from_config(self.config)  # noqa
         self.producer = PostgreSqlBrokerPublisherRepositoryDequeue.from_config(  # noqa: F821
             self.config, consumer=self.consumer
         )

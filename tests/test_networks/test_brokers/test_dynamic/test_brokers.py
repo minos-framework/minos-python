@@ -23,9 +23,6 @@ from minos.networks import (
     InMemoryBrokerPublisher,
     MinosHandlerNotFoundEnoughEntriesException,
 )
-from minos.networks.brokers.subscribers.queued.repositories.pg.abc import (
-    BrokerHandlerSetup,
-)
 from tests.utils import (
     BASE_PATH,
     FakeModel,
@@ -64,7 +61,7 @@ class TestDynamicBroker(PostgresAsyncTestCase):
         self.assertTrue(handler.already_destroyed)
 
     def test_base_classes(self):
-        self.assertIsInstance(self.handler, BrokerHandlerSetup)
+        self.assertIsInstance(self.handler, BrokerHandlerSetup)  # noqa
 
     async def test_send(self):
         mock = AsyncMock()

@@ -54,11 +54,11 @@ class DynamicBroker(MinosSetup):
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> DynamicBroker:
         from ..subscribers import (
-            InMemoryQueuedKafkaBrokerSubscriber,
+            PostgreSqlQueuedKafkaBrokerSubscriber,
         )
 
         kwargs["publisher"] = cls._get_publisher(**kwargs)
-        kwargs["subscriber"] = InMemoryQueuedKafkaBrokerSubscriber.from_config(
+        kwargs["subscriber"] = PostgreSqlQueuedKafkaBrokerSubscriber.from_config(
             config, topics={kwargs["topic"]}, group_id=kwargs["topic"]
         )
         # noinspection PyProtectedMember
