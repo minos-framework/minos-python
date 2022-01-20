@@ -1,5 +1,7 @@
 import logging
-from abc import abstractmethod
+from abc import (
+    abstractmethod,
+)
 
 from aiomisc import (
     Service,
@@ -49,46 +51,39 @@ class BrokerHandlerService(Service):
         """
         await self.handler.destroy()
 
-    @property
-    @abstractmethod
+    @cached_property
     def handler(self) -> BrokerHandler:
         """Get the service handler.
 
         :return: A ``Handler`` instance.
         """
+        return self._handler_cls().from_config(**self._init_kwargs)
+
+    @staticmethod
+    @abstractmethod
+    def _handler_cls() -> type[BrokerHandler]:
+        """TODO"""
 
 
 class KafkaBrokerHandlerService(BrokerHandlerService):
     """TODO"""
 
-    @cached_property
-    def handler(self) -> BrokerHandler:
-        """Get the service handler.
-
-        :return: A ``Handler`` instance.
-        """
-        return KafkaBrokerHandler.from_config(**self._init_kwargs)
+    @staticmethod
+    def _handler_cls() -> type[BrokerHandler]:
+        return KafkaBrokerHandler
 
 
 class InMemoryQueuedKafkaBrokerHandlerService(BrokerHandlerService):
     """TODO"""
 
-    @cached_property
-    def handler(self) -> BrokerHandler:
-        """Get the service handler.
-
-        :return: A ``Handler`` instance.
-        """
-        return InMemoryQueuedKafkaBrokerHandler.from_config(**self._init_kwargs)
+    @staticmethod
+    def _handler_cls() -> type[BrokerHandler]:
+        return InMemoryQueuedKafkaBrokerHandler
 
 
 class PostgreSqlQueuedKafkaBrokerHandlerService(BrokerHandlerService):
     """TODO"""
 
-    @cached_property
-    def handler(self) -> BrokerHandler:
-        """Get the service handler.
-
-        :return: A ``Handler`` instance.
-        """
-        return PostgreSqlQueuedKafkaBrokerHandler.from_config(**self._init_kwargs)
+    @staticmethod
+    def _handler_cls() -> type[BrokerHandler]:
+        return PostgreSqlQueuedKafkaBrokerHandler

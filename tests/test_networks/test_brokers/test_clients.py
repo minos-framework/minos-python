@@ -17,9 +17,9 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    Broker,
     BrokerMessageV1,
     BrokerMessageV1Payload,
-    DynamicBroker,
     InMemoryBrokerPublisher,
     MinosHandlerNotFoundEnoughEntriesException,
 )
@@ -37,7 +37,7 @@ class TestDynamicBroker(PostgresAsyncTestCase):
         super().setUp()
         self.topic = "fooReply"
         self.publisher = InMemoryBrokerPublisher.from_config(self.config)
-        self.handler = DynamicBroker.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
+        self.handler = Broker.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -51,10 +51,10 @@ class TestDynamicBroker(PostgresAsyncTestCase):
 
     async def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):
-            DynamicBroker.from_config(config=self.config)
+            Broker.from_config(config=self.config)
 
     async def test_setup_destroy(self):
-        handler = DynamicBroker.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
+        handler = Broker.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
         self.assertFalse(handler.already_setup)
         async with handler:
             self.assertTrue(handler.already_setup)

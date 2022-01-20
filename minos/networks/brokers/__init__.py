@@ -1,12 +1,14 @@
+from .clients import (
+    Broker,
+    InMemoryQueuedKafkaBroker,
+    KafkaBroker,
+    PostgreSqlQueuedKafkaBroker,
+)
 from .dispatchers import (
     BrokerDispatcher,
     BrokerRequest,
     BrokerResponse,
     BrokerResponseException,
-)
-from .dynamic import (
-    DynamicBroker,
-    DynamicBrokerPool,
 )
 from .handlers import (
     BrokerHandler,
@@ -26,6 +28,12 @@ from .messages import (
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
     BrokerMessageV1Strategy,
+)
+from .pools import (
+    BrokerPool,
+    InMemoryQueuedKafkaBrokerPool,
+    KafkaBrokerPool,
+    PostgreSqlQueuedKafkaBrokerPool,
 )
 from .publishers import (
     BrokerPublisher,

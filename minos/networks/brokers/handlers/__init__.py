@@ -1,10 +1,8 @@
-from .compositions import (
+from .impl import (
+    BrokerHandler,
     InMemoryQueuedKafkaBrokerHandler,
     KafkaBrokerHandler,
     PostgreSqlQueuedKafkaBrokerHandler,
-)
-from .impl import (
-    BrokerHandler,
 )
 from .services import (
     BrokerHandlerService,

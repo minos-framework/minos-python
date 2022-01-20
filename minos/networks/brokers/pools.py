@@ -3,6 +3,10 @@ from __future__ import (
 )
 
 import logging
+from abc import (
+    ABC,
+    abstractmethod,
+)
 from contextvars import (
     Token,
 )
@@ -16,17 +20,20 @@ from minos.common import (
     MinosPool,
 )
 
-from ..messages import (
-    REQUEST_REPLY_TOPIC_CONTEXT_VAR,
+from .clients import (
+    Broker,
+    InMemoryQueuedKafkaBroker,
+    KafkaBroker,
+    PostgreSqlQueuedKafkaBroker,
 )
-from .brokers import (
-    DynamicBroker,
+from .messages import (
+    REQUEST_REPLY_TOPIC_CONTEXT_VAR,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class DynamicBrokerPool(MinosPool):
+class BrokerPool(MinosPool, ABC):
     """Dynamic Broker Pool class."""
 
     def __init__(self, config: MinosConfig, maxsize: int = 5, recycle: Optional[int] = 3600, *args, **kwargs):
@@ -34,15 +41,15 @@ class DynamicBrokerPool(MinosPool):
         self.config = config
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> DynamicBrokerPool:
+    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerPool:
         return cls(config, **kwargs)
 
-    async def _create_instance(self) -> DynamicBroker:
-        instance = DynamicBroker.from_config(self.config)
+    async def _create_instance(self) -> Broker:
+        instance = self._broker_cls().from_config(self.config)
         await instance.setup()
         return instance
 
-    async def _destroy_instance(self, instance: DynamicBroker):
+    async def _destroy_instance(self, instance: Broker):
         await instance.destroy()
 
     def acquire(self, *args, **kwargs) -> AsyncContextManager:
@@ -52,15 +59,51 @@ class DynamicBrokerPool(MinosPool):
         """
         return _ReplyTopicContextManager(super().acquire())
 
+    # noinspection PyPropertyDefinition
+    @staticmethod
+    @abstractmethod
+    def _broker_cls() -> type[Broker]:
+        """TODO
+
+        :return: TODO
+        """
+
+
+class KafkaBrokerPool(BrokerPool):
+    """TODO"""
+
+    # noinspection PyPropertyDefinition
+    @staticmethod
+    def _broker_cls() -> type[Broker]:
+        return KafkaBroker
+
+
+class InMemoryQueuedKafkaBrokerPool(BrokerPool):
+    """TODO"""
+
+    # noinspection PyPropertyDefinition
+    @staticmethod
+    def _broker_cls() -> type[Broker]:
+        return InMemoryQueuedKafkaBroker
+
+
+class PostgreSqlQueuedKafkaBrokerPool(BrokerPool):
+    """TODO"""
+
+    # noinspection PyPropertyDefinition
+    @staticmethod
+    def _broker_cls() -> type[Broker]:
+        return PostgreSqlQueuedKafkaBroker
+
 
 class _ReplyTopicContextManager:
     _token: Optional[Token]
 
-    def __init__(self, wrapper: AsyncContextManager[DynamicBroker]):
+    def __init__(self, wrapper: AsyncContextManager[Broker]):
         self.wrapper = wrapper
         self._token = None
 
-    async def __aenter__(self) -> DynamicBroker:
+    async def __aenter__(self) -> Broker:
         broker = await self.wrapper.__aenter__()
         self._token = REQUEST_REPLY_TOPIC_CONTEXT_VAR.set(broker.topic)
         return broker

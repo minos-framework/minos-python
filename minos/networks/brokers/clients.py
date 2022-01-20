@@ -3,6 +3,9 @@ from __future__ import (
 )
 
 import logging
+from abc import (
+    abstractmethod,
+)
 from asyncio import (
     TimeoutError,
     wait_for,
@@ -28,24 +31,27 @@ from minos.common import (
     NotProvidedException,
 )
 
-from ...exceptions import (
+from ..exceptions import (
     MinosHandlerNotFoundEnoughEntriesException,
 )
-from ..messages import (
+from .messages import (
     BrokerMessage,
 )
-from ..publishers import (
+from .publishers import (
     BrokerPublisher,
 )
-from ..subscribers import (
+from .subscribers import (
     BrokerSubscriber,
+    InMemoryQueuedKafkaBrokerSubscriber,
+    KafkaBrokerSubscriber,
+    PostgreSqlQueuedKafkaBrokerSubscriber,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class DynamicBroker(MinosSetup):
-    """Dynamic Broker class."""
+class Broker(MinosSetup):
+    """Broker class."""
 
     def __init__(self, topic: str, publisher: BrokerPublisher, subscriber: BrokerSubscriber, **kwargs):
         super().__init__(**kwargs)
@@ -55,20 +61,25 @@ class DynamicBroker(MinosSetup):
         self.subscriber = subscriber
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> DynamicBroker:
-        from ..subscribers import (
-            PostgreSqlQueuedKafkaBrokerSubscriber,
-        )
-
+    def _from_config(cls, config: MinosConfig, **kwargs) -> Broker:
         if "topic" not in kwargs:
             kwargs["topic"] = str(uuid4()).replace("-", "")
 
         kwargs["publisher"] = cls._get_publisher(**kwargs)
-        kwargs["subscriber"] = PostgreSqlQueuedKafkaBrokerSubscriber.from_config(
+        kwargs["subscriber"] = cls._subscriber_cls().from_config(
             config, topics={kwargs["topic"]}, group_id=kwargs["topic"], remove_topics_on_destroy=True,
         )
         # noinspection PyProtectedMember
         return cls(**kwargs)
+
+    # noinspection PyPropertyDefinition
+    @staticmethod
+    @abstractmethod
+    def _subscriber_cls() -> type[BrokerSubscriber]:
+        """TODO
+
+        :return: TODO
+        """
 
     # noinspection PyUnusedLocal
     @staticmethod
@@ -138,3 +149,27 @@ class DynamicBroker(MinosSetup):
                 break
 
         return result
+
+
+class KafkaBroker(Broker):
+    """TODO"""
+
+    @staticmethod
+    def _subscriber_cls() -> type[BrokerSubscriber]:
+        return KafkaBrokerSubscriber
+
+
+class InMemoryQueuedKafkaBroker(Broker):
+    """TODO"""
+
+    @staticmethod
+    def _subscriber_cls() -> type[BrokerSubscriber]:
+        return InMemoryQueuedKafkaBrokerSubscriber
+
+
+class PostgreSqlQueuedKafkaBroker(Broker):
+    """TODO"""
+
+    @staticmethod
+    def _subscriber_cls() -> type[BrokerSubscriber]:
+        return PostgreSqlQueuedKafkaBrokerSubscriber

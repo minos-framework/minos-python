@@ -12,8 +12,8 @@ from minos.common.testing import (
 )
 from minos.networks import (
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
-    DynamicBroker,
-    DynamicBrokerPool,
+    Broker,
+    BrokerPool,
     KafkaBrokerPublisher,
 )
 from tests.utils import (
@@ -29,7 +29,7 @@ class TestDynamicBrokerPool(PostgresAsyncTestCase):
         super().setUp()
         self.publisher = KafkaBrokerPublisher.from_config(self.config)
         self.consumer = BrokerConsumer.from_config(self.config)  # noqa
-        self.pool = DynamicBrokerPool.from_config(self.config, consumer=self.consumer, publisher=self.publisher)
+        self.pool = BrokerPool.from_config(self.config, consumer=self.consumer, publisher=self.publisher)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -48,12 +48,12 @@ class TestDynamicBrokerPool(PostgresAsyncTestCase):
 
     async def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):
-            DynamicBrokerPool.from_config(self.config)
+            BrokerPool.from_config(self.config)
         with self.assertRaises(NotProvidedException):
-            DynamicBrokerPool.from_config(self.config, consumer=self.consumer)
+            BrokerPool.from_config(self.config, consumer=self.consumer)
 
     async def test_setup_destroy(self):
-        pool = DynamicBrokerPool.from_config(self.config, consumer=self.consumer, publisher=self.publisher)
+        pool = BrokerPool.from_config(self.config, consumer=self.consumer, publisher=self.publisher)
         self.assertTrue(pool.already_setup)
         async with pool:
             self.assertTrue(pool.already_setup)
@@ -66,7 +66,7 @@ class TestDynamicBrokerPool(PostgresAsyncTestCase):
 
     async def test_acquire(self):
         async with self.pool.acquire() as broker:
-            self.assertIsInstance(broker, DynamicBroker)
+            self.assertIsInstance(broker, Broker)
             self.assertIn(broker.topic, self.pool.client.list_topics())
 
     async def test_acquire_reply_topic_context_var(self):
