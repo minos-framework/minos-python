@@ -17,8 +17,8 @@ class BrokerPublisher(ABC, MinosSetup):
 
     @abstractmethod
     async def send(self, message: BrokerMessage) -> None:
-        """TODO
+        """Send a message.
 
-        :param message: TODO
-        :return: TODO
+        :param message: The message to be sent.
+        :return: This method does not return anything.
         """

@@ -15,21 +15,24 @@ logger = logging.getLogger(__name__)
 
 
 class InMemoryBrokerPublisher(BrokerPublisher):
-    """TODO"""
+    """In Memory Broker Publisher class."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._messages = list()
 
     async def send(self, message: BrokerMessage) -> None:
-        """TODO
+        """Send a message.
 
-        :param message: TODO
-        :return: TODO
+        :param message: The message to be sent.
+        :return: This method does not return anything.
         """
         self._messages.append(message)
 
     @property
     def messages(self) -> list[BrokerMessage]:
-        """TODO"""
+        """The sequence of sent messages.
+
+        :return: A list of ``BrokerMessage`` entries.
+        """
         return self._messages
