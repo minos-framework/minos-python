@@ -1,11 +1,7 @@
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
-from contextvars import (
-    Token,
-)
+from contextvars import Token
 from typing import (
     AsyncContextManager,
     Optional,
@@ -16,12 +12,8 @@ from minos.common import (
     MinosPool,
 )
 
-from ..messages import (
-    REQUEST_REPLY_TOPIC_CONTEXT_VAR,
-)
-from .brokers import (
-    DynamicBroker,
-)
+from ..messages import REQUEST_REPLY_TOPIC_CONTEXT_VAR
+from .brokers import DynamicBroker
 
 logger = logging.getLogger(__name__)
 

@@ -10,9 +10,7 @@ from collections import (
     defaultdict,
     namedtuple,
 )
-from random import (
-    shuffle,
-)
+from random import shuffle
 from unittest.mock import (
     AsyncMock,
     MagicMock,
@@ -20,18 +18,12 @@ from unittest.mock import (
     call,
     patch,
 )
-from uuid import (
-    uuid4,
-)
+from uuid import uuid4
 
 import aiopg
 
-from minos.common import (
-    NotProvidedException,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from minos.common import NotProvidedException
+from minos.common.testing import PostgresAsyncTestCase
 from minos.networks import (
     BrokerDispatcher,
     BrokerMessageV1,

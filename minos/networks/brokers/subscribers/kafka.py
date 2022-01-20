@@ -1,39 +1,21 @@
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
-from contextlib import (
-    suppress,
-)
+from contextlib import suppress
 
 from aiokafka import (
     AIOKafkaConsumer,
     ConsumerRecord,
 )
-from cached_property import (
-    cached_property,
-)
-from kafka import (
-    KafkaAdminClient,
-)
-from kafka.admin import (
-    NewTopic,
-)
-from kafka.errors import (
-    TopicAlreadyExistsError,
-)
+from cached_property import cached_property
+from kafka import KafkaAdminClient
+from kafka.admin import NewTopic
+from kafka.errors import TopicAlreadyExistsError
 
-from minos.common import (
-    MinosConfig,
-)
+from minos.common import MinosConfig
 
-from ..messages import (
-    BrokerMessage,
-)
-from .abc import (
-    BrokerSubscriber,
-)
+from ..messages import BrokerMessage
+from .abc import BrokerSubscriber
 
 logger = logging.getLogger(__name__)
 

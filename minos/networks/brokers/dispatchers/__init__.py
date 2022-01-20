@@ -1,6 +1,4 @@
-from .impl import (
-    BrokerDispatcher,
-)
+from .impl import BrokerDispatcher
 from .requests import (
     BrokerRequest,
     BrokerResponse,

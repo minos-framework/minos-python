@@ -4,23 +4,15 @@ from asyncio import (
     create_task,
     gather,
 )
-from contextlib import (
-    suppress,
-)
+from contextlib import suppress
 from typing import (
     Awaitable,
     NoReturn,
 )
 
-from ...messages import (
-    BrokerMessage,
-)
-from ..abc import (
-    BrokerSubscriber,
-)
-from .repositories import (
-    BrokerSubscriberRepository,
-)
+from ...messages import BrokerMessage
+from ..abc import BrokerSubscriber
+from .repositories import BrokerSubscriberRepository
 
 
 class QueuedBrokerSubscriber(BrokerSubscriber):

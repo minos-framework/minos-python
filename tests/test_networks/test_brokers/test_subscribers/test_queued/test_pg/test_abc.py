@@ -2,12 +2,8 @@ import unittest
 
 import aiopg
 
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
-from tests.utils import (
-    BASE_PATH,
-)
+from minos.common.testing import PostgresAsyncTestCase
+from tests.utils import BASE_PATH
 
 
 @unittest.skip("FIXME!")

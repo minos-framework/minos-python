@@ -1,14 +1,8 @@
 import unittest
-from uuid import (
-    uuid4,
-)
+from uuid import uuid4
 
-from minos.common import (
-    current_datetime,
-)
-from tests.utils import (
-    FakeModel,
-)
+from minos.common import current_datetime
+from tests.utils import FakeModel
 
 
 @unittest.skip("FIXME!")

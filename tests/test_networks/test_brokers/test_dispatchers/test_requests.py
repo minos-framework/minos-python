@@ -10,9 +10,7 @@ from minos.networks import (
     BrokerResponse,
     NotHasParamsException,
 )
-from tests.utils import (
-    FakeModel,
-)
+from tests.utils import FakeModel
 
 
 class TestBrokerRequest(unittest.IsolatedAsyncioTestCase):
