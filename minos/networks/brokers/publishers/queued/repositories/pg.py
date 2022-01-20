@@ -6,6 +6,7 @@ import logging
 from asyncio import (
     CancelledError,
     PriorityQueue,
+    QueueEmpty,
     TimeoutError,
     create_task,
     wait_for,
@@ -96,8 +97,11 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
             self._run_task = None
 
     async def _flush_queue(self):
-        while not self._queue.empty():
-            entry = self._queue.get_nowait()
+        while True:
+            try:
+                entry = self._queue.get_nowait()
+            except QueueEmpty:
+                break
             await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id_,))
             self._queue.task_done()
 

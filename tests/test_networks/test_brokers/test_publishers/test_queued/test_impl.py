@@ -1,7 +1,9 @@
 import unittest
+from asyncio import (
+    sleep,
+)
 from unittest.mock import (
     AsyncMock,
-    MagicMock,
     call,
 )
 
@@ -12,9 +14,6 @@ from minos.networks import (
     InMemoryBrokerPublisher,
     InMemoryBrokerPublisherRepository,
     QueuedBrokerPublisher,
-)
-from tests.utils import (
-    FakeAsyncIterator,
 )
 
 
@@ -71,25 +70,21 @@ class TestQueuedBrokerPublisher(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual([call(message)], repository_enqueue_mock.call_args_list)
 
-    @unittest.skip
     async def test_run(self):
         messages = [
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
 
-        repository_dequeue_mock = MagicMock(side_effect=[FakeAsyncIterator(messages), InterruptedError])
-        self.repository.dequeue_all = repository_dequeue_mock
-
         impl_send_mock = AsyncMock()
         self.impl.send = impl_send_mock
 
-        publisher = QueuedBrokerPublisher(self.impl, self.repository)
+        async with QueuedBrokerPublisher(self.impl, self.repository) as publisher:
+            await publisher.send(messages[0])
+            await publisher.send(messages[1])
 
-        with self.assertRaises(InterruptedError):
-            await publisher._run()
+            await sleep(0.5)
 
-        self.assertEqual([call(), call()], repository_dequeue_mock.call_args_list)
         self.assertEqual([call(messages[0]), call(messages[1])], impl_send_mock.call_args_list)
 
 

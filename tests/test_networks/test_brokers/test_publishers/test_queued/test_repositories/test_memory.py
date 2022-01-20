@@ -17,14 +17,14 @@ class TestInMemoryBrokerPublisherRepository(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(issubclass(InMemoryBrokerPublisherRepository, BrokerPublisherRepository))
 
     async def test_enqueue(self):
-        put_mock = AsyncMock()
-
-        repository = InMemoryBrokerPublisherRepository()
-        repository.queue.put = put_mock
 
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
 
-        await repository.enqueue(message)
+        async with InMemoryBrokerPublisherRepository() as repository:
+            put_mock = AsyncMock(side_effect=repository._queue.put)
+            repository._queue.put = put_mock
+
+            await repository.enqueue(message)
 
         self.assertEqual([call(message)], put_mock.call_args_list)
 
@@ -34,15 +34,15 @@ class TestInMemoryBrokerPublisherRepository(unittest.IsolatedAsyncioTestCase):
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
 
-        get_mock = AsyncMock(side_effect=[messages[0], messages[1], InterruptedError])
-
         async with InMemoryBrokerPublisherRepository() as repository:
-            repository.queue.get = get_mock
+            await repository.enqueue(messages[0])
+            await repository.enqueue(messages[1])
 
             observed = list()
-            with self.assertRaises(InterruptedError):
-                async for message in repository:
-                    observed.append(message)
+            async for message in repository:
+                observed.append(message)
+                if len(observed) == len(messages):
+                    break
 
         self.assertEqual(messages, observed)
 

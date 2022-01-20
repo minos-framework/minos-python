@@ -40,20 +40,24 @@ class QueuedBrokerPublisher(BrokerPublisher):
         await super()._setup()
         await self.repository.setup()
         await self.impl.setup()
+        await self._start_task()
 
+    async def _destroy(self) -> None:
+        await self._stop_task()
+        await self.impl.destroy()
+        await self.repository.destroy()
+        await super()._destroy()
+
+    async def _start_task(self):
         if self._run_task is None:
             self._run_task = create_task(self._run())
 
-    async def _destroy(self) -> None:
+    async def _stop_task(self):
         if self._run_task is not None:
             self._run_task.cancel()
             with suppress(TimeoutError, CancelledError):
                 await wait_for(self._run_task, 0.5)
             self._run_task = None
-
-        await self.impl.destroy()
-        await self.repository.destroy()
-        await super()._destroy()
 
     async def _run(self) -> NoReturn:
         async for message in self.repository:
