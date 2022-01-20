@@ -14,10 +14,6 @@ from uuid import (
     uuid4,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
 from kafka import (
     KafkaAdminClient,
 )
@@ -28,14 +24,10 @@ from kafka.admin import (
 from minos.common import (
     MinosConfig,
     MinosPool,
-    NotProvidedException,
 )
 
 from ..messages import (
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
-)
-from ..publishers import (
-    BrokerPublisher,
 )
 from .brokers import (
     DynamicBroker,
@@ -51,7 +43,6 @@ class DynamicBrokerPool(MinosPool):
         self,
         config: MinosConfig,
         client: KafkaAdminClient,
-        publisher: BrokerPublisher,
         maxsize: int = 5,
         recycle: Optional[int] = 3600,
         *args,
@@ -60,36 +51,20 @@ class DynamicBrokerPool(MinosPool):
         super().__init__(maxsize=maxsize, recycle=recycle, *args, **kwargs)
         self.config = config
         self.client = client
-        self.publisher = publisher
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> DynamicBrokerPool:
         kwargs["client"] = KafkaAdminClient(bootstrap_servers=f"{config.broker.host}:{config.broker.port}")
-        kwargs["publisher"] = cls._get_publisher(**kwargs)
         return cls(config, **kwargs)
 
     async def _destroy(self) -> None:
         await super()._destroy()
         self.client.close()
 
-    # noinspection PyUnusedLocal
-    @staticmethod
-    @inject
-    def _get_publisher(
-        publisher: Optional[BrokerPublisher] = None,
-        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
-        **kwargs,
-    ) -> BrokerPublisher:
-        if publisher is None:
-            publisher = broker_publisher
-        if publisher is None or isinstance(publisher, Provide):
-            raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
-        return publisher
-
     async def _create_instance(self) -> DynamicBroker:
         topic = str(uuid4()).replace("-", "")
         await self._create_reply_topic(topic)
-        instance = DynamicBroker.from_config(self.config, topic=topic, publisher=self.publisher)
+        instance = DynamicBroker.from_config(self.config, topic=topic)
         await instance.setup()
         return instance
 
