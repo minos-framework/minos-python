@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from asyncio import (
     Queue,
     create_task,
@@ -28,6 +29,8 @@ from ..dispatchers import (
 from ..subscribers import (
     BrokerSubscriber,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class BrokerHandler(MinosSetup):
@@ -73,14 +76,16 @@ class BrokerHandler(MinosSetup):
     async def _setup(self) -> None:
         await super()._setup()
         await self._dispatcher.setup()
-        await self._subscriber.setup()
 
         await self._create_consumers()
 
+        await self._subscriber.setup()
+
     async def _destroy(self) -> None:
+        await self._subscriber.destroy()
+
         await self._destroy_consumers()
 
-        await self._subscriber.destroy()
         await self._dispatcher.destroy()
         await super()._destroy()
 
@@ -111,6 +116,9 @@ class BrokerHandler(MinosSetup):
     async def _consume_one(self) -> None:
         message = await self._queue.get()
         try:
-            await self._dispatcher.dispatch(message)
+            try:
+                await self._dispatcher.dispatch(message)
+            except Exception as exc:
+                logger.warning(f"An exception was raised: {exc!r}")
         finally:
             self._queue.task_done()
