@@ -13,17 +13,21 @@ from asyncio import (
 from contextlib import (
     suppress,
 )
-from datetime import datetime
-from functools import total_ordering
+from functools import (
+    total_ordering,
+)
 from typing import (
+    Any,
     NoReturn,
-    Optional, Any,
+    Optional,
 )
 
 from aiopg import (
     Cursor,
 )
-from cached_property import cached_property
+from cached_property import (
+    cached_property,
+)
 from psycopg2.sql import (
     SQL,
     Identifier,
@@ -31,7 +35,7 @@ from psycopg2.sql import (
 
 from minos.common import (
     MinosConfig,
-    PostgreSqlMinosDatabase, current_datetime,
+    PostgreSqlMinosDatabase,
 )
 
 from .....utils import (
@@ -49,6 +53,7 @@ logger = logging.getLogger(__name__)
 
 class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSqlMinosDatabase):
     """TODO"""
+
     _queue: PriorityQueue[PostgreSqlBrokerSubscriberRepositoryEntry]
 
     def __init__(self, topics: set[str], records: int, retry: int, *args, **kwargs):
@@ -78,7 +83,7 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
         await super()._destroy()
 
     async def _create_table(self) -> None:
-        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("consumer_queue"))
+        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("broker_subscriber_queue"))
 
     async def _start_run(self):
         if self._run_task is None:
@@ -94,7 +99,7 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
     async def _flush_queue(self):
         while not self._queue.empty():
             entry = self._queue.get_nowait()
-            await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id,))
+            await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id_,))
             self._queue.task_done()
 
     async def enqueue(self, message: BrokerMessage) -> None:
@@ -105,7 +110,7 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
         """
         logger.info(f"Enqueueing {message!r} message...")
 
-        params = (message.topic, 0, message.avro_bytes)
+        params = (message.topic, message.avro_bytes)
         await self.submit_query_and_fetchone(_INSERT_QUERY, params)
         await self.submit_query(_NOTIFY_QUERY.format(Identifier(message.topic)))
 
@@ -120,9 +125,12 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
             try:
                 message = entry.data
             except (CancelledError, Exception) as exc:
-                await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id,))
-                raise exc
-            await self.submit_query(_DELETE_PROCESSED_QUERY, (entry.id,))
+                await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id_,))
+                if isinstance(exc, CancelledError):
+                    raise exc
+                return await self.dequeue()
+
+            await self.submit_query(_DELETE_PROCESSED_QUERY, (entry.id_,))
         finally:
             self._queue.task_done()
 
@@ -168,16 +176,14 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
     async def _dequeue_batch(self, cursor: Cursor) -> None:
         async with cursor.begin():
             # noinspection PyTypeChecker
-            await cursor.execute(
-                _SELECT_NOT_PROCESSED_QUERY, (self._retry, tuple(self._topics), self._records)
-            )
+            await cursor.execute(_SELECT_NOT_PROCESSED_QUERY, (self._retry, tuple(self._topics), self._records))
             result = await cursor.fetchall()
 
             if len(result):
                 entries = [PostgreSqlBrokerSubscriberRepositoryEntry(*row) for row in result]
 
                 # noinspection PyTypeChecker
-                await cursor.execute(_MARK_PROCESSING_QUERY, (tuple(e.id for e in entries),))
+                await cursor.execute(_MARK_PROCESSING_QUERY, (tuple(e.id_ for e in entries),))
 
                 for entry in entries:
                     await self._queue.put(entry)
@@ -187,30 +193,10 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
 class PostgreSqlBrokerSubscriberRepositoryEntry:
     """Handler Entry class."""
 
-    def __init__(
-        self,
-        id: int,
-        topic: str,
-        partition: int,
-        data_bytes: bytes,
-        retry: int = 0,
-        created_at: Optional[datetime] = None,
-        updated_at: Optional[datetime] = None,
-    ):
-        if created_at is None or updated_at is None:
-            now = current_datetime()
-            if created_at is None:
-                created_at = now
-            if updated_at is None:
-                updated_at = now
+    def __init__(self, id_: int, data_bytes: bytes):
 
-        self.id = id
-        self.topic = topic
-        self.partition = partition
+        self.id_ = id_
         self.data_bytes = data_bytes
-        self.retry = retry
-        self.created_at = created_at
-        self.updated_at = updated_at
 
     @cached_property
     def data(self) -> BrokerMessage:
@@ -232,24 +218,18 @@ class PostgreSqlBrokerSubscriberRepositoryEntry:
 
     def __iter__(self):
         yield from (
-            self.id,
-            self.topic,
-            self.partition,
+            self.id_,
             self.data_bytes,
-            self.retry,
-            self.created_at,
-            self.updated_at,
         )
 
     def __repr__(self):
-        return f"{type(self).__name__}({self.id!r}, {self.topic!r})"
+        return f"{type(self).__name__}({self.id_!r})"
 
 
 _CREATE_TABLE_QUERY = SQL(
-    "CREATE TABLE IF NOT EXISTS consumer_queue ("
+    "CREATE TABLE IF NOT EXISTS broker_subscriber_queue ("
     '"id" BIGSERIAL NOT NULL PRIMARY KEY, '
     '"topic" VARCHAR(255) NOT NULL, '
-    '"partition" INTEGER,'
     '"data" BYTEA NOT NULL, '
     '"retry" INTEGER NOT NULL DEFAULT 0,'
     '"processing" BOOL NOT NULL DEFAULT FALSE, '
@@ -257,31 +237,32 @@ _CREATE_TABLE_QUERY = SQL(
     '"updated_at" TIMESTAMPTZ NOT NULL DEFAULT NOW())'
 )
 
-_INSERT_QUERY = SQL("INSERT INTO consumer_queue (topic, partition, data) VALUES (%s, %s, %s) RETURNING id")
+_INSERT_QUERY = SQL("INSERT INTO broker_subscriber_queue (topic, data) VALUES (%s, %s) RETURNING id")
 
 _NOTIFY_QUERY = SQL("NOTIFY {}")
 
 # noinspection SqlDerivedTableAlias
 _COUNT_NOT_PROCESSED_QUERY = SQL(
     "SELECT COUNT(*) "
-    "FROM (SELECT id FROM consumer_queue WHERE NOT processing AND retry < %s AND topic IN %s FOR UPDATE SKIP LOCKED) s"
+    "FROM (SELECT id FROM broker_subscriber_queue WHERE "
+    "NOT processing AND retry < %s AND topic IN %s FOR UPDATE SKIP LOCKED) s"
 )
 
 _SELECT_NOT_PROCESSED_QUERY = SQL(
-    "SELECT id, topic, partition, data, retry, created_at, updated_at "
-    "FROM consumer_queue "
+    "SELECT id, data "
+    "FROM broker_subscriber_queue "
     "WHERE NOT processing AND retry < %s AND topic IN %s "
     "ORDER BY created_at "
     "LIMIT %s "
     "FOR UPDATE SKIP LOCKED"
 )
 
-_MARK_PROCESSING_QUERY = SQL("UPDATE consumer_queue SET processing = TRUE WHERE id IN %s")
+_MARK_PROCESSING_QUERY = SQL("UPDATE broker_subscriber_queue SET processing = TRUE WHERE id IN %s")
 
-_DELETE_PROCESSED_QUERY = SQL("DELETE FROM consumer_queue WHERE id = %s")
+_DELETE_PROCESSED_QUERY = SQL("DELETE FROM broker_subscriber_queue WHERE id = %s")
 
 _UPDATE_NOT_PROCESSED_QUERY = SQL(
-    "UPDATE consumer_queue SET processing = FALSE, retry = retry + 1, updated_at = NOW() WHERE id = %s"
+    "UPDATE broker_subscriber_queue SET processing = FALSE, retry = retry + 1, updated_at = NOW() WHERE id = %s"
 )
 
 _LISTEN_QUERY = SQL("LISTEN {}")

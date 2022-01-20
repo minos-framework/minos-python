@@ -22,7 +22,7 @@ class TestHandlerEntry(unittest.IsolatedAsyncioTestCase):
 
     def test_constructor(self):
         entry = BrokerHandlerEntry(1, "AddOrder", 0, self.data_bytes, 1)  # noqa
-        self.assertEqual(1, entry.id)
+        self.assertEqual(1, entry.id_)
         self.assertEqual("AddOrder", entry.topic)
         self.assertEqual(0, entry.partition)
         self.assertEqual(self.data_bytes, entry.data_bytes)
@@ -32,7 +32,7 @@ class TestHandlerEntry(unittest.IsolatedAsyncioTestCase):
         now = current_datetime()
 
         entry = BrokerHandlerEntry(1, "AddOrder", 0, self.data_bytes, 1, created_at=now, updated_at=now)  # noqa
-        self.assertEqual(1, entry.id)
+        self.assertEqual(1, entry.id_)
         self.assertEqual("AddOrder", entry.topic)
         self.assertEqual(0, entry.partition)
         self.assertEqual(self.data_bytes, entry.data_bytes)

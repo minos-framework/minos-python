@@ -1,8 +1,6 @@
 from asyncio import (
     CancelledError,
-    PriorityQueue,
     create_task,
-    gather,
 )
 from contextlib import (
     suppress,
