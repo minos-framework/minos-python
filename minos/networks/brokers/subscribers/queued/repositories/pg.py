@@ -177,16 +177,18 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
         async with cursor.begin():
             # noinspection PyTypeChecker
             await cursor.execute(_SELECT_NOT_PROCESSED_QUERY, (self._retry, tuple(self._topics), self._records))
-            result = await cursor.fetchall()
+            rows = await cursor.fetchall()
 
-            if len(result):
-                entries = [PostgreSqlBrokerSubscriberRepositoryEntry(*row) for row in result]
+            if not len(rows):
+                return
 
-                # noinspection PyTypeChecker
-                await cursor.execute(_MARK_PROCESSING_QUERY, (tuple(e.id_ for e in entries),))
+            entries = [PostgreSqlBrokerSubscriberRepositoryEntry(*row) for row in rows]
 
-                for entry in entries:
-                    await self._queue.put(entry)
+            # noinspection PyTypeChecker
+            await cursor.execute(_MARK_PROCESSING_QUERY, (tuple(e.id_ for e in entries),))
+
+            for entry in entries:
+                await self._queue.put(entry)
 
 
 @total_ordering
