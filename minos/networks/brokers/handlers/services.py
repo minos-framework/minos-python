@@ -63,6 +63,7 @@ class BrokerHandlerService(Service):
     @abstractmethod
     def _handler_cls() -> type[BrokerHandler]:
         """TODO"""
+        raise NotImplementedError
 
 
 class KafkaBrokerHandlerService(BrokerHandlerService):
