@@ -1,6 +1,8 @@
 from asyncio import (
     CancelledError,
+    TimeoutError,
     create_task,
+    wait_for,
 )
 from contextlib import (
     suppress,
@@ -45,8 +47,8 @@ class QueuedBrokerPublisher(BrokerPublisher):
     async def _destroy(self) -> None:
         if self._run_task is not None:
             self._run_task.cancel()
-            with suppress(CancelledError):
-                await self._run_task
+            with suppress(TimeoutError, CancelledError):
+                await wait_for(self._run_task, 0.5)
             self._run_task = None
 
         await self.impl.destroy()
