@@ -40,14 +40,12 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(publisher.client, AIOKafkaProducer)
 
     async def test_send(self):
-        publisher = KafkaBrokerPublisher.from_config(CONFIG_FILE_PATH)
-
         send_mock = AsyncMock()
-        publisher.client.send_and_wait = send_mock
-
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
 
-        await publisher.send(message)
+        async with KafkaBrokerPublisher.from_config(CONFIG_FILE_PATH) as publisher:
+            publisher.client.send_and_wait = send_mock
+            await publisher.send(message)
 
         self.assertEqual(1, send_mock.call_count)
         self.assertEqual("foo", send_mock.call_args.args[0])
