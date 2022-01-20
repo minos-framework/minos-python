@@ -179,8 +179,6 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
 
 
 class _Entry:
-    """TODO"""
-
     def __init__(self, id_: int, data_bytes: bytes):
         self.id_ = id_
         self.data_bytes = data_bytes

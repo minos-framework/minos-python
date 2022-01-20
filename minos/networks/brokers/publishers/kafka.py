@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 class KafkaBrokerPublisher(BrokerPublisher):
-    """TODO"""
+    """Kafka Broker Publisher class."""
 
     def __init__(self, *args, broker_host: str, broker_port: int, **kwargs):
         super().__init__(*args, **kwargs)
@@ -49,10 +49,10 @@ class KafkaBrokerPublisher(BrokerPublisher):
         await super()._destroy()
 
     async def send(self, message: BrokerMessage) -> None:
-        """TODO
+        """Send a message.
 
-        :param message: TODO
-        :return: TODO
+        :param message: The message to be sent.
+        :return: This method does not return anything.
         """
         logger.info(f"Producing {message!r} message...")
         await self.client.send_and_wait(message.topic, message.avro_bytes)

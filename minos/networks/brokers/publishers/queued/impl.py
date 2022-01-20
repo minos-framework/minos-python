@@ -64,5 +64,9 @@ class QueuedBrokerPublisher(BrokerPublisher):
             await self.impl.send(message)
 
     async def send(self, message: BrokerMessage) -> None:
-        """Send method."""
+        """Send a message.
+
+        :param message: The message to be sent.
+        :return: This method does not return anything.
+        """
         await self.repository.enqueue(message)
