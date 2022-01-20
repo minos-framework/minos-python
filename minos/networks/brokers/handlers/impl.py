@@ -34,7 +34,9 @@ from ..subscribers import (
 class BrokerHandler(MinosSetup):
     """TODO"""
 
-    def __init__(self, dispatcher: BrokerDispatcher, subscriber: BrokerSubscriber, *args, **kwargs):
+    def __init__(
+        self, dispatcher: BrokerDispatcher, subscriber: BrokerSubscriber, concurrency: int = 15, *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
 
         self._dispatcher = dispatcher
@@ -42,7 +44,7 @@ class BrokerHandler(MinosSetup):
 
         self._queue = PriorityQueue(maxsize=1)
         self._consumers = list()
-        self._consumer_concurrency = 15
+        self._concurrency = concurrency
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerHandler:
@@ -90,7 +92,7 @@ class BrokerHandler(MinosSetup):
             await self._queue.put(message)
 
     async def _create_consumers(self):
-        while len(self._consumers) < self._consumer_concurrency:
+        while len(self._consumers) < self._concurrency:
             self._consumers.append(create_task(self._consume()))
 
     async def _destroy_consumers(self):
