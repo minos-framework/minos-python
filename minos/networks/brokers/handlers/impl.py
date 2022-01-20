@@ -40,7 +40,7 @@ class BrokerHandler(MinosSetup):
         self._dispatcher = dispatcher
         self._subscriber = subscriber
 
-        self._queue = PriorityQueue()
+        self._queue = PriorityQueue(maxsize=1)
         self._consumers = list()
         self._consumer_concurrency = 15
 
@@ -86,7 +86,7 @@ class BrokerHandler(MinosSetup):
     async def run(self) -> NoReturn:
         """TODO"""
         async for message in self._subscriber:
-            await self._queue.join()
+            # await self._queue.join()
             await self._queue.put(message)
 
     async def _create_consumers(self):
