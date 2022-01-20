@@ -13,14 +13,17 @@ from asyncio import (
 from contextlib import (
     suppress,
 )
+from datetime import datetime
+from functools import total_ordering
 from typing import (
     NoReturn,
-    Optional,
+    Optional, Any,
 )
 
 from aiopg import (
     Cursor,
 )
+from cached_property import cached_property
 from psycopg2.sql import (
     SQL,
     Identifier,
@@ -28,20 +31,17 @@ from psycopg2.sql import (
 
 from minos.common import (
     MinosConfig,
-    PostgreSqlMinosDatabase,
+    PostgreSqlMinosDatabase, current_datetime,
 )
 
-from ......utils import (
+from .....utils import (
     consume_queue,
 )
-from .....messages import (
+from ....messages import (
     BrokerMessage,
 )
-from ..abc import (
+from .abc import (
     BrokerSubscriberRepository,
-)
-from .entries import (
-    PostgreSqlBrokerSubscriberRepositoryEntry,
 )
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,7 @@ logger = logging.getLogger(__name__)
 
 class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSqlMinosDatabase):
     """TODO"""
+    _queue: PriorityQueue[PostgreSqlBrokerSubscriberRepositoryEntry]
 
     def __init__(self, topics: set[str], records: int, retry: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -92,7 +93,7 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
 
     async def _flush_queue(self):
         while not self._queue.empty():
-            entry = await self._queue.get_nowait()
+            entry = self._queue.get_nowait()
             await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id,))
             self._queue.task_done()
 
@@ -180,6 +181,68 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
 
                 for entry in entries:
                     await self._queue.put(entry)
+
+
+@total_ordering
+class PostgreSqlBrokerSubscriberRepositoryEntry:
+    """Handler Entry class."""
+
+    def __init__(
+        self,
+        id: int,
+        topic: str,
+        partition: int,
+        data_bytes: bytes,
+        retry: int = 0,
+        created_at: Optional[datetime] = None,
+        updated_at: Optional[datetime] = None,
+    ):
+        if created_at is None or updated_at is None:
+            now = current_datetime()
+            if created_at is None:
+                created_at = now
+            if updated_at is None:
+                updated_at = now
+
+        self.id = id
+        self.topic = topic
+        self.partition = partition
+        self.data_bytes = data_bytes
+        self.retry = retry
+        self.created_at = created_at
+        self.updated_at = updated_at
+
+    @cached_property
+    def data(self) -> BrokerMessage:
+        """Get the data.
+
+        :return: A ``Model`` inherited instance.
+        """
+        return BrokerMessage.from_avro_bytes(self.data_bytes)
+
+    def __lt__(self, other: Any) -> bool:
+        # noinspection PyBroadException
+        try:
+            return isinstance(other, type(self)) and self.data < other.data
+        except Exception:
+            return False
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, type(self)) and tuple(self) == tuple(other)
+
+    def __iter__(self):
+        yield from (
+            self.id,
+            self.topic,
+            self.partition,
+            self.data_bytes,
+            self.retry,
+            self.created_at,
+            self.updated_at,
+        )
+
+    def __repr__(self):
+        return f"{type(self).__name__}({self.id!r}, {self.topic!r})"
 
 
 _CREATE_TABLE_QUERY = SQL(
