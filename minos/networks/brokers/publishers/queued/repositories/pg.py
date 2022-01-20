@@ -55,7 +55,7 @@ logger = logging.getLogger(__name__)
 class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlMinosDatabase):
     """PostgreSql Broker Publisher Repository class."""
 
-    _queue: PriorityQueue[PostgreSqlBrokerPublisherRepositoryEntry]
+    _queue: PriorityQueue[_Entry]
 
     def __init__(self, *args, retry: int, records: int, **kwargs):
         super().__init__(*args, **kwargs)
@@ -163,17 +163,17 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
             if not len(rows):
                 return
 
-            entries = [PostgreSqlBrokerPublisherRepositoryEntry(*row) for row in rows]
+            entries = [_Entry(*row) for row in rows]
 
             # noinspection PyTypeChecker
-            await cursor.execute(_MARK_PROCESSING_QUERY, (tuple(e.id_ for e in entries),))
+            await cursor.execute(_MARK_PROCESSING_QUERY, (tuple(entry.id_ for entry in entries),))
 
             for entry in entries:
                 await self._queue.put(entry)
 
 
 @total_ordering
-class PostgreSqlBrokerPublisherRepositoryEntry:
+class _Entry:
     """TODO"""
 
     def __init__(self, id_: int, data_bytes: bytes):
