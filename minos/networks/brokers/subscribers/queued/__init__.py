@@ -4,4 +4,5 @@ from .impl import (
 from .repositories import (
     BrokerSubscriberRepository,
     InMemoryBrokerSubscriberRepository,
+    PostgreSqlBrokerSubscriberRepository,
 )

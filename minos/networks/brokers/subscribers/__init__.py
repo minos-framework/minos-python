@@ -3,6 +3,7 @@ from .abc import (
 )
 from .compositions import (
     InMemoryQueuedKafkaBrokerSubscriber,
+    PostgreSqlQueuedKafkaBrokerSubscriber,
 )
 from .kafka import (
     KafkaBrokerSubscriber,
@@ -13,5 +14,6 @@ from .memory import (
 from .queued import (
     BrokerSubscriberRepository,
     InMemoryBrokerSubscriberRepository,
+    PostgreSqlBrokerSubscriberRepository,
     QueuedBrokerSubscriber,
 )

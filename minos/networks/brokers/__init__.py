@@ -39,5 +39,7 @@ from .subscribers import (
     InMemoryBrokerSubscriberRepository,
     InMemoryQueuedKafkaBrokerSubscriber,
     KafkaBrokerSubscriber,
+    PostgreSqlBrokerSubscriberRepository,
+    PostgreSqlQueuedKafkaBrokerSubscriber,
     QueuedBrokerSubscriber,
 )
