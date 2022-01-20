@@ -11,14 +11,8 @@ from asyncio import (
     create_task,
     wait_for,
 )
-from collections.abc import (
-    Iterator,
-)
 from contextlib import (
     suppress,
-)
-from functools import (
-    total_ordering,
 )
 from typing import (
     Any,
@@ -91,10 +85,12 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
 
     async def _stop_run(self) -> None:
         if self._run_task is not None:
-            self._run_task.cancel()
-            with suppress(TimeoutError, CancelledError):
-                await wait_for(self._run_task, 0.5)
+            task = self._run_task
             self._run_task = None
+
+            task.cancel()
+            with suppress(TimeoutError, CancelledError):
+                await wait_for(task, 0.5)
 
     async def _flush_queue(self):
         while True:
@@ -115,35 +111,41 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
 
     async def dequeue(self) -> BrokerMessage:
         """Dequeue method."""
-        entry = await self._queue.get()
-
-        try:
-            try:
-                message = entry.data
-            except (CancelledError, Exception) as exc:
-                await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id_,))
-                if isinstance(exc, CancelledError):
-                    raise exc
-                return await self.dequeue()
-
-            await self.submit_query(_DELETE_PROCESSED_QUERY, (entry.id_,))
-        finally:
-            self._queue.task_done()
-
+        message = await self._dequeue()
         logger.info(f"Dequeuing {message!r} message...")
         return message
+
+    async def _dequeue(self) -> BrokerMessage:
+        while True:
+            entry = await self._queue.get()
+            try:
+                # noinspection PyBroadException
+                try:
+                    message = entry.data
+                except Exception as exc:
+                    logger.warning(
+                        f"There was a problem while trying to deserialize the entry with {entry.id_!r} id: {exc}"
+                    )
+                    await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id_,))
+                    continue
+
+                await self.submit_query(_DELETE_PROCESSED_QUERY, (entry.id_,))
+                return message
+            finally:
+                self._queue.task_done()
 
     async def _run(self, max_wait: Optional[float] = 60.0) -> None:
         async with self.cursor() as cursor:
             # noinspection PyTypeChecker
             await cursor.execute(_LISTEN_QUERY)
             try:
-                while True:
+                while self._run_task is not None:
                     await self._wait_for_entries(cursor, max_wait)
                     await self._dequeue_batch(cursor)
             finally:
-                # noinspection PyTypeChecker
-                await cursor.execute(_UNLISTEN_QUERY)
+                if not cursor.closed:
+                    # noinspection PyTypeChecker
+                    await cursor.execute(_UNLISTEN_QUERY)
 
     async def _wait_for_entries(self, cursor: Cursor, max_wait: Optional[float]) -> None:
         while True:
@@ -176,7 +178,6 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
                 await self._queue.put(entry)
 
 
-@total_ordering
 class _Entry:
     """TODO"""
 
@@ -198,18 +199,6 @@ class _Entry:
             return isinstance(other, type(self)) and self.data < other.data
         except Exception:
             return False
-
-    def __eq__(self, other: Any) -> bool:
-        return isinstance(other, type(self)) and tuple(self) == tuple(other)
-
-    def __iter__(self) -> Iterator[Any]:
-        yield from (
-            self.id_,
-            self.data_bytes,
-        )
-
-    def __repr__(self):
-        return f"{type(self).__name__}({self.id_!r})"
 
 
 _CREATE_TABLE_QUERY = SQL(

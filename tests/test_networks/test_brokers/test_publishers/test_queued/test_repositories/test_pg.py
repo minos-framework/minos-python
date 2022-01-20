@@ -1,4 +1,7 @@
 import unittest
+from asyncio import (
+    sleep,
+)
 from unittest.mock import (
     AsyncMock,
     patch,
@@ -29,6 +32,7 @@ class TestPostgreSqlBrokerPublisherRepository(PostgresAsyncTestCase):
 
         async with PostgreSqlBrokerPublisherRepository.from_config(self.config) as repository:
             await repository.enqueue(message)
+            await sleep(0.5)  # To give time to consume the message from db.
 
     async def test_iter(self):
         messages = [
@@ -58,11 +62,11 @@ class TestPostgreSqlBrokerPublisherRepository(PostgresAsyncTestCase):
             "aiopg.Cursor.fetchall",
             return_value=[[1, messages[0].avro_bytes], [2, bytes()], [3, messages[1].avro_bytes]],
         ):
-            repository = PostgreSqlBrokerPublisherRepository.from_config(self.config)
-            repository._get_count = AsyncMock(side_effect=[3, 0])
+            async with PostgreSqlBrokerPublisherRepository.from_config(self.config) as repository:
+                repository._get_count = AsyncMock(side_effect=[3, 0])
 
-            async with repository:
-                observed = [await repository.dequeue(), await repository.dequeue()]
+                async with repository:
+                    observed = [await repository.dequeue(), await repository.dequeue()]
 
         self.assertEqual(messages, observed)
 
@@ -72,13 +76,34 @@ class TestPostgreSqlBrokerPublisherRepository(PostgresAsyncTestCase):
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
         async with PostgreSqlBrokerPublisherRepository.from_config(self.config) as repository:
-
             await repository.enqueue(messages[0])
             await repository.enqueue(messages[1])
 
             observed = [await repository.dequeue(), await repository.dequeue()]
 
         self.assertEqual(messages, observed)
+
+    async def test_run_with_order(self):
+        unsorted = [
+            BrokerMessageV1("foo", BrokerMessageV1Payload(4)),
+            BrokerMessageV1("foo", BrokerMessageV1Payload(2)),
+            BrokerMessageV1("foo", BrokerMessageV1Payload(3)),
+            BrokerMessageV1("foo", BrokerMessageV1Payload(1)),
+        ]
+
+        async with PostgreSqlBrokerPublisherRepository.from_config(self.config) as repository:
+
+            for message in unsorted:
+                await repository.enqueue(message)
+
+            await sleep(0.5)
+            observed = list()
+            for _ in range(len(unsorted)):
+                observed.append(await repository.dequeue())
+
+        expected = [unsorted[3], unsorted[1], unsorted[2], unsorted[0]]
+
+        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":

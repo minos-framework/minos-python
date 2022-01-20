@@ -83,7 +83,7 @@ class TestQueuedBrokerPublisher(unittest.IsolatedAsyncioTestCase):
             await publisher.send(messages[0])
             await publisher.send(messages[1])
 
-            await sleep(0.5)
+            await sleep(0.5)  # To give time to consume the message
 
         self.assertEqual([call(messages[0]), call(messages[1])], impl_send_mock.call_args_list)
 
