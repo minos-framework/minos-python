@@ -59,8 +59,8 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
 
     def __init__(self, *args, retry: int, records: int, **kwargs):
         super().__init__(*args, **kwargs)
-        self.retry = retry
-        self.records = records
+        self._retry = retry
+        self._records = records
 
         self._queue = PriorityQueue(maxsize=records)
 
@@ -95,6 +95,12 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
                 await wait_for(self._run_task, 0.5)
             self._run_task = None
 
+    async def _flush_queue(self):
+        while not self._queue.empty():
+            entry = self._queue.get_nowait()
+            await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id_,))
+            self._queue.task_done()
+
     async def enqueue(self, message: BrokerMessage) -> None:
         """Enqueue method."""
         logger.info(f"Enqueuing {message!r} message...")
@@ -102,12 +108,6 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
         params = (message.topic, message.avro_bytes)
         await self.submit_query_and_fetchone(_INSERT_QUERY, params)
         await self.submit_query(_NOTIFY_QUERY)
-
-    async def _flush_queue(self):
-        while not self._queue.empty():
-            entry = self._queue.get_nowait()
-            await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id_,))
-            self._queue.task_done()
 
     async def dequeue(self) -> BrokerMessage:
         """Dequeue method."""
@@ -147,17 +147,17 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
                 return
 
             with suppress(TimeoutError):
-                return await wait_for(consume_queue(cursor.connection.notifies, self.records), max_wait)
+                return await wait_for(consume_queue(cursor.connection.notifies, self._records), max_wait)
 
     async def _get_count(self, cursor) -> int:
-        await cursor.execute(_COUNT_NOT_PROCESSED_QUERY, (self.retry,))
+        await cursor.execute(_COUNT_NOT_PROCESSED_QUERY, (self._retry,))
         count = (await cursor.fetchone())[0]
         return count
 
     async def _dequeue_batch(self, cursor: Cursor) -> None:
         async with cursor.begin():
             # noinspection PyTypeChecker
-            await cursor.execute(_SELECT_NOT_PROCESSED_QUERY, (self.retry, self.records))
+            await cursor.execute(_SELECT_NOT_PROCESSED_QUERY, (self._retry, self._records))
             rows = await cursor.fetchall()
 
             if not len(rows):
