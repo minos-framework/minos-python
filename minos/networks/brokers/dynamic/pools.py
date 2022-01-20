@@ -10,16 +10,6 @@ from typing import (
     AsyncContextManager,
     Optional,
 )
-from uuid import (
-    uuid4,
-)
-
-from kafka import (
-    KafkaAdminClient,
-)
-from kafka.admin import (
-    NewTopic,
-)
 
 from minos.common import (
     MinosConfig,
@@ -39,46 +29,21 @@ logger = logging.getLogger(__name__)
 class DynamicBrokerPool(MinosPool):
     """Dynamic Broker Pool class."""
 
-    def __init__(
-        self,
-        config: MinosConfig,
-        client: KafkaAdminClient,
-        maxsize: int = 5,
-        recycle: Optional[int] = 3600,
-        *args,
-        **kwargs,
-    ):
+    def __init__(self, config: MinosConfig, maxsize: int = 5, recycle: Optional[int] = 3600, *args, **kwargs):
         super().__init__(maxsize=maxsize, recycle=recycle, *args, **kwargs)
         self.config = config
-        self.client = client
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> DynamicBrokerPool:
-        kwargs["client"] = KafkaAdminClient(bootstrap_servers=f"{config.broker.host}:{config.broker.port}")
         return cls(config, **kwargs)
 
-    async def _destroy(self) -> None:
-        await super()._destroy()
-        self.client.close()
-
     async def _create_instance(self) -> DynamicBroker:
-        topic = str(uuid4()).replace("-", "")
-        await self._create_reply_topic(topic)
-        instance = DynamicBroker.from_config(self.config, topic=topic)
+        instance = DynamicBroker.from_config(self.config)
         await instance.setup()
         return instance
 
     async def _destroy_instance(self, instance: DynamicBroker):
         await instance.destroy()
-        await self._delete_reply_topic(instance.topic)
-
-    async def _create_reply_topic(self, topic: str) -> None:
-        logger.info(f"Creating {topic!r} topic...")
-        self.client.create_topics([NewTopic(name=topic, num_partitions=1, replication_factor=1)])
-
-    async def _delete_reply_topic(self, topic: str) -> None:
-        logger.info(f"Deleting {topic!r} topic...")
-        self.client.delete_topics([topic])
 
     def acquire(self, *args, **kwargs) -> AsyncContextManager:
         """Acquire a new instance wrapped on an asynchronous context manager.

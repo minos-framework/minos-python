@@ -3,6 +3,9 @@ from __future__ import (
 )
 
 import logging
+from contextlib import (
+    suppress,
+)
 
 from aiokafka import (
     AIOKafkaConsumer,
@@ -11,8 +14,14 @@ from aiokafka import (
 from cached_property import (
     cached_property,
 )
+from kafka import (
+    KafkaAdminClient,
+)
+from kafka.admin import (
+    NewTopic,
+)
 from kafka.errors import (
-    KafkaError,
+    TopicAlreadyExistsError,
 )
 
 from minos.common import (
@@ -32,11 +41,15 @@ logger = logging.getLogger(__name__)
 class KafkaBrokerSubscriber(BrokerSubscriber):
     """TODO"""
 
-    def __init__(self, *args, broker_host: str, broker_port: int, group_id: str, **kwargs):
+    def __init__(
+        self, *args, broker_host: str, broker_port: int, group_id: str, remove_topics_on_destroy: bool = False, **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self.broker_host = broker_host
         self.broker_port = broker_port
         self.group_id = group_id
+
+        self.remove_topics_on_destroy = remove_topics_on_destroy
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> KafkaBrokerSubscriber:
@@ -46,14 +59,37 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
 
     async def _setup(self) -> None:
         await super()._setup()
+        for topic in self.topics:
+            self._create_topic(topic)
+
         await self.client.start()
 
     async def _destroy(self) -> None:
-        try:
-            await self.client.stop()
-        except KafkaError:  # pragma: no cover
-            pass
+        await self.client.stop()
+
+        if self.remove_topics_on_destroy:
+            for topic in self.topics:
+                self._delete_topic(topic)
+        self.admin_client.close()
+
         await super()._destroy()
+
+    def _create_topic(self, topic: str) -> None:
+        logger.info(f"Creating {topic!r} topic...")
+        with suppress(TopicAlreadyExistsError):
+            self.admin_client.create_topics([NewTopic(name=topic, num_partitions=1, replication_factor=1)])
+
+    def _delete_topic(self, topic: str) -> None:
+        logger.info(f"Deleting {topic!r} topic...")
+        self.admin_client.delete_topics([topic])
+
+    @cached_property
+    def admin_client(self):
+        """TODO
+
+        :return: TODO
+        """
+        return KafkaAdminClient(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
 
     async def receive(self) -> BrokerMessage:
         """TODO

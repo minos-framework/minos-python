@@ -13,6 +13,9 @@ from collections.abc import (
 from typing import (
     Optional,
 )
+from uuid import (
+    uuid4,
+)
 
 from dependency_injector.wiring import (
     Provide,
@@ -57,9 +60,12 @@ class DynamicBroker(MinosSetup):
             PostgreSqlQueuedKafkaBrokerSubscriber,
         )
 
+        if "topic" not in kwargs:
+            kwargs["topic"] = str(uuid4()).replace("-", "")
+
         kwargs["publisher"] = cls._get_publisher(**kwargs)
         kwargs["subscriber"] = PostgreSqlQueuedKafkaBrokerSubscriber.from_config(
-            config, topics={kwargs["topic"]}, group_id=kwargs["topic"]
+            config, topics={kwargs["topic"]}, group_id=kwargs["topic"], remove_topics_on_destroy=True,
         )
         # noinspection PyProtectedMember
         return cls(**kwargs)
