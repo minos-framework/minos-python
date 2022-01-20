@@ -13,9 +13,6 @@ from asyncio import (
 from contextlib import (
     suppress,
 )
-from functools import (
-    cached_property,
-)
 from typing import (
     NoReturn,
     Optional,
@@ -72,21 +69,32 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
     async def _setup(self) -> None:
         await super()._setup()
         await self._create_table()
+        await self._start_run()
+
+    async def _destroy(self) -> None:
+        await self._stop_run()
+        await self._flush_queue()
+        await super()._destroy()
+
+    async def _create_table(self) -> None:
+        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("consumer_queue"))
+
+    async def _start_run(self):
         if self._run_task is None:
             self._run_task = create_task(self._run())
 
-    async def _destroy(self) -> None:
-
+    async def _stop_run(self):
         if self._run_task is not None:
             self._run_task.cancel()
             with suppress(TimeoutError, CancelledError):
                 await wait_for(self._run_task, 0.5)
             self._run_task = None
 
-        await super()._destroy()
-
-    async def _create_table(self) -> None:
-        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("consumer_queue"))
+    async def _flush_queue(self):
+        while not self._queue.empty():
+            entry = await self._queue.get_nowait()
+            await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id,))
+            self._queue.task_done()
 
     async def enqueue(self, message: BrokerMessage) -> None:
         """TODO
@@ -111,9 +119,9 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
             try:
                 message = entry.data
             except (CancelledError, Exception) as exc:
-                await self.submit_query(self._queries["update_not_processed"], (entry.id,))
+                await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id,))
                 raise exc
-            await self.submit_query(self._queries["delete_processed"], (entry.id,))
+            await self.submit_query(_DELETE_PROCESSED_QUERY, (entry.id,))
         finally:
             self._queue.task_done()
 
@@ -158,29 +166,20 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
 
     async def _dequeue_batch(self, cursor: Cursor) -> None:
         async with cursor.begin():
+            # noinspection PyTypeChecker
             await cursor.execute(
-                self._queries["select_not_processed"], (self._retry, tuple(self._topics), self._records)
+                _SELECT_NOT_PROCESSED_QUERY, (self._retry, tuple(self._topics), self._records)
             )
             result = await cursor.fetchall()
 
             if len(result):
                 entries = [PostgreSqlBrokerSubscriberRepositoryEntry(*row) for row in result]
 
-                await cursor.execute(self._queries["mark_processing"], (tuple(e.id for e in entries),))
+                # noinspection PyTypeChecker
+                await cursor.execute(_MARK_PROCESSING_QUERY, (tuple(e.id for e in entries),))
 
                 for entry in entries:
                     await self._queue.put(entry)
-
-    @cached_property
-    def _queries(self) -> dict[str, str]:
-        # noinspection PyTypeChecker
-        return {
-            "count_not_processed": _COUNT_NOT_PROCESSED_QUERY,
-            "select_not_processed": _SELECT_NOT_PROCESSED_QUERY,
-            "mark_processing": _MARK_PROCESSING_QUERY,
-            "delete_processed": _DELETE_PROCESSED_QUERY,
-            "update_not_processed": _UPDATE_NOT_PROCESSED_QUERY,
-        }
 
 
 _CREATE_TABLE_QUERY = SQL(
