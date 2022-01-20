@@ -1,8 +1,14 @@
 import logging
-from asyncio import Queue
+from asyncio import (
+    Queue,
+)
 
-from ....messages import BrokerMessage
-from .abc import BrokerSubscriberRepository
+from ....messages import (
+    BrokerMessage,
+)
+from .abc import (
+    BrokerSubscriberRepository,
+)
 
 logger = logging.getLogger(__name__)
 

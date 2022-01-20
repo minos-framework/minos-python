@@ -10,8 +10,12 @@ from unittest.mock import (
 
 import aiopg
 
-from minos.common import NotProvidedException
-from minos.common.testing import PostgresAsyncTestCase
+from minos.common import (
+    NotProvidedException,
+)
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,

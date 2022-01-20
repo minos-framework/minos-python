@@ -1,13 +1,21 @@
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
 import logging
 from asyncio import (
     TimeoutError,
     wait_for,
 )
-from collections.abc import AsyncIterator
-from typing import Optional
-from uuid import uuid4
+from collections.abc import (
+    AsyncIterator,
+)
+from typing import (
+    Optional,
+)
+from uuid import (
+    uuid4,
+)
 
 from dependency_injector.wiring import (
     Provide,
@@ -20,10 +28,18 @@ from minos.common import (
     NotProvidedException,
 )
 
-from ...exceptions import MinosHandlerNotFoundEnoughEntriesException
-from ..messages import BrokerMessage
-from ..publishers import BrokerPublisher
-from ..subscribers import BrokerSubscriber
+from ...exceptions import (
+    MinosHandlerNotFoundEnoughEntriesException,
+)
+from ..messages import (
+    BrokerMessage,
+)
+from ..publishers import (
+    BrokerPublisher,
+)
+from ..subscribers import (
+    BrokerSubscriber,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +56,9 @@ class DynamicBroker(MinosSetup):
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> DynamicBroker:
-        from ..subscribers import PostgreSqlQueuedKafkaBrokerSubscriber
+        from ..subscribers import (
+            PostgreSqlQueuedKafkaBrokerSubscriber,
+        )
 
         if "topic" not in kwargs:
             kwargs["topic"] = str(uuid4()).replace("-", "")

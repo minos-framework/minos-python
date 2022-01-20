@@ -1,19 +1,27 @@
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
 from typing import (
     Any,
     Optional,
 )
-from uuid import UUID
+from uuid import (
+    UUID,
+)
 
-from cached_property import cached_property
+from cached_property import (
+    cached_property,
+)
 
 from ...requests import (
     Request,
     Response,
     ResponseException,
 )
-from ..messages import BrokerMessage
+from ..messages import (
+    BrokerMessage,
+)
 
 
 class BrokerRequest(Request):

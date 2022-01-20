@@ -1,18 +1,30 @@
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
 import logging
-from datetime import datetime
-from functools import total_ordering
+from datetime import (
+    datetime,
+)
+from functools import (
+    total_ordering,
+)
 from typing import (
     Any,
     Optional,
 )
 
-from cached_property import cached_property
+from cached_property import (
+    cached_property,
+)
 
-from minos.common import current_datetime
+from minos.common import (
+    current_datetime,
+)
 
-from .....messages import BrokerMessage
+from .....messages import (
+    BrokerMessage,
+)
 
 logger = logging.getLogger(__name__)
 

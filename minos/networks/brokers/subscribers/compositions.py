@@ -1,8 +1,14 @@
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
-from minos.common import MinosConfig
+from minos.common import (
+    MinosConfig,
+)
 
-from .kafka import KafkaBrokerSubscriber
+from .kafka import (
+    KafkaBrokerSubscriber,
+)
 from .queued import (
     InMemoryBrokerSubscriberRepository,
     PostgreSqlBrokerSubscriberRepository,

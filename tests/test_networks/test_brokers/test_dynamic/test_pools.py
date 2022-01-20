@@ -1,16 +1,24 @@
 import unittest
 
-from kafka import KafkaAdminClient
+from kafka import (
+    KafkaAdminClient,
+)
 
-from minos.common import NotProvidedException
-from minos.common.testing import PostgresAsyncTestCase
+from minos.common import (
+    NotProvidedException,
+)
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
 from minos.networks import (
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
     DynamicBroker,
     DynamicBrokerPool,
     KafkaBrokerPublisher,
 )
-from tests.utils import BASE_PATH
+from tests.utils import (
+    BASE_PATH,
+)
 
 
 @unittest.skip("FIXME!")

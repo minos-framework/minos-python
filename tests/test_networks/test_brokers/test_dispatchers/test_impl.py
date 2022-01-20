@@ -4,9 +4,13 @@ from unittest.mock import (
     MagicMock,
     call,
 )
-from uuid import uuid4
+from uuid import (
+    uuid4,
+)
 
-from minos.common.testing import PostgresAsyncTestCase
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_USER_CONTEXT_VAR,

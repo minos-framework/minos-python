@@ -1,15 +1,23 @@
 import unittest
-from collections import namedtuple
+from collections import (
+    namedtuple,
+)
 from unittest.mock import (
     AsyncMock,
     MagicMock,
     call,
 )
 
-from psycopg2.sql import SQL
+from psycopg2.sql import (
+    SQL,
+)
 
-from minos.common.testing import PostgresAsyncTestCase
-from tests.utils import BASE_PATH
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
+from tests.utils import (
+    BASE_PATH,
+)
 
 _ConsumerMessage = namedtuple("Message", ["topic", "partition", "value"])
 

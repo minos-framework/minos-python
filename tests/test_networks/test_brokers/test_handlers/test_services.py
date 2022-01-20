@@ -1,15 +1,23 @@
 import unittest
-from unittest.mock import AsyncMock
+from unittest.mock import (
+    AsyncMock,
+)
 
-from aiomisc import Service
+from aiomisc import (
+    Service,
+)
 
-from minos.common.testing import PostgresAsyncTestCase
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
 from minos.networks import (
     BrokerHandler,
     BrokerHandlerService,
     InMemoryBrokerPublisher,
 )
-from tests.utils import BASE_PATH
+from tests.utils import (
+    BASE_PATH,
+)
 
 
 class TestBrokerHandlerService(PostgresAsyncTestCase):

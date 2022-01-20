@@ -1,1 +1,3 @@
-from .impl import PostgreSqlBrokerSubscriberRepository
+from .impl import (
+    PostgreSqlBrokerSubscriberRepository,
+)

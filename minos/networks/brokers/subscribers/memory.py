@@ -1,5 +1,9 @@
-from ..messages import BrokerMessage
-from .abc import BrokerSubscriber
+from ..messages import (
+    BrokerMessage,
+)
+from .abc import (
+    BrokerSubscriber,
+)
 
 
 class InMemoryBrokerSubscriber(BrokerSubscriber):

@@ -1,9 +1,15 @@
 import logging
 
-from aiomisc import Service
-from cached_property import cached_property
+from aiomisc import (
+    Service,
+)
+from cached_property import (
+    cached_property,
+)
 
-from .impl import BrokerHandler
+from .impl import (
+    BrokerHandler,
+)
 
 logger = logging.getLogger(__name__)
 
