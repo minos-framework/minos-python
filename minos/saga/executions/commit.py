@@ -1,19 +1,25 @@
 import logging
-from asyncio import gather
-from uuid import UUID
+from asyncio import (
+    gather,
+)
+from uuid import (
+    UUID,
+)
 
-from cached_property import cached_property
+from cached_property import (
+    cached_property,
+)
 from dependency_injector.wiring import (
     Provide,
     inject,
 )
 
 from minos.networks import (
+    Broker,
     BrokerMessageV1,
     BrokerMessageV1Payload,
-    BrokerPublisher,
-    Broker,
     BrokerPool,
+    BrokerPublisher,
 )
 
 from .steps import (
