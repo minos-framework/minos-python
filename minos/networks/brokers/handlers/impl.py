@@ -88,7 +88,6 @@ class BrokerHandler(MinosSetup):
     async def run(self) -> NoReturn:
         """TODO"""
         async for message in self._subscriber:
-            # await self._queue.join()
             await self._queue.put(message)
 
     async def _create_consumers(self):
@@ -96,6 +95,7 @@ class BrokerHandler(MinosSetup):
             self._consumers.append(create_task(self._consume()))
 
     async def _destroy_consumers(self):
+        await self._queue.join()
         for consumer in self._consumers:
             consumer.cancel()
         await gather(*self._consumers, return_exceptions=True)
