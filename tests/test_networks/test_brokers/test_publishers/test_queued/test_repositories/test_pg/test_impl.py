@@ -1,10 +1,6 @@
 import unittest
-from asyncio import (
-    sleep,
-)
 from unittest.mock import (
     AsyncMock,
-    call,
     patch,
 )
 
@@ -57,40 +53,32 @@ class TestPostgreSqlBrokerPublisherRepository(PostgresAsyncTestCase):
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
-        put_mock = AsyncMock()
 
         with patch(
             "aiopg.Cursor.fetchall",
-            return_value=[
-                [None, None, messages[0].avro_bytes],
-                [None, None, bytes()],
-                [None, None, messages[1].avro_bytes],
-            ],
+            return_value=[[1, messages[0].avro_bytes], [2, bytes()], [3, messages[1].avro_bytes]],
         ):
             repository = PostgreSqlBrokerPublisherRepository.from_config(self.config)
-            repository._queue.put = put_mock
             repository._get_count = AsyncMock(side_effect=[3, 0])
 
             async with repository:
-                await sleep(0.5)
+                observed = [await repository.dequeue(), await repository.dequeue()]
 
-        self.assertEqual([call(messages[0]), call(messages[1])], put_mock.call_args_list)
+        self.assertEqual(messages, observed)
 
     async def test_run_with_notify(self):
         messages = [
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
-        put_mock = AsyncMock()
         async with PostgreSqlBrokerPublisherRepository.from_config(self.config) as repository:
-            repository._queue.put = put_mock
 
             await repository.enqueue(messages[0])
             await repository.enqueue(messages[1])
 
-            await sleep(0.5)
+            observed = [await repository.dequeue(), await repository.dequeue()]
 
-        self.assertEqual([call(messages[0]), call(messages[1])], put_mock.call_args_list)
+        self.assertEqual(messages, observed)
 
 
 if __name__ == "__main__":
