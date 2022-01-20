@@ -5,23 +5,30 @@ from __future__ import (
 import logging
 from asyncio import (
     CancelledError,
-    Queue,
+    PriorityQueue,
     TimeoutError,
     create_task,
     wait_for,
+)
+from collections.abc import (
+    Iterator,
 )
 from contextlib import (
     suppress,
 )
 from functools import (
-    cached_property,
+    total_ordering,
 )
 from typing import (
+    Any,
     Optional,
 )
 
 from aiopg import (
     Cursor,
+)
+from cached_property import (
+    cached_property,
 )
 from psycopg2.sql import (
     SQL,
@@ -48,12 +55,14 @@ logger = logging.getLogger(__name__)
 class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlMinosDatabase):
     """PostgreSql Broker Publisher Repository class."""
 
+    _queue: PriorityQueue[PostgreSqlBrokerPublisherRepositoryEntry]
+
     def __init__(self, *args, retry: int, records: int, **kwargs):
         super().__init__(*args, **kwargs)
         self.retry = retry
         self.records = records
 
-        self._queue = Queue(maxsize=records)
+        self._queue = PriorityQueue(maxsize=records)
 
         self._run_task = None
 
@@ -65,45 +74,72 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
     async def _setup(self) -> None:
         await super()._setup()
         await self._create_broker_table()
+        await self._start_run()
+
+    async def _destroy(self) -> None:
+        await self._stop_run()
+        await self._flush_queue()
+        await super()._destroy()
+
+    async def _create_broker_table(self) -> None:
+        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("broker_publisher_queue"))
+
+    async def _start_run(self) -> None:
         if self._run_task is None:
             self._run_task = create_task(self._run())
 
-    async def _destroy(self) -> None:
+    async def _stop_run(self) -> None:
         if self._run_task is not None:
             self._run_task.cancel()
             with suppress(TimeoutError, CancelledError):
                 await wait_for(self._run_task, 0.5)
             self._run_task = None
 
-        await super()._destroy()
-
-    async def _create_broker_table(self) -> None:
-        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("producer_queue"))
-
     async def enqueue(self, message: BrokerMessage) -> None:
         """Enqueue method."""
         logger.info(f"Enqueuing {message!r} message...")
 
-        params = (message.topic, message.avro_bytes, message.strategy)
-        await self.submit_query_and_fetchone(_INSERT_ENTRY_QUERY, params)
+        params = (message.topic, message.avro_bytes)
+        await self.submit_query_and_fetchone(_INSERT_QUERY, params)
         await self.submit_query(_NOTIFY_QUERY)
+
+    async def _flush_queue(self):
+        while not self._queue.empty():
+            entry = self._queue.get_nowait()
+            await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id_,))
+            self._queue.task_done()
 
     async def dequeue(self) -> BrokerMessage:
         """Dequeue method."""
-        message = await self._queue.get()
+        entry = await self._queue.get()
+
+        try:
+            try:
+                message = entry.data
+            except (CancelledError, Exception) as exc:
+                await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id_,))
+                if isinstance(exc, CancelledError):
+                    raise exc
+                return await self.dequeue()
+
+            await self.submit_query(_DELETE_PROCESSED_QUERY, (entry.id_,))
+        finally:
+            self._queue.task_done()
+
         logger.info(f"Dequeuing {message!r} message...")
         return message
 
     async def _run(self, max_wait: Optional[float] = 60.0) -> None:
         async with self.cursor() as cursor:
-            await cursor.execute(self._queries["listen"])
+            # noinspection PyTypeChecker
+            await cursor.execute(_LISTEN_QUERY)
             try:
                 while True:
                     await self._wait_for_entries(cursor, max_wait)
                     await self._dequeue_batch(cursor)
             finally:
-                if not cursor.closed:
-                    await cursor.execute(self._queries["unlisten"])
+                # noinspection PyTypeChecker
+                await cursor.execute(_UNLISTEN_QUERY)
 
     async def _wait_for_entries(self, cursor: Cursor, max_wait: Optional[float]) -> None:
         while True:
@@ -114,80 +150,102 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
                 return await wait_for(consume_queue(cursor.connection.notifies, self.records), max_wait)
 
     async def _get_count(self, cursor) -> int:
-        await cursor.execute(self._queries["count_not_processed"], (self.retry,))
+        await cursor.execute(_COUNT_NOT_PROCESSED_QUERY, (self.retry,))
         count = (await cursor.fetchone())[0]
         return count
 
     async def _dequeue_batch(self, cursor: Cursor) -> None:
         async with cursor.begin():
-            await cursor.execute(self._queries["select_not_processed"], (self.retry, self.records))
+            # noinspection PyTypeChecker
+            await cursor.execute(_SELECT_NOT_PROCESSED_QUERY, (self.retry, self.records))
             rows = await cursor.fetchall()
-            for row in rows:
 
-                try:
-                    await self._dispatch_one(row)
-                    ok = True
-                except Exception as exc:
-                    logger.warning(f"There was an exception while trying to dequeue the row with {row[0]} id: {exc}")
-                    ok = False
+            if not len(rows):
+                return
 
-                if ok:
-                    await cursor.execute(self._queries["delete_processed"], (row[0],))
-                else:
-                    await cursor.execute(self._queries["update_not_processed"], (row[0],))
+            entries = [PostgreSqlBrokerPublisherRepositoryEntry(*row) for row in rows]
 
-    async def _dispatch_one(self, row: tuple) -> None:
-        bytes_ = row[2]
-        message = BrokerMessage.from_avro_bytes(bytes_)
-        await self._queue.put(message)
+            # noinspection PyTypeChecker
+            await cursor.execute(_MARK_PROCESSING_QUERY, (tuple(e.id_ for e in entries),))
+
+            for entry in entries:
+                await self._queue.put(entry)
+
+
+@total_ordering
+class PostgreSqlBrokerPublisherRepositoryEntry:
+    """TODO"""
+
+    def __init__(self, id_: int, data_bytes: bytes):
+        self.id_ = id_
+        self.data_bytes = data_bytes
 
     @cached_property
-    def _queries(self) -> dict[str, str]:
-        # noinspection PyTypeChecker
-        return {
-            "listen": _LISTEN_QUERY,
-            "unlisten": _UNLISTEN_QUERY,
-            "count_not_processed": _COUNT_NOT_PROCESSED_QUERY,
-            "select_not_processed": _SELECT_NOT_PROCESSED_QUERY,
-            "delete_processed": _DELETE_PROCESSED_QUERY,
-            "update_not_processed": _UPDATE_NOT_PROCESSED_QUERY,
-        }
+    def data(self) -> BrokerMessage:
+        """Get the data.
+
+        :return: A ``Model`` inherited instance.
+        """
+        return BrokerMessage.from_avro_bytes(self.data_bytes)
+
+    def __lt__(self, other: Any) -> bool:
+        # noinspection PyBroadException
+        try:
+            return isinstance(other, type(self)) and self.data < other.data
+        except Exception:
+            return False
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, type(self)) and tuple(self) == tuple(other)
+
+    def __iter__(self) -> Iterator[Any]:
+        yield from (
+            self.id_,
+            self.data_bytes,
+        )
+
+    def __repr__(self):
+        return f"{type(self).__name__}({self.id_!r})"
 
 
 _CREATE_TABLE_QUERY = SQL(
-    "CREATE TABLE IF NOT EXISTS producer_queue ("
+    "CREATE TABLE IF NOT EXISTS broker_publisher_queue ("
     "id BIGSERIAL NOT NULL PRIMARY KEY, "
     "topic VARCHAR(255) NOT NULL, "
     "data BYTEA NOT NULL, "
-    "strategy VARCHAR(255) NOT NULL, "
     "retry INTEGER NOT NULL DEFAULT 0, "
+    "processing BOOL NOT NULL DEFAULT FALSE, "
     "created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), "
     "updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())"
 )
 
-_INSERT_ENTRY_QUERY = SQL("INSERT INTO producer_queue (topic, data, strategy) VALUES (%s, %s, %s) RETURNING id")
+_INSERT_QUERY = SQL("INSERT INTO broker_publisher_queue (topic, data) VALUES (%s, %s) RETURNING id")
 
-_NOTIFY_QUERY = SQL("NOTIFY producer_queue")
+_NOTIFY_QUERY = SQL("NOTIFY broker_publisher_queue")
 
 # noinspection SqlDerivedTableAlias
 _COUNT_NOT_PROCESSED_QUERY = SQL(
-    "SELECT COUNT(*) FROM (SELECT id FROM producer_queue WHERE retry < %s FOR UPDATE SKIP LOCKED) s"
+    "SELECT COUNT(*) FROM (SELECT id FROM broker_publisher_queue WHERE retry < %s FOR UPDATE SKIP LOCKED) s"
 )
 
 _SELECT_NOT_PROCESSED_QUERY = SQL(
-    "SELECT * "
-    "FROM producer_queue "
-    "WHERE retry < %s "
+    "SELECT id, data "
+    "FROM broker_publisher_queue "
+    "WHERE NOT processing AND retry < %s "
     "ORDER BY created_at "
     "LIMIT %s "
     "FOR UPDATE "
     "SKIP LOCKED"
 )
 
-_DELETE_PROCESSED_QUERY = SQL("DELETE FROM producer_queue WHERE id = %s")
+_MARK_PROCESSING_QUERY = SQL("UPDATE broker_publisher_queue SET processing = TRUE WHERE id IN %s")
 
-_UPDATE_NOT_PROCESSED_QUERY = SQL("UPDATE producer_queue SET retry = retry + 1, updated_at = NOW() WHERE id = %s")
+_DELETE_PROCESSED_QUERY = SQL("DELETE FROM broker_publisher_queue WHERE id = %s")
 
-_LISTEN_QUERY = SQL("LISTEN producer_queue")
+_UPDATE_NOT_PROCESSED_QUERY = SQL(
+    "UPDATE broker_publisher_queue SET retry = retry + 1, updated_at = NOW() WHERE id = %s"
+)
 
-_UNLISTEN_QUERY = SQL("UNLISTEN producer_queue")
+_LISTEN_QUERY = SQL("LISTEN broker_publisher_queue")
+
+_UNLISTEN_QUERY = SQL("UNLISTEN broker_publisher_queue")
