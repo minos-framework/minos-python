@@ -11,6 +11,12 @@ from .dynamic import (
 from .handlers import (
     BrokerHandler,
     BrokerHandlerService,
+    InMemoryQueuedKafkaBrokerHandler,
+    InMemoryQueuedKafkaBrokerHandlerService,
+    KafkaBrokerHandler,
+    KafkaBrokerHandlerService,
+    PostgreSqlQueuedKafkaBrokerHandler,
+    PostgreSqlQueuedKafkaBrokerHandlerService,
 )
 from .messages import (
     REQUEST_HEADERS_CONTEXT_VAR,
