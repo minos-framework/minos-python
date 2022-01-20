@@ -25,8 +25,8 @@ from minos.common import (
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
-    DynamicBroker,
-    DynamicBrokerPool,
+    Broker,
+    BrokerPool,
 )
 
 from .extractors import (
@@ -43,7 +43,7 @@ class ModelRefResolver:
     # noinspection PyUnusedLocal
     @inject
     def __init__(
-        self, broker_pool: DynamicBrokerPool = Provide["broker_pool"], **kwargs,
+        self, broker_pool: BrokerPool = Provide["broker_pool"], **kwargs,
     ):
         self.broker_pool = broker_pool
 
@@ -75,6 +75,6 @@ class ModelRefResolver:
             return {model.uuid: model for model in await self._get_response(broker, len(references))}
 
     @staticmethod
-    async def _get_response(broker: DynamicBroker, count: int, **kwargs) -> Iterable[Model]:
+    async def _get_response(broker: Broker, count: int, **kwargs) -> Iterable[Model]:
         messages = [message async for message in broker.receive_many(count, **kwargs)]
         return chain(*(message.content for message in messages))

@@ -30,8 +30,8 @@ from minos.common import (
     SchemaEncoder,
 )
 from minos.networks import (
-    DynamicBroker,
-    DynamicBrokerPool,
+    Broker,
+    BrokerPool,
     BrokerMessageV1,
     BrokerMessageV1Payload,
 )
@@ -62,7 +62,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
     @inject
     def __init__(
-        self, data: Union[MT, UUID], *args, broker_pool: DynamicBrokerPool = Provide["broker_pool"], **kwargs,
+        self, data: Union[MT, UUID], *args, broker_pool: BrokerPool = Provide["broker_pool"], **kwargs,
     ):
         if not isinstance(data, UUID) and not hasattr(data, "uuid"):
             raise ValueError(f"data must be an {UUID!r} instance or have 'uuid' as one of its fields")
@@ -190,7 +190,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
             self.data = await self._get_response(broker)
 
     @staticmethod
-    async def _get_response(broker: DynamicBroker, **kwargs) -> MT:
+    async def _get_response(broker: Broker, **kwargs) -> MT:
         message = await broker.receive(**kwargs)
         return message.content
 
