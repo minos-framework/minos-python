@@ -20,7 +20,6 @@ from tests.utils import (
 )
 
 
-@unittest.skip("FIXME!")
 class TestBrokerHandlerService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 

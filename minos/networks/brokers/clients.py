@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import logging
-from abc import (
-    abstractmethod,
-)
 from asyncio import (
     TimeoutError,
     wait_for,
@@ -60,7 +57,7 @@ class BrokerClient(MinosSetup):
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerClient:
         from .subscribers import (
-            KafkaBrokerSubscriber,
+            InMemoryBrokerSubscriber,
         )
 
         if "topic" not in kwargs:
@@ -68,20 +65,11 @@ class BrokerClient(MinosSetup):
 
         kwargs["publisher"] = cls._get_publisher(**kwargs)
 
-        kwargs["subscriber"] = KafkaBrokerSubscriber.from_config(
+        kwargs["subscriber"] = InMemoryBrokerSubscriber.from_config(
             config, topics={kwargs["topic"]}, group_id=None, remove_topics_on_destroy=True,
         )
         # noinspection PyProtectedMember
         return cls(**kwargs)
-
-    # noinspection PyPropertyDefinition
-    @staticmethod
-    @abstractmethod
-    def _subscriber_cls() -> type[BrokerSubscriber]:
-        """TODO
-
-        :return: TODO
-        """
 
     # noinspection PyUnusedLocal
     @staticmethod

@@ -7,6 +7,7 @@ from contextvars import (
     Token,
 )
 from typing import (
+    Any,
     AsyncContextManager,
     Optional,
 )
@@ -29,16 +30,18 @@ logger = logging.getLogger(__name__)
 class BrokerClientPool(MinosPool):
     """Dynamic BrokerClient Pool class."""
 
-    def __init__(self, config: MinosConfig, maxsize: int = 5, recycle: Optional[int] = 3600, *args, **kwargs):
+    def __init__(
+        self, instance_kwargs: dict[str, Any], maxsize: int = 5, recycle: Optional[int] = 3600, *args, **kwargs
+    ):
         super().__init__(maxsize=maxsize, recycle=recycle, *args, **kwargs)
-        self.config = config
+        self._instance_kwargs = instance_kwargs
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerClientPool:
-        return cls(config, **kwargs)
+        return cls(kwargs | {"config": config})
 
     async def _create_instance(self) -> BrokerClient:
-        instance = BrokerClient.from_config(self.config)
+        instance = BrokerClient.from_config(**self._instance_kwargs)
         await instance.setup()
         return instance
 

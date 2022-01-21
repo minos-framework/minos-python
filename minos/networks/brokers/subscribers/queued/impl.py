@@ -30,12 +30,11 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
     repository: BrokerSubscriberRepository
 
     def __init__(self, impl: BrokerSubscriber, repository: BrokerSubscriberRepository, **kwargs):
-        if impl.topics != repository.topics:
+        super().__init__(kwargs.pop("topics", impl.topics), **kwargs)
+        if self.topics or impl.topics or self.topics != repository.topics:
             raise ValueError(
                 f"The topics from the impl and repository must be equal: {impl.topics!r} != {repository.topics!r}"
             )
-        kwargs.pop("topics", None)
-        super().__init__(impl.topics, **kwargs)
 
         self.impl = impl
         self.repository = repository
