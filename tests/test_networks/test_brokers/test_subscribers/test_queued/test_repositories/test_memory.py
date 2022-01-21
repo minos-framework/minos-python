@@ -13,6 +13,10 @@ from minos.networks import (
 
 
 class TestInMemoryBrokerSubscriberRepository(unittest.IsolatedAsyncioTestCase):
+
+    def setUp(self) -> None:
+        self.topics = {"foo", "bar"}
+
     def test_is_subclass(self):
         self.assertTrue(issubclass(InMemoryBrokerSubscriberRepository, BrokerSubscriberRepository))
 
@@ -20,7 +24,7 @@ class TestInMemoryBrokerSubscriberRepository(unittest.IsolatedAsyncioTestCase):
 
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
 
-        async with InMemoryBrokerSubscriberRepository() as repository:
+        async with InMemoryBrokerSubscriberRepository(self.topics) as repository:
             put_mock = AsyncMock(side_effect=repository._queue.put)
             repository._queue.put = put_mock
 
@@ -33,7 +37,7 @@ class TestInMemoryBrokerSubscriberRepository(unittest.IsolatedAsyncioTestCase):
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
-        repository = InMemoryBrokerSubscriberRepository()
+        repository = InMemoryBrokerSubscriberRepository(self.topics)
         await repository.setup()
         await repository.enqueue(messages[0])
         await repository.enqueue(messages[1])

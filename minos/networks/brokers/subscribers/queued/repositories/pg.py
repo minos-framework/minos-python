@@ -56,9 +56,8 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
 
     _queue: PriorityQueue[PostgreSqlBrokerSubscriberRepositoryEntry]
 
-    def __init__(self, topics: set[str], records: int, retry: int, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._topics = topics
+    def __init__(self, topics: set[str], records: int, retry: int, **kwargs):
+        super().__init__(topics, **kwargs)
 
         self._records = records
         self._retry = retry
@@ -149,12 +148,12 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
                 await self._unlisten_entries(cursor)
 
     async def _listen_entries(self, cursor: Cursor):
-        for topic in self._topics:
+        for topic in self.topics:
             # noinspection PyTypeChecker
             await cursor.execute(_LISTEN_QUERY.format(Identifier(topic)))
 
     async def _unlisten_entries(self, cursor: Cursor) -> None:
-        for topic in self._topics:
+        for topic in self.topics:
             # noinspection PyTypeChecker
             await cursor.execute(_UNLISTEN_QUERY.format(Identifier(topic)))
 
@@ -167,16 +166,16 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
                 return await wait_for(consume_queue(cursor.connection.notifies, self._records), max_wait)
 
     async def _get_count(self, cursor) -> int:
-        if not len(self._topics):
+        if not len(self.topics):
             return 0
-        await cursor.execute(_COUNT_NOT_PROCESSED_QUERY, (self._retry, tuple(self._topics)))
+        await cursor.execute(_COUNT_NOT_PROCESSED_QUERY, (self._retry, tuple(self.topics)))
         count = (await cursor.fetchone())[0]
         return count
 
     async def _dequeue_batch(self, cursor: Cursor) -> None:
         async with cursor.begin():
             # noinspection PyTypeChecker
-            await cursor.execute(_SELECT_NOT_PROCESSED_QUERY, (self._retry, tuple(self._topics), self._records))
+            await cursor.execute(_SELECT_NOT_PROCESSED_QUERY, (self._retry, tuple(self.topics), self._records))
             rows = await cursor.fetchall()
 
             if not len(rows):

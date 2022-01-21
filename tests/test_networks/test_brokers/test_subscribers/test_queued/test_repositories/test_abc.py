@@ -28,6 +28,9 @@ class _BrokerSubscriberRepository(BrokerSubscriberRepository):
 
 
 class TestBrokerSubscriberRepository(unittest.IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        self.topics = {"foo", "bar"}
+
     def test_abstract(self):
         self.assertTrue(issubclass(BrokerSubscriberRepository, (ABC, MinosSetup)))
         # noinspection PyUnresolvedReferences
@@ -42,7 +45,7 @@ class TestBrokerSubscriberRepository(unittest.IsolatedAsyncioTestCase):
         ]
         dequeue_mock = AsyncMock(side_effect=messages)
 
-        async with _BrokerSubscriberRepository() as repository:
+        async with _BrokerSubscriberRepository(self.topics) as repository:
             repository.dequeue = dequeue_mock
             observed = await repository.__aiter__().__anext__()
 
@@ -56,7 +59,7 @@ class TestBrokerSubscriberRepository(unittest.IsolatedAsyncioTestCase):
         ]
         dequeue_mock = AsyncMock(side_effect=messages)
 
-        repository = _BrokerSubscriberRepository()
+        repository = _BrokerSubscriberRepository(self.topics)
         repository.dequeue = dequeue_mock
         with self.assertRaises(StopAsyncIteration):
             await repository.__aiter__().__anext__()

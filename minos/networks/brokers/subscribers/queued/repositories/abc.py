@@ -5,6 +5,7 @@ from abc import (
 from collections.abc import (
     AsyncIterator,
 )
+from typing import Iterable
 
 from minos.common import (
     MinosSetup,
@@ -17,6 +18,18 @@ from ....messages import (
 
 class BrokerSubscriberRepository(ABC, MinosSetup):
     """Broker Subscriber Repository class."""
+
+    def __init__(self, topics: Iterable[str], **kwargs):
+        super().__init__(**kwargs)
+        self._topics = set(topics)
+
+    @property
+    def topics(self) -> set[str]:
+        """Topics getter.
+
+        :return: A list of string values.
+        """
+        return self._topics
 
     def __aiter__(self) -> AsyncIterator[BrokerMessage]:
         return self
