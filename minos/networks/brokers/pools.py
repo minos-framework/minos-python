@@ -3,7 +3,6 @@ from __future__ import (
 )
 
 import logging
-
 from contextvars import (
     Token,
 )

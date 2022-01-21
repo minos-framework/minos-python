@@ -62,6 +62,7 @@ class BrokerClient(MinosSetup):
         from .subscribers import (
             KafkaBrokerSubscriber,
         )
+
         if "topic" not in kwargs:
             kwargs["topic"] = str(uuid4()).replace("-", "")
 
