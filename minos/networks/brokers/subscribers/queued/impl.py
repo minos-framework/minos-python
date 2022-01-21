@@ -4,9 +4,6 @@ from asyncio import (
     create_task,
     wait_for,
 )
-from collections.abc import (
-    Iterable,
-)
 from contextlib import (
     suppress,
 )
@@ -38,6 +35,7 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
                 f"The topics from the impl and repository must be equal: {impl.topics!r} != {repository.topics!r}"
             )
 
+        kwargs.pop("topics")
         super().__init__(impl.topics, **kwargs)
 
         self.impl = impl

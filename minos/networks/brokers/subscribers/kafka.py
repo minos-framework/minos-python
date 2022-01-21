@@ -3,14 +3,15 @@ from __future__ import (
 )
 
 import logging
+from collections.abc import (
+    Iterable,
+)
 from contextlib import (
     suppress,
 )
 from typing import (
-    Iterable,
     Optional,
 )
-
 from aiokafka import (
     AIOKafkaConsumer,
 )
