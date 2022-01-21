@@ -1,3 +1,10 @@
+from asyncio import (
+    Queue,
+)
+from collections.abc import (
+    Iterable,
+)
+
 from ..messages import (
     BrokerMessage,
 )
@@ -7,11 +14,19 @@ from .abc import (
 
 
 class InMemoryBrokerSubscriber(BrokerSubscriber):
-    """TODO"""
+    """In Memory Broker Subscriber class."""
+
+    _queue: Queue[BrokerMessage]
+
+    def __init__(self, messages: Iterable[BrokerMessage], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._queue = Queue()
+        for message in messages:
+            self._queue.put_nowait(message)
 
     async def receive(self) -> BrokerMessage:
-        """TODO
+        """Receive a new message.
 
-        :return: TODO
+        :return: A ``BrokerMessage`` instance.
         """
-        raise NotImplementedError
+        return await self._queue.get()

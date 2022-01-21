@@ -4,6 +4,7 @@ from abc import (
 )
 from collections.abc import (
     AsyncIterator,
+    Iterable,
 )
 
 from minos.common import (
@@ -16,11 +17,11 @@ from ..messages import (
 
 
 class BrokerSubscriber(ABC, MinosSetup):
-    """TODO"""
+    """Broker Subscriber class."""
 
-    def __init__(self, topics: set[str], *args, **kwargs):
+    def __init__(self, topics: Iterable[str], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._topics = topics
+        self._topics = set(topics)
 
     @property
     def topics(self) -> set[str]:
@@ -40,7 +41,7 @@ class BrokerSubscriber(ABC, MinosSetup):
 
     @abstractmethod
     async def receive(self) -> BrokerMessage:
-        """TODO
+        """Receive a new message.
 
-        :return: TODO
+        :return: A ``BrokerMessage`` instance.
         """

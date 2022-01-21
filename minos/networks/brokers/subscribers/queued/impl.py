@@ -1,6 +1,8 @@
 from asyncio import (
     CancelledError,
+    TimeoutError,
     create_task,
+    wait_for,
 )
 from contextlib import (
     suppress,
@@ -22,7 +24,7 @@ from .repositories import (
 
 
 class QueuedBrokerSubscriber(BrokerSubscriber):
-    """TODO"""
+    """Queued Broker Subscriber class."""
 
     impl: BrokerSubscriber
     repository: BrokerSubscriberRepository
@@ -57,8 +59,8 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
     async def _stop_run(self):
         if self._run_task is not None:
             self._run_task.cancel()
-            with suppress(CancelledError):
-                await self._run_task
+            with suppress(TimeoutError, CancelledError):
+                await wait_for(self._run_task, 0.5)
             self._run_task = None
 
     async def _run(self) -> NoReturn:
@@ -66,8 +68,8 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
             await self.repository.enqueue(message)
 
     def receive(self) -> Awaitable[BrokerMessage]:
-        """TODO
+        """Receive a new message.
 
-        :return: TODO
+        :return: A ``BrokerMessage`` instance.
         """
         return self.repository.dequeue()

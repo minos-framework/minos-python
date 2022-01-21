@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 
 class KafkaBrokerSubscriber(BrokerSubscriber):
-    """TODO"""
+    """Kafka Broker Subscriber class."""
 
     def __init__(
         self, *args, broker_host: str, broker_port: int, group_id: str, remove_topics_on_destroy: bool = False, **kwargs
@@ -85,18 +85,17 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
 
     @cached_property
     def admin_client(self):
-        """TODO
+        """Get the kafka admin client.
 
-        :return: TODO
+        :return: An ``KafkaAdminClient`` instance.
         """
         return KafkaAdminClient(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
 
     async def receive(self) -> BrokerMessage:
-        """TODO
+        """Receive a new message.
 
-        :return: TODO
-
-        """
+         :return: A ``BrokerMessage`` instance.
+         """
         record = await self.client.getone()
         return self._dispatch_one(record)
 
@@ -114,7 +113,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
         :return: An ``AIOKafkaConsumer`` instance.
         """
         return AIOKafkaConsumer(
-            *self._topics,
+            *self.topics,
             bootstrap_servers=f"{self.broker_host}:{self.broker_port}",
             group_id=self.group_id,
             auto_offset_reset="earliest",
