@@ -31,6 +31,7 @@ from .brokers import (
     InMemoryQueuedKafkaBrokerHandlerService,
     InMemoryQueuedKafkaBrokerPool,
     InMemoryQueuedKafkaBrokerPublisher,
+    InMemoryQueuedKafkaBrokerSubscriber,
     KafkaBroker,
     KafkaBrokerHandler,
     KafkaBrokerHandlerService,

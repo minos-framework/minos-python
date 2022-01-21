@@ -17,7 +17,7 @@ from .queued import (
 
 
 class PostgreSqlQueuedKafkaBrokerSubscriber(QueuedBrokerSubscriber):
-    """TODO"""
+    """PostgreSql Queued Kafka Broker Subscriber class."""
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlQueuedKafkaBrokerSubscriber:
@@ -27,7 +27,7 @@ class PostgreSqlQueuedKafkaBrokerSubscriber(QueuedBrokerSubscriber):
 
 
 class InMemoryQueuedKafkaBrokerSubscriber(QueuedBrokerSubscriber):
-    """TODO"""
+    """In Memory Queued Kafka Broker Subscriber class."""
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> InMemoryQueuedKafkaBrokerSubscriber:
