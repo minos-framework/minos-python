@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 class BrokerHandler(MinosSetup):
-    """TODO"""
+    """Broker Handler class."""
 
     def __init__(
         self, dispatcher: BrokerDispatcher, subscriber: BrokerSubscriber, concurrency: int = 15, *args, **kwargs
@@ -90,7 +90,10 @@ class BrokerHandler(MinosSetup):
         await super()._destroy()
 
     async def run(self) -> NoReturn:
-        """TODO"""
+        """Run the message handling process.
+
+        :return: This method does not return anything.
+        """
         async for message in self._subscriber:
             await self._queue.put(message)
 
@@ -104,10 +107,6 @@ class BrokerHandler(MinosSetup):
             consumer.cancel()
         await gather(*self._consumers, return_exceptions=True)
         self._consumers = list()
-
-        while not self._queue.empty():
-            # FIXME
-            message = self._queue.get_nowait()  # noqa
 
     async def _consume(self) -> None:
         while True:
