@@ -12,6 +12,7 @@ from contextlib import (
 from typing import (
     Optional,
 )
+
 from aiokafka import (
     AIOKafkaConsumer,
 )

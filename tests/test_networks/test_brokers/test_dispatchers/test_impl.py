@@ -8,7 +8,9 @@ from uuid import (
     uuid4,
 )
 
-from minos.common import NotProvidedException
+from minos.common import (
+    NotProvidedException,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )

@@ -5,7 +5,9 @@ from abc import (
 from collections.abc import (
     AsyncIterator,
 )
-from typing import Iterable
+from typing import (
+    Iterable,
+)
 
 from minos.common import (
     MinosSetup,

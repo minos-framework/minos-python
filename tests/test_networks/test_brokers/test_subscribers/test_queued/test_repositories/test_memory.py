@@ -13,7 +13,6 @@ from minos.networks import (
 
 
 class TestInMemoryBrokerSubscriberRepository(unittest.IsolatedAsyncioTestCase):
-
     def setUp(self) -> None:
         self.topics = {"foo", "bar"}
 

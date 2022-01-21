@@ -34,8 +34,7 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
             raise ValueError(
                 f"The topics from the impl and repository must be equal: {impl.topics!r} != {repository.topics!r}"
             )
-
-        kwargs.pop("topics")
+        kwargs.pop("topics", None)
         super().__init__(impl.topics, **kwargs)
 
         self.impl = impl
