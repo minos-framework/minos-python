@@ -69,6 +69,23 @@ class BrokerPool(MinosPool, ABC):
         """
 
 
+class _ReplyTopicContextManager:
+    _token: Optional[Token]
+
+    def __init__(self, wrapper: AsyncContextManager[Broker]):
+        self.wrapper = wrapper
+        self._token = None
+
+    async def __aenter__(self) -> Broker:
+        broker = await self.wrapper.__aenter__()
+        self._token = REQUEST_REPLY_TOPIC_CONTEXT_VAR.set(broker.topic)
+        return broker
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        REQUEST_REPLY_TOPIC_CONTEXT_VAR.reset(self._token)
+        await self.wrapper.__aexit__(exc_type, exc_val, exc_tb)
+
+
 class KafkaBrokerPool(BrokerPool):
     """TODO"""
 
@@ -94,20 +111,3 @@ class PostgreSqlQueuedKafkaBrokerPool(BrokerPool):
     @staticmethod
     def _broker_cls() -> type[Broker]:
         return PostgreSqlQueuedKafkaBroker
-
-
-class _ReplyTopicContextManager:
-    _token: Optional[Token]
-
-    def __init__(self, wrapper: AsyncContextManager[Broker]):
-        self.wrapper = wrapper
-        self._token = None
-
-    async def __aenter__(self) -> Broker:
-        broker = await self.wrapper.__aenter__()
-        self._token = REQUEST_REPLY_TOPIC_CONTEXT_VAR.set(broker.topic)
-        return broker
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        REQUEST_REPLY_TOPIC_CONTEXT_VAR.reset(self._token)
-        await self.wrapper.__aexit__(exc_type, exc_val, exc_tb)
