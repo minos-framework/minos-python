@@ -40,15 +40,16 @@ class TestPostgreSqlBrokerPublisherRepository(PostgresAsyncTestCase):
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
 
-        async with PostgreSqlBrokerPublisherRepository.from_config(self.config) as repository:
-            await repository.enqueue(messages[0])
-            await repository.enqueue(messages[1])
+        repository = PostgreSqlBrokerPublisherRepository.from_config(self.config)
+        await repository.setup()
+        await repository.enqueue(messages[0])
+        await repository.enqueue(messages[1])
 
-            observed = list()
-            async for message in repository:
-                observed.append(message)
-                if len(messages) == len(observed):
-                    break
+        observed = list()
+        async for message in repository:
+            observed.append(message)
+            if len(messages) == len(observed):
+                await repository.destroy()
 
         self.assertEqual(messages, observed)
 

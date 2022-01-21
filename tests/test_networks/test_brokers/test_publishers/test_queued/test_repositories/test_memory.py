@@ -33,16 +33,16 @@ class TestInMemoryBrokerPublisherRepository(unittest.IsolatedAsyncioTestCase):
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
+        repository = InMemoryBrokerPublisherRepository()
+        await repository.setup()
+        await repository.enqueue(messages[0])
+        await repository.enqueue(messages[1])
 
-        async with InMemoryBrokerPublisherRepository() as repository:
-            await repository.enqueue(messages[0])
-            await repository.enqueue(messages[1])
-
-            observed = list()
-            async for message in repository:
-                observed.append(message)
-                if len(observed) == len(messages):
-                    break
+        observed = list()
+        async for message in repository:
+            observed.append(message)
+            if len(observed) == len(messages):
+                await repository.destroy()
 
         self.assertEqual(messages, observed)
 
