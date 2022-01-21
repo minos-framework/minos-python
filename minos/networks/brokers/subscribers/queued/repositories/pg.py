@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 
 
 class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSqlMinosDatabase):
-    """TODO"""
+    """PostgreSql Broker Subscriber Repository class."""
 
     _queue: PriorityQueue[PostgreSqlBrokerSubscriberRepositoryEntry]
 
@@ -103,10 +103,10 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
             self._queue.task_done()
 
     async def enqueue(self, message: BrokerMessage) -> None:
-        """TODO
+        """Enqueue a new message.
 
-        :param message: TODO
-        :return: TODO
+        :param message: The ``BrokerMessage`` to be enqueued.
+        :return: This method does not return anything.
         """
         logger.info(f"Enqueueing {message!r} message...")
 
@@ -115,9 +115,9 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
         await self.submit_query(_NOTIFY_QUERY.format(Identifier(message.topic)))
 
     async def dequeue(self) -> BrokerMessage:
-        """TODO
+        """Dequeue a message from the queue.
 
-        :return: TODO
+        :return: The dequeued ``BrokerMessage``.
         """
         entry = await self._queue.get()
 

@@ -14,22 +14,28 @@ logger = logging.getLogger(__name__)
 
 
 class InMemoryBrokerSubscriberRepository(BrokerSubscriberRepository):
-    """TODO"""
+    """In Memory Broker Subscriber Repository class."""
 
-    queue: Queue[BrokerMessage]
+    _queue: Queue[BrokerMessage]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.queue = Queue()
+        self._queue = Queue()
 
     async def enqueue(self, message: BrokerMessage) -> None:
-        """Enqueue method."""
+        """Enqueue a new message.
 
+        :param message: The ``BrokerMessage`` to be enqueued.
+        :return: This method does not return anything.
+        """
         logger.info(f"Enqueueing {message!r} message...")
-        await self.queue.put(message)
+        await self._queue.put(message)
 
     async def dequeue(self) -> BrokerMessage:
-        """Dequeue all method."""
-        message = await self.queue.get()
+        """Dequeue a message from the queue.
+
+        :return: The dequeued ``BrokerMessage``.
+        """
+        message = await self._queue.get()
         logger.info(f"Dequeuing {message!r} message...")
         return message
