@@ -6,10 +6,12 @@ import logging
 from contextlib import (
     suppress,
 )
+from typing import (
+    Optional,
+)
 
 from aiokafka import (
     AIOKafkaConsumer,
-    ConsumerRecord,
 )
 from cached_property import (
     cached_property,
@@ -42,7 +44,13 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
     """Kafka Broker Subscriber class."""
 
     def __init__(
-        self, *args, broker_host: str, broker_port: int, group_id: str, remove_topics_on_destroy: bool = False, **kwargs
+        self,
+        *args,
+        broker_host: str,
+        broker_port: int,
+        group_id: Optional[str] = None,
+        remove_topics_on_destroy: bool = False,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.broker_host = broker_host
@@ -97,10 +105,6 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
          :return: A ``BrokerMessage`` instance.
          """
         record = await self.client.getone()
-        return self._dispatch_one(record)
-
-    @staticmethod
-    def _dispatch_one(record: ConsumerRecord) -> BrokerMessage:
         bytes_ = record.value
         message = BrokerMessage.from_avro_bytes(bytes_)
         logger.info(f"Consuming {message!r} message...")

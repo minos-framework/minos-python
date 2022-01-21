@@ -67,7 +67,7 @@ class Broker(MinosSetup):
 
         kwargs["publisher"] = cls._get_publisher(**kwargs)
         kwargs["subscriber"] = cls._subscriber_cls().from_config(
-            config, topics={kwargs["topic"]}, group_id=kwargs["topic"], remove_topics_on_destroy=True,
+            config, topics={kwargs["topic"]}, group_id=None, remove_topics_on_destroy=True,
         )
         # noinspection PyProtectedMember
         return cls(**kwargs)
