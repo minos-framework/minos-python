@@ -3,10 +3,7 @@ from __future__ import (
 )
 
 import logging
-from abc import (
-    ABC,
-    abstractmethod,
-)
+
 from contextvars import (
     Token,
 )
@@ -22,9 +19,6 @@ from minos.common import (
 
 from .clients import (
     BrokerClient,
-    InMemoryQueuedKafkaBroker,
-    KafkaBroker,
-    PostgreSqlQueuedKafkaBroker,
 )
 from .messages import (
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
@@ -45,7 +39,7 @@ class BrokerClientPool(MinosPool):
         return cls(config, **kwargs)
 
     async def _create_instance(self) -> BrokerClient:
-        instance = self._broker_cls().from_config(self.config)
+        instance = BrokerClient.from_config(self.config)
         await instance.setup()
         return instance
 
@@ -58,15 +52,6 @@ class BrokerClientPool(MinosPool):
         :return: An asynchronous context manager.
         """
         return _ReplyTopicContextManager(super().acquire())
-
-    # noinspection PyPropertyDefinition
-    @staticmethod
-    @abstractmethod
-    def _broker_cls() -> type[BrokerClient]:
-        """TODO
-
-        :return: TODO
-        """
 
 
 class _ReplyTopicContextManager:
@@ -84,30 +69,3 @@ class _ReplyTopicContextManager:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         REQUEST_REPLY_TOPIC_CONTEXT_VAR.reset(self._token)
         await self.wrapper.__aexit__(exc_type, exc_val, exc_tb)
-
-
-class KafkaBrokerPool(BrokerClientPool):
-    """TODO"""
-
-    # noinspection PyPropertyDefinition
-    @staticmethod
-    def _broker_cls() -> type[BrokerClient]:
-        return KafkaBroker
-
-
-class InMemoryQueuedKafkaBrokerPool(BrokerClientPool):
-    """TODO"""
-
-    # noinspection PyPropertyDefinition
-    @staticmethod
-    def _broker_cls() -> type[BrokerClient]:
-        return InMemoryQueuedKafkaBroker
-
-
-class PostgreSqlQueuedKafkaBrokerPool(BrokerClientPool):
-    """TODO"""
-
-    # noinspection PyPropertyDefinition
-    @staticmethod
-    def _broker_cls() -> type[BrokerClient]:
-        return PostgreSqlQueuedKafkaBroker

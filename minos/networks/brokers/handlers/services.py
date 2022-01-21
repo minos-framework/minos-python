@@ -1,7 +1,4 @@
 import logging
-from abc import (
-    abstractmethod,
-)
 
 from aiomisc import (
     Service,
@@ -10,11 +7,6 @@ from cached_property import (
     cached_property,
 )
 
-from ..handlers import (
-    InMemoryQueuedKafkaBrokerHandler,
-    KafkaBrokerHandler,
-    PostgreSqlQueuedKafkaBrokerHandler,
-)
 from .impl import (
     BrokerHandler,
 )
@@ -57,34 +49,4 @@ class BrokerHandlerService(Service):
 
         :return: A ``Handler`` instance.
         """
-        return self._handler_cls().from_config(**self._init_kwargs)
-
-    @staticmethod
-    @abstractmethod
-    def _handler_cls() -> type[BrokerHandler]:
-        """TODO"""
-        raise NotImplementedError
-
-
-class KafkaBrokerHandlerService(BrokerHandlerService):
-    """TODO"""
-
-    @staticmethod
-    def _handler_cls() -> type[BrokerHandler]:
-        return KafkaBrokerHandler
-
-
-class InMemoryQueuedKafkaBrokerHandlerService(BrokerHandlerService):
-    """TODO"""
-
-    @staticmethod
-    def _handler_cls() -> type[BrokerHandler]:
-        return InMemoryQueuedKafkaBrokerHandler
-
-
-class PostgreSqlQueuedKafkaBrokerHandlerService(BrokerHandlerService):
-    """TODO"""
-
-    @staticmethod
-    def _handler_cls() -> type[BrokerHandler]:
-        return PostgreSqlQueuedKafkaBrokerHandler
+        return BrokerHandler.from_config(**self._init_kwargs)

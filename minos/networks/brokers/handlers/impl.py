@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import logging
-from abc import (
-    abstractmethod,
-)
 from asyncio import (
     Queue,
     create_task,
@@ -31,9 +28,6 @@ from ..dispatchers import (
 )
 from ..subscribers import (
     BrokerSubscriber,
-    InMemoryQueuedKafkaBrokerSubscriber,
-    KafkaBrokerSubscriber,
-    PostgreSqlQueuedKafkaBrokerSubscriber,
 )
 
 logger = logging.getLogger(__name__)
@@ -56,8 +50,12 @@ class BrokerHandler(MinosSetup):
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerHandler:
+        from ..subscribers import (
+            KafkaBrokerSubscriber,
+        )
+
         dispatcher = cls._get_dispatcher(config, **kwargs)
-        subscriber = cls._subscriber_cls().from_config(config, topics=set(dispatcher.actions.keys()))
+        subscriber = KafkaBrokerSubscriber.from_config(config, topics=set(dispatcher.actions.keys()))
 
         return cls(dispatcher, subscriber, **kwargs)
 
@@ -124,32 +122,3 @@ class BrokerHandler(MinosSetup):
                 logger.warning(f"An exception was raised: {exc!r}")
         finally:
             self._queue.task_done()
-
-    @staticmethod
-    @abstractmethod
-    def _subscriber_cls() -> type[BrokerSubscriber]:
-        """TODO"""
-
-
-class InMemoryQueuedKafkaBrokerHandler(BrokerHandler):
-    """TODO"""
-
-    @staticmethod
-    def _subscriber_cls() -> type[BrokerSubscriber]:
-        return InMemoryQueuedKafkaBrokerSubscriber
-
-
-class KafkaBrokerHandler(BrokerHandler):
-    """TODO"""
-
-    @staticmethod
-    def _subscriber_cls() -> type[BrokerSubscriber]:
-        return KafkaBrokerSubscriber
-
-
-class PostgreSqlQueuedKafkaBrokerHandler(BrokerHandler):
-    """TODO"""
-
-    @staticmethod
-    def _subscriber_cls() -> type[BrokerSubscriber]:
-        return PostgreSqlQueuedKafkaBrokerSubscriber

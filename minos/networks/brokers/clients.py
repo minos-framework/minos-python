@@ -42,9 +42,6 @@ from .publishers import (
 )
 from .subscribers import (
     BrokerSubscriber,
-    InMemoryQueuedKafkaBrokerSubscriber,
-    KafkaBrokerSubscriber,
-    PostgreSqlQueuedKafkaBrokerSubscriber,
 )
 
 logger = logging.getLogger(__name__)
@@ -62,11 +59,15 @@ class BrokerClient(MinosSetup):
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerClient:
+        from .subscribers import (
+            KafkaBrokerSubscriber,
+        )
         if "topic" not in kwargs:
             kwargs["topic"] = str(uuid4()).replace("-", "")
 
         kwargs["publisher"] = cls._get_publisher(**kwargs)
-        kwargs["subscriber"] = cls._subscriber_cls().from_config(
+
+        kwargs["subscriber"] = KafkaBrokerSubscriber.from_config(
             config, topics={kwargs["topic"]}, group_id=None, remove_topics_on_destroy=True,
         )
         # noinspection PyProtectedMember
@@ -149,27 +150,3 @@ class BrokerClient(MinosSetup):
                 break
 
         return result
-
-
-class KafkaBroker(Broker):
-    """TODO"""
-
-    @staticmethod
-    def _subscriber_cls() -> type[BrokerSubscriber]:
-        return KafkaBrokerSubscriber
-
-
-class InMemoryQueuedKafkaBroker(Broker):
-    """TODO"""
-
-    @staticmethod
-    def _subscriber_cls() -> type[BrokerSubscriber]:
-        return InMemoryQueuedKafkaBrokerSubscriber
-
-
-class PostgreSqlQueuedKafkaBroker(Broker):
-    """TODO"""
-
-    @staticmethod
-    def _subscriber_cls() -> type[BrokerSubscriber]:
-        return PostgreSqlQueuedKafkaBrokerSubscriber
