@@ -67,29 +67,31 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
 
     async def _setup(self) -> None:
         await super()._setup()
-        for topic in self.topics:
-            self._create_topic(topic)
-
+        self._create_topics()
         await self.client.start()
 
     async def _destroy(self) -> None:
         await self.client.stop()
-
-        if self.remove_topics_on_destroy:
-            for topic in self.topics:
-                self._delete_topic(topic)
+        self._delete_topics()
         self.admin_client.close()
-
         await super()._destroy()
 
-    def _create_topic(self, topic: str) -> None:
-        logger.info(f"Creating {topic!r} topic...")
-        with suppress(TopicAlreadyExistsError):
-            self.admin_client.create_topics([NewTopic(name=topic, num_partitions=1, replication_factor=1)])
+    def _create_topics(self) -> None:
+        logger.info(f"Creating {self.topics!r} topics...")
 
-    def _delete_topic(self, topic: str) -> None:
-        logger.info(f"Deleting {topic!r} topic...")
-        self.admin_client.delete_topics([topic])
+        new_topics = list()
+        for topic in self.topics:
+            new_topics.append(NewTopic(name=topic, num_partitions=1, replication_factor=1))
+
+        with suppress(TopicAlreadyExistsError):
+            self.admin_client.create_topics(new_topics)
+
+    def _delete_topics(self) -> None:
+        if not self.remove_topics_on_destroy:
+            return
+
+        logger.info(f"Deleting {self.topics!r} topics...")
+        self.admin_client.delete_topics(list(self.topics))
 
     @cached_property
     def admin_client(self):
