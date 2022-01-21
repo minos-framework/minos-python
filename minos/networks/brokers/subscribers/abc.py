@@ -19,8 +19,8 @@ from ..messages import (
 class BrokerSubscriber(ABC, MinosSetup):
     """Broker Subscriber class."""
 
-    def __init__(self, topics: Iterable[str], *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, topics: Iterable[str], **kwargs):
+        super().__init__(**kwargs)
         self._topics = set(topics)
 
     @property

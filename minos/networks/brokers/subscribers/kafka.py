@@ -7,6 +7,7 @@ from contextlib import (
     suppress,
 )
 from typing import (
+    Iterable,
     Optional,
 )
 
@@ -45,14 +46,14 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
 
     def __init__(
         self,
-        *args,
+        topics: Iterable[str],
         broker_host: str,
         broker_port: int,
         group_id: Optional[str] = None,
         remove_topics_on_destroy: bool = False,
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(topics, **kwargs)
         self.broker_host = broker_host
         self.broker_port = broker_port
         self.group_id = group_id

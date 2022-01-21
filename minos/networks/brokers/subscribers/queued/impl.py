@@ -4,6 +4,9 @@ from asyncio import (
     create_task,
     wait_for,
 )
+from collections.abc import (
+    Iterable,
+)
 from contextlib import (
     suppress,
 )
@@ -29,8 +32,8 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
     impl: BrokerSubscriber
     repository: BrokerSubscriberRepository
 
-    def __init__(self, impl: BrokerSubscriber, repository: BrokerSubscriberRepository, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, topics: Iterable[str], impl: BrokerSubscriber, repository: BrokerSubscriberRepository, **kwargs):
+        super().__init__(topics, **kwargs)
 
         if self.topics != impl.topics:
             raise Exception()
