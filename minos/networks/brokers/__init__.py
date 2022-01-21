@@ -1,5 +1,5 @@
 from .clients import (
-    Broker,
+    BrokerClient,
     InMemoryQueuedKafkaBroker,
     KafkaBroker,
     PostgreSqlQueuedKafkaBroker,
@@ -13,12 +13,6 @@ from .dispatchers import (
 from .handlers import (
     BrokerHandler,
     BrokerHandlerService,
-    InMemoryQueuedKafkaBrokerHandler,
-    InMemoryQueuedKafkaBrokerHandlerService,
-    KafkaBrokerHandler,
-    KafkaBrokerHandlerService,
-    PostgreSqlQueuedKafkaBrokerHandler,
-    PostgreSqlQueuedKafkaBrokerHandlerService,
 )
 from .messages import (
     REQUEST_HEADERS_CONTEXT_VAR,
@@ -30,7 +24,7 @@ from .messages import (
     BrokerMessageV1Strategy,
 )
 from .pools import (
-    BrokerPool,
+    BrokerClientPool,
     InMemoryQueuedKafkaBrokerPool,
     KafkaBrokerPool,
     PostgreSqlQueuedKafkaBrokerPool,

@@ -5,7 +5,8 @@ __version__ = "0.3.2"
 from .brokers import (
     REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
-    Broker,
+    BrokerClient,
+    BrokerClientPool,
     BrokerDispatcher,
     BrokerHandler,
     BrokerHandlerService,
@@ -14,7 +15,6 @@ from .brokers import (
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
     BrokerMessageV1Strategy,
-    BrokerPool,
     BrokerPublisher,
     BrokerPublisherRepository,
     BrokerRequest,

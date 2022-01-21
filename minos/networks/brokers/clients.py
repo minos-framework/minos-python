@@ -50,7 +50,7 @@ from .subscribers import (
 logger = logging.getLogger(__name__)
 
 
-class Broker(MinosSetup):
+class BrokerClient(MinosSetup):
     """Broker class."""
 
     def __init__(self, topic: str, publisher: BrokerPublisher, subscriber: BrokerSubscriber, **kwargs):
@@ -61,7 +61,7 @@ class Broker(MinosSetup):
         self.subscriber = subscriber
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> Broker:
+    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerClient:
         if "topic" not in kwargs:
             kwargs["topic"] = str(uuid4()).replace("-", "")
 
