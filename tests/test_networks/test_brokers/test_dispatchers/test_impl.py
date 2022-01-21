@@ -8,6 +8,7 @@ from uuid import (
     uuid4,
 )
 
+from minos.common import NotProvidedException
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -90,6 +91,10 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
         )
 
         self.assertEqual(self.publisher, self.dispatcher.publisher)
+
+    def test_from_config_raises(self):
+        with self.assertRaises(NotProvidedException):
+            BrokerDispatcher.from_config(self.config)
 
     async def test_actions(self):
         self.assertEqual(
