@@ -13,9 +13,6 @@ from asyncio import (
 from contextlib import (
     suppress,
 )
-from functools import (
-    total_ordering,
-)
 from typing import (
     Any,
     NoReturn,
@@ -54,7 +51,7 @@ logger = logging.getLogger(__name__)
 class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSqlMinosDatabase):
     """PostgreSql Broker Subscriber Repository class."""
 
-    _queue: PriorityQueue[PostgreSqlBrokerSubscriberRepositoryEntry]
+    _queue: PriorityQueue[_Entry]
 
     def __init__(self, topics: set[str], records: int, retry: int, **kwargs):
         super().__init__(topics, **kwargs)
@@ -118,24 +115,28 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
 
         :return: The dequeued ``BrokerMessage``.
         """
-        entry = await self._queue.get()
-
-        try:
-            try:
-                message = entry.data
-            except (CancelledError, Exception) as exc:
-                await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id_,))
-                if isinstance(exc, CancelledError):
-                    raise exc
-                return await self.dequeue()
-
-            await self.submit_query(_DELETE_PROCESSED_QUERY, (entry.id_,))
-        finally:
-            self._queue.task_done()
-
+        message = await self._dequeue()
         logger.info(f"Dequeuing {message!r} message...")
-
         return message
+
+    async def _dequeue(self) -> BrokerMessage:
+        while True:
+            entry = await self._queue.get()
+            try:
+                # noinspection PyBroadException
+                try:
+                    message = entry.data
+                except Exception as exc:
+                    logger.warning(
+                        f"There was a problem while trying to deserialize the entry with {entry.id_!r} id: {exc}"
+                    )
+                    await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id_,))
+                    continue
+
+                await self.submit_query(_DELETE_PROCESSED_QUERY, (entry.id_,))
+                return message
+            finally:
+                self._queue.task_done()
 
     async def _run(self, max_wait: Optional[float] = 60.0) -> NoReturn:
         async with self.cursor() as cursor:
@@ -166,8 +167,6 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
                 return await wait_for(consume_queue(cursor.connection.notifies, self._records), max_wait)
 
     async def _get_count(self, cursor) -> int:
-        if not len(self.topics):
-            return 0
         await cursor.execute(_COUNT_NOT_PROCESSED_QUERY, (self._retry, tuple(self.topics)))
         count = (await cursor.fetchone())[0]
         return count
@@ -181,7 +180,7 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
             if not len(rows):
                 return
 
-            entries = [PostgreSqlBrokerSubscriberRepositoryEntry(*row) for row in rows]
+            entries = [_Entry(*row) for row in rows]
 
             # noinspection PyTypeChecker
             await cursor.execute(_MARK_PROCESSING_QUERY, (tuple(e.id_ for e in entries),))
@@ -190,8 +189,7 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
                 await self._queue.put(entry)
 
 
-@total_ordering
-class PostgreSqlBrokerSubscriberRepositoryEntry:
+class _Entry:
     """Handler Entry class."""
 
     def __init__(self, id_: int, data_bytes: bytes):
@@ -213,18 +211,6 @@ class PostgreSqlBrokerSubscriberRepositoryEntry:
             return isinstance(other, type(self)) and self.data < other.data
         except Exception:
             return False
-
-    def __eq__(self, other: Any) -> bool:
-        return isinstance(other, type(self)) and tuple(self) == tuple(other)
-
-    def __iter__(self):
-        yield from (
-            self.id_,
-            self.data_bytes,
-        )
-
-    def __repr__(self):
-        return f"{type(self).__name__}({self.id_!r})"
 
 
 _CREATE_TABLE_QUERY = SQL(

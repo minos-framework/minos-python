@@ -23,7 +23,10 @@ class BrokerSubscriberRepository(ABC, MinosSetup):
 
     def __init__(self, topics: Iterable[str], **kwargs):
         super().__init__(**kwargs)
-        self._topics = set(topics)
+        topics = set(topics)
+        if not len(topics):
+            raise ValueError("The topics set must not be empty.")
+        self._topics = topics
 
     @property
     def topics(self) -> set[str]:

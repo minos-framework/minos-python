@@ -38,6 +38,14 @@ class TestBrokerSubscriberRepository(unittest.IsolatedAsyncioTestCase):
             {"enqueue", "dequeue"}, BrokerSubscriberRepository.__abstractmethods__,
         )
 
+    def test_topics(self):
+        repository = _BrokerSubscriberRepository(self.topics)
+        self.assertEqual(self.topics, repository.topics)
+
+    def test_topics_raises(self):
+        with self.assertRaises(ValueError):
+            _BrokerSubscriberRepository([])
+
     async def test_iter(self):
         messages = [
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
