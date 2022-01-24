@@ -21,7 +21,13 @@ from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerSubscriber,
+    InMemoryBrokerSubscriberRepository,
+    InMemoryQueuedKafkaBrokerSubscriberBuilder,
     KafkaBrokerSubscriber,
+    KafkaBrokerSubscriberBuilder,
+    PostgreSqlBrokerSubscriberRepository,
+    PostgreSqlQueuedKafkaBrokerSubscriberBuilder,
+    QueuedBrokerSubscriber,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -166,6 +172,56 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
 
             self.assertEqual(messages[0], await subscriber.receive())
             self.assertEqual(messages[1], await subscriber.receive())
+
+
+class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
+    def setUp(self) -> None:
+        self.config = MinosConfig(CONFIG_FILE_PATH)
+
+    def test_with_config(self):
+        builder = KafkaBrokerSubscriberBuilder().with_config(self.config)
+
+        expected = {
+            "group_id": self.config.service.name,
+            "broker_host": self.config.broker.host,
+            "broker_port": self.config.broker.port,
+        }
+        self.assertEqual(expected, builder.kwargs)
+
+    def test_build(self):
+        builder = KafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+        subscriber = builder.build()
+
+        self.assertIsInstance(subscriber, KafkaBrokerSubscriber)
+        self.assertEqual({"one", "two"}, subscriber.topics)
+        self.assertEqual(self.config.broker.port, subscriber.broker_port)
+        self.assertEqual(self.config.broker.host, subscriber.broker_host)
+
+
+class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
+    def setUp(self) -> None:
+        self.config = MinosConfig(CONFIG_FILE_PATH)
+
+    def test_build(self):
+        builder = PostgreSqlQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+        subscriber = builder.build()
+
+        self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
+        self.assertIsInstance(subscriber.impl, KafkaBrokerSubscriber)
+        self.assertIsInstance(subscriber.repository, PostgreSqlBrokerSubscriberRepository)
+
+
+class TestInMemoryQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
+    def setUp(self) -> None:
+        self.config = MinosConfig(CONFIG_FILE_PATH)
+
+    def test_build(self):
+        builder = InMemoryQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+        subscriber = builder.build()
+
+        self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
+        self.assertIsInstance(subscriber.impl, KafkaBrokerSubscriber)
+        self.assertIsInstance(subscriber.repository, InMemoryBrokerSubscriberRepository)
 
 
 if __name__ == "__main__":

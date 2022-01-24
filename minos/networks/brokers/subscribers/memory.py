@@ -42,8 +42,11 @@ class InMemoryBrokerSubscriber(BrokerSubscriber):
 
 
 class InMemoryBrokerSubscriberBuilder(BrokerSubscriberBuilder):
-    """TODO"""
+    """In Memory Broker Subscriber Builder class."""
 
     def build(self) -> BrokerSubscriber:
-        """TODO"""
+        """Build the instance.
+
+        :return: An ``InMemoryBrokerSubscriber`` instance.
+        """
         return InMemoryBrokerSubscriber(**self.kwargs)

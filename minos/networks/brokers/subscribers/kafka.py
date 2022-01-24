@@ -135,10 +135,14 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
 
 
 class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
-    """TODO"""
+    """Kafka Broker Subscriber Builder class."""
 
     def with_config(self, config: MinosConfig) -> BrokerSubscriberBuilder:
-        """TODO"""
+        """Set config.
+
+        :param config: The config to be set.
+        :return: This method return the builder instance.
+        """
         self.kwargs |= {
             "group_id": config.service.name,
             "broker_host": config.broker.host,
@@ -147,12 +151,15 @@ class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         return self
 
     def build(self) -> BrokerSubscriber:
-        """TODO"""
+        """Build the instance.
+
+        :return: A ``KafkaBrokerSubscriber`` instance.
+        """
         return KafkaBrokerSubscriber(**self.kwargs)
 
 
 class PostgreSqlQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):
-    """TODO"""
+    """PostgreSql Queued Kafka Broker Subscriber Builder class."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(
@@ -164,7 +171,7 @@ class PostgreSqlQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder
 
 
 class InMemoryQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):
-    """TODO"""
+    """In Memory Queued Kafka Broker Subscriber Builder class."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(

@@ -85,7 +85,7 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
 
 
 class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
-    """TODO"""
+    """Queued Broker Subscriber Publisher class."""
 
     def __init__(
         self,
@@ -99,26 +99,41 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         self._repository_builder = repository_builder
 
     def with_config(self, config: MinosConfig) -> BrokerSubscriberBuilder:
-        """TODO"""
+        """Set config.
+
+        :param config: The config to be set.
+        :return: This method return the builder instance.
+        """
         self._impl_builder.with_config(config)
         self._repository_builder.with_config(config)
         return super().with_config(config)
 
     def with_kwargs(self, kwargs: dict[str, Any]) -> BrokerSubscriberBuilder:
-        """TODO"""
+        """Set kwargs.
+
+        :param kwargs: The kwargs to be set.
+        :return: This method return the builder instance.
+        """
         self._impl_builder.with_kwargs(kwargs)
         self._repository_builder.with_kwargs(kwargs)
         return super().with_kwargs(kwargs)
 
     def with_topics(self, topics: Iterable[str]) -> BrokerSubscriberBuilder:
-        """TODO"""
+        """Set topics.
+
+        :param topics: The topics to be set.
+        :return: This method return the builder instance.
+        """
         topics = set(topics)
         self._impl_builder.with_topics(topics)
         self._repository_builder.with_topics(topics)
         return super().with_topics(topics)
 
     def build(self) -> BrokerSubscriber:
-        """TODO"""
+        """Build the instance.
+
+        :return: A ``QueuedBrokerSubscriber`` instance.
+        """
         impl = self._impl_builder.build()
         repository = self._repository_builder.build()
         return QueuedBrokerSubscriber(impl=impl, repository=repository, **self.kwargs)
