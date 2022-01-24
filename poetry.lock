@@ -489,8 +489,8 @@ orjson = "^3.6.5"
 [package.source]
 type = "git"
 url = "https://github.com/Clariteia/minos_microservice_networks.git"
-reference = "38afcdb0834d0c3cd6ea27ad1eda09ff33613c3a"
-resolved_reference = "38afcdb0834d0c3cd6ea27ad1eda09ff33613c3a"
+reference = "9798b3195f94831552482786d9a076c43fe30eb8"
+resolved_reference = "9798b3195f94831552482786d9a076c43fe30eb8"
 
 [[package]]
 name = "mistune"
@@ -940,7 +940,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "620a82293f5608f618bf3b5ccdc12630d5b7357e0841c1635b68eeaaa85432ca"
+content-hash = "47d3965dac9a15a9809f3a1d399031ea1ddc4575257bad9ab1eff0f1ba3949f4"
 
 [metadata.files]
 aiohttp = [
