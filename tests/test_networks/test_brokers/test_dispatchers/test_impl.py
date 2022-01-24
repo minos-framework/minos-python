@@ -65,7 +65,7 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
 
         self.identifier = uuid4()
         self.user = uuid4()
-        self.headers = {"foo": "bar", "User": str(self.user)}
+        self.headers = {"foo": "bar", "user": str(self.user)}
 
         self.message = BrokerMessageV1(
             topic="AddOrder",

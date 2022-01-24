@@ -154,7 +154,7 @@ class BrokerMessageV1Payload(DeclarativeModel):
     headers: dict[str, str]
 
     def __init__(
-        self, content: Any, headers: Optional[dict[str, str]] = None, status: Optional[int] = None, **kwargs,
+        self, content: Any = None, headers: Optional[dict[str, str]] = None, status: Optional[int] = None, **kwargs,
     ):
         if headers is None:
             headers = dict()
