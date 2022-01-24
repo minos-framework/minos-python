@@ -3,9 +3,6 @@ from asyncio import (
     gather,
     sleep,
 )
-from datetime import (
-    timedelta,
-)
 from unittest.mock import (
     AsyncMock,
     call,
@@ -20,12 +17,11 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    BrokerHandlerEntry,
+    BrokerClient,
     BrokerHandlerSetup,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerPublisher,
-    DynamicBroker,
     MinosHandlerNotFoundEnoughEntriesException,
 )
 from tests.utils import (
@@ -34,14 +30,14 @@ from tests.utils import (
 )
 
 
-class TestDynamicBroker(PostgresAsyncTestCase):
+class TestBrokerClient(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
         self.topic = "fooReply"
         self.publisher = BrokerPublisher.from_config(self.config)
-        self.handler = DynamicBroker.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
+        self.handler = BrokerClient.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -55,10 +51,10 @@ class TestDynamicBroker(PostgresAsyncTestCase):
 
     async def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):
-            DynamicBroker.from_config(config=self.config)
+            BrokerClient.from_config(config=self.config)
 
     async def test_setup_destroy(self):
-        handler = DynamicBroker.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
+        handler = BrokerClient.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
         self.assertFalse(handler.already_setup)
         async with handler:
             self.assertTrue(handler.already_setup)
@@ -78,39 +74,44 @@ class TestDynamicBroker(PostgresAsyncTestCase):
         )
         self.assertEqual([call(expected)], mock.call_args_list)
 
-    async def test_get_one(self):
-        expected = BrokerHandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes)
+    async def test_receive(self):
+        expected = FakeModel("test1")
         await self._insert_one("fooReply", FakeModel("test1").avro_bytes)
         await self._insert_one("fooReply", FakeModel("test2").avro_bytes)
 
-        observed = await self.handler.get_one()
+        observed = await self.handler.receive()
 
-        self._assert_equal_entries(expected, observed)
+        self.assertEqual(expected, observed)
 
-    async def test_get_many(self):
+    async def test_receive_many(self):
         expected = [
-            BrokerHandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes),
-            BrokerHandlerEntry(2, "fooReply", 0, FakeModel("test2").avro_bytes),
-            BrokerHandlerEntry(3, "fooReply", 0, FakeModel("test3").avro_bytes),
-            BrokerHandlerEntry(4, "fooReply", 0, FakeModel("test4").avro_bytes),
+            FakeModel("test1"),
+            FakeModel("test2"),
+            FakeModel("test3"),
+            FakeModel("test4"),
         ]
 
-        async def _fn():
+        async def _fn1():
+            messages = list()
+            async for message in self.handler.receive_many(count=4, max_wait=0.1):
+                messages.append(message)
+            return messages
+
+        async def _fn2():
             await self._insert_one("fooReply", FakeModel("test1").avro_bytes)
             await self._insert_one("fooReply", FakeModel("test2").avro_bytes)
             await sleep(0.5)
             await self._insert_one("fooReply", FakeModel("test3").avro_bytes)
             await self._insert_one("fooReply", FakeModel("test4").avro_bytes)
 
-        observed, _ = await gather(self.handler.get_many(count=4, max_wait=0.1), _fn())
+        observed, _ = await gather(_fn1(), _fn2())
 
-        self.assertEqual(len(expected), len(observed))
-        for e, o in zip(expected, observed):
-            self._assert_equal_entries(e, o)
+        self.assertEqual(expected, observed)
 
-    async def test_get_many_raises(self):
+    async def test_receive_many_raises(self):
         with self.assertRaises(MinosHandlerNotFoundEnoughEntriesException):
-            await self.handler.get_many(count=3, timeout=0.1)
+            async for _ in self.handler.receive_many(count=3, timeout=0.1):
+                pass
 
     async def _insert_one(self, topic: str, bytes_: bytes):
         async with aiopg.connect(**self.broker_queue_db) as connect:
@@ -120,14 +121,6 @@ class TestDynamicBroker(PostgresAsyncTestCase):
                     (topic, 0, bytes_),
                 )
                 return (await cur.fetchone())[0]
-
-    def _assert_equal_entries(self, expected: BrokerHandlerEntry, observed: BrokerHandlerEntry):
-        self.assertEqual(expected.id, observed.id)
-        self.assertEqual(expected.topic, observed.topic)
-        self.assertEqual(expected.partition, observed.partition)
-        self.assertEqual(expected.data, observed.data)
-        self.assertEqual(expected.retry, observed.retry)
-        self.assertAlmostEqual(expected.created_at, observed.created_at, delta=timedelta(seconds=2))
 
 
 if __name__ == "__main__":

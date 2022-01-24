@@ -5,6 +5,8 @@ __version__ = "0.3.2"
 from .brokers import (
     REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
+    BrokerClient,
+    BrokerClientPool,
     BrokerConsumer,
     BrokerConsumerService,
     BrokerDispatcher,
@@ -24,8 +26,6 @@ from .brokers import (
     BrokerRequest,
     BrokerResponse,
     BrokerResponseException,
-    DynamicBroker,
-    DynamicBrokerPool,
 )
 from .decorators import (
     BrokerCommandEnrouteDecorator,

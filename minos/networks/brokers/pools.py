@@ -31,24 +31,24 @@ from minos.common import (
     NotProvidedException,
 )
 
-from ..handlers import (
+from .clients import (
+    BrokerClient,
+)
+from .handlers import (
     BrokerConsumer,
 )
-from ..messages import (
+from .messages import (
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
 )
-from ..publishers import (
+from .publishers import (
     BrokerPublisher,
-)
-from .brokers import (
-    DynamicBroker,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class DynamicBrokerPool(MinosPool):
-    """Dynamic Broker Pool class."""
+class BrokerClientPool(MinosPool):
+    """Broker Client class."""
 
     def __init__(
         self,
@@ -68,7 +68,7 @@ class DynamicBrokerPool(MinosPool):
         self.publisher = publisher
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> DynamicBrokerPool:
+    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerClientPool:
         kwargs["client"] = KafkaAdminClient(bootstrap_servers=f"{config.broker.host}:{config.broker.port}")
         kwargs["consumer"] = cls._get_consumer(**kwargs)
         kwargs["publisher"] = cls._get_publisher(**kwargs)
@@ -106,15 +106,15 @@ class DynamicBrokerPool(MinosPool):
             raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
         return publisher
 
-    async def _create_instance(self) -> DynamicBroker:
+    async def _create_instance(self) -> BrokerClient:
         topic = str(uuid4()).replace("-", "")
         await self._create_reply_topic(topic)
         await self._subscribe_reply_topic(topic)
-        instance = DynamicBroker.from_config(self.config, topic=topic, publisher=self.publisher)
+        instance = BrokerClient.from_config(self.config, topic=topic, publisher=self.publisher)
         await instance.setup()
         return instance
 
-    async def _destroy_instance(self, instance: DynamicBroker):
+    async def _destroy_instance(self, instance: BrokerClient):
         await instance.destroy()
         await self._unsubscribe_reply_topic(instance.topic)
         await self._delete_reply_topic(instance.topic)
@@ -144,11 +144,11 @@ class DynamicBrokerPool(MinosPool):
 class _ReplyTopicContextManager:
     _token: Optional[Token]
 
-    def __init__(self, wrapper: AsyncContextManager[DynamicBroker]):
+    def __init__(self, wrapper: AsyncContextManager[BrokerClient]):
         self.wrapper = wrapper
         self._token = None
 
-    async def __aenter__(self) -> DynamicBroker:
+    async def __aenter__(self) -> BrokerClient:
         handler = await self.wrapper.__aenter__()
         self._token = REQUEST_REPLY_TOPIC_CONTEXT_VAR.set(handler.topic)
         return handler

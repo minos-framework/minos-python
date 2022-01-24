@@ -7,6 +7,9 @@ from asyncio import (
     TimeoutError,
     wait_for,
 )
+from collections.abc import (
+    AsyncIterator,
+)
 from typing import (
     Optional,
 )
@@ -31,28 +34,28 @@ from minos.common import (
     NotProvidedException,
 )
 
-from ...exceptions import (
+from ..exceptions import (
     MinosHandlerNotFoundEnoughEntriesException,
 )
-from ...utils import (
+from ..utils import (
     consume_queue,
 )
-from ..handlers import (
+from .handlers import (
     BrokerHandlerEntry,
     BrokerHandlerSetup,
 )
-from ..messages import (
+from .messages import (
     BrokerMessage,
 )
-from ..publishers import (
+from .publishers import (
     BrokerPublisher,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class DynamicBroker(BrokerHandlerSetup):
-    """Dynamic Broker class."""
+class BrokerClient(BrokerHandlerSetup):
+    """Broker client class."""
 
     def __init__(self, topic: str, publisher: BrokerPublisher, **kwargs):
         super().__init__(**kwargs)
@@ -61,7 +64,7 @@ class DynamicBroker(BrokerHandlerSetup):
         self.publisher = publisher
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicBroker:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> BrokerClient:
         kwargs["publisher"] = cls._get_publisher(**kwargs)
         # noinspection PyProtectedMember
         return cls(**config.broker.queue._asdict(), **kwargs)
@@ -96,16 +99,16 @@ class DynamicBroker(BrokerHandlerSetup):
         message.set_reply_topic(self.topic)
         await self.publisher.send(message)
 
-    async def get_one(self, *args, **kwargs) -> BrokerHandlerEntry:
+    async def receive(self, *args, **kwargs) -> BrokerMessage:
         """Get one handler entry from the given topics.
 
-        :param args: Additional positional parameters to be passed to get_many.
-        :param kwargs: Additional named parameters to be passed to get_many.
+        :param args: Additional positional parameters to be passed to receive_many.
+        :param kwargs: Additional named parameters to be passed to receive_many.
         :return: A ``HandlerEntry`` instance.
         """
-        return (await self.get_many(*args, **(kwargs | {"count": 1})))[0]
+        return await self.receive_many(*args, **(kwargs | {"count": 1})).__anext__()
 
-    async def get_many(self, count: int, timeout: float = 60, **kwargs) -> list[BrokerHandlerEntry]:
+    async def receive_many(self, count: int, timeout: float = 60, **kwargs) -> AsyncIterator[BrokerMessage]:
         """Get multiple handler entries from the given topics.
 
         :param timeout: Maximum time in seconds to wait for messages.
@@ -119,9 +122,10 @@ class DynamicBroker(BrokerHandlerSetup):
                 f"Timeout exceeded while trying to fetch {count!r} entries from {self.topic!r}."
             )
 
-        logger.info(f"Dispatching '{entries if count > 1 else entries[0]!s}'...")
-
-        return entries
+        for entry in entries:
+            message = entry.data
+            logger.info(f"Dispatching '{message!s}'...")
+            yield message
 
     async def _get_many(self, count: int, max_wait: Optional[float] = 10.0) -> list[BrokerHandlerEntry]:
         result = list()
