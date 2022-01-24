@@ -74,7 +74,7 @@ def mocked_request(
         headers = headers.copy()
 
     if user is not None:
-        headers["User"] = str(user)
+        headers["user"] = str(user)
 
     if content_type is not None:
         headers["Content-Type"] = content_type
