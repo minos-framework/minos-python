@@ -1,6 +1,5 @@
-from .dynamic import (
-    DynamicBroker,
-    DynamicBrokerPool,
+from .clients import (
+    BrokerClient,
 )
 from .handlers import (
     BrokerConsumer,
@@ -22,6 +21,9 @@ from .messages import (
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
     BrokerMessageV1Strategy,
+)
+from .pools import (
+    BrokerClientPool,
 )
 from .publishers import (
     BrokerProducer,
