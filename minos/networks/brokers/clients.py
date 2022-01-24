@@ -100,7 +100,7 @@ class BrokerClient(MinosSetup):
 
             if isinstance(subscriber_builder, BrokerSubscriberBuilder):
                 subscriber = (
-                    subscriber_builder.new()
+                    subscriber_builder.copy()
                     .with_config(config)
                     .with_topics({topic})
                     .with_group_id(None)

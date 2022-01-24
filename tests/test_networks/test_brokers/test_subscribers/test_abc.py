@@ -76,6 +76,11 @@ class TestBrokerSubscriberBuilder(unittest.TestCase):
         self.assertIsInstance(builder, _BrokerSubscriberBuilder)
         self.assertEqual(dict(), builder.kwargs)
 
+    def test_copy(self):
+        builder = _BrokerSubscriberBuilder.new().with_topics({"one", "two"}).copy()
+        self.assertIsInstance(builder, _BrokerSubscriberBuilder)
+        self.assertEqual({"topics": {"one", "two"}}, builder.kwargs)
+
     def test_with_kwargs(self):
         builder = _BrokerSubscriberBuilder().with_kwargs({"foo": "bar"})
         self.assertIsInstance(builder, _BrokerSubscriberBuilder)

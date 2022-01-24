@@ -94,7 +94,7 @@ class BrokerHandler(MinosSetup):
 
             if isinstance(subscriber_builder, BrokerSubscriberBuilder):
                 subscriber = (
-                    subscriber_builder.new().with_config(config).with_topics(topics).with_kwargs(kwargs).build()
+                    subscriber_builder.copy().with_config(config).with_topics(topics).with_kwargs(kwargs).build()
                 )
 
         if not isinstance(subscriber, BrokerSubscriber):

@@ -64,6 +64,13 @@ class BrokerSubscriberBuilder(MinosSetup, ABC):
         super().__init__(*args, **kwargs)
         self.kwargs = dict()
 
+    def copy(self: type[B]) -> B:
+        """Get a copy of the instance.
+
+        :return: A ``BrokerSubscriberBuilder`` instance.
+        """
+        return self.new().with_kwargs(self.kwargs)
+
     @classmethod
     def new(cls: type[B]) -> B:
         """Get a new instance.
