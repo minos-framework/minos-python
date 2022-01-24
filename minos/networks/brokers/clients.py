@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 
 class BrokerClient(MinosSetup):
-    """Broker class."""
+    """Broker Client class."""
 
     def __init__(self, topic: str, publisher: BrokerPublisher, subscriber: BrokerSubscriber, **kwargs):
         super().__init__(**kwargs)

@@ -28,7 +28,7 @@ from tests.utils import (
 )
 
 
-class TestDynamicBroker(PostgresAsyncTestCase):
+class TestBrokerClient(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -52,11 +52,11 @@ class TestDynamicBroker(PostgresAsyncTestCase):
             BrokerClient.from_config(config=self.config)
 
     async def test_setup_destroy(self):
-        client = BrokerClient.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
-        self.assertFalse(client.already_setup)
-        async with client:
-            self.assertTrue(client.already_setup)
-        self.assertTrue(client.already_destroyed)
+        broker = BrokerClient.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
+        self.assertFalse(broker.already_setup)
+        async with broker:
+            self.assertTrue(broker.already_setup)
+        self.assertTrue(broker.already_destroyed)
 
     def test_base_classes(self):
         self.assertIsInstance(self.broker, MinosSetup)
