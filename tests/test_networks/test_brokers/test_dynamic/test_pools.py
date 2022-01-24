@@ -12,9 +12,9 @@ from minos.common.testing import (
 )
 from minos.networks import (
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
+    BrokerClient,
+    BrokerClientPool,
     BrokerConsumer,
-    DynamicBroker,
-    DynamicBrokerPool,
     KafkaBrokerPublisher,
 )
 from tests.utils import (
@@ -22,14 +22,14 @@ from tests.utils import (
 )
 
 
-class TestDynamicBrokerPool(PostgresAsyncTestCase):
+class TestBrokerClientPool(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
         self.publisher = KafkaBrokerPublisher.from_config(self.config)
         self.consumer = BrokerConsumer.from_config(self.config)
-        self.pool = DynamicBrokerPool.from_config(self.config, consumer=self.consumer, publisher=self.publisher)
+        self.pool = BrokerClientPool.from_config(self.config, consumer=self.consumer, publisher=self.publisher)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -48,12 +48,12 @@ class TestDynamicBrokerPool(PostgresAsyncTestCase):
 
     async def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):
-            DynamicBrokerPool.from_config(self.config)
+            BrokerClientPool.from_config(self.config)
         with self.assertRaises(NotProvidedException):
-            DynamicBrokerPool.from_config(self.config, consumer=self.consumer)
+            BrokerClientPool.from_config(self.config, consumer=self.consumer)
 
     async def test_setup_destroy(self):
-        pool = DynamicBrokerPool.from_config(self.config, consumer=self.consumer, publisher=self.publisher)
+        pool = BrokerClientPool.from_config(self.config, consumer=self.consumer, publisher=self.publisher)
         self.assertTrue(pool.already_setup)
         async with pool:
             self.assertTrue(pool.already_setup)
@@ -66,7 +66,7 @@ class TestDynamicBrokerPool(PostgresAsyncTestCase):
 
     async def test_acquire(self):
         async with self.pool.acquire() as broker:
-            self.assertIsInstance(broker, DynamicBroker)
+            self.assertIsInstance(broker, BrokerClient)
             self.assertIn(broker.topic, self.pool.client.list_topics())
 
     async def test_acquire_reply_topic_context_var(self):

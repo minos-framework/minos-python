@@ -34,28 +34,28 @@ from minos.common import (
     NotProvidedException,
 )
 
-from ...exceptions import (
+from ..exceptions import (
     MinosHandlerNotFoundEnoughEntriesException,
 )
-from ...utils import (
+from ..utils import (
     consume_queue,
 )
-from ..handlers import (
+from .handlers import (
     BrokerHandlerEntry,
     BrokerHandlerSetup,
 )
-from ..messages import (
+from .messages import (
     BrokerMessage,
 )
-from ..publishers import (
+from .publishers import (
     BrokerPublisher,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class DynamicBroker(BrokerHandlerSetup):
-    """Dynamic Broker class."""
+class BrokerClient(BrokerHandlerSetup):
+    """Broker client class."""
 
     def __init__(self, topic: str, publisher: BrokerPublisher, **kwargs):
         super().__init__(**kwargs)
@@ -64,7 +64,7 @@ class DynamicBroker(BrokerHandlerSetup):
         self.publisher = publisher
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicBroker:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> BrokerClient:
         kwargs["publisher"] = cls._get_publisher(**kwargs)
         # noinspection PyProtectedMember
         return cls(**config.broker.queue._asdict(), **kwargs)
