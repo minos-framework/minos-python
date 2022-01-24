@@ -5,7 +5,6 @@ from typing import (
     Union,
 )
 from unittest.mock import (
-    call,
     patch,
 )
 from uuid import (
@@ -23,6 +22,9 @@ from minos.common import (
     Field,
     Model,
     ModelType,
+)
+from minos.networks import (
+    BrokerMessageV1,
 )
 from tests.utils import (
     MinosTestCase,
@@ -47,8 +49,7 @@ class TestSubAggregate(unittest.TestCase):
         self.assertEqual(3028, product.quantity)
 
 
-FakeEntry = ModelType.build("FakeEntry", {"data": Any})
-FakeMessage = ModelType.build("FakeMessage", {"data": Any})
+FakeMessage = ModelType.build("FakeMessage", {"content": Any})
 
 Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
 Foo = ModelType.build("Foo", {"another": ModelRef[Bar]})
@@ -224,12 +225,16 @@ class TestModelRef(MinosTestCase):
 
         self.assertEqual(ref.data, another)
 
-        with patch("tests.utils.FakeBroker.send") as send_mock:
-            with patch("tests.utils.FakeBroker.get_one") as get_many:
-                get_many.return_value = FakeEntry(FakeMessage(Bar(another, 1)))
+        with patch("minos.networks.BrokerClient.send") as send_mock:
+            with patch("minos.networks.BrokerClient.receive") as receive_mock:
+                receive_mock.return_value = FakeMessage(Bar(another, 1))
                 await ref.resolve()
 
-        self.assertEqual([call(data={"uuid": another}, topic="GetBar")], send_mock.call_args_list)
+        self.assertEqual(1, len(send_mock.call_args_list))
+
+        self.assertIsInstance(send_mock.call_args_list[0].args[0], BrokerMessageV1)
+        self.assertEqual("GetBar", send_mock.call_args_list[0].args[0].topic)
+        self.assertEqual({"uuid": another}, send_mock.call_args_list[0].args[0].content)
         self.assertEqual(ref.data, Bar(another, 1))
 
     async def test_resolve_already(self):
@@ -237,7 +242,7 @@ class TestModelRef(MinosTestCase):
 
         ref = ModelRef(Bar(uuid, 1))
 
-        with patch("tests.utils.FakeBroker.send") as send_mock:
+        with patch("minos.networks.BrokerClient.send") as send_mock:
             await ref.resolve()
 
         self.assertEqual([], send_mock.call_args_list)

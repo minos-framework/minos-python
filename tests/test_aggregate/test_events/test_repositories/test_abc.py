@@ -38,7 +38,7 @@ from minos.common import (
     current_datetime,
 )
 from minos.networks import (
-    BrokerMessageStrategy,
+    BrokerMessageV1,
 )
 from tests.utils import (
     FakeAsyncIterator,
@@ -254,34 +254,33 @@ class TestEventRepository(MinosTestCase):
 
         await self.event_repository.submit(aggregate_diff)
 
-        args = [
-            call(
-                AggregateDiff(
-                    uuid=uuid,
-                    name="example.Car",
-                    version=56,
-                    action=Action.UPDATE,
-                    created_at=created_at,
-                    fields_diff=field_diff_container,
-                ),
-                "CarUpdated",
-                strategy=BrokerMessageStrategy.MULTICAST,
+        self.assertEqual(2, len(send_mock.call_args_list))
+        self.assertIsInstance(send_mock.call_args_list[0].args[0], BrokerMessageV1)
+        self.assertEqual("CarUpdated", send_mock.call_args_list[0].args[0].topic)
+        self.assertEqual(
+            AggregateDiff(
+                uuid=uuid,
+                name="example.Car",
+                version=56,
+                action=Action.UPDATE,
+                created_at=created_at,
+                fields_diff=field_diff_container,
             ),
-            call(
-                AggregateDiff(
-                    uuid=uuid,
-                    name="example.Car",
-                    version=56,
-                    action=Action.UPDATE,
-                    created_at=created_at,
-                    fields_diff=field_diff_container,
-                ),
-                "CarUpdated.colors.create",
-                strategy=BrokerMessageStrategy.MULTICAST,
+            send_mock.call_args_list[0].args[0].content,
+        )
+        self.assertEqual("CarUpdated.colors.create", send_mock.call_args_list[1].args[0].topic)
+        self.assertIsInstance(send_mock.call_args_list[1].args[0], BrokerMessageV1)
+        self.assertEqual(
+            AggregateDiff(
+                uuid=uuid,
+                name="example.Car",
+                version=56,
+                action=Action.UPDATE,
+                created_at=created_at,
+                fields_diff=field_diff_container,
             ),
-        ]
-
-        self.assertEqual(args, send_mock.call_args_list)
+            send_mock.call_args_list[1].args[0].content,
+        )
 
     async def test_submit_not_send_events(self):
         created_at = current_datetime()

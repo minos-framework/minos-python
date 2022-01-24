@@ -3,7 +3,6 @@ from typing import (
     Any,
 )
 from unittest.mock import (
-    call,
     patch,
 )
 from uuid import (
@@ -18,14 +17,17 @@ from minos.aggregate import (
 from minos.common import (
     ModelType,
 )
+from minos.networks import (
+    BrokerMessageV1,
+)
 from tests.utils import (
+    FakeAsyncIterator,
     MinosTestCase,
 )
 
 Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
 Foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": ModelRef[Bar]})
-FakeEntry = ModelType.build("FakeEntry", {"data": Any})
-FakeMessage = ModelType.build("FakeMessage", {"data": Any})
+FakeMessage = ModelType.build("FakeMessage", {"content": Any})
 
 
 class TestModelRefResolver(MinosTestCase):
@@ -38,16 +40,19 @@ class TestModelRefResolver(MinosTestCase):
         self.value = Foo(self.uuid, 1, another=ModelRef(self.another_uuid))
 
     async def test_resolve(self):
-        with patch("tests.utils.FakeBroker.send") as send_mock:
-            with patch("tests.utils.FakeBroker.get_many") as get_many:
-                get_many.return_value = [FakeEntry(FakeMessage([Bar(self.value.another.uuid, 1)]))]
+        with patch("minos.networks.BrokerClient.send") as send_mock:
+            with patch("minos.networks.BrokerClient.receive_many") as receive_many:
+                receive_many.return_value = FakeAsyncIterator([FakeMessage([Bar(self.value.another.uuid, 1)])])
                 resolved = await self.resolver.resolve(self.value)
 
-        self.assertEqual([call(data={"uuids": {self.another_uuid}}, topic="GetBars")], send_mock.call_args_list)
+        self.assertIsInstance(send_mock.call_args_list[0].args[0], BrokerMessageV1)
+        self.assertEqual("GetBars", send_mock.call_args_list[0].args[0].topic)
+        self.assertEqual({"uuids": {self.another_uuid}}, send_mock.call_args_list[0].args[0].content)
+
         self.assertEqual(Foo(self.uuid, 1, another=ModelRef(Bar(self.another_uuid, 1))), resolved)
 
     async def test_resolve_already(self):
-        with patch("tests.utils.FakeBroker.send") as send_mock:
+        with patch("minos.networks.BrokerClient.send") as send_mock:
             self.assertEqual(34, await self.resolver.resolve(34))
         self.assertEqual([], send_mock.call_args_list)
 

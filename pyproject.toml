@@ -32,7 +32,7 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.9"
 minos-microservice-common = "^0.3.4"
-minos-microservice-networks = "^0.3.0"
+minos-microservice-networks = { git = "https://github.com/Clariteia/minos_microservice_networks.git", rev = "38afcdb0834d0c3cd6ea27ad1eda09ff33613c3a" }
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"
