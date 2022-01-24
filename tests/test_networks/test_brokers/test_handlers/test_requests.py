@@ -33,9 +33,9 @@ class TestBrokerRequest(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(self.request, BrokerRequest(BrokerMessageV1Payload("foo")))
 
     def test_user(self):
-        raw = BrokerMessageV1Payload(self.data, headers={"User": str(uuid4())})
+        raw = BrokerMessageV1Payload(self.data, headers={"user": str(uuid4())})
         request = BrokerRequest(raw)
-        self.assertEqual(UUID(raw.headers["User"]), request.user)
+        self.assertEqual(UUID(raw.headers["user"]), request.user)
 
     def test_user_unset(self):
         self.assertEqual(None, self.request.user)
