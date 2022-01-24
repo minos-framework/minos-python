@@ -23,10 +23,10 @@ from minos.common import (
     Model,
 )
 from minos.networks import (
+    BrokerClient,
+    BrokerClientPool,
     BrokerMessageV1,
     BrokerMessageV1Payload,
-    Broker,
-    BrokerPool,
 )
 
 from .extractors import (
@@ -43,7 +43,7 @@ class ModelRefResolver:
     # noinspection PyUnusedLocal
     @inject
     def __init__(
-        self, broker_pool: BrokerPool = Provide["broker_pool"], **kwargs,
+        self, broker_pool: BrokerClientPool = Provide["broker_pool"], **kwargs,
     ):
         self.broker_pool = broker_pool
 
@@ -65,16 +65,16 @@ class ModelRefResolver:
         return ModelRefInjector(data, recovered).build()
 
     async def _query(self, references: dict[str, set[UUID]]) -> dict[UUID, Model]:
-        async with self.broker_pool.acquire() as broker:
+        async with self.broker_pool.acquire() as BrokerClient:
             futures = (
-                broker.send(BrokerMessageV1(f"Get{name}s", BrokerMessageV1Payload({"uuids": uuids})))
+                BrokerClient.send(BrokerMessageV1(f"Get{name}s", BrokerMessageV1Payload({"uuids": uuids})))
                 for name, uuids in references.items()
             )
             await gather(*futures)
 
-            return {model.uuid: model for model in await self._get_response(broker, len(references))}
+            return {model.uuid: model for model in await self._get_response(BrokerClient, len(references))}
 
     @staticmethod
-    async def _get_response(broker: Broker, count: int, **kwargs) -> Iterable[Model]:
-        messages = [message async for message in broker.receive_many(count, **kwargs)]
+    async def _get_response(BrokerClient: BrokerClient, count: int, **kwargs) -> Iterable[Model]:
+        messages = [message async for message in BrokerClient.receive_many(count, **kwargs)]
         return chain(*(message.content for message in messages))
