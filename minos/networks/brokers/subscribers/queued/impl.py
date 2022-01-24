@@ -4,12 +4,20 @@ from asyncio import (
     create_task,
     wait_for,
 )
+from collections.abc import (
+    Iterable,
+)
 from contextlib import (
     suppress,
 )
 from typing import (
+    Any,
     Awaitable,
     NoReturn,
+)
+
+from minos.common import (
+    MinosConfig,
 )
 
 from ...messages import (
@@ -17,9 +25,11 @@ from ...messages import (
 )
 from ..abc import (
     BrokerSubscriber,
+    BrokerSubscriberBuilder,
 )
 from .repositories import (
     BrokerSubscriberRepository,
+    BrokerSubscriberRepositoryBuilder,
 )
 
 
@@ -72,3 +82,43 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
         :return: A ``BrokerMessage`` instance.
         """
         return self.repository.dequeue()
+
+
+class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
+    """TODO"""
+
+    def __init__(
+        self,
+        *args,
+        impl_builder: BrokerSubscriberBuilder,
+        repository_builder: BrokerSubscriberRepositoryBuilder,
+        **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self._impl_builder = impl_builder
+        self._repository_builder = repository_builder
+
+    def with_config(self, config: MinosConfig) -> BrokerSubscriberBuilder:
+        """TODO"""
+        self._impl_builder.with_config(config)
+        self._repository_builder.with_config(config)
+        return super().with_config(config)
+
+    def with_kwargs(self, kwargs: dict[str, Any]) -> BrokerSubscriberBuilder:
+        """TODO"""
+        self._impl_builder.with_kwargs(kwargs)
+        self._repository_builder.with_kwargs(kwargs)
+        return super().with_kwargs(kwargs)
+
+    def with_topics(self, topics: Iterable[str]) -> BrokerSubscriberBuilder:
+        """TODO"""
+        topics = set(topics)
+        self._impl_builder.with_topics(topics)
+        self._repository_builder.with_topics(topics)
+        return super().with_topics(topics)
+
+    def build(self) -> BrokerSubscriber:
+        """TODO"""
+        impl = self._impl_builder.build()
+        repository = self._repository_builder.build()
+        return QueuedBrokerSubscriber(impl=impl, repository=repository, **self.kwargs)

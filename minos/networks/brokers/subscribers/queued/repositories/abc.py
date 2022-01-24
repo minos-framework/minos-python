@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 from abc import (
     ABC,
     abstractmethod,
@@ -6,10 +10,13 @@ from collections.abc import (
     AsyncIterator,
 )
 from typing import (
+    Any,
     Iterable,
+    TypeVar,
 )
 
 from minos.common import (
+    MinosConfig,
     MinosSetup,
 )
 
@@ -58,3 +65,37 @@ class BrokerSubscriberRepository(ABC, MinosSetup):
 
         :return: The dequeued ``BrokerMessage``.
         """
+
+
+class BrokerSubscriberRepositoryBuilder(MinosSetup, ABC):
+    """TODO"""
+
+    def __init__(self):
+        super().__init__()
+        self.kwargs = dict()
+
+    @classmethod
+    def new(cls: type[B]) -> B:
+        """TODO"""
+        return cls()
+
+    def with_kwargs(self: B, kwargs: dict[str, Any]) -> B:
+        """TODO"""
+        self.kwargs |= kwargs
+        return self
+
+    def with_config(self: B, config: MinosConfig) -> B:
+        """TODO"""
+        return self
+
+    def with_topics(self: B, topics: Iterable[str]) -> B:
+        """TODO"""
+        self.kwargs["topics"] = set(topics)
+        return self
+
+    @abstractmethod
+    def build(self: B) -> BrokerSubscriberRepository:
+        """TODO"""
+
+
+B = TypeVar("B", bound=BrokerSubscriberRepositoryBuilder)

@@ -43,6 +43,7 @@ from ....messages import (
 )
 from .abc import (
     BrokerSubscriberRepository,
+    BrokerSubscriberRepositoryBuilder,
 )
 
 logger = logging.getLogger(__name__)
@@ -65,8 +66,8 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlBrokerSubscriberRepository:
-        # noinspection PyProtectedMember
-        return cls(**config.broker.queue._asdict(), **kwargs)
+        # noinspection PyTypeChecker
+        return PostgreSqlBrokerSubscriberRepositoryBuilder.new().with_config(config).with_kwargs(kwargs).build()
 
     async def _setup(self) -> None:
         await super()._setup()
@@ -255,3 +256,17 @@ _UPDATE_NOT_PROCESSED_QUERY = SQL(
 _LISTEN_QUERY = SQL("LISTEN {}")
 
 _UNLISTEN_QUERY = SQL("UNLISTEN {}")
+
+
+class PostgreSqlBrokerSubscriberRepositoryBuilder(BrokerSubscriberRepositoryBuilder):
+    """TODO"""
+
+    def with_config(self, config: MinosConfig):
+        """TODO"""
+        # noinspection PyProtectedMember
+        self.kwargs |= config.broker.queue._asdict()
+        return super().with_config(config)
+
+    def build(self) -> PostgreSqlBrokerSubscriberRepository:
+        """TODO"""
+        return PostgreSqlBrokerSubscriberRepository(**self.kwargs)

@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 class BrokerClientPool(MinosPool):
-    """Dynamic BrokerClient Pool class."""
+    """Broker Client Pool class."""
 
     def __init__(
         self, instance_kwargs: dict[str, Any], maxsize: int = 5, recycle: Optional[int] = 3600, *args, **kwargs

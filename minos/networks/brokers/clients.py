@@ -39,6 +39,7 @@ from .publishers import (
 )
 from .subscribers import (
     BrokerSubscriber,
+    BrokerSubscriberBuilder,
 )
 
 logger = logging.getLogger(__name__)
@@ -56,18 +57,12 @@ class BrokerClient(MinosSetup):
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerClient:
-        from .subscribers import (
-            InMemoryBrokerSubscriber,
-        )
-
         if "topic" not in kwargs:
             kwargs["topic"] = str(uuid4()).replace("-", "")
 
         kwargs["publisher"] = cls._get_publisher(**kwargs)
 
-        kwargs["subscriber"] = InMemoryBrokerSubscriber.from_config(
-            config, topics={kwargs["topic"]}, group_id=None, remove_topics_on_destroy=True,
-        )
+        kwargs["subscriber"] = cls._get_subscriber(config, **kwargs)
         # noinspection PyProtectedMember
         return cls(**kwargs)
 
@@ -84,6 +79,31 @@ class BrokerClient(MinosSetup):
         if publisher is None or isinstance(publisher, Provide):
             raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
         return publisher
+
+    @staticmethod
+    @inject
+    def _get_subscriber(
+        config: MinosConfig,
+        topic: str,
+        subscriber_builder: Optional[BrokerSubscriber] = None,
+        broker_subscriber_builder: Optional[BrokerSubscriberBuilder] = Provide["broker_subscriber_builder"],
+        **kwargs,
+    ) -> BrokerSubscriber:
+        if subscriber_builder is None:
+            subscriber_builder = broker_subscriber_builder
+
+        if subscriber_builder is None or isinstance(subscriber_builder, Provide):
+            raise NotProvidedException("TODO")
+
+        return (
+            subscriber_builder.new()
+            .with_config(config)
+            .with_topics({topic})
+            .with_group_id(None)
+            .with_remove_topics_on_destroy(True)
+            .with_kwargs(kwargs)
+            .build()
+        )
 
     async def _setup(self) -> None:
         await super()._setup()

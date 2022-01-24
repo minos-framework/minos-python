@@ -10,6 +10,7 @@ from ..messages import (
 )
 from .abc import (
     BrokerSubscriber,
+    BrokerSubscriberBuilder,
 )
 
 
@@ -38,3 +39,11 @@ class InMemoryBrokerSubscriber(BrokerSubscriber):
         :return: A ``BrokerMessage`` instance.
         """
         return await self._queue.get()
+
+
+class InMemoryBrokerSubscriberBuilder(BrokerSubscriberBuilder):
+    """TODO"""
+
+    def build(self) -> BrokerSubscriber:
+        """TODO"""
+        return InMemoryBrokerSubscriber(**self.kwargs)

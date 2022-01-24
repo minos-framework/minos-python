@@ -14,6 +14,7 @@ from minos.networks import (
     BrokerHandler,
     BrokerHandlerService,
     InMemoryBrokerPublisher,
+    InMemoryBrokerSubscriberBuilder,
 )
 from tests.utils import (
     BASE_PATH,
@@ -26,17 +27,22 @@ class TestBrokerHandlerService(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.publisher = InMemoryBrokerPublisher.from_config(self.config)
+        self.subscriber_builder = InMemoryBrokerSubscriberBuilder
 
     def test_is_instance(self):
         service = BrokerHandlerService(config=self.config, publisher=self.publisher)
         self.assertIsInstance(service, Service)
 
     def test_handler(self):
-        service = BrokerHandlerService(config=self.config, publisher=self.publisher)
+        service = BrokerHandlerService(
+            config=self.config, publisher=self.publisher, subscriber_builder=self.subscriber_builder
+        )
         self.assertIsInstance(service.handler, BrokerHandler)
 
     async def test_start_stop(self):
-        service = BrokerHandlerService(config=self.config, publisher=self.publisher)
+        service = BrokerHandlerService(
+            config=self.config, publisher=self.publisher, subscriber_builder=self.subscriber_builder
+        )
 
         setup_mock = AsyncMock()
         destroy_mock = AsyncMock()

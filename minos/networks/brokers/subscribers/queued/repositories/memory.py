@@ -8,6 +8,7 @@ from ....messages import (
 )
 from .abc import (
     BrokerSubscriberRepository,
+    BrokerSubscriberRepositoryBuilder,
 )
 
 logger = logging.getLogger(__name__)
@@ -39,3 +40,11 @@ class InMemoryBrokerSubscriberRepository(BrokerSubscriberRepository):
         message = await self._queue.get()
         logger.info(f"Dequeuing {message!r} message...")
         return message
+
+
+class InMemoryBrokerSubscriberRepositoryBuilder(BrokerSubscriberRepositoryBuilder):
+    """TODO"""
+
+    def build(self) -> BrokerSubscriberRepository:
+        """TODO"""
+        return InMemoryBrokerSubscriberRepository(**self.kwargs)
