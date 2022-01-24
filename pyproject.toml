@@ -32,8 +32,8 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.9"
 minos-microservice-common = "^0.3.0"
-minos-microservice-networks = "^0.3.1"
-minos-microservice-aggregate = "^0.2.0"
+minos-microservice-networks = { git = "https://github.com/Clariteia/minos_microservice_networks.git", rev = "38afcdb0834d0c3cd6ea27ad1eda09ff33613c3a" }
+minos-microservice-aggregate = { git = "https://github.com/Clariteia/minos_microservice_aggregate.git", rev = "8035e787924f84472aa2b70612fd2b89d8f5081d" }
 dependency-injector = "^4.32.2"
 
 [tool.poetry.dev-dependencies]
@@ -47,7 +47,7 @@ pre-commit = "^2.12.1"
 sphinx-autodoc-typehints = "^1.12.0"
 sphinxcontrib-apidoc = "^0.3.0"
 sphinx-rtd-theme = "^0.5.2"
-m2r2 = "^0.2.7"
+m2r2 = "^0.3.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
