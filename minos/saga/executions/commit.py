@@ -15,11 +15,11 @@ from dependency_injector.wiring import (
 )
 
 from minos.networks import (
+    Broker,
     BrokerMessageV1,
     BrokerMessageV1Payload,
-    BrokerPublisher,
-    Broker,
     BrokerPool,
+    BrokerPublisher,
 )
 
 from .steps import (

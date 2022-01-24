@@ -31,8 +31,8 @@ from minos.common import (
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_USER_CONTEXT_VAR,
-    BrokerMessage,
     Broker,
+    BrokerMessage,
     BrokerPool,
 )
 
