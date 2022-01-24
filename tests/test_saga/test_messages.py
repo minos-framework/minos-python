@@ -1,10 +1,9 @@
 import unittest
-from uuid import (
-    uuid4,
-)
+from uuid import uuid4
 
 from minos.networks import (
-    BrokerMessage,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
 )
 from minos.saga import (
     SagaRequest,
@@ -48,13 +47,17 @@ class TestSagaResponse(unittest.IsolatedAsyncioTestCase):
     def test_from_message(self):
         expected = SagaResponse(56, {"ticket", "product"}, uuid=self.uuid)
         observed = SagaResponse.from_message(
-            BrokerMessage("", 56, headers={"saga": str(self.uuid), "related_services": "ticket,product"})
+            BrokerMessageV1(
+                "", BrokerMessageV1Payload(56, headers={"saga": str(self.uuid), "related_services": "ticket,product"})
+            )
         )
         self.assertEqual(expected, observed)
 
     def test_from_message_empty_related_services(self):
         expected = SagaResponse(56, uuid=self.uuid)
-        observed = SagaResponse.from_message(BrokerMessage("", 56, headers={"saga": str(self.uuid)}))
+        observed = SagaResponse.from_message(
+            BrokerMessageV1("", BrokerMessageV1Payload(56, headers={"saga": str(self.uuid)}))
+        )
         self.assertEqual(expected, observed)
 
     async def test_content(self):
