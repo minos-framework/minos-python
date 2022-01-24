@@ -1,12 +1,13 @@
 import unittest
-from unittest.mock import (
-    AsyncMock,
-    call,
-)
 from uuid import (
     uuid4,
 )
 
+from minos.networks import (
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
+    BrokerMessageV1Status,
+)
 from minos.saga import (
     ConditionalSagaStepExecution,
     LocalSagaStep,
@@ -60,66 +61,129 @@ class TestTransactionCommitter(MinosTestCase):
         self.assertEqual(expected, self.committer.transactions)
 
     async def test_commit_true(self):
-        get_mock = AsyncMock()
-        get_mock.return_value.data.ok = True
-        self.broker.get_one = get_mock
-
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
+        self.broker_subscriber_builder.with_messages(
+            [
+                BrokerMessageV1("", BrokerMessageV1Payload(None)),
+                BrokerMessageV1("", BrokerMessageV1Payload(None)),
+                BrokerMessageV1("", BrokerMessageV1Payload(None)),
+            ]
+        )
 
         await self.committer.commit()
+        observed = self.broker_publisher.messages
+        expected = [
+            BrokerMessageV1(
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                topic="ReserveBarTransaction",
+                reply_topic=observed[0].reply_topic,
+                identifier=observed[0].identifier,
+            ),
+            BrokerMessageV1(
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                topic="ReserveFooTransaction",
+                reply_topic=observed[1].reply_topic,
+                identifier=observed[1].identifier,
+            ),
+            BrokerMessageV1(
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                topic="ReserveFoobarTransaction",
+                reply_topic=observed[2].reply_topic,
+                identifier=observed[2].identifier,
+            ),
+            BrokerMessageV1(
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                topic="CommitBarTransaction",
+                identifier=observed[3].identifier,
+            ),
+            BrokerMessageV1(
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                topic="CommitFooTransaction",
+                identifier=observed[4].identifier,
+            ),
+            BrokerMessageV1(
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                topic="CommitFoobarTransaction",
+                identifier=observed[5].identifier,
+            ),
+        ]
 
         self.assertEqual(
-            [
-                call(data=self.execution_uuid, topic="ReserveBarTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="ReserveFooTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="ReserveFoobarTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="CommitBarTransaction"),
-                call(data=self.execution_uuid, topic="CommitFooTransaction"),
-                call(data=self.execution_uuid, topic="CommitFoobarTransaction"),
-            ],
-            send_mock.call_args_list,
+            expected, observed,
         )
 
     async def test_commit_false(self):
-        get_mock = AsyncMock()
-        get_mock.return_value.data.ok = False
-        self.broker.get_one = get_mock
-
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
+        self.broker_subscriber_builder.with_messages(
+            [
+                BrokerMessageV1("", BrokerMessageV1Payload(None, status=BrokerMessageV1Status.ERROR)),
+                BrokerMessageV1("", BrokerMessageV1Payload(None)),
+                BrokerMessageV1("", BrokerMessageV1Payload(None)),
+            ]
+        )
 
         with self.assertRaises(ValueError):
             await self.committer.commit()
 
-        self.assertEqual(
-            [
-                call(data=self.execution_uuid, topic="ReserveBarTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="ReserveFooTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="ReserveFoobarTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="RejectBarTransaction"),
-                call(data=self.execution_uuid, topic="RejectFooTransaction"),
-                call(data=self.execution_uuid, topic="RejectFoobarTransaction"),
-            ],
-            send_mock.call_args_list,
-        )
+        observed = self.broker_publisher.messages
+        expected = [
+            BrokerMessageV1(
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                topic="ReserveBarTransaction",
+                reply_topic=observed[0].reply_topic,
+                identifier=observed[0].identifier,
+            ),
+            BrokerMessageV1(
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                topic="ReserveFooTransaction",
+                reply_topic=observed[1].reply_topic,
+                identifier=observed[1].identifier,
+            ),
+            BrokerMessageV1(
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                topic="ReserveFoobarTransaction",
+                reply_topic=observed[2].reply_topic,
+                identifier=observed[2].identifier,
+            ),
+            BrokerMessageV1(
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                topic="RejectBarTransaction",
+                identifier=observed[3].identifier,
+            ),
+            BrokerMessageV1(
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                topic="RejectFooTransaction",
+                identifier=observed[4].identifier,
+            ),
+            BrokerMessageV1(
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                topic="RejectFoobarTransaction",
+                identifier=observed[5].identifier,
+            ),
+        ]
+        self.assertEqual(expected, observed)
 
     async def test_reject(self):
-        get_mock = AsyncMock()
-        self.broker.get_one = get_mock
-
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
-
         await self.committer.reject()
 
+        observed = self.broker_publisher.messages
+        expected = [
+            BrokerMessageV1(
+                topic="RejectBarTransaction",
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                identifier=observed[0].identifier,
+            ),
+            BrokerMessageV1(
+                topic="RejectFooTransaction",
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                identifier=observed[1].identifier,
+            ),
+            BrokerMessageV1(
+                topic="RejectFoobarTransaction",
+                payload=BrokerMessageV1Payload(self.execution_uuid),
+                identifier=observed[2].identifier,
+            ),
+        ]
         self.assertEqual(
-            [
-                call(data=self.execution_uuid, topic="RejectBarTransaction"),
-                call(data=self.execution_uuid, topic="RejectFooTransaction"),
-                call(data=self.execution_uuid, topic="RejectFoobarTransaction"),
-            ],
-            send_mock.call_args_list,
+            expected, observed,
         )
 
 

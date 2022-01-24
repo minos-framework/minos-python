@@ -66,7 +66,7 @@ class TestRequestExecutor(MinosTestCase):
                     headers={
                         "saga": str(self.execution_uuid),
                         "transactions": str(self.execution_uuid),
-                        "User": str(self.user),
+                        "user": str(self.user),
                     },
                 ),
                 reply_topic="orderReply",

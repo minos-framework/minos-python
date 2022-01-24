@@ -460,13 +460,13 @@ develop = false
 
 [package.dependencies]
 minos-microservice-common = "^0.3.4"
-minos-microservice-networks = {git = "https://github.com/Clariteia/minos_microservice_networks.git", rev = "38afcdb0834d0c3cd6ea27ad1eda09ff33613c3a"}
+minos-microservice-networks = {git = "https://github.com/Clariteia/minos_microservice_networks.git", rev = "927ede0ca169ed014b83cc4a618a203a91c1f8b7"}
 
 [package.source]
 type = "git"
 url = "https://github.com/Clariteia/minos_microservice_aggregate.git"
-reference = "8035e787924f84472aa2b70612fd2b89d8f5081d"
-resolved_reference = "8035e787924f84472aa2b70612fd2b89d8f5081d"
+reference = "d0f6d1b1d19c94b2beb36ade0b4fc8d00865f057"
+resolved_reference = "d0f6d1b1d19c94b2beb36ade0b4fc8d00865f057"
 
 [[package]]
 name = "minos-microservice-common"
@@ -508,8 +508,8 @@ orjson = "^3.6.5"
 [package.source]
 type = "git"
 url = "https://github.com/Clariteia/minos_microservice_networks.git"
-reference = "38afcdb0834d0c3cd6ea27ad1eda09ff33613c3a"
-resolved_reference = "38afcdb0834d0c3cd6ea27ad1eda09ff33613c3a"
+reference = "927ede0ca169ed014b83cc4a618a203a91c1f8b7"
+resolved_reference = "927ede0ca169ed014b83cc4a618a203a91c1f8b7"
 
 [[package]]
 name = "mistune"
@@ -959,7 +959,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "317a8d256c77099cfff89c099e9c911b855ee5f8da8e02c5e1d273bedb07de35"
+content-hash = "b54b4128fe9785fa9a503ff40693b8b06465aeafa9cb30ff72d674f2894c9036"
 
 [metadata.files]
 aiohttp = [
