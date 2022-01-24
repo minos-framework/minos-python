@@ -1,5 +1,7 @@
 import unittest
-from uuid import uuid4
+from uuid import (
+    uuid4,
+)
 
 from minos.networks import (
     BrokerMessageV1,
