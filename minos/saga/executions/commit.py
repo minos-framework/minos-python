@@ -15,11 +15,11 @@ from dependency_injector.wiring import (
 )
 
 from minos.networks import (
+    BrokerClient,
+    BrokerClientPool,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerPublisher,
-    Broker,
-    BrokerPool,
 )
 
 from .steps import (
@@ -39,7 +39,7 @@ class TransactionCommitter:
         self,
         execution_uuid: UUID,
         executed_steps: list[SagaStepExecution],
-        broker_pool: BrokerPool = Provide["broker_pool"],
+        broker_pool: BrokerClientPool = Provide["broker_pool"],
         broker_publisher: BrokerPublisher = Provide["broker_publisher"],
         **kwargs,
     ):
@@ -102,7 +102,7 @@ class TransactionCommitter:
         logger.info("Successfully rejected!")
 
     @staticmethod
-    async def _get_response(handler: Broker, count: int, **kwargs) -> bool:
+    async def _get_response(handler: BrokerClient, count: int, **kwargs) -> bool:
         messages = [message async for message in handler.receive_many(count, **kwargs)]
         return all(message.ok for message in messages)
 
