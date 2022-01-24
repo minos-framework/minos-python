@@ -87,9 +87,9 @@ class RestRequest(Request):
         """
         Returns the UUID of the user making the Request.
         """
-        if "User" not in self.headers:
+        if "user" not in self.headers:
             return None
-        return UUID(self.headers["User"])
+        return UUID(self.headers["user"])
 
     @property
     def headers(self) -> dict[str, str]:
