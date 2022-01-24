@@ -14,6 +14,7 @@ from typing import (
     Any,
     Awaitable,
     NoReturn,
+    Optional,
 )
 
 from minos.common import (
@@ -95,8 +96,8 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         **kwargs
     ):
         super().__init__(*args, **kwargs)
-        self._impl_builder = impl_builder
-        self._repository_builder = repository_builder
+        self.impl_builder = impl_builder
+        self.repository_builder = repository_builder
 
     def with_config(self, config: MinosConfig) -> BrokerSubscriberBuilder:
         """Set config.
@@ -104,8 +105,8 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         :param config: The config to be set.
         :return: This method return the builder instance.
         """
-        self._impl_builder.with_config(config)
-        self._repository_builder.with_config(config)
+        self.impl_builder.with_config(config)
+        self.repository_builder.with_config(config)
         return super().with_config(config)
 
     def with_kwargs(self, kwargs: dict[str, Any]) -> BrokerSubscriberBuilder:
@@ -114,8 +115,8 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         :param kwargs: The kwargs to be set.
         :return: This method return the builder instance.
         """
-        self._impl_builder.with_kwargs(kwargs)
-        self._repository_builder.with_kwargs(kwargs)
+        self.impl_builder.with_kwargs(kwargs)
+        self.repository_builder.with_kwargs(kwargs)
         return super().with_kwargs(kwargs)
 
     def with_topics(self, topics: Iterable[str]) -> BrokerSubscriberBuilder:
@@ -125,15 +126,33 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         :return: This method return the builder instance.
         """
         topics = set(topics)
-        self._impl_builder.with_topics(topics)
-        self._repository_builder.with_topics(topics)
+        self.impl_builder.with_topics(topics)
+        self.repository_builder.with_topics(topics)
         return super().with_topics(topics)
+
+    def with_group_id(self, group_id: Optional[str]) -> BrokerSubscriberBuilder:
+        """Set group_id.
+
+        :param group_id: The group_id to be set.
+        :return: This method return the builder instance.
+        """
+        self.impl_builder.with_group_id(group_id)
+        return super().with_group_id(group_id)
+
+    def with_remove_topics_on_destroy(self, remove_topics_on_destroy: bool) -> BrokerSubscriberBuilder:
+        """Set remove_topics_on_destroy.
+
+        :param remove_topics_on_destroy: The remove_topics_on_destroy flag to be set.
+        :return: This method return the builder instance.
+        """
+        self.impl_builder.with_remove_topics_on_destroy(remove_topics_on_destroy)
+        return super().with_remove_topics_on_destroy(remove_topics_on_destroy)
 
     def build(self) -> BrokerSubscriber:
         """Build the instance.
 
         :return: A ``QueuedBrokerSubscriber`` instance.
         """
-        impl = self._impl_builder.build()
-        repository = self._repository_builder.build()
+        impl = self.impl_builder.build()
+        repository = self.repository_builder.build()
         return QueuedBrokerSubscriber(impl=impl, repository=repository, **self.kwargs)
