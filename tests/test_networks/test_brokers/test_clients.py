@@ -58,13 +58,13 @@ class TestBrokerClient(PostgresAsyncTestCase):
             BrokerClient.from_config(self.config, publisher=self.publisher)
 
     async def test_setup_destroy(self):
-        client = BrokerClient.from_config(
+        broker = BrokerClient.from_config(
             self.config, topic=self.topic, publisher=self.publisher, subscriber_builder=self.subscriber_builder,
         )
-        self.assertFalse(client.already_setup)
-        async with client:
-            self.assertTrue(client.already_setup)
-        self.assertTrue(client.already_destroyed)
+        self.assertFalse(broker.already_setup)
+        async with broker:
+            self.assertTrue(broker.already_setup)
+        self.assertTrue(broker.already_destroyed)
 
     def test_base_classes(self):
         self.assertIsInstance(self.broker, MinosSetup)
