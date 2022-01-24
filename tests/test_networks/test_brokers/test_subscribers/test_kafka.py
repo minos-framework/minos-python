@@ -34,30 +34,30 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(KafkaBrokerSubscriber, BrokerSubscriber))
 
-    def test_from_config(self):
+    async def test_from_config(self):
         config = MinosConfig(CONFIG_FILE_PATH)
-        subscriber = KafkaBrokerSubscriber.from_config(config, topics={"foo", "bar"})
-        self.assertEqual(config.broker.host, subscriber.broker_host)
-        self.assertEqual(config.broker.port, subscriber.broker_port)
-        self.assertEqual(config.service.name, subscriber.group_id)
-        self.assertEqual(False, subscriber.remove_topics_on_destroy)
-        self.assertEqual({"foo", "bar"}, subscriber.topics)
+        async with KafkaBrokerSubscriber.from_config(config, topics={"foo", "bar"}) as subscriber:
+            self.assertEqual(config.broker.host, subscriber.broker_host)
+            self.assertEqual(config.broker.port, subscriber.broker_port)
+            self.assertEqual(config.service.name, subscriber.group_id)
+            self.assertEqual(False, subscriber.remove_topics_on_destroy)
+            self.assertEqual({"foo", "bar"}, subscriber.topics)
 
-    def test_from_config_none_group_id(self):
-        subscriber = KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}, group_id=None)
-        self.assertEqual(None, subscriber.group_id)
+    async def test_from_config_none_group_id(self):
+        async with KafkaBrokerSubscriber.from_config(
+            CONFIG_FILE_PATH, topics={"foo", "bar"}, group_id=None
+        ) as subscriber:
+            self.assertEqual(None, subscriber.group_id)
 
     async def test_client(self):
-        subscriber = KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"})
+        async with KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}) as subscriber:
+            client = subscriber.client
+            self.assertIsInstance(client, AIOKafkaConsumer)
 
-        client = subscriber.client
-        self.assertIsInstance(client, AIOKafkaConsumer)
-
-    def test_admin_client(self):
-        subscriber = KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"})
-
-        client = subscriber.admin_client
-        self.assertIsInstance(client, KafkaAdminClient)
+    async def test_admin_client(self):
+        async with KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}) as subscriber:
+            client = subscriber.admin_client
+            self.assertIsInstance(client, KafkaAdminClient)
 
     async def test_setup_destroy_client(self):
         subscriber = KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"})
