@@ -21,7 +21,7 @@ class TestBrokerClientPool(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.publisher = InMemoryBrokerPublisher.from_config(self.config)
-        self.subscriber_builder = InMemoryBrokerSubscriberBuilder
+        self.subscriber_builder = InMemoryBrokerSubscriberBuilder()
         self.pool = BrokerClientPool.from_config(
             self.config, publisher=self.publisher, subscriber_builder=self.subscriber_builder
         )
