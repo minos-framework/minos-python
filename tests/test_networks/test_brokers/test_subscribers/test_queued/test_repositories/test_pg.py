@@ -7,6 +7,9 @@ from unittest.mock import (
     patch,
 )
 
+from minos.common import (
+    MinosConfig,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -15,6 +18,7 @@ from minos.networks import (
     BrokerMessageV1Payload,
     BrokerSubscriberRepository,
     PostgreSqlBrokerSubscriberRepository,
+    PostgreSqlBrokerSubscriberRepositoryBuilder,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -107,6 +111,18 @@ class TestPostgreSqlBrokerSubscriberRepository(PostgresAsyncTestCase):
         expected = [unsorted[3], unsorted[1], unsorted[2], unsorted[0]]
 
         self.assertEqual(expected, observed)
+
+
+class TestPostgreSqlBrokerSubscriberRepositoryBuilder(unittest.TestCase):
+    def setUp(self) -> None:
+        self.config = MinosConfig(CONFIG_FILE_PATH)
+
+    def test_build(self):
+        builder = PostgreSqlBrokerSubscriberRepositoryBuilder().with_config(self.config).with_topics({"one", "two"})
+        subscriber = builder.build()
+
+        self.assertIsInstance(subscriber, PostgreSqlBrokerSubscriberRepository)
+        self.assertEqual({"one", "two"}, subscriber.topics)
 
 
 if __name__ == "__main__":

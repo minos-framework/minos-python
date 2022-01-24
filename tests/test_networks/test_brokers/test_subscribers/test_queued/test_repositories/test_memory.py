@@ -9,6 +9,7 @@ from minos.networks import (
     BrokerMessageV1Payload,
     BrokerSubscriberRepository,
     InMemoryBrokerSubscriberRepository,
+    InMemoryBrokerSubscriberRepositoryBuilder,
 )
 
 
@@ -48,6 +49,15 @@ class TestInMemoryBrokerSubscriberRepository(unittest.IsolatedAsyncioTestCase):
                 await repository.destroy()
 
         self.assertEqual(messages, observed)
+
+
+class TestInMemoryBrokerSubscriberRepositoryBuilder(unittest.TestCase):
+    def test_build(self):
+        builder = InMemoryBrokerSubscriberRepositoryBuilder().with_topics({"one", "two"})
+        subscriber = builder.build()
+
+        self.assertIsInstance(subscriber, InMemoryBrokerSubscriberRepository)
+        self.assertEqual({"one", "two"}, subscriber.topics)
 
 
 if __name__ == "__main__":

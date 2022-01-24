@@ -259,14 +259,21 @@ _UNLISTEN_QUERY = SQL("UNLISTEN {}")
 
 
 class PostgreSqlBrokerSubscriberRepositoryBuilder(BrokerSubscriberRepositoryBuilder):
-    """TODO"""
+    """PostgreSql Broker Subscriber Repository Builder class."""
 
     def with_config(self, config: MinosConfig):
-        """TODO"""
+        """Set config.
+
+         :param config: The config to be set.
+         :return: This method return the builder instance.
+         """
         # noinspection PyProtectedMember
         self.kwargs |= config.broker.queue._asdict()
         return super().with_config(config)
 
     def build(self) -> PostgreSqlBrokerSubscriberRepository:
-        """TODO"""
+        """Build the instance.
+
+        :return: A ``BrokerSubscriberRepository`` instance.
+        """
         return PostgreSqlBrokerSubscriberRepository(**self.kwargs)

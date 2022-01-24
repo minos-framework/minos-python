@@ -14,6 +14,10 @@ from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerSubscriberRepository,
+    BrokerSubscriberRepositoryBuilder,
+)
+from tests.utils import (
+    CONFIG_FILE_PATH,
 )
 
 
@@ -25,6 +29,14 @@ class _BrokerSubscriberRepository(BrokerSubscriberRepository):
 
     async def dequeue(self) -> BrokerMessage:
         """For testing purposes."""
+
+
+class _BrokerSubscriberRepositoryBuilder(BrokerSubscriberRepositoryBuilder):
+    """For testing purposes."""
+
+    def build(self) -> BrokerSubscriberRepository:
+        """For testing purposes."""
+        return _BrokerSubscriberRepository(**self.kwargs)
 
 
 class TestBrokerSubscriberRepository(unittest.IsolatedAsyncioTestCase):
@@ -71,6 +83,42 @@ class TestBrokerSubscriberRepository(unittest.IsolatedAsyncioTestCase):
         repository.dequeue = dequeue_mock
         with self.assertRaises(StopAsyncIteration):
             await repository.__aiter__().__anext__()
+
+
+class TestBrokerSubscriberBuilder(unittest.TestCase):
+    def test_abstract(self):
+        self.assertTrue(issubclass(BrokerSubscriberRepositoryBuilder, (ABC, MinosSetup)))
+        # noinspection PyUnresolvedReferences
+        self.assertEqual(
+            {"build"}, BrokerSubscriberRepositoryBuilder.__abstractmethods__,
+        )
+
+    def test_new(self):
+        builder = _BrokerSubscriberRepositoryBuilder.new()
+        self.assertIsInstance(builder, _BrokerSubscriberRepositoryBuilder)
+        self.assertEqual(dict(), builder.kwargs)
+
+    def test_with_kwargs(self):
+        builder = _BrokerSubscriberRepositoryBuilder().with_kwargs({"foo": "bar"})
+        self.assertIsInstance(builder, _BrokerSubscriberRepositoryBuilder)
+        self.assertEqual({"foo": "bar"}, builder.kwargs)
+
+    def test_with_config(self):
+        builder = _BrokerSubscriberRepositoryBuilder().with_config(CONFIG_FILE_PATH)
+        self.assertIsInstance(builder, _BrokerSubscriberRepositoryBuilder)
+        self.assertEqual(dict(), builder.kwargs)
+
+    def test_with_topics(self):
+        builder = _BrokerSubscriberRepositoryBuilder().with_topics({"one", "two"})
+        self.assertIsInstance(builder, _BrokerSubscriberRepositoryBuilder)
+        self.assertEqual({"topics": {"one", "two"}}, builder.kwargs)
+
+    def test_build(self):
+        builder = _BrokerSubscriberRepositoryBuilder().with_topics({"one", "two"})
+        self.assertIsInstance(builder, _BrokerSubscriberRepositoryBuilder)
+        subscriber = builder.build()
+        self.assertIsInstance(subscriber, _BrokerSubscriberRepository)
+        self.assertEqual({"one", "two"}, subscriber.topics)
 
 
 if __name__ == "__main__":

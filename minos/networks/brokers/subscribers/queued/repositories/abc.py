@@ -68,7 +68,7 @@ class BrokerSubscriberRepository(ABC, MinosSetup):
 
 
 class BrokerSubscriberRepositoryBuilder(MinosSetup, ABC):
-    """TODO"""
+    """Broker Subscriber Repository Builder class."""
 
     def __init__(self):
         super().__init__()
@@ -76,26 +76,44 @@ class BrokerSubscriberRepositoryBuilder(MinosSetup, ABC):
 
     @classmethod
     def new(cls: type[B]) -> B:
-        """TODO"""
+        """Get a new instance.
+
+        :return: A ``BrokerSubscriberRepositoryBuilder`` instance.
+        """
         return cls()
 
     def with_kwargs(self: B, kwargs: dict[str, Any]) -> B:
-        """TODO"""
+        """Set kwargs.
+
+        :param kwargs: The kwargs to be set.
+        :return: This method return the builder instance.
+        """
         self.kwargs |= kwargs
         return self
 
     def with_config(self: B, config: MinosConfig) -> B:
-        """TODO"""
+        """Set config.
+
+        :param config: The config to be set.
+        :return: This method return the builder instance.
+        """
         return self
 
     def with_topics(self: B, topics: Iterable[str]) -> B:
-        """TODO"""
+        """Set topics.
+
+        :param topics: The topics to be set.
+        :return: This method return the builder instance.
+        """
         self.kwargs["topics"] = set(topics)
         return self
 
     @abstractmethod
     def build(self: B) -> BrokerSubscriberRepository:
-        """TODO"""
+        """Build the instance.
+
+        :return: A ``BrokerSubscriberRepository`` instance.
+        """
 
 
 B = TypeVar("B", bound=BrokerSubscriberRepositoryBuilder)
