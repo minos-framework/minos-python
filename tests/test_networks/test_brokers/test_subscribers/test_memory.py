@@ -38,6 +38,16 @@ class TestInMemoryBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
 
 
 class TestInMemoryBrokerSubscriberBuilder(unittest.TestCase):
+    def test_with_messages(self):
+        messages = [
+            BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
+            BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
+        ]
+        builder = InMemoryBrokerSubscriberBuilder().with_messages(messages)
+
+        self.assertIsInstance(builder, InMemoryBrokerSubscriberBuilder)
+        self.assertEqual({"messages": messages}, builder.kwargs)
+
     def test_build(self):
         builder = InMemoryBrokerSubscriberBuilder().with_topics({"one", "two"})
         subscriber = builder.build()
