@@ -1,3 +1,4 @@
+import logging
 from abc import (
     ABC,
     abstractmethod,
@@ -14,13 +15,20 @@ from ....messages import (
     BrokerMessage,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class BrokerPublisherRepository(ABC, MinosSetup):
     """Broker Publisher Repository class."""
 
-    @abstractmethod
     async def enqueue(self, message: BrokerMessage) -> None:
         """Enqueue method."""
+        logger.info(f"Enqueuing {message!r} message...")
+        await self._enqueue(message)
+
+    @abstractmethod
+    async def _enqueue(self, message: BrokerMessage) -> None:
+        raise NotImplementedError
 
     def __aiter__(self) -> AsyncIterator[BrokerMessage]:
         return self
@@ -30,6 +38,12 @@ class BrokerPublisherRepository(ABC, MinosSetup):
             raise StopAsyncIteration
         return await self.dequeue()
 
-    @abstractmethod
     async def dequeue(self) -> BrokerMessage:
         """Dequeue method."""
+        message = await self._dequeue()
+        logger.info(f"Dequeuing {message!r} message...")
+        return message
+
+    @abstractmethod
+    async def _dequeue(self) -> BrokerMessage:
+        raise NotImplementedError
