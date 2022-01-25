@@ -47,6 +47,25 @@ class TestSagaManager(MinosTestCase):
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
 
+        self.uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
+
+        self.receive_messages = [
+            BrokerMessageV1(
+                "topicReply",
+                BrokerMessageV1Payload(
+                    [Foo("foo")],
+                    headers={"saga": str(self.uuid), "transactions": str(self.uuid), "related_services": "foo"},
+                ),
+            ),
+            BrokerMessageV1(
+                "topicReply",
+                BrokerMessageV1Payload(
+                    [Foo("foo")],
+                    headers={"saga": str(self.uuid), "transactions": str(self.uuid), "related_services": "foo"},
+                ),
+            ),
+        ]
+
         self.user = uuid4()
         REQUEST_USER_CONTEXT_VAR.set(self.user)
         self.manager: SagaManager = SagaManager.from_config(self.config)
@@ -68,32 +87,10 @@ class TestSagaManager(MinosTestCase):
             self.assertIsInstance(saga_manager, SagaManager)
 
     async def test_run_with_pause_on_memory(self):
-        expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
-        with patch("uuid.uuid4", return_value=expected_uuid):
+        with patch("uuid.uuid4", return_value=self.uuid):
             self.broker_subscriber_builder.with_messages(
                 [
-                    BrokerMessageV1(
-                        "topicReply",
-                        BrokerMessageV1Payload(
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo",
-                            },
-                        ),
-                    ),
-                    BrokerMessageV1(
-                        "topicReply",
-                        BrokerMessageV1Payload(
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo",
-                            },
-                        ),
-                    ),
+                    *self.receive_messages,
                     BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "order"})),
                     BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "foo"})),
                     BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "order"})),
@@ -112,7 +109,7 @@ class TestSagaManager(MinosTestCase):
                 topic="CreateOrder",
                 payload=BrokerMessageV1Payload(
                     Foo("create_order!"),
-                    headers={"saga": str(expected_uuid), "transactions": str(expected_uuid), "user": str(self.user)},
+                    headers={"saga": str(self.uuid), "transactions": str(self.uuid), "user": str(self.user)},
                 ),
                 identifier=observed[0].identifier,
                 reply_topic=observed[0].reply_topic,
@@ -121,7 +118,7 @@ class TestSagaManager(MinosTestCase):
                 topic="CreateTicket",
                 payload=BrokerMessageV1Payload(
                     Foo("create_ticket!"),
-                    headers={"saga": str(expected_uuid), "transactions": str(expected_uuid), "user": str(self.user)},
+                    headers={"saga": str(self.uuid), "transactions": str(self.uuid), "user": str(self.user)},
                 ),
                 identifier=observed[1].identifier,
                 reply_topic=observed[1].reply_topic,
@@ -152,34 +149,8 @@ class TestSagaManager(MinosTestCase):
         self.assertEqual(expected, observed)
 
     async def test_run_with_pause_on_memory_without_commit(self):
-        expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
-        with patch("uuid.uuid4", return_value=expected_uuid):
-            self.broker_subscriber_builder.with_messages(
-                [
-                    BrokerMessageV1(
-                        "topicReply",
-                        BrokerMessageV1Payload(
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo",
-                            },
-                        ),
-                    ),
-                    BrokerMessageV1(
-                        "topicReply",
-                        BrokerMessageV1Payload(
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo",
-                            },
-                        ),
-                    ),
-                ]
-            )
+        with patch("uuid.uuid4", return_value=self.uuid):
+            self.broker_subscriber_builder.with_messages(self.receive_messages)
 
             with patch("minos.saga.SagaExecution.commit") as commit_mock:
                 execution = await self.manager.run(ADD_ORDER, autocommit=False)
@@ -188,78 +159,26 @@ class TestSagaManager(MinosTestCase):
         self.assertEqual(0, commit_mock.call_count)
 
     async def test_run_with_pause_on_memory_with_headers(self):
-        expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
-        with patch("uuid.uuid4", return_value=expected_uuid):
-            self.broker_subscriber_builder.with_messages(
-                [
-                    BrokerMessageV1(
-                        "topicReply",
-                        BrokerMessageV1Payload(
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo",
-                            },
-                        ),
-                    ),
-                    BrokerMessageV1(
-                        "topicReply",
-                        BrokerMessageV1Payload(
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo,bar",
-                            },
-                        ),
-                    ),
-                ]
-            )
+        with patch("uuid.uuid4", return_value=self.uuid):
+            self.broker_subscriber_builder.with_messages(self.receive_messages)
 
             request_headers = {"hello": "world"}
             REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
             await self.manager.run(ADD_ORDER, autocommit=False)
             self.assertEqual({"hello", "related_services"}, request_headers.keys())
             self.assertEqual("world", request_headers["hello"])
-            self.assertEqual({"foo", "bar", "order"}, set(request_headers["related_services"].split(",")))
+            self.assertEqual({"foo", "order"}, set(request_headers["related_services"].split(",")))
 
     async def test_run_with_pause_on_memory_with_headers_already_related_services(self):
-        expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
-        with patch("uuid.uuid4", return_value=expected_uuid):
-            self.broker_subscriber_builder.with_messages(
-                [
-                    BrokerMessageV1(
-                        "topicReply",
-                        BrokerMessageV1Payload(
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo",
-                            },
-                        ),
-                    ),
-                    BrokerMessageV1(
-                        "topicReply",
-                        BrokerMessageV1Payload(
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo,bar",
-                            },
-                        ),
-                    ),
-                ]
-            )
+        with patch("uuid.uuid4", return_value=self.uuid):
+            self.broker_subscriber_builder.with_messages(self.receive_messages)
 
             request_headers = {"hello": "world", "related_services": "order,one"}
             REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
             await self.manager.run(ADD_ORDER, autocommit=False)
             self.assertEqual({"hello", "related_services"}, request_headers.keys())
             self.assertEqual("world", request_headers["hello"])
-            self.assertEqual({"foo", "bar", "one", "order"}, set(request_headers["related_services"].split(",")))
+            self.assertEqual({"foo", "one", "order"}, set(request_headers["related_services"].split(",")))
 
     async def test_run_with_pause_on_memory_with_error(self):
         with patch("minos.networks.BrokerClient.receive", side_effect=ValueError):
@@ -270,7 +189,6 @@ class TestSagaManager(MinosTestCase):
 
     async def test_run_with_pause_on_memory_without_autocommit(self):
         with patch("minos.networks.BrokerClient.receive", side_effect=ValueError):
-
             with patch("minos.saga.SagaExecution.reject") as reject_mock:
                 execution = await self.manager.run(ADD_ORDER, autocommit=False, raise_on_error=False)
             self.assertEqual(SagaStatus.Errored, execution.status)
@@ -278,13 +196,12 @@ class TestSagaManager(MinosTestCase):
 
     async def test_run_with_pause_on_memory_with_error_raises(self):
         with patch("minos.networks.BrokerClient.receive", side_effect=ValueError):
-
             with self.assertRaises(SagaFailedExecutionException):
                 await self.manager.run(ADD_ORDER)
 
     async def test_run_with_pause_on_disk(self):
         self.broker_subscriber_builder.with_messages(
-            [BrokerMessageV1("", BrokerMessageV1Payload(None)), BrokerMessageV1("", BrokerMessageV1Payload(None))]
+            [BrokerMessageV1("", BrokerMessageV1Payload()), BrokerMessageV1("", BrokerMessageV1Payload())]
         )
 
         execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
@@ -345,7 +262,7 @@ class TestSagaManager(MinosTestCase):
         self.assertEqual(expected, observed)
 
     async def test_run_with_pause_on_disk_without_commit(self):
-        self.broker_subscriber_builder.with_messages([BrokerMessageV1("", BrokerMessageV1Payload(None))])
+        self.broker_subscriber_builder.with_messages([BrokerMessageV1("", BrokerMessageV1Payload())])
 
         execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
@@ -364,9 +281,9 @@ class TestSagaManager(MinosTestCase):
     async def test_run_with_pause_on_disk_with_headers(self):
         self.broker_subscriber_builder.with_messages(
             [
-                BrokerMessageV1("", BrokerMessageV1Payload(None)),
-                BrokerMessageV1("", BrokerMessageV1Payload(None)),
-                BrokerMessageV1("", BrokerMessageV1Payload(None)),
+                BrokerMessageV1("", BrokerMessageV1Payload()),
+                BrokerMessageV1("", BrokerMessageV1Payload()),
+                BrokerMessageV1("", BrokerMessageV1Payload()),
             ]
         )
         request_headers = {"related_services": "one"}
