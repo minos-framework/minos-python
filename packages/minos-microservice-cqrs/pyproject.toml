@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "minos_microservice_cqrs"
+name = "minos-microservice-cqrs"
 version = "0.2.1"
 description = "Minos Microservice CQRS package"
 readme = "README.md"

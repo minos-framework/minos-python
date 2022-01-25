@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "minos_microservice_common"
+name = "minos-microservice-common"
 version = "0.3.4"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 readme = "README.md"

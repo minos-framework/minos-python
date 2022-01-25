@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "minos_microservice_aggregate"
+name = "minos-microservice-aggregate"
 version = "0.2.4"
 description = "Python Package for Minos Microservices containing all the Aggregate stuff"
 readme = "README.md"
