@@ -33,6 +33,7 @@ from .brokers import (
     KafkaBrokerPublisher,
     KafkaBrokerSubscriber,
     PostgreSqlBrokerPublisherRepository,
+    PostgreSqlBrokerRepository,
     PostgreSqlBrokerSubscriberRepository,
     PostgreSqlQueuedKafkaBrokerPublisher,
     PostgreSqlQueuedKafkaBrokerSubscriber,

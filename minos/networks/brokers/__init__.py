@@ -4,6 +4,7 @@ from .clients import (
 from .collections import (
     BrokerRepository,
     InMemoryBrokerRepository,
+    PostgreSqlBrokerRepository,
 )
 from .dispatchers import (
     BrokerDispatcher,

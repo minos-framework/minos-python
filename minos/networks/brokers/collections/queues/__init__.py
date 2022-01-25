@@ -4,3 +4,6 @@ from .abc import (
 from .memory import (
     InMemoryBrokerRepository,
 )
+from .pg import (
+    PostgreSqlBrokerRepository,
+)
