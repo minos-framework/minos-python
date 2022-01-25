@@ -9,9 +9,7 @@ from minos.networks import (
 
 class TestInMemoryBrokerSubscriberQueue(unittest.IsolatedAsyncioTestCase):
     def test_is_subclass(self):
-        self.assertTrue(
-            issubclass(InMemoryBrokerSubscriberQueue, (InMemoryBrokerQueue, BrokerSubscriberQueue))
-        )
+        self.assertTrue(issubclass(InMemoryBrokerSubscriberQueue, (InMemoryBrokerQueue, BrokerSubscriberQueue)))
 
 
 if __name__ == "__main__":

@@ -63,9 +63,7 @@ class TestPostgreSqlBrokerSubscriberQueue(PostgresAsyncTestCase):
             "aiopg.Cursor.fetchall",
             return_value=[[1, messages[0].avro_bytes], [2, bytes()], [3, messages[1].avro_bytes]],
         ):
-            async with PostgreSqlBrokerSubscriberQueue.from_config(
-                self.config, topics={"foo", "bar"}
-            ) as queue:
+            async with PostgreSqlBrokerSubscriberQueue.from_config(self.config, topics={"foo", "bar"}) as queue:
                 queue._get_count = AsyncMock(side_effect=[3, 0])
 
                 async with queue:
