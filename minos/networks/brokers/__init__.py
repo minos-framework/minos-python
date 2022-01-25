@@ -1,6 +1,10 @@
 from .clients import (
     BrokerClient,
 )
+from .collections import (
+    BrokerRepository,
+    InMemoryBrokerRepository,
+)
 from .dispatchers import (
     BrokerDispatcher,
     BrokerRequest,
