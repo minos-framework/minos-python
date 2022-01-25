@@ -101,19 +101,11 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
             await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id_,))
             self._queue.task_done()
 
-    async def enqueue(self, message: BrokerMessage) -> None:
+    async def _enqueue(self, message: BrokerMessage) -> None:
         """Enqueue method."""
-        logger.info(f"Enqueuing {message!r} message...")
-
         params = (message.topic, message.avro_bytes)
         await self.submit_query_and_fetchone(_INSERT_QUERY, params)
         await self.submit_query(_NOTIFY_QUERY)
-
-    async def dequeue(self) -> BrokerMessage:
-        """Dequeue method."""
-        message = await self._dequeue()
-        logger.info(f"Dequeuing {message!r} message...")
-        return message
 
     async def _dequeue(self) -> BrokerMessage:
         while True:

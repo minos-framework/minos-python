@@ -20,10 +20,10 @@ from minos.networks import (
 class _BrokerPublisherRepository(BrokerPublisherRepository):
     """For testing purposes."""
 
-    async def enqueue(self, message: BrokerMessage) -> None:
+    async def _enqueue(self, message: BrokerMessage) -> None:
         """For testing purposes."""
 
-    async def dequeue(self) -> BrokerMessage:
+    async def _dequeue(self) -> BrokerMessage:
         """For testing purposes."""
 
 
@@ -32,7 +32,7 @@ class TestBrokerPublisherRepository(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(issubclass(BrokerPublisherRepository, (ABC, MinosSetup)))
         # noinspection PyUnresolvedReferences
         self.assertEqual(
-            {"enqueue", "dequeue"}, BrokerPublisherRepository.__abstractmethods__,
+            {"_enqueue", "_dequeue"}, BrokerPublisherRepository.__abstractmethods__,
         )
 
     async def test_iter(self):
@@ -43,7 +43,7 @@ class TestBrokerPublisherRepository(unittest.IsolatedAsyncioTestCase):
         dequeue_mock = AsyncMock(side_effect=messages)
 
         async with _BrokerPublisherRepository() as repository:
-            repository.dequeue = dequeue_mock
+            repository._dequeue = dequeue_mock
             observed = await repository.__aiter__().__anext__()
 
         self.assertEqual(messages[0], observed)
@@ -57,7 +57,7 @@ class TestBrokerPublisherRepository(unittest.IsolatedAsyncioTestCase):
         dequeue_mock = AsyncMock(side_effect=messages)
 
         repository = _BrokerPublisherRepository()
-        repository.dequeue = dequeue_mock
+        repository._dequeue = dequeue_mock
         with self.assertRaises(StopAsyncIteration):
             await repository.__aiter__().__anext__()
 

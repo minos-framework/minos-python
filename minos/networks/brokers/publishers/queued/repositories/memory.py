@@ -41,14 +41,10 @@ class InMemoryBrokerPublisherRepository(BrokerPublisherRepository):
                     break
             logger.warning(f"Some messages were loosed: {messages}")
 
-    async def enqueue(self, message: BrokerMessage) -> None:
-        """Enqueue method."""
-        logger.info(f"Enqueuing {message!r} message...")
+    async def _enqueue(self, message: BrokerMessage) -> None:
         await self._queue.put(message)
 
-    async def dequeue(self) -> BrokerMessage:
-        """Dequeue method."""
+    async def _dequeue(self) -> BrokerMessage:
         message = await self._queue.get()
-        logger.info(f"Dequeuing {message!r} message...")
         self._queue.task_done()
         return message
