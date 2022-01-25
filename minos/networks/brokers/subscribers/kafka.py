@@ -3,6 +3,10 @@ from __future__ import (
 )
 
 import logging
+from asyncio import (
+    TimeoutError,
+    wait_for,
+)
 from collections.abc import (
     Iterable,
 )
@@ -74,7 +78,8 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
         await self.client.start()
 
     async def _destroy(self) -> None:
-        await self.client.stop()
+        with suppress(TimeoutError):
+            await wait_for(self.client.stop(), 0.5)
         self._delete_topics()
         self.admin_client.close()
         await super()._destroy()
