@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "minos_microservice_saga"
+version = "0.3.5"
+description = "Saga Library for MinOS project."
+readme = "README.md"
+repository = "https://github.com/clariteia/minos_microservice_saga"
+homepage = "https://clariteia.com"
+authors = ["Clariteia Devs <pypi@clariteia.com>"]
+license = "MIT"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+]
+keywords = [
+    "clariteia",
+    "minos",
+    "microservice",
+    "saga",
+]
+packages = [
+    { include = "minos" }
+]
+include = [
+    "AUTHORS.md",
+    "HISTORY.md",
+    "LICENSE",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+minos-microservice-common = "^0.3.0"
+minos-microservice-networks = "^0.3.1"
+minos-microservice-aggregate = "^0.2.0"
+dependency-injector = "^4.32.2"
+
+[tool.poetry.dev-dependencies]
+black = "^19.10b"
+isort = "^5.8.0"
+pytest = "^6.2.4"
+coverage = "^5.5"
+flake8 = "^3.9.2"
+Sphinx = "^4.0.1"
+pre-commit = "^2.12.1"
+sphinx-autodoc-typehints = "^1.12.0"
+sphinxcontrib-apidoc = "^0.3.0"
+sphinx-rtd-theme = "^0.5.2"
+m2r2 = "^0.2.7"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

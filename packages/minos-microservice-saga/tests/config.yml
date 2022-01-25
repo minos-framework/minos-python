@@ -1,0 +1,6 @@
+service:
+    name: order
+    aggregate: tests.utils.Order
+saga:
+    storage:
+        path: "./order.lmdb"
