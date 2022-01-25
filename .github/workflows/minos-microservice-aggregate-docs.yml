@@ -11,21 +11,21 @@ jobs:
     defaults:
       run:
         working-directory: packages/minos-microservice-aggregate
-      steps:
-        - name: Check out repository code
-          uses: actions/checkout@v2
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
 
-        - name: Install Poetry
-          uses: snok/install-poetry@v1
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
 
-        - name: Install dependencies
-          run: make install
+      - name: Install dependencies
+        run: make install
 
-        - name: Generate documentation
-          run: make docs
+      - name: Generate documentation
+        run: make docs
 
-        - name: Deploy documentation
-          uses: peaceiris/actions-gh-pages@v3
-          with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            publish_dir: docs/_build/html
+      - name: Deploy documentation
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/_build/html
