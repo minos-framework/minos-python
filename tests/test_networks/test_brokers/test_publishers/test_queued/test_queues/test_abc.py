@@ -13,11 +13,11 @@ from minos.networks import (
     BrokerMessage,
     BrokerMessageV1,
     BrokerMessageV1Payload,
-    BrokerPublisherRepository,
+    BrokerPublisherQueue,
 )
 
 
-class _BrokerPublisherRepository(BrokerPublisherRepository):
+class _BrokerPublisherQueue(BrokerPublisherQueue):
     """For testing purposes."""
 
     async def _enqueue(self, message: BrokerMessage) -> None:
@@ -27,12 +27,12 @@ class _BrokerPublisherRepository(BrokerPublisherRepository):
         """For testing purposes."""
 
 
-class TestBrokerPublisherRepository(unittest.IsolatedAsyncioTestCase):
+class TestBrokerPublisherQueue(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
-        self.assertTrue(issubclass(BrokerPublisherRepository, (ABC, MinosSetup)))
+        self.assertTrue(issubclass(BrokerPublisherQueue, (ABC, MinosSetup)))
         # noinspection PyUnresolvedReferences
         self.assertEqual(
-            {"_enqueue", "_dequeue"}, BrokerPublisherRepository.__abstractmethods__,
+            {"_enqueue", "_dequeue"}, BrokerPublisherQueue.__abstractmethods__,
         )
 
     async def test_iter(self):
@@ -42,9 +42,9 @@ class TestBrokerPublisherRepository(unittest.IsolatedAsyncioTestCase):
         ]
         dequeue_mock = AsyncMock(side_effect=messages)
 
-        async with _BrokerPublisherRepository() as repository:
-            repository._dequeue = dequeue_mock
-            observed = await repository.__aiter__().__anext__()
+        async with _BrokerPublisherQueue() as queue:
+            queue._dequeue = dequeue_mock
+            observed = await queue.__aiter__().__anext__()
 
         self.assertEqual(messages[0], observed)
         self.assertEqual(1, dequeue_mock.call_count)
@@ -56,10 +56,10 @@ class TestBrokerPublisherRepository(unittest.IsolatedAsyncioTestCase):
         ]
         dequeue_mock = AsyncMock(side_effect=messages)
 
-        repository = _BrokerPublisherRepository()
-        repository._dequeue = dequeue_mock
+        queue = _BrokerPublisherQueue()
+        queue._dequeue = dequeue_mock
         with self.assertRaises(StopAsyncIteration):
-            await repository.__aiter__().__anext__()
+            await queue.__aiter__().__anext__()
 
 
 if __name__ == "__main__":

@@ -17,8 +17,8 @@ from ...messages import (
 from ..abc import (
     BrokerPublisher,
 )
-from .repositories import (
-    BrokerPublisherRepository,
+from .queues import (
+    BrokerPublisherQueue,
 )
 
 
@@ -26,26 +26,26 @@ class QueuedBrokerPublisher(BrokerPublisher):
     """Queued Broker Publisher class."""
 
     impl: BrokerPublisher
-    repository: BrokerPublisherRepository
+    queue: BrokerPublisherQueue
 
-    def __init__(self, impl: BrokerPublisher, repository: BrokerPublisherRepository, *args, **kwargs):
+    def __init__(self, impl: BrokerPublisher, queue: BrokerPublisherQueue, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.impl = impl
-        self.repository = repository
+        self.queue = queue
 
         self._run_task = None
 
     async def _setup(self) -> None:
         await super()._setup()
-        await self.repository.setup()
+        await self.queue.setup()
         await self.impl.setup()
         await self._start_task()
 
     async def _destroy(self) -> None:
         await self._stop_task()
         await self.impl.destroy()
-        await self.repository.destroy()
+        await self.queue.destroy()
         await super()._destroy()
 
     async def _start_task(self):
@@ -60,8 +60,8 @@ class QueuedBrokerPublisher(BrokerPublisher):
             self._run_task = None
 
     async def _run(self) -> NoReturn:
-        async for message in self.repository:
+        async for message in self.queue:
             await self.impl.send(message)
 
     async def _send(self, message: BrokerMessage) -> None:
-        await self.repository.enqueue(message)
+        await self.queue.enqueue(message)

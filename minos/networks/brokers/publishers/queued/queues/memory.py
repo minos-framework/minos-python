@@ -10,14 +10,14 @@ from ....messages import (
     BrokerMessage,
 )
 from .abc import (
-    BrokerPublisherRepository,
+    BrokerPublisherQueue,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class InMemoryBrokerPublisherRepository(BrokerPublisherRepository):
-    """In Memory Broker Publisher Repository class."""
+class InMemoryBrokerPublisherQueue(BrokerPublisherQueue):
+    """In Memory Broker Publisher Queue class."""
 
     _queue: Queue[BrokerMessage]
 

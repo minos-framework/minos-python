@@ -13,25 +13,25 @@ from minos.common.testing import (
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
-    BrokerPublisherRepository,
-    PostgreSqlBrokerPublisherRepository,
+    BrokerPublisherQueue,
+    PostgreSqlBrokerPublisherQueue,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
 )
 
 
-class TestPostgreSqlBrokerPublisherRepository(PostgresAsyncTestCase):
+class TestPostgreSqlBrokerPublisherQueue(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def test_is_subclass(self):
-        self.assertTrue(issubclass(PostgreSqlBrokerPublisherRepository, BrokerPublisherRepository))
+        self.assertTrue(issubclass(PostgreSqlBrokerPublisherQueue, BrokerPublisherQueue))
 
     async def test_enqueue(self):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
 
-        async with PostgreSqlBrokerPublisherRepository.from_config(self.config) as repository:
-            await repository.enqueue(message)
+        async with PostgreSqlBrokerPublisherQueue.from_config(self.config) as queue:
+            await queue.enqueue(message)
             await sleep(0.5)  # To give time to consume the message from db.
 
     async def test_iter(self):
@@ -40,16 +40,16 @@ class TestPostgreSqlBrokerPublisherRepository(PostgresAsyncTestCase):
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
 
-        repository = PostgreSqlBrokerPublisherRepository.from_config(self.config)
-        await repository.setup()
-        await repository.enqueue(messages[0])
-        await repository.enqueue(messages[1])
+        queue = PostgreSqlBrokerPublisherQueue.from_config(self.config)
+        await queue.setup()
+        await queue.enqueue(messages[0])
+        await queue.enqueue(messages[1])
 
         observed = list()
-        async for message in repository:
+        async for message in queue:
             observed.append(message)
             if len(messages) == len(observed):
-                await repository.destroy()
+                await queue.destroy()
 
         self.assertEqual(messages, observed)
 
@@ -63,11 +63,11 @@ class TestPostgreSqlBrokerPublisherRepository(PostgresAsyncTestCase):
             "aiopg.Cursor.fetchall",
             return_value=[[1, messages[0].avro_bytes], [2, bytes()], [3, messages[1].avro_bytes]],
         ):
-            async with PostgreSqlBrokerPublisherRepository.from_config(self.config) as repository:
-                repository._get_count = AsyncMock(side_effect=[3, 0])
+            async with PostgreSqlBrokerPublisherQueue.from_config(self.config) as queue:
+                queue._get_count = AsyncMock(side_effect=[3, 0])
 
-                async with repository:
-                    observed = [await repository.dequeue(), await repository.dequeue()]
+                async with queue:
+                    observed = [await queue.dequeue(), await queue.dequeue()]
 
         self.assertEqual(messages, observed)
 
@@ -76,11 +76,11 @@ class TestPostgreSqlBrokerPublisherRepository(PostgresAsyncTestCase):
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
-        async with PostgreSqlBrokerPublisherRepository.from_config(self.config) as repository:
-            await repository.enqueue(messages[0])
-            await repository.enqueue(messages[1])
+        async with PostgreSqlBrokerPublisherQueue.from_config(self.config) as queue:
+            await queue.enqueue(messages[0])
+            await queue.enqueue(messages[1])
 
-            observed = [await repository.dequeue(), await repository.dequeue()]
+            observed = [await queue.dequeue(), await queue.dequeue()]
 
         self.assertEqual(messages, observed)
 
@@ -92,15 +92,15 @@ class TestPostgreSqlBrokerPublisherRepository(PostgresAsyncTestCase):
             BrokerMessageV1("foo", BrokerMessageV1Payload(1)),
         ]
 
-        async with PostgreSqlBrokerPublisherRepository.from_config(self.config) as repository:
+        async with PostgreSqlBrokerPublisherQueue.from_config(self.config) as queue:
 
             for message in unsorted:
-                await repository.enqueue(message)
+                await queue.enqueue(message)
 
             await sleep(0.5)
             observed = list()
             for _ in range(len(unsorted)):
-                observed.append(await repository.dequeue())
+                observed.append(await queue.dequeue())
 
         expected = [unsorted[3], unsorted[1], unsorted[2], unsorted[0]]
 
