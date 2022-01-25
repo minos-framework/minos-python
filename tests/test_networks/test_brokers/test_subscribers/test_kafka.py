@@ -21,11 +21,11 @@ from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerSubscriber,
-    InMemoryBrokerSubscriberRepository,
+    InMemoryBrokerSubscriberQueue,
     InMemoryQueuedKafkaBrokerSubscriberBuilder,
     KafkaBrokerSubscriber,
     KafkaBrokerSubscriberBuilder,
-    PostgreSqlBrokerSubscriberRepository,
+    PostgreSqlBrokerSubscriberQueue,
     PostgreSqlQueuedKafkaBrokerSubscriberBuilder,
     QueuedBrokerSubscriber,
 )
@@ -208,7 +208,7 @@ class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
 
         self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
         self.assertIsInstance(subscriber.impl, KafkaBrokerSubscriber)
-        self.assertIsInstance(subscriber.repository, PostgreSqlBrokerSubscriberRepository)
+        self.assertIsInstance(subscriber.queue, PostgreSqlBrokerSubscriberQueue)
 
 
 class TestInMemoryQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
@@ -221,7 +221,7 @@ class TestInMemoryQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
 
         self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
         self.assertIsInstance(subscriber.impl, KafkaBrokerSubscriber)
-        self.assertIsInstance(subscriber.repository, InMemoryBrokerSubscriberRepository)
+        self.assertIsInstance(subscriber.queue, InMemoryBrokerSubscriberQueue)
 
 
 if __name__ == "__main__":

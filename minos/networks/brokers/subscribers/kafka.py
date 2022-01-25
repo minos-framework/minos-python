@@ -3,6 +3,10 @@ from __future__ import (
 )
 
 import logging
+from asyncio import (
+    TimeoutError,
+    wait_for,
+)
 from collections.abc import (
     Iterable,
 )
@@ -41,8 +45,8 @@ from .abc import (
     BrokerSubscriberBuilder,
 )
 from .queued import (
-    InMemoryBrokerSubscriberRepositoryBuilder,
-    PostgreSqlBrokerSubscriberRepositoryBuilder,
+    InMemoryBrokerSubscriberQueueBuilder,
+    PostgreSqlBrokerSubscriberQueueBuilder,
     QueuedBrokerSubscriberBuilder,
 )
 
@@ -79,7 +83,8 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
         await self.client.start()
 
     async def _destroy(self) -> None:
-        await self.client.stop()
+        with suppress(TimeoutError):
+            await wait_for(self.client.stop(), 0.5)
         self._delete_topics()
         self.admin_client.close()
         await super()._destroy()
@@ -160,7 +165,7 @@ class PostgreSqlQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder
         super().__init__(
             *args,
             impl_builder=KafkaBrokerSubscriberBuilder.new(),
-            repository_builder=PostgreSqlBrokerSubscriberRepositoryBuilder.new(),
+            queue_builder=PostgreSqlBrokerSubscriberQueueBuilder.new(),
             **kwargs,
         )
 
@@ -172,6 +177,6 @@ class InMemoryQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):
         super().__init__(
             *args,
             impl_builder=KafkaBrokerSubscriberBuilder.new(),
-            repository_builder=InMemoryBrokerSubscriberRepositoryBuilder.new(),
+            queue_builder=InMemoryBrokerSubscriberQueueBuilder.new(),
             **kwargs,
         )

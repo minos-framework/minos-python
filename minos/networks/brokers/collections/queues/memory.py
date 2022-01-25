@@ -6,18 +6,18 @@ from asyncio import (
     wait_for,
 )
 
-from ....messages import (
+from ...messages import (
     BrokerMessage,
 )
 from .abc import (
-    BrokerPublisherRepository,
+    BrokerQueue,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class InMemoryBrokerPublisherRepository(BrokerPublisherRepository):
-    """In Memory Broker Publisher Repository class."""
+class InMemoryBrokerQueue(BrokerQueue):
+    """In Memory Broker Queue class."""
 
     _queue: Queue[BrokerMessage]
 

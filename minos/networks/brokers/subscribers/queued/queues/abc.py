@@ -8,11 +8,10 @@ from abc import (
     abstractmethod,
 )
 from collections.abc import (
-    AsyncIterator,
+    Iterable,
 )
 from typing import (
     Any,
-    Iterable,
     TypeVar,
 )
 
@@ -21,15 +20,15 @@ from minos.common import (
     MinosSetup,
 )
 
-from ....messages import (
-    BrokerMessage,
+from ....collections import (
+    BrokerQueue,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class BrokerSubscriberRepository(ABC, MinosSetup):
-    """Broker Subscriber Repository class."""
+class BrokerSubscriberQueue(BrokerQueue, ABC):
+    """Broker Subscriber Queue class."""
 
     def __init__(self, topics: Iterable[str], **kwargs):
         super().__init__(**kwargs)
@@ -46,43 +45,9 @@ class BrokerSubscriberRepository(ABC, MinosSetup):
         """
         return self._topics
 
-    def __aiter__(self) -> AsyncIterator[BrokerMessage]:
-        return self
 
-    async def __anext__(self) -> BrokerMessage:
-        if self.already_destroyed:
-            raise StopAsyncIteration
-        return await self.dequeue()
-
-    async def enqueue(self, message: BrokerMessage) -> None:
-        """Enqueue a new message.
-
-        :param message: The ``BrokerMessage`` to be enqueued.
-        :return: This method does not return anything.
-        """
-        logger.info(f"Enqueueing {message!r} message...")
-        await self._enqueue(message)
-
-    @abstractmethod
-    async def _enqueue(self, message: BrokerMessage) -> None:
-        raise NotImplementedError
-
-    async def dequeue(self) -> BrokerMessage:
-        """Dequeue a message from the queue.
-
-        :return: The dequeued ``BrokerMessage``.
-        """
-        message = await self._dequeue()
-        logger.info(f"Dequeuing {message!r} message...")
-        return message
-
-    @abstractmethod
-    async def _dequeue(self) -> BrokerMessage:
-        raise NotImplementedError
-
-
-class BrokerSubscriberRepositoryBuilder(MinosSetup, ABC):
-    """Broker Subscriber Repository Builder class."""
+class BrokerSubscriberQueueBuilder(MinosSetup, ABC):
+    """Broker Subscriber Queue Builder class."""
 
     def __init__(self):
         super().__init__()
@@ -130,11 +95,11 @@ class BrokerSubscriberRepositoryBuilder(MinosSetup, ABC):
         return self
 
     @abstractmethod
-    def build(self: B) -> BrokerSubscriberRepository:
+    def build(self: B) -> BrokerSubscriberQueue:
         """Build the instance.
 
-        :return: A ``BrokerSubscriberRepository`` instance.
+        :return: A ``BrokerSubscriberQueue`` instance.
         """
 
 
-B = TypeVar("B", bound=BrokerSubscriberRepositoryBuilder)
+B = TypeVar("B", bound=BrokerSubscriberQueueBuilder)

@@ -5,6 +5,7 @@ from asyncio import (
     wait_for,
 )
 from collections.abc import (
+    Awaitable,
     Iterable,
 )
 from contextlib import (
@@ -12,7 +13,6 @@ from contextlib import (
 )
 from typing import (
     Any,
-    Awaitable,
     NoReturn,
     Optional,
 )
@@ -28,9 +28,9 @@ from ..abc import (
     BrokerSubscriber,
     BrokerSubscriberBuilder,
 )
-from .repositories import (
-    BrokerSubscriberRepository,
-    BrokerSubscriberRepositoryBuilder,
+from .queues import (
+    BrokerSubscriberQueue,
+    BrokerSubscriberQueueBuilder,
 )
 
 
@@ -38,28 +38,28 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
     """Queued Broker Subscriber class."""
 
     impl: BrokerSubscriber
-    repository: BrokerSubscriberRepository
+    queue: BrokerSubscriberQueue
 
-    def __init__(self, impl: BrokerSubscriber, repository: BrokerSubscriberRepository, **kwargs):
+    def __init__(self, impl: BrokerSubscriber, queue: BrokerSubscriberQueue, **kwargs):
         super().__init__(kwargs.pop("topics", impl.topics), **kwargs)
-        if self.topics != impl.topics or self.topics != repository.topics:
-            raise ValueError("The topics from the impl and repository must be equal")
+        if self.topics != impl.topics or self.topics != queue.topics:
+            raise ValueError("The topics from the impl and queue must be equal")
 
         self.impl = impl
-        self.repository = repository
+        self.queue = queue
 
         self._run_task = None
 
     async def _setup(self) -> None:
         await super()._setup()
-        await self.repository.setup()
+        await self.queue.setup()
         await self.impl.setup()
         await self._start_run()
 
     async def _destroy(self) -> None:
         await self._stop_run()
         await self.impl.destroy()
-        await self.repository.destroy()
+        await self.queue.destroy()
         await super()._destroy()
 
     async def _start_run(self):
@@ -75,25 +75,21 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
 
     async def _run(self) -> NoReturn:
         async for message in self.impl:
-            await self.repository.enqueue(message)
+            await self.queue.enqueue(message)
 
     def _receive(self) -> Awaitable[BrokerMessage]:
-        return self.repository.dequeue()
+        return self.queue.dequeue()
 
 
 class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
     """Queued Broker Subscriber Publisher class."""
 
     def __init__(
-        self,
-        *args,
-        impl_builder: BrokerSubscriberBuilder,
-        repository_builder: BrokerSubscriberRepositoryBuilder,
-        **kwargs
+        self, *args, impl_builder: BrokerSubscriberBuilder, queue_builder: BrokerSubscriberQueueBuilder, **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.impl_builder = impl_builder
-        self.repository_builder = repository_builder
+        self.queue_builder = queue_builder
 
     def with_config(self, config: MinosConfig) -> BrokerSubscriberBuilder:
         """Set config.
@@ -102,7 +98,7 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         :return: This method return the builder instance.
         """
         self.impl_builder.with_config(config)
-        self.repository_builder.with_config(config)
+        self.queue_builder.with_config(config)
         return super().with_config(config)
 
     def with_kwargs(self, kwargs: dict[str, Any]) -> BrokerSubscriberBuilder:
@@ -112,7 +108,7 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         :return: This method return the builder instance.
         """
         self.impl_builder.with_kwargs(kwargs)
-        self.repository_builder.with_kwargs(kwargs)
+        self.queue_builder.with_kwargs(kwargs)
         return super().with_kwargs(kwargs)
 
     def with_topics(self, topics: Iterable[str]) -> BrokerSubscriberBuilder:
@@ -123,7 +119,7 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         """
         topics = set(topics)
         self.impl_builder.with_topics(topics)
-        self.repository_builder.with_topics(topics)
+        self.queue_builder.with_topics(topics)
         return super().with_topics(topics)
 
     def with_group_id(self, group_id: Optional[str]) -> BrokerSubscriberBuilder:
@@ -150,5 +146,5 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         :return: A ``QueuedBrokerSubscriber`` instance.
         """
         impl = self.impl_builder.build()
-        repository = self.repository_builder.build()
-        return QueuedBrokerSubscriber(impl=impl, repository=repository, **self.kwargs)
+        queue = self.queue_builder.build()
+        return QueuedBrokerSubscriber(impl=impl, queue=queue, **self.kwargs)

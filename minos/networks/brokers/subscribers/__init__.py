@@ -13,12 +13,13 @@ from .memory import (
     InMemoryBrokerSubscriberBuilder,
 )
 from .queued import (
-    BrokerSubscriberRepository,
-    BrokerSubscriberRepositoryBuilder,
-    InMemoryBrokerSubscriberRepository,
-    InMemoryBrokerSubscriberRepositoryBuilder,
-    PostgreSqlBrokerSubscriberRepository,
-    PostgreSqlBrokerSubscriberRepositoryBuilder,
+    BrokerSubscriberQueue,
+    BrokerSubscriberQueueBuilder,
+    InMemoryBrokerSubscriberQueue,
+    InMemoryBrokerSubscriberQueueBuilder,
+    PostgreSqlBrokerSubscriberQueue,
+    PostgreSqlBrokerSubscriberQueueBuilder,
+    PostgreSqlBrokerSubscriberQueueQueryFactory,
     QueuedBrokerSubscriber,
     QueuedBrokerSubscriberBuilder,
 )
