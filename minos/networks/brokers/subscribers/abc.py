@@ -1,3 +1,4 @@
+import logging
 from abc import (
     ABC,
     abstractmethod,
@@ -14,6 +15,8 @@ from minos.common import (
 from ..messages import (
     BrokerMessage,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class BrokerSubscriber(ABC, MinosSetup):
@@ -39,9 +42,15 @@ class BrokerSubscriber(ABC, MinosSetup):
             raise StopAsyncIteration
         return await self.receive()
 
-    @abstractmethod
     async def receive(self) -> BrokerMessage:
         """Receive a new message.
 
         :return: A ``BrokerMessage`` instance.
         """
+        message = await self._receive()
+        logger.info(f"Receiving {message!r} message...")
+        return message
+
+    @abstractmethod
+    async def _receive(self) -> BrokerMessage:
+        raise NotImplementedError

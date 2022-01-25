@@ -104,15 +104,10 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
         """
         return KafkaAdminClient(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
 
-    async def receive(self) -> BrokerMessage:
-        """Receive a new message.
-
-         :return: A ``BrokerMessage`` instance.
-         """
+    async def _receive(self) -> BrokerMessage:
         record = await self.client.getone()
         bytes_ = record.value
         message = BrokerMessage.from_avro_bytes(bytes_)
-        logger.info(f"Consuming {message!r} message...")
         return message
 
     @cached_property

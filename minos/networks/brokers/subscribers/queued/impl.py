@@ -66,9 +66,5 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
         async for message in self.impl:
             await self.repository.enqueue(message)
 
-    def receive(self) -> Awaitable[BrokerMessage]:
-        """Receive a new message.
-
-        :return: A ``BrokerMessage`` instance.
-        """
+    def _receive(self) -> Awaitable[BrokerMessage]:
         return self.repository.dequeue()
