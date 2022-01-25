@@ -235,9 +235,7 @@ class TestEventRepository(MinosTestCase):
             return e
 
         submit_mock = AsyncMock(side_effect=_fn)
-        send_mock = AsyncMock()
         self.event_repository._submit = submit_mock
-        self.broker_publisher.send = send_mock
 
         uuid = uuid4()
         aggregate_diff = AggregateDiff(
@@ -254,9 +252,11 @@ class TestEventRepository(MinosTestCase):
 
         await self.event_repository.submit(aggregate_diff)
 
-        self.assertEqual(2, len(send_mock.call_args_list))
-        self.assertIsInstance(send_mock.call_args_list[0].args[0], BrokerMessageV1)
-        self.assertEqual("CarUpdated", send_mock.call_args_list[0].args[0].topic)
+        observed = self.broker_publisher.messages
+
+        self.assertEqual(2, len(observed))
+        self.assertIsInstance(observed[0], BrokerMessageV1)
+        self.assertEqual("CarUpdated", observed[0].topic)
         self.assertEqual(
             AggregateDiff(
                 uuid=uuid,
@@ -266,10 +266,10 @@ class TestEventRepository(MinosTestCase):
                 created_at=created_at,
                 fields_diff=field_diff_container,
             ),
-            send_mock.call_args_list[0].args[0].content,
+            observed[0].content,
         )
-        self.assertEqual("CarUpdated.colors.create", send_mock.call_args_list[1].args[0].topic)
-        self.assertIsInstance(send_mock.call_args_list[1].args[0], BrokerMessageV1)
+        self.assertEqual("CarUpdated.colors.create", observed[1].topic)
+        self.assertIsInstance(observed[1], BrokerMessageV1)
         self.assertEqual(
             AggregateDiff(
                 uuid=uuid,
@@ -279,7 +279,7 @@ class TestEventRepository(MinosTestCase):
                 created_at=created_at,
                 fields_diff=field_diff_container,
             ),
-            send_mock.call_args_list[1].args[0].content,
+            observed[1].content,
         )
 
     async def test_submit_not_send_events(self):
@@ -294,9 +294,7 @@ class TestEventRepository(MinosTestCase):
             return e
 
         submit_mock = AsyncMock(side_effect=_fn)
-        send_mock = AsyncMock()
         self.event_repository._submit = submit_mock
-        self.broker_publisher.send = send_mock
 
         uuid = uuid4()
         aggregate_diff = EventEntry.from_aggregate_diff(
@@ -316,7 +314,9 @@ class TestEventRepository(MinosTestCase):
 
         await self.event_repository.submit(aggregate_diff)
 
-        self.assertEqual(0, send_mock.call_count)
+        observed = self.broker_publisher.messages
+
+        self.assertEqual(0, len(observed))
 
     async def test_submit_raises_missing_action(self):
         entry = EventEntry(uuid4(), "example.Car", 0, bytes())

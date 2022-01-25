@@ -4,9 +4,6 @@ from typing import (
     Generic,
     Union,
 )
-from unittest.mock import (
-    patch,
-)
 from uuid import (
     UUID,
     uuid4,
@@ -25,6 +22,7 @@ from minos.common import (
 )
 from minos.networks import (
     BrokerMessageV1,
+    BrokerMessageV1Payload,
 )
 from tests.utils import (
     MinosTestCase,
@@ -221,20 +219,20 @@ class TestModelRef(MinosTestCase):
     async def test_resolve(self):
         another = uuid4()
 
+        self.broker_subscriber_builder.with_messages([BrokerMessageV1("", BrokerMessageV1Payload(Bar(another, 1)))])
+
         ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
         self.assertEqual(ref.data, another)
 
-        with patch("minos.networks.BrokerClient.send") as send_mock:
-            with patch("minos.networks.BrokerClient.receive") as receive_mock:
-                receive_mock.return_value = FakeMessage(Bar(another, 1))
-                await ref.resolve()
+        await ref.resolve()
 
-        self.assertEqual(1, len(send_mock.call_args_list))
+        observed = self.broker_publisher.messages
+        self.assertEqual(1, len(observed))
 
-        self.assertIsInstance(send_mock.call_args_list[0].args[0], BrokerMessageV1)
-        self.assertEqual("GetBar", send_mock.call_args_list[0].args[0].topic)
-        self.assertEqual({"uuid": another}, send_mock.call_args_list[0].args[0].content)
+        self.assertIsInstance(observed[0], BrokerMessageV1)
+        self.assertEqual("GetBar", observed[0].topic)
+        self.assertEqual({"uuid": another}, observed[0].content)
         self.assertEqual(ref.data, Bar(another, 1))
 
     async def test_resolve_already(self):
@@ -242,10 +240,10 @@ class TestModelRef(MinosTestCase):
 
         ref = ModelRef(Bar(uuid, 1))
 
-        with patch("minos.networks.BrokerClient.send") as send_mock:
-            await ref.resolve()
+        await ref.resolve()
 
-        self.assertEqual([], send_mock.call_args_list)
+        observed = self.broker_publisher.messages
+        self.assertEqual(0, len(observed))
 
     async def test_resolved(self):
         self.assertFalse(ModelRef(uuid4()).resolved)

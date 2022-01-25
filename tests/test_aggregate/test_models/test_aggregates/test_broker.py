@@ -2,9 +2,6 @@ import unittest
 from typing import (
     Optional,
 )
-from unittest.mock import (
-    AsyncMock,
-)
 
 from minos.aggregate import (
     Action,
@@ -25,14 +22,13 @@ from tests.utils import (
 
 class TestAggregate(MinosTestCase):
     async def test_create(self):
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
-
         car = await Car.create(doors=3, color="blue")
 
-        self.assertEqual(1, len(send_mock.call_args_list))
-        self.assertIsInstance(send_mock.call_args_list[0].args[0], BrokerMessageV1)
-        self.assertEqual("CarCreated", send_mock.call_args_list[0].args[0].topic)
+        observed = self.broker_publisher.messages
+
+        self.assertEqual(1, len(observed))
+        self.assertIsInstance(observed[0], BrokerMessageV1)
+        self.assertEqual("CarCreated", observed[0].topic)
         self.assertEqual(
             AggregateDiff(
                 uuid=car.uuid,
@@ -48,21 +44,20 @@ class TestAggregate(MinosTestCase):
                     ]
                 ),
             ),
-            send_mock.call_args_list[0].args[0].content,
+            observed[0].content,
         )
 
     async def test_update(self):
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
-
         car = await Car.create(doors=3, color="blue")
-        send_mock.reset_mock()
+        self.broker_publisher.messages.clear()
 
         await car.update(color="red")
 
-        self.assertEqual(2, len(send_mock.call_args_list))
-        self.assertIsInstance(send_mock.call_args_list[0].args[0], BrokerMessageV1)
-        self.assertEqual("CarUpdated", send_mock.call_args_list[0].args[0].topic)
+        observed = self.broker_publisher.messages
+
+        self.assertEqual(2, len(observed))
+        self.assertIsInstance(observed[0], BrokerMessageV1)
+        self.assertEqual("CarUpdated", observed[0].topic)
         self.assertEqual(
             AggregateDiff(
                 uuid=car.uuid,
@@ -72,10 +67,10 @@ class TestAggregate(MinosTestCase):
                 created_at=car.updated_at,
                 fields_diff=FieldDiffContainer([FieldDiff("color", str, "red")]),
             ),
-            send_mock.call_args_list[0].args[0].content,
+            observed[0].content,
         )
-        self.assertIsInstance(send_mock.call_args_list[1].args[0], BrokerMessageV1)
-        self.assertEqual("CarUpdated.color", send_mock.call_args_list[1].args[0].topic)
+        self.assertIsInstance(observed[1], BrokerMessageV1)
+        self.assertEqual("CarUpdated.color", observed[1].topic)
         self.assertEqual(
             AggregateDiff(
                 uuid=car.uuid,
@@ -85,21 +80,20 @@ class TestAggregate(MinosTestCase):
                 created_at=car.updated_at,
                 fields_diff=FieldDiffContainer([FieldDiff("color", str, "red")]),
             ),
-            send_mock.call_args_list[1].args[0].content,
+            observed[1].content,
         )
 
     async def test_delete(self):
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
-
         car = await Car.create(doors=3, color="blue")
-        send_mock.reset_mock()
+        self.broker_publisher.messages.clear()
 
         await car.delete()
 
-        self.assertEqual(1, len(send_mock.call_args_list))
-        self.assertIsInstance(send_mock.call_args_list[0].args[0], BrokerMessageV1)
-        self.assertEqual("CarDeleted", send_mock.call_args_list[0].args[0].topic)
+        observed = self.broker_publisher.messages
+
+        self.assertEqual(1, len(observed))
+        self.assertIsInstance(observed[0], BrokerMessageV1)
+        self.assertEqual("CarDeleted", observed[0].topic)
         self.assertEqual(
             AggregateDiff(
                 uuid=car.uuid,
@@ -109,7 +103,7 @@ class TestAggregate(MinosTestCase):
                 created_at=car.updated_at,
                 fields_diff=FieldDiffContainer.empty(),
             ),
-            send_mock.call_args_list[0].args[0].content,
+            observed[0].content,
         )
 
 
