@@ -21,7 +21,7 @@ from minos.networks import (
     BrokerHandlerSetup,
     BrokerMessageV1,
     BrokerMessageV1Payload,
-    BrokerPublisher,
+    InMemoryBrokerPublisher,
     MinosHandlerNotFoundEnoughEntriesException,
 )
 from tests.utils import (
@@ -36,7 +36,7 @@ class TestBrokerClient(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.topic = "fooReply"
-        self.publisher = BrokerPublisher.from_config(self.config)
+        self.publisher = InMemoryBrokerPublisher.from_config(self.config)
         self.handler = BrokerClient.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
 
     async def asyncSetUp(self):

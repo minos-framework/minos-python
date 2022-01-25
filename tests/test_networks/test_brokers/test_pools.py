@@ -15,7 +15,7 @@ from minos.networks import (
     BrokerClient,
     BrokerClientPool,
     BrokerConsumer,
-    BrokerPublisher,
+    KafkaBrokerPublisher,
 )
 from tests.utils import (
     BASE_PATH,
@@ -27,7 +27,7 @@ class TestBrokerClientPool(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.publisher = BrokerPublisher.from_config(self.config)
+        self.publisher = KafkaBrokerPublisher.from_config(self.config)
         self.consumer = BrokerConsumer.from_config(self.config)
         self.pool = BrokerClientPool.from_config(self.config, consumer=self.consumer, publisher=self.publisher)
 

@@ -25,6 +25,7 @@ from minos.networks import (
 )
 
 BASE_PATH = Path(__file__).parent
+CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
 
 @total_ordering
@@ -36,6 +37,22 @@ class FakeModel(DeclarativeModel):
     def __lt__(self, other: Any) -> bool:
         # noinspection PyBroadException
         return isinstance(other, type(self)) and self.data < other.data
+
+
+class FakeAsyncIterator:
+    """For testing purposes."""
+
+    def __init__(self, seq):
+        self.iter = iter(seq)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        try:
+            return next(self.iter)
+        except StopIteration:
+            raise StopAsyncIteration
 
 
 class FakeDispatcher:
