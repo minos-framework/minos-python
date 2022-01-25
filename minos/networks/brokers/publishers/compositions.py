@@ -10,8 +10,8 @@ from .kafka import (
     KafkaBrokerPublisher,
 )
 from .queued import (
-    InMemoryBrokerPublisherRepository,
-    PostgreSqlBrokerPublisherRepository,
+    InMemoryBrokerPublisherQueue,
+    PostgreSqlBrokerPublisherQueue,
     QueuedBrokerPublisher,
 )
 
@@ -22,8 +22,8 @@ class PostgreSqlQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlQueuedKafkaBrokerPublisher:
         impl = KafkaBrokerPublisher.from_config(config, **kwargs)
-        repository = PostgreSqlBrokerPublisherRepository.from_config(config, **kwargs)
-        return cls(impl, repository, **kwargs)
+        queue = PostgreSqlBrokerPublisherQueue.from_config(config, **kwargs)
+        return cls(impl, queue, **kwargs)
 
 
 class InMemoryQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
@@ -32,5 +32,5 @@ class InMemoryQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> InMemoryQueuedKafkaBrokerPublisher:
         impl = KafkaBrokerPublisher.from_config(config, **kwargs)
-        repository = InMemoryBrokerPublisherRepository.from_config(config, **kwargs)
-        return cls(impl, repository, **kwargs)
+        queue = InMemoryBrokerPublisherQueue.from_config(config, **kwargs)
+        return cls(impl, queue, **kwargs)

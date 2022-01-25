@@ -10,5 +10,5 @@ from ....collections import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerPublisherRepository(BrokerRepository, ABC):
-    """Broker Publisher Repository class."""
+class BrokerPublisherQueue(BrokerRepository, ABC):
+    """Broker Publisher Queue class."""

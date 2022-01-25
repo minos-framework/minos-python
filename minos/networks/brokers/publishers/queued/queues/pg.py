@@ -21,14 +21,14 @@ from ....messages import (
     BrokerMessage,
 )
 from .abc import (
-    BrokerPublisherRepository,
+    BrokerPublisherQueue,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlBrokerPublisherRepository(PostgreSqlBrokerRepository, BrokerPublisherRepository):
-    """PostgreSql Broker Publisher Repository class."""
+class PostgreSqlBrokerPublisherQueue(PostgreSqlBrokerRepository, BrokerPublisherQueue):
+    """PostgreSql Broker Publisher Queue class."""
 
     _TABLE_NAME = "broker_publisher_queue"
 

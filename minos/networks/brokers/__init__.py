@@ -30,12 +30,12 @@ from .pools import (
 )
 from .publishers import (
     BrokerPublisher,
-    BrokerPublisherRepository,
+    BrokerPublisherQueue,
     InMemoryBrokerPublisher,
-    InMemoryBrokerPublisherRepository,
+    InMemoryBrokerPublisherQueue,
     InMemoryQueuedKafkaBrokerPublisher,
     KafkaBrokerPublisher,
-    PostgreSqlBrokerPublisherRepository,
+    PostgreSqlBrokerPublisherQueue,
     PostgreSqlQueuedKafkaBrokerPublisher,
     QueuedBrokerPublisher,
 )

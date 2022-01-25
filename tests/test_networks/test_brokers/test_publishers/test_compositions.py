@@ -1,10 +1,10 @@
 import unittest
 
 from minos.networks import (
-    InMemoryBrokerPublisherRepository,
+    InMemoryBrokerPublisherQueue,
     InMemoryQueuedKafkaBrokerPublisher,
     KafkaBrokerPublisher,
-    PostgreSqlBrokerPublisherRepository,
+    PostgreSqlBrokerPublisherQueue,
     PostgreSqlQueuedKafkaBrokerPublisher,
 )
 from tests.utils import (
@@ -17,7 +17,7 @@ class TestPostgreSqlQueuedKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase)
         publisher = PostgreSqlQueuedKafkaBrokerPublisher.from_config(CONFIG_FILE_PATH)
         self.assertIsInstance(publisher, PostgreSqlQueuedKafkaBrokerPublisher)
         self.assertIsInstance(publisher.impl, KafkaBrokerPublisher)
-        self.assertIsInstance(publisher.repository, PostgreSqlBrokerPublisherRepository)
+        self.assertIsInstance(publisher.queue, PostgreSqlBrokerPublisherQueue)
 
 
 class TestInMemoryQueuedKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
@@ -25,7 +25,7 @@ class TestInMemoryQueuedKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         publisher = InMemoryQueuedKafkaBrokerPublisher.from_config(CONFIG_FILE_PATH)
         self.assertIsInstance(publisher, InMemoryQueuedKafkaBrokerPublisher)
         self.assertIsInstance(publisher.impl, KafkaBrokerPublisher)
-        self.assertIsInstance(publisher.repository, InMemoryBrokerPublisherRepository)
+        self.assertIsInstance(publisher.queue, InMemoryBrokerPublisherQueue)
 
 
 if __name__ == "__main__":
