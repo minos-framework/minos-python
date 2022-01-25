@@ -46,8 +46,7 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
-          directory: packages/minos-microservice-common
+          files: ./packages/minos-microservice-common/coverage.xml
           fail_ci_if_error: true
 
       - name: Generate documentation

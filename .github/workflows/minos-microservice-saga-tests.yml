@@ -30,8 +30,7 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
-          directory: packages/minos-microservice-saga
+          files: ./packages/minos-microservice-saga/coverage.xml
           fail_ci_if_error: true
 
       - name: Generate documentation
