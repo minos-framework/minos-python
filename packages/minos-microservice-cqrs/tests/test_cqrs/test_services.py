@@ -23,13 +23,13 @@ from minos.cqrs import (
 from minos.networks import (
     BrokerCommandEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
+    InMemoryRequest,
     WrappedRequest,
 )
 from tests.utils import (
     BASE_PATH,
     FakeCommandService,
     FakeQueryService,
-    FakeRequest,
     FakeService,
 )
 
@@ -58,9 +58,9 @@ class TestServices(PostgresAsyncTestCase):
     async def test_pre_event(self):
         with patch("minos.cqrs.PreEventHandler.handle") as mock:
             mock.return_value = "bar"
-            observed = self.service._pre_event_handle(FakeRequest("foo"))
+            observed = self.service._pre_event_handle(InMemoryRequest("foo"))
             self.assertIsInstance(observed, WrappedRequest)
-            self.assertEqual(FakeRequest("foo"), observed.base)
+            self.assertEqual(InMemoryRequest("foo"), observed.base)
             self.assertEqual(0, mock.call_count)
             self.assertEqual("bar", await observed.content())
             self.assertEqual(1, mock.call_count)
@@ -79,10 +79,10 @@ class TestQueryService(PostgresAsyncTestCase):
 
     def test_pre_command(self):
         with self.assertRaises(MinosIllegalHandlingException):
-            self.service._pre_command_handle(FakeRequest("foo"))
+            self.service._pre_command_handle(InMemoryRequest("foo"))
 
     def test_pre_query(self):
-        request = FakeRequest("foo")
+        request = InMemoryRequest("foo")
         self.assertEqual(request, self.service._pre_query_handle(request))
 
     def test_get_enroute(self):
@@ -105,12 +105,12 @@ class TestCommandService(PostgresAsyncTestCase):
         self.assertIsInstance(self.service, Service)
 
     def test_pre_command(self):
-        request = FakeRequest("foo")
+        request = InMemoryRequest("foo")
         self.assertEqual(request, self.service._pre_command_handle(request))
 
     def test_pre_query(self):
         with self.assertRaises(MinosIllegalHandlingException):
-            self.service._pre_query_handle(FakeRequest("foo"))
+            self.service._pre_query_handle(InMemoryRequest("foo"))
 
     def test_get_enroute(self):
         expected = {
