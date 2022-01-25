@@ -1,6 +1,9 @@
 import logging
 from asyncio import (
     Queue,
+    QueueEmpty,
+    TimeoutError,
+    wait_for,
 )
 
 from ....messages import (
@@ -23,22 +26,28 @@ class InMemoryBrokerSubscriberRepository(BrokerSubscriberRepository):
         super().__init__(*args, **kwargs)
         self._queue = Queue()
 
-    async def enqueue(self, message: BrokerMessage) -> None:
-        """Enqueue a new message.
+    async def _destroy(self) -> None:
+        await self._flush_queue()
+        await super()._destroy()
 
-        :param message: The ``BrokerMessage`` to be enqueued.
-        :return: This method does not return anything.
-        """
-        logger.info(f"Enqueueing {message!r} message...")
+    async def _flush_queue(self):
+        try:
+            await wait_for(self._queue.join(), 0.5)
+        except TimeoutError:
+            messages = list()
+            while True:
+                try:
+                    messages.append(self._queue.get_nowait())
+                except QueueEmpty:
+                    break
+            logger.warning(f"Some messages were loosed: {messages}")
+
+    async def _enqueue(self, message: BrokerMessage) -> None:
         await self._queue.put(message)
 
-    async def dequeue(self) -> BrokerMessage:
-        """Dequeue a message from the queue.
-
-        :return: The dequeued ``BrokerMessage``.
-        """
+    async def _dequeue(self) -> BrokerMessage:
         message = await self._queue.get()
-        logger.info(f"Dequeuing {message!r} message...")
+        self._queue.task_done()
         return message
 
 

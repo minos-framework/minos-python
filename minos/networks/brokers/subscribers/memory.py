@@ -37,11 +37,7 @@ class InMemoryBrokerSubscriber(BrokerSubscriber):
         """
         self._queue.put_nowait(message)
 
-    async def receive(self) -> BrokerMessage:
-        """Receive a new message.
-
-        :return: A ``BrokerMessage`` instance.
-        """
+    async def _receive(self) -> BrokerMessage:
         return await self._queue.get()
 
 

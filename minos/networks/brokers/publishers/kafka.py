@@ -48,13 +48,7 @@ class KafkaBrokerPublisher(BrokerPublisher):
         await self.client.stop()
         await super()._destroy()
 
-    async def send(self, message: BrokerMessage) -> None:
-        """Send a message.
-
-        :param message: The message to be sent.
-        :return: This method does not return anything.
-        """
-        logger.info(f"Producing {message!r} message...")
+    async def _send(self, message: BrokerMessage) -> None:
         await self.client.send_and_wait(message.topic, message.avro_bytes)
 
     @cached_property

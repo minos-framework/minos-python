@@ -21,7 +21,7 @@ class InMemoryBrokerPublisher(BrokerPublisher):
         super().__init__(*args, **kwargs)
         self._messages = list()
 
-    async def send(self, message: BrokerMessage) -> None:
+    async def _send(self, message: BrokerMessage) -> None:
         """Send a message.
 
         :param message: The message to be sent.

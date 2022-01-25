@@ -24,10 +24,10 @@ from tests.utils import (
 class _BrokerSubscriberRepository(BrokerSubscriberRepository):
     """For testing purposes."""
 
-    async def enqueue(self, message: BrokerMessage) -> None:
+    async def _enqueue(self, message: BrokerMessage) -> None:
         """For testing purposes."""
 
-    async def dequeue(self) -> BrokerMessage:
+    async def _dequeue(self) -> BrokerMessage:
         """For testing purposes."""
 
 
@@ -47,7 +47,7 @@ class TestBrokerSubscriberRepository(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(issubclass(BrokerSubscriberRepository, (ABC, MinosSetup)))
         # noinspection PyUnresolvedReferences
         self.assertEqual(
-            {"enqueue", "dequeue"}, BrokerSubscriberRepository.__abstractmethods__,
+            {"_enqueue", "_dequeue"}, BrokerSubscriberRepository.__abstractmethods__,
         )
 
     def test_topics(self):

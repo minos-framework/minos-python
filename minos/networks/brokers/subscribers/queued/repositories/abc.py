@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from abc import (
     ABC,
     abstractmethod,
@@ -23,6 +24,8 @@ from minos.common import (
 from ....messages import (
     BrokerMessage,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class BrokerSubscriberRepository(ABC, MinosSetup):
@@ -51,20 +54,31 @@ class BrokerSubscriberRepository(ABC, MinosSetup):
             raise StopAsyncIteration
         return await self.dequeue()
 
-    @abstractmethod
     async def enqueue(self, message: BrokerMessage) -> None:
         """Enqueue a new message.
 
         :param message: The ``BrokerMessage`` to be enqueued.
         :return: This method does not return anything.
         """
+        logger.info(f"Enqueueing {message!r} message...")
+        await self._enqueue(message)
 
     @abstractmethod
+    async def _enqueue(self, message: BrokerMessage) -> None:
+        raise NotImplementedError
+
     async def dequeue(self) -> BrokerMessage:
         """Dequeue a message from the queue.
 
         :return: The dequeued ``BrokerMessage``.
         """
+        message = await self._dequeue()
+        logger.info(f"Dequeuing {message!r} message...")
+        return message
+
+    @abstractmethod
+    async def _dequeue(self) -> BrokerMessage:
+        raise NotImplementedError
 
 
 class BrokerSubscriberRepositoryBuilder(MinosSetup, ABC):
