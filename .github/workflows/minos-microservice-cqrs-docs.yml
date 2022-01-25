@@ -1,4 +1,4 @@
-name: Publish minos-microservice-cqrs Documentation
+name: "Publish Documentation: minos-microservice-cqrs"
 
 on:
   release:

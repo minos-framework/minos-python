@@ -1,4 +1,4 @@
-name: Upload minos-microservice-common
+name: "Upload Package: minos-microservice-common"
 
 on:
   release:

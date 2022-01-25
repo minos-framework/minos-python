@@ -1,4 +1,4 @@
-name: Publish minos-microservice-networks Documentation
+name: "Publish Documentation: minos-microservice-networks"
 
 on:
   release:

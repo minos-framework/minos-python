@@ -1,4 +1,4 @@
-name: Test minos-microservice-aggregate
+name: "Test Package: minos-microservice-aggregate"
 
 on: push
 

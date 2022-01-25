@@ -1,4 +1,4 @@
-name: Upload minos-microservice-saga
+name: "Upload Package: minos-microservice-saga"
 
 on:
   release:

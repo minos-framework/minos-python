@@ -1,4 +1,4 @@
-name: Publish minos-microservice-saga Documentation
+name: "Publish Documentation: minos-microservice-saga"
 
 on:
   release:

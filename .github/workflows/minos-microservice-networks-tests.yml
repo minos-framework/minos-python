@@ -1,4 +1,4 @@
-name: Test minos-microservice-networks
+name: "Test Package: minos-microservice-networks"
 
 on: push
 

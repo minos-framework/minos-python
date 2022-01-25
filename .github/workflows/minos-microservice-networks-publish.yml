@@ -1,4 +1,4 @@
-name: Upload minos-microservice-networks
+name: "Upload Package: minos-microservice-networks"
 
 on:
   release:

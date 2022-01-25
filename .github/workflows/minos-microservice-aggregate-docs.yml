@@ -1,4 +1,4 @@
-name: Publish minos-microservice-aggregate Documentation
+name: "Publish Documentation: minos-microservice-aggregate"
 
 on:
   release:
