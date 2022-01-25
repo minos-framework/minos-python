@@ -1,0 +1,21 @@
+AVRO_BOOLEAN = "boolean"
+AVRO_NULL = "null"
+AVRO_INT = "int"
+AVRO_FLOAT = "float"
+AVRO_LONG = "long"
+AVRO_DOUBLE = "double"
+AVRO_BYTES = "bytes"
+AVRO_STRING = "string"
+AVRO_ARRAY = "array"
+AVRO_RECORD = "record"
+AVRO_ENUM = "enum"
+AVRO_MAP = "map"
+AVRO_FIXED = "fixed"
+AVRO_DECIMAL = "decimal"
+
+AVRO_DATE = {"type": AVRO_INT, "logicalType": "date"}
+AVRO_TIME = {"type": AVRO_INT, "logicalType": "time-micros"}
+AVRO_TIMESTAMP = {"type": AVRO_LONG, "logicalType": "timestamp-micros"}
+AVRO_TIMEDELTA = {"type": AVRO_LONG, "logicalType": "timedelta-micros"}
+AVRO_UUID = {"type": AVRO_STRING, "logicalType": "uuid"}
+AVRO_SET = {"type": AVRO_ARRAY, "logicalType": "set"}
