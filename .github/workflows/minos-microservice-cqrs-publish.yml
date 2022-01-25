@@ -1,0 +1,30 @@
+name: Upload minos-microservice-cqrs
+
+on:
+  release:
+    types: [ created ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container: python:3.9-buster
+    defaults:
+      run:
+        working-directory: packages/minos-microservice-cqrs
+
+    steps:
+
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.1.4
+
+      - name: Install dependencies
+        run: make install
+
+      - name: Publish package
+        run: make release
+        env:
+          POETRY_HTTP_BASIC_PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          POETRY_HTTP_BASIC_PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
