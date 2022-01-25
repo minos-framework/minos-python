@@ -4,6 +4,7 @@ from uuid import (
 )
 
 from minos.networks import (
+    BrokerMessage,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
@@ -63,49 +64,15 @@ class TestTransactionCommitter(MinosTestCase):
     async def test_commit_true(self):
         self.broker_subscriber_builder.with_messages(
             [
-                BrokerMessageV1("", BrokerMessageV1Payload(None)),
-                BrokerMessageV1("", BrokerMessageV1Payload(None)),
-                BrokerMessageV1("", BrokerMessageV1Payload(None)),
+                BrokerMessageV1("", BrokerMessageV1Payload()),
+                BrokerMessageV1("", BrokerMessageV1Payload()),
+                BrokerMessageV1("", BrokerMessageV1Payload()),
             ]
         )
 
         await self.committer.commit()
         observed = self.broker_publisher.messages
-        expected = [
-            BrokerMessageV1(
-                payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="ReserveBarTransaction",
-                reply_topic=observed[0].reply_topic,
-                identifier=observed[0].identifier,
-            ),
-            BrokerMessageV1(
-                payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="ReserveFooTransaction",
-                reply_topic=observed[1].reply_topic,
-                identifier=observed[1].identifier,
-            ),
-            BrokerMessageV1(
-                payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="ReserveFoobarTransaction",
-                reply_topic=observed[2].reply_topic,
-                identifier=observed[2].identifier,
-            ),
-            BrokerMessageV1(
-                payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="CommitBarTransaction",
-                identifier=observed[3].identifier,
-            ),
-            BrokerMessageV1(
-                payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="CommitFooTransaction",
-                identifier=observed[4].identifier,
-            ),
-            BrokerMessageV1(
-                payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="CommitFoobarTransaction",
-                identifier=observed[5].identifier,
-            ),
-        ]
+        expected = [*self._build_reserve_messages(observed[:3]), *self._build_commit_messages(observed[3:])]
 
         self.assertEqual(
             expected, observed,
@@ -115,8 +82,8 @@ class TestTransactionCommitter(MinosTestCase):
         self.broker_subscriber_builder.with_messages(
             [
                 BrokerMessageV1("", BrokerMessageV1Payload(None, status=BrokerMessageV1Status.ERROR)),
-                BrokerMessageV1("", BrokerMessageV1Payload(None)),
-                BrokerMessageV1("", BrokerMessageV1Payload(None)),
+                BrokerMessageV1("", BrokerMessageV1Payload()),
+                BrokerMessageV1("", BrokerMessageV1Payload()),
             ]
         )
 
@@ -124,7 +91,20 @@ class TestTransactionCommitter(MinosTestCase):
             await self.committer.commit()
 
         observed = self.broker_publisher.messages
-        expected = [
+        expected = [*self._build_reserve_messages(observed[:3]), *self._build_reject_messages(observed[3:])]
+        self.assertEqual(expected, observed)
+
+    async def test_reject(self):
+        await self.committer.reject()
+
+        observed = self.broker_publisher.messages
+        expected = self._build_reject_messages(observed)
+        self.assertEqual(
+            expected, observed,
+        )
+
+    def _build_reserve_messages(self, observed: list[BrokerMessage]) -> list[BrokerMessage]:
+        return [
             BrokerMessageV1(
                 payload=BrokerMessageV1Payload(self.execution_uuid),
                 topic="ReserveBarTransaction",
@@ -143,29 +123,29 @@ class TestTransactionCommitter(MinosTestCase):
                 reply_topic=observed[2].reply_topic,
                 identifier=observed[2].identifier,
             ),
+        ]
+
+    def _build_commit_messages(self, observed: list[BrokerMessage]) -> list[BrokerMessage]:
+        return [
             BrokerMessageV1(
                 payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="RejectBarTransaction",
-                identifier=observed[3].identifier,
+                topic="CommitBarTransaction",
+                identifier=observed[0].identifier,
             ),
             BrokerMessageV1(
                 payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="RejectFooTransaction",
-                identifier=observed[4].identifier,
+                topic="CommitFooTransaction",
+                identifier=observed[1].identifier,
             ),
             BrokerMessageV1(
                 payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="RejectFoobarTransaction",
-                identifier=observed[5].identifier,
+                topic="CommitFoobarTransaction",
+                identifier=observed[2].identifier,
             ),
         ]
-        self.assertEqual(expected, observed)
 
-    async def test_reject(self):
-        await self.committer.reject()
-
-        observed = self.broker_publisher.messages
-        expected = [
+    def _build_reject_messages(self, observed: list[BrokerMessage]) -> list[BrokerMessage]:
+        return [
             BrokerMessageV1(
                 topic="RejectBarTransaction",
                 payload=BrokerMessageV1Payload(self.execution_uuid),
@@ -182,9 +162,6 @@ class TestTransactionCommitter(MinosTestCase):
                 identifier=observed[2].identifier,
             ),
         ]
-        self.assertEqual(
-            expected, observed,
-        )
 
 
 if __name__ == "__main__":
