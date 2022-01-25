@@ -47,6 +47,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
+          working-directory: packages/minos-microservice-aggregate
           fail_ci_if_error: true
 
       - name: Generate documentation
