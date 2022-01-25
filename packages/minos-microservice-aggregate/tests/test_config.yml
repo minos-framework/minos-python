@@ -1,0 +1,40 @@
+service:
+    name: Order
+    aggregate: tests.utils.Order
+repository:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+snapshot:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+rest:
+    host: localhost
+    port: 8900
+broker:
+  host: localhost
+  port: 9092
+  queue:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+    records: 10
+    retry: 2
+commands:
+    service: minos.services.OrderService
+queries:
+    service: minos.services.OrderQueryService
+saga:
+    storage:
+        path: "./order.lmdb"
+discovery:
+    client: minos
+    host: localhost
+    port: 8080

@@ -1,0 +1,73 @@
+from __future__ import (
+    annotations,
+)
+
+from typing import (
+    TYPE_CHECKING,
+)
+
+from minos.common import (
+    MinosException,
+)
+
+if TYPE_CHECKING:
+    from .models import (
+        Aggregate,
+        AggregateDiff,
+    )
+
+
+class AggregateException(MinosException):
+    """Base Aggregate module exception"""
+
+
+class EventRepositoryException(AggregateException):
+    """Base event repository exception."""
+
+
+class EventRepositoryConflictException(EventRepositoryException):
+    """Exception to be raised when some ``EventEntry`` raises a conflict."""
+
+    def __init__(self, error_message: str, offset: int):
+        super().__init__(error_message)
+        self.offset = offset
+
+
+class TransactionRepositoryException(AggregateException):
+    """Base transaction repository exception."""
+
+
+class TransactionRepositoryConflictException(TransactionRepositoryException):
+    """Exception to be raised when a transactions has invalid status."""
+
+
+class TransactionNotFoundException(TransactionRepositoryException):
+    """Exception to be raised when some transaction is not found on the repository."""
+
+
+class SnapshotRepositoryException(AggregateException):
+    """Base snapshot exception."""
+
+
+class SnapshotRepositoryConflictException(SnapshotRepositoryException):
+    """Exception to be raised when current version is newer than the one to be processed."""
+
+    def __init__(self, previous: Aggregate, aggregate_diff: AggregateDiff):
+        self.previous = previous
+        self.aggregate_diff = aggregate_diff
+        super().__init__(
+            f"Version for {repr(previous.classname)} aggregate must be "
+            f"greater than {previous.version}. Obtained: {aggregate_diff.version}"
+        )
+
+
+class AggregateNotFoundException(SnapshotRepositoryException):
+    """Exception to be raised when some aggregate is not found on the repository."""
+
+
+class DeletedAggregateException(SnapshotRepositoryException):
+    """Exception to be raised when some aggregate is already deleted from the repository."""
+
+
+class ValueObjectException(AggregateException):
+    """If an attribute of an immutable class is modified, this exception will be raised"""
