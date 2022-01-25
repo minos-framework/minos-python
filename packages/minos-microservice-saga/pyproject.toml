@@ -3,9 +3,9 @@ name = "minos-microservice-saga"
 version = "0.3.5"
 description = "Saga Library for MinOS project."
 readme = "README.md"
-repository = "https://github.com/clariteia/minos_microservice_saga"
-homepage = "https://clariteia.com"
-authors = ["Clariteia Devs <pypi@clariteia.com>"]
+repository = "https://github.com/minos-framework/minos-python"
+homepage = "http://www.minos.run/"
+authors = ["Clariteia Devs <devs@clariteia.com>"]
 license = "MIT"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
