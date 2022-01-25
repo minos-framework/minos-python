@@ -19,7 +19,7 @@ from ..abc import (
     BrokerSubscriber,
 )
 from .repositories import (
-    BrokerSubscriberRepository,
+    BrokerSubscriberQueue,
 )
 
 
@@ -27,28 +27,28 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
     """Queued Broker Subscriber class."""
 
     impl: BrokerSubscriber
-    repository: BrokerSubscriberRepository
+    queue: BrokerSubscriberQueue
 
-    def __init__(self, impl: BrokerSubscriber, repository: BrokerSubscriberRepository, **kwargs):
+    def __init__(self, impl: BrokerSubscriber, queue: BrokerSubscriberQueue, **kwargs):
         super().__init__(kwargs.pop("topics", impl.topics), **kwargs)
-        if self.topics != impl.topics or self.topics != repository.topics:
-            raise ValueError("The topics from the impl and repository must be equal")
+        if self.topics != impl.topics or self.topics != queue.topics:
+            raise ValueError("The topics from the impl and queue must be equal")
 
         self.impl = impl
-        self.repository = repository
+        self.queue = queue
 
         self._run_task = None
 
     async def _setup(self) -> None:
         await super()._setup()
-        await self.repository.setup()
+        await self.queue.setup()
         await self.impl.setup()
         await self._start_run()
 
     async def _destroy(self) -> None:
         await self._stop_run()
         await self.impl.destroy()
-        await self.repository.destroy()
+        await self.queue.destroy()
         await super()._destroy()
 
     async def _start_run(self):
@@ -64,7 +64,7 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
 
     async def _run(self) -> NoReturn:
         async for message in self.impl:
-            await self.repository.enqueue(message)
+            await self.queue.enqueue(message)
 
     def _receive(self) -> Awaitable[BrokerMessage]:
-        return self.repository.dequeue()
+        return self.queue.dequeue()

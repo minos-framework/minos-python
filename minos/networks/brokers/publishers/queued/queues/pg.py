@@ -15,7 +15,7 @@ from psycopg2.sql import (
 )
 
 from ....collections import (
-    PostgreSqlBrokerRepository,
+    PostgreSqlBrokerQueue,
 )
 from ....messages import (
     BrokerMessage,
@@ -27,7 +27,7 @@ from .abc import (
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlBrokerPublisherQueue(PostgreSqlBrokerRepository, BrokerPublisherQueue):
+class PostgreSqlBrokerPublisherQueue(PostgreSqlBrokerQueue, BrokerPublisherQueue):
     """PostgreSql Broker Publisher Queue class."""
 
     _TABLE_NAME = "broker_publisher_queue"

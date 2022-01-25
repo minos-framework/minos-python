@@ -3,13 +3,13 @@ import unittest
 from minos.networks import (
     BrokerPublisherQueue,
     InMemoryBrokerPublisherQueue,
-    InMemoryBrokerRepository,
+    InMemoryBrokerQueue,
 )
 
 
 class TestInMemoryBrokerPublisherQueue(unittest.IsolatedAsyncioTestCase):
     def test_is_subclass(self):
-        self.assertTrue(issubclass(InMemoryBrokerPublisherQueue, (InMemoryBrokerRepository, BrokerPublisherQueue)))
+        self.assertTrue(issubclass(InMemoryBrokerPublisherQueue, (InMemoryBrokerQueue, BrokerPublisherQueue)))
 
 
 if __name__ == "__main__":

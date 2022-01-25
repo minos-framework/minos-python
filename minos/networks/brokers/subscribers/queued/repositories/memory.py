@@ -1,14 +1,14 @@
 import logging
 
 from ....collections import (
-    InMemoryBrokerRepository,
+    InMemoryBrokerQueue,
 )
 from .abc import (
-    BrokerSubscriberRepository,
+    BrokerSubscriberQueue,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class InMemoryBrokerSubscriberRepository(InMemoryBrokerRepository, BrokerSubscriberRepository):
-    """In Memory Broker Subscriber Repository class."""
+class InMemoryBrokerSubscriberQueue(InMemoryBrokerQueue, BrokerSubscriberQueue):
+    """In Memory Broker Subscriber Queue class."""

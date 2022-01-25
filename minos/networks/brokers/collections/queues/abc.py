@@ -18,8 +18,8 @@ from ...messages import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerRepository(ABC, MinosSetup):
-    """Broker Publisher Repository class."""
+class BrokerQueue(ABC, MinosSetup):
+    """Broker Queue class."""
 
     async def enqueue(self, message: BrokerMessage) -> None:
         """Enqueue method."""

@@ -1,5 +1,5 @@
 from .queues import (
-    BrokerRepository,
-    InMemoryBrokerRepository,
-    PostgreSqlBrokerRepository,
+    BrokerQueue,
+    InMemoryBrokerQueue,
+    PostgreSqlBrokerQueue,
 )

@@ -1,9 +1,9 @@
 from .abc import (
-    BrokerSubscriberRepository,
+    BrokerSubscriberQueue,
 )
 from .memory import (
-    InMemoryBrokerSubscriberRepository,
+    InMemoryBrokerSubscriberQueue,
 )
 from .pg import (
-    PostgreSqlBrokerSubscriberRepository,
+    PostgreSqlBrokerSubscriberQueue,
 )

@@ -4,11 +4,11 @@ from abc import (
 )
 
 from ....collections import (
-    BrokerRepository,
+    BrokerQueue,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class BrokerPublisherQueue(BrokerRepository, ABC):
+class BrokerPublisherQueue(BrokerQueue, ABC):
     """Broker Publisher Queue class."""

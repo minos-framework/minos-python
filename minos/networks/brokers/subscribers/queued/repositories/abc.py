@@ -7,14 +7,14 @@ from collections.abc import (
 )
 
 from ....collections import (
-    BrokerRepository,
+    BrokerQueue,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class BrokerSubscriberRepository(BrokerRepository, ABC):
-    """Broker Subscriber Repository class."""
+class BrokerSubscriberQueue(BrokerQueue, ABC):
+    """Broker Subscriber Queue class."""
 
     def __init__(self, topics: Iterable[str], **kwargs):
         super().__init__(**kwargs)

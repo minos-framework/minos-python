@@ -5,13 +5,13 @@ from abc import (
 
 from minos.networks import (
     BrokerPublisherQueue,
-    BrokerRepository,
+    BrokerQueue,
 )
 
 
 class TestBrokerPublisherQueue(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
-        self.assertTrue(issubclass(BrokerPublisherQueue, (ABC, BrokerRepository)))
+        self.assertTrue(issubclass(BrokerPublisherQueue, (ABC, BrokerQueue)))
         # noinspection PyUnresolvedReferences
         self.assertEqual(
             {"_enqueue", "_dequeue"}, BrokerPublisherQueue.__abstractmethods__,

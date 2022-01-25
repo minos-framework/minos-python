@@ -16,20 +16,20 @@ from psycopg2.sql import (
 )
 
 from ....collections import (
-    PostgreSqlBrokerRepository,
+    PostgreSqlBrokerQueue,
 )
 from ....messages import (
     BrokerMessage,
 )
 from .abc import (
-    BrokerSubscriberRepository,
+    BrokerSubscriberQueue,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlBrokerSubscriberRepository(PostgreSqlBrokerRepository, BrokerSubscriberRepository):
-    """PostgreSql Broker Subscriber Repository class."""
+class PostgreSqlBrokerSubscriberQueue(PostgreSqlBrokerQueue, BrokerSubscriberQueue):
+    """PostgreSql Broker Subscriber Queue class."""
 
     _TABLE_NAME = "broker_subscriber_queue"
 

@@ -43,14 +43,14 @@ from ...messages import (
     BrokerMessage,
 )
 from .abc import (
-    BrokerRepository,
+    BrokerQueue,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlBrokerRepository(BrokerRepository, PostgreSqlMinosDatabase, ABC):
-    """PostgreSql Broker Publisher Repository class."""
+class PostgreSqlBrokerQueue(BrokerQueue, PostgreSqlMinosDatabase, ABC):
+    """PostgreSql Broker Queue class."""
 
     _queue: PriorityQueue[_Entry]
 
@@ -64,7 +64,7 @@ class PostgreSqlBrokerRepository(BrokerRepository, PostgreSqlMinosDatabase, ABC)
         self._run_task = None
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlBrokerRepository:
+    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlBrokerQueue:
         # noinspection PyProtectedMember
         return cls(**config.broker.queue._asdict(), **kwargs)
 

@@ -5,12 +5,12 @@ from abc import (
 
 from minos.networks import (
     BrokerMessage,
-    BrokerRepository,
-    BrokerSubscriberRepository,
+    BrokerQueue,
+    BrokerSubscriberQueue,
 )
 
 
-class _BrokerSubscriberRepository(BrokerSubscriberRepository):
+class _BrokerSubscriberQueue(BrokerSubscriberQueue):
     """For testing purposes."""
 
     async def _enqueue(self, message: BrokerMessage) -> None:
@@ -20,24 +20,24 @@ class _BrokerSubscriberRepository(BrokerSubscriberRepository):
         """For testing purposes."""
 
 
-class TestBrokerSubscriberRepository(unittest.IsolatedAsyncioTestCase):
+class TestBrokerSubscriberQueue(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.topics = {"foo", "bar"}
 
     def test_abstract(self):
-        self.assertTrue(issubclass(BrokerSubscriberRepository, (ABC, BrokerRepository)))
+        self.assertTrue(issubclass(BrokerSubscriberQueue, (ABC, BrokerQueue)))
         # noinspection PyUnresolvedReferences
         self.assertEqual(
-            {"_enqueue", "_dequeue"}, BrokerSubscriberRepository.__abstractmethods__,
+            {"_enqueue", "_dequeue"}, BrokerSubscriberQueue.__abstractmethods__,
         )
 
     def test_topics(self):
-        repository = _BrokerSubscriberRepository(self.topics)
-        self.assertEqual(self.topics, repository.topics)
+        queue = _BrokerSubscriberQueue(self.topics)
+        self.assertEqual(self.topics, queue.topics)
 
     def test_topics_raises(self):
         with self.assertRaises(ValueError):
-            _BrokerSubscriberRepository([])
+            _BrokerSubscriberQueue([])
 
 
 if __name__ == "__main__":

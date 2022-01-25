@@ -1,10 +1,10 @@
 import unittest
 
 from minos.networks import (
-    InMemoryBrokerSubscriberRepository,
+    InMemoryBrokerSubscriberQueue,
     InMemoryQueuedKafkaBrokerSubscriber,
     KafkaBrokerSubscriber,
-    PostgreSqlBrokerSubscriberRepository,
+    PostgreSqlBrokerSubscriberQueue,
     PostgreSqlQueuedKafkaBrokerSubscriber,
 )
 from tests.utils import (
@@ -17,7 +17,7 @@ class TestPostgreSqlQueuedKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase
         subscriber = PostgreSqlQueuedKafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"})
         self.assertIsInstance(subscriber, PostgreSqlQueuedKafkaBrokerSubscriber)
         self.assertIsInstance(subscriber.impl, KafkaBrokerSubscriber)
-        self.assertIsInstance(subscriber.repository, PostgreSqlBrokerSubscriberRepository)
+        self.assertIsInstance(subscriber.queue, PostgreSqlBrokerSubscriberQueue)
 
 
 class TestInMemoryQueuedKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
@@ -25,7 +25,7 @@ class TestInMemoryQueuedKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
         subscriber = InMemoryQueuedKafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"})
         self.assertIsInstance(subscriber, InMemoryQueuedKafkaBrokerSubscriber)
         self.assertIsInstance(subscriber.impl, KafkaBrokerSubscriber)
-        self.assertIsInstance(subscriber.repository, InMemoryBrokerSubscriberRepository)
+        self.assertIsInstance(subscriber.queue, InMemoryBrokerSubscriberQueue)
 
 
 if __name__ == "__main__":

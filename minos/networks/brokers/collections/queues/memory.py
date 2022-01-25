@@ -10,14 +10,14 @@ from ...messages import (
     BrokerMessage,
 )
 from .abc import (
-    BrokerRepository,
+    BrokerQueue,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class InMemoryBrokerRepository(BrokerRepository):
-    """In Memory Broker Repository class."""
+class InMemoryBrokerQueue(BrokerQueue):
+    """In Memory Broker Queue class."""
 
     _queue: Queue[BrokerMessage]
 

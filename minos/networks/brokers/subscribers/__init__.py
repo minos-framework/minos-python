@@ -12,8 +12,8 @@ from .memory import (
     InMemoryBrokerSubscriber,
 )
 from .queued import (
-    BrokerSubscriberRepository,
-    InMemoryBrokerSubscriberRepository,
-    PostgreSqlBrokerSubscriberRepository,
+    BrokerSubscriberQueue,
+    InMemoryBrokerSubscriberQueue,
+    PostgreSqlBrokerSubscriberQueue,
     QueuedBrokerSubscriber,
 )

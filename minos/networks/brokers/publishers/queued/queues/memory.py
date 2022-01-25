@@ -1,7 +1,7 @@
 import logging
 
 from ....collections import (
-    InMemoryBrokerRepository,
+    InMemoryBrokerQueue,
 )
 from .abc import (
     BrokerPublisherQueue,
@@ -10,5 +10,5 @@ from .abc import (
 logger = logging.getLogger(__name__)
 
 
-class InMemoryBrokerPublisherQueue(InMemoryBrokerRepository, BrokerPublisherQueue):
+class InMemoryBrokerPublisherQueue(InMemoryBrokerQueue, BrokerPublisherQueue):
     """In Memory Broker Publisher Queue class."""

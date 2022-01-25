@@ -2,9 +2,9 @@ from .clients import (
     BrokerClient,
 )
 from .collections import (
-    BrokerRepository,
-    InMemoryBrokerRepository,
-    PostgreSqlBrokerRepository,
+    BrokerQueue,
+    InMemoryBrokerQueue,
+    PostgreSqlBrokerQueue,
 )
 from .dispatchers import (
     BrokerDispatcher,
@@ -41,12 +41,12 @@ from .publishers import (
 )
 from .subscribers import (
     BrokerSubscriber,
-    BrokerSubscriberRepository,
+    BrokerSubscriberQueue,
     InMemoryBrokerSubscriber,
-    InMemoryBrokerSubscriberRepository,
+    InMemoryBrokerSubscriberQueue,
     InMemoryQueuedKafkaBrokerSubscriber,
     KafkaBrokerSubscriber,
-    PostgreSqlBrokerSubscriberRepository,
+    PostgreSqlBrokerSubscriberQueue,
     PostgreSqlQueuedKafkaBrokerSubscriber,
     QueuedBrokerSubscriber,
 )
