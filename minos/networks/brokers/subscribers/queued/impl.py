@@ -18,7 +18,7 @@ from ...messages import (
 from ..abc import (
     BrokerSubscriber,
 )
-from .repositories import (
+from .queues import (
     BrokerSubscriberQueue,
 )
 

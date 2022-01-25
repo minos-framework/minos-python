@@ -1,7 +1,7 @@
 from .impl import (
     QueuedBrokerSubscriber,
 )
-from .repositories import (
+from .queues import (
     BrokerSubscriberQueue,
     InMemoryBrokerSubscriberQueue,
     PostgreSqlBrokerSubscriberQueue,
