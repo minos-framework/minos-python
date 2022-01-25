@@ -55,7 +55,7 @@ class TestPostgreSqlBrokerQueue(PostgresAsyncTestCase):
             await queue.enqueue(message)
             await sleep(0.5)  # To give time to consume the message from db.
 
-    async def test_iter(self):
+    async def test_aiter(self):
         messages = [
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
@@ -74,7 +74,7 @@ class TestPostgreSqlBrokerQueue(PostgresAsyncTestCase):
 
         self.assertEqual(messages, observed)
 
-    async def test_run_with_count(self):
+    async def test_dequeue_with_count(self):
         messages = [
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
@@ -92,7 +92,7 @@ class TestPostgreSqlBrokerQueue(PostgresAsyncTestCase):
 
         self.assertEqual(messages, observed)
 
-    async def test_run_with_notify(self):
+    async def test_dequeue_with_notify(self):
         messages = [
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
@@ -105,7 +105,7 @@ class TestPostgreSqlBrokerQueue(PostgresAsyncTestCase):
 
         self.assertEqual(messages, observed)
 
-    async def test_run_with_order(self):
+    async def test_dequeue_ordered(self):
         unsorted = [
             BrokerMessageV1("foo", BrokerMessageV1Payload(4)),
             BrokerMessageV1("foo", BrokerMessageV1Payload(2)),

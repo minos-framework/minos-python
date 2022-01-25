@@ -41,26 +41,7 @@ class TestPostgreSqlBrokerSubscriberQueue(PostgresAsyncTestCase):
             await queue.enqueue(message)
             await sleep(0.5)  # To give time to consume the message from db.
 
-    async def test_iter(self):
-        messages = [
-            BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
-            BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
-        ]
-
-        queue = PostgreSqlBrokerSubscriberQueue.from_config(self.config, topics={"foo", "bar"})
-        await queue.setup()
-        await queue.enqueue(messages[0])
-        await queue.enqueue(messages[1])
-
-        observed = list()
-        async for message in queue:
-            observed.append(message)
-            if len(messages) == len(observed):
-                await queue.destroy()
-
-        self.assertEqual(messages, observed)
-
-    async def test_run_with_count(self):
+    async def test_dequeue_with_count(self):
         messages = [
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
@@ -78,7 +59,7 @@ class TestPostgreSqlBrokerSubscriberQueue(PostgresAsyncTestCase):
 
         self.assertEqual(messages, observed)
 
-    async def test_run_with_notify(self):
+    async def test_dequeue_with_notify(self):
         messages = [
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
