@@ -77,7 +77,7 @@ class PostgreSqlBrokerPublisherRepository(PostgreSqlBrokerRepository, BrokerPubl
         await self.submit_query_and_fetchone(self._INSERT_QUERY, params)
         await self.submit_query(self._NOTIFY_QUERY)
 
-    async def _listen_entries(self, cursor: Cursor):
+    async def _listen_entries(self, cursor: Cursor) -> None:
         # noinspection PyTypeChecker
         await cursor.execute(self._LISTEN_QUERY)
 
@@ -86,7 +86,7 @@ class PostgreSqlBrokerPublisherRepository(PostgreSqlBrokerRepository, BrokerPubl
             # noinspection PyTypeChecker
             await cursor.execute(self._UNLISTEN_QUERY)
 
-    async def _get_count(self, cursor) -> int:
+    async def _get_count(self, cursor: Cursor) -> int:
         # noinspection PyTypeChecker
         await cursor.execute(self._COUNT_NOT_PROCESSED_QUERY, (self._retry,))
         count = (await cursor.fetchone())[0]
