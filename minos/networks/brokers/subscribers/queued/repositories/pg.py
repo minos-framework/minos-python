@@ -98,26 +98,10 @@ class PostgreSqlBrokerSubscriberRepository(BrokerSubscriberRepository, PostgreSq
             await self.submit_query(_UPDATE_NOT_PROCESSED_QUERY, (entry.id_,))
             self._queue.task_done()
 
-    async def enqueue(self, message: BrokerMessage) -> None:
-        """Enqueue a new message.
-
-        :param message: The ``BrokerMessage`` to be enqueued.
-        :return: This method does not return anything.
-        """
-        logger.info(f"Enqueueing {message!r} message...")
-
+    async def _enqueue(self, message: BrokerMessage) -> None:
         params = (message.topic, message.avro_bytes)
         await self.submit_query_and_fetchone(_INSERT_QUERY, params)
         await self.submit_query(_NOTIFY_QUERY.format(Identifier(message.topic)))
-
-    async def dequeue(self) -> BrokerMessage:
-        """Dequeue a message from the queue.
-
-        :return: The dequeued ``BrokerMessage``.
-        """
-        message = await self._dequeue()
-        logger.info(f"Dequeuing {message!r} message...")
-        return message
 
     async def _dequeue(self) -> BrokerMessage:
         while True:
