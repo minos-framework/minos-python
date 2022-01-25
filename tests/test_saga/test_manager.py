@@ -19,6 +19,7 @@ from minos.common import (
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_USER_CONTEXT_VAR,
+    BrokerMessage,
     BrokerMessageV1,
     BrokerMessageV1Payload,
 )
@@ -87,98 +88,61 @@ class TestSagaManager(MinosTestCase):
             self.assertIsInstance(saga_manager, SagaManager)
 
     async def test_run_with_pause_on_memory(self):
-        with patch("uuid.uuid4", return_value=self.uuid):
-            self.broker_subscriber_builder.with_messages(
-                [
-                    *self.receive_messages,
-                    BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "order"})),
-                    BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "foo"})),
-                    BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "order"})),
-                    BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "foo"})),
-                ]
-            )
+        self.broker_subscriber_builder.with_messages(
+            [
+                *self.receive_messages,
+                BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "order"})),
+                BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "foo"})),
+                BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "order"})),
+                BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "foo"})),
+            ]
+        )
 
+        with patch("uuid.uuid4", return_value=self.uuid):
             execution = await self.manager.run(ADD_ORDER)
-            self.assertEqual(SagaStatus.Finished, execution.status)
-            with self.assertRaises(SagaExecutionNotFoundException):
-                self.manager.storage.load(execution.uuid)
+
+        self.assertEqual(SagaStatus.Finished, execution.status)
+        with self.assertRaises(SagaExecutionNotFoundException):
+            self.manager.storage.load(execution.uuid)
 
         observed = self.broker_publisher.messages
-        expected = [
-            BrokerMessageV1(
-                topic="CreateOrder",
-                payload=BrokerMessageV1Payload(
-                    Foo("create_order!"),
-                    headers={"saga": str(self.uuid), "transactions": str(self.uuid), "user": str(self.user)},
-                ),
-                identifier=observed[0].identifier,
-                reply_topic=observed[0].reply_topic,
-            ),
-            BrokerMessageV1(
-                topic="CreateTicket",
-                payload=BrokerMessageV1Payload(
-                    Foo("create_ticket!"),
-                    headers={"saga": str(self.uuid), "transactions": str(self.uuid), "user": str(self.user)},
-                ),
-                identifier=observed[1].identifier,
-                reply_topic=observed[1].reply_topic,
-            ),
-            BrokerMessageV1(
-                topic="ReserveFooTransaction",
-                payload=BrokerMessageV1Payload(execution.uuid),
-                identifier=observed[2].identifier,
-                reply_topic=observed[2].reply_topic,
-            ),
-            BrokerMessageV1(
-                topic="ReserveOrderTransaction",
-                payload=BrokerMessageV1Payload(execution.uuid),
-                identifier=observed[3].identifier,
-                reply_topic=observed[3].reply_topic,
-            ),
-            BrokerMessageV1(
-                topic="CommitFooTransaction",
-                payload=BrokerMessageV1Payload(execution.uuid),
-                identifier=observed[4].identifier,
-            ),
-            BrokerMessageV1(
-                topic="CommitOrderTransaction",
-                payload=BrokerMessageV1Payload(execution.uuid),
-                identifier=observed[5].identifier,
-            ),
-        ]
+        expected = self._build_expected_messages(observed)
         self.assertEqual(expected, observed)
 
     async def test_run_with_pause_on_memory_without_commit(self):
-        with patch("uuid.uuid4", return_value=self.uuid):
-            self.broker_subscriber_builder.with_messages(self.receive_messages)
+        self.broker_subscriber_builder.with_messages(self.receive_messages)
 
-            with patch("minos.saga.SagaExecution.commit") as commit_mock:
-                execution = await self.manager.run(ADD_ORDER, autocommit=False)
-            self.assertEqual(SagaStatus.Finished, execution.status)
+        with patch("uuid.uuid4", return_value=self.uuid), patch("minos.saga.SagaExecution.commit") as commit_mock:
+            execution = await self.manager.run(ADD_ORDER, autocommit=False)
+
+        self.assertEqual(SagaStatus.Finished, execution.status)
 
         self.assertEqual(0, commit_mock.call_count)
 
     async def test_run_with_pause_on_memory_with_headers(self):
-        with patch("uuid.uuid4", return_value=self.uuid):
-            self.broker_subscriber_builder.with_messages(self.receive_messages)
+        self.broker_subscriber_builder.with_messages(self.receive_messages)
 
-            request_headers = {"hello": "world"}
-            REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
+        request_headers = {"hello": "world"}
+        REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
+
+        with patch("uuid.uuid4", return_value=self.uuid):
             await self.manager.run(ADD_ORDER, autocommit=False)
-            self.assertEqual({"hello", "related_services"}, request_headers.keys())
-            self.assertEqual("world", request_headers["hello"])
-            self.assertEqual({"foo", "order"}, set(request_headers["related_services"].split(",")))
+
+        self.assertEqual({"hello", "related_services"}, request_headers.keys())
+        self.assertEqual("world", request_headers["hello"])
+        self.assertEqual({"foo", "order"}, set(request_headers["related_services"].split(",")))
 
     async def test_run_with_pause_on_memory_with_headers_already_related_services(self):
-        with patch("uuid.uuid4", return_value=self.uuid):
-            self.broker_subscriber_builder.with_messages(self.receive_messages)
+        self.broker_subscriber_builder.with_messages(self.receive_messages)
+        request_headers = {"hello": "world", "related_services": "order,one"}
+        REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
 
-            request_headers = {"hello": "world", "related_services": "order,one"}
-            REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
+        with patch("uuid.uuid4", return_value=self.uuid):
             await self.manager.run(ADD_ORDER, autocommit=False)
-            self.assertEqual({"hello", "related_services"}, request_headers.keys())
-            self.assertEqual("world", request_headers["hello"])
-            self.assertEqual({"foo", "one", "order"}, set(request_headers["related_services"].split(",")))
+
+        self.assertEqual({"hello", "related_services"}, request_headers.keys())
+        self.assertEqual("world", request_headers["hello"])
+        self.assertEqual({"foo", "one", "order"}, set(request_headers["related_services"].split(",")))
 
     async def test_run_with_pause_on_memory_with_error(self):
         with patch("minos.networks.BrokerClient.receive", side_effect=ValueError):
@@ -204,61 +168,23 @@ class TestSagaManager(MinosTestCase):
             [BrokerMessageV1("", BrokerMessageV1Payload()), BrokerMessageV1("", BrokerMessageV1Payload())]
         )
 
-        execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
-        self.assertEqual(SagaStatus.Paused, execution.status)
+        with patch("uuid.uuid4", return_value=self.uuid):
+            execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
+            self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
-        execution = await self.manager.run(response=response, pause_on_disk=True)
-        self.assertEqual(SagaStatus.Paused, execution.status)
+            response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
+            execution = await self.manager.run(response=response, pause_on_disk=True)
+            self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
-        execution = await self.manager.run(response=response, pause_on_disk=True)
+            response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
+            execution = await self.manager.run(response=response, pause_on_disk=True)
+            self.assertEqual(SagaStatus.Finished, execution.status)
+
         with self.assertRaises(SagaExecutionNotFoundException):
-            self.manager.storage.load(execution.uuid)
+            self.manager.storage.load(self.uuid)
 
         observed = self.broker_publisher.messages
-        expected = [
-            BrokerMessageV1(
-                topic="CreateOrder",
-                payload=BrokerMessageV1Payload(
-                    Foo("create_order!"),
-                    headers={"saga": str(execution.uuid), "transactions": str(execution.uuid), "user": str(self.user)},
-                ),
-                identifier=observed[0].identifier,
-                reply_topic=observed[0].reply_topic,
-            ),
-            BrokerMessageV1(
-                topic="CreateTicket",
-                payload=BrokerMessageV1Payload(
-                    Foo("create_ticket!"),
-                    headers={"saga": str(execution.uuid), "transactions": str(execution.uuid), "user": str(self.user)},
-                ),
-                identifier=observed[1].identifier,
-                reply_topic=observed[1].reply_topic,
-            ),
-            BrokerMessageV1(
-                topic="ReserveFooTransaction",
-                payload=BrokerMessageV1Payload(execution.uuid),
-                identifier=observed[2].identifier,
-                reply_topic=observed[2].reply_topic,
-            ),
-            BrokerMessageV1(
-                topic="ReserveOrderTransaction",
-                payload=BrokerMessageV1Payload(execution.uuid),
-                identifier=observed[3].identifier,
-                reply_topic=observed[3].reply_topic,
-            ),
-            BrokerMessageV1(
-                topic="CommitFooTransaction",
-                payload=BrokerMessageV1Payload(execution.uuid),
-                identifier=observed[4].identifier,
-            ),
-            BrokerMessageV1(
-                topic="CommitOrderTransaction",
-                payload=BrokerMessageV1Payload(execution.uuid),
-                identifier=observed[5].identifier,
-            ),
-        ]
+        expected = self._build_expected_messages(observed)
         self.assertEqual(expected, observed)
 
     async def test_run_with_pause_on_disk_without_commit(self):
@@ -345,6 +271,50 @@ class TestSagaManager(MinosTestCase):
         self.assertEqual(1, len(observed))
 
         self.assertEqual(str(self.user), observed[0].headers["user"])
+
+    def _build_expected_messages(self, observed: list[BrokerMessage]) -> list[BrokerMessage]:
+        return [
+            BrokerMessageV1(
+                topic="CreateOrder",
+                payload=BrokerMessageV1Payload(
+                    Foo("create_order!"),
+                    headers={"saga": str(self.uuid), "transactions": str(self.uuid), "user": str(self.user)},
+                ),
+                identifier=observed[0].identifier,
+                reply_topic=observed[0].reply_topic,
+            ),
+            BrokerMessageV1(
+                topic="CreateTicket",
+                payload=BrokerMessageV1Payload(
+                    Foo("create_ticket!"),
+                    headers={"saga": str(self.uuid), "transactions": str(self.uuid), "user": str(self.user)},
+                ),
+                identifier=observed[1].identifier,
+                reply_topic=observed[1].reply_topic,
+            ),
+            BrokerMessageV1(
+                topic="ReserveFooTransaction",
+                payload=BrokerMessageV1Payload(self.uuid),
+                identifier=observed[2].identifier,
+                reply_topic=observed[2].reply_topic,
+            ),
+            BrokerMessageV1(
+                topic="ReserveOrderTransaction",
+                payload=BrokerMessageV1Payload(self.uuid),
+                identifier=observed[3].identifier,
+                reply_topic=observed[3].reply_topic,
+            ),
+            BrokerMessageV1(
+                topic="CommitFooTransaction",
+                payload=BrokerMessageV1Payload(self.uuid),
+                identifier=observed[4].identifier,
+            ),
+            BrokerMessageV1(
+                topic="CommitOrderTransaction",
+                payload=BrokerMessageV1Payload(self.uuid),
+                identifier=observed[5].identifier,
+            ),
+        ]
 
 
 if __name__ == "__main__":
