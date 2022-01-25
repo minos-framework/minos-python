@@ -36,6 +36,7 @@ from .publishers import (
     InMemoryQueuedKafkaBrokerPublisher,
     KafkaBrokerPublisher,
     PostgreSqlBrokerPublisherQueue,
+    PostgreSqlBrokerPublisherQueueQueryFactory,
     PostgreSqlQueuedKafkaBrokerPublisher,
     QueuedBrokerPublisher,
 )
@@ -47,6 +48,7 @@ from .subscribers import (
     InMemoryQueuedKafkaBrokerSubscriber,
     KafkaBrokerSubscriber,
     PostgreSqlBrokerSubscriberQueue,
+    PostgreSqlBrokerSubscriberQueueQueryFactory,
     PostgreSqlQueuedKafkaBrokerSubscriber,
     QueuedBrokerSubscriber,
 )

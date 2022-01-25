@@ -15,5 +15,6 @@ from .queued import (
     BrokerSubscriberQueue,
     InMemoryBrokerSubscriberQueue,
     PostgreSqlBrokerSubscriberQueue,
+    PostgreSqlBrokerSubscriberQueueQueryFactory,
     QueuedBrokerSubscriber,
 )

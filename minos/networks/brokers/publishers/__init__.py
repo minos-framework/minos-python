@@ -15,5 +15,6 @@ from .queued import (
     BrokerPublisherQueue,
     InMemoryBrokerPublisherQueue,
     PostgreSqlBrokerPublisherQueue,
+    PostgreSqlBrokerPublisherQueueQueryFactory,
     QueuedBrokerPublisher,
 )

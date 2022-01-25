@@ -5,4 +5,5 @@ from .queues import (
     BrokerSubscriberQueue,
     InMemoryBrokerSubscriberQueue,
     PostgreSqlBrokerSubscriberQueue,
+    PostgreSqlBrokerSubscriberQueueQueryFactory,
 )
