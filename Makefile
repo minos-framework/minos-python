@@ -23,4 +23,4 @@ docs:
 	$(MAKE) --directory=packages/minos-microservice-saga docs
 	cp -R packages/minos-microservice-saga/docs/_build/html $(DOCS_TARGET)/minos-microservice-saga
 
-	$(MAKE) --directory=docs html
+	poetry run $(MAKE) --directory=docs html
