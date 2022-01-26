@@ -3,7 +3,7 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD   = python -m sphinx
+SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = minos-microservice-cqrs
 SOURCEDIR     = .
 BUILDDIR      = _build
