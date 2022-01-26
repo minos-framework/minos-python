@@ -40,6 +40,7 @@ minos-microservice-common = "^0.3.0"
 crontab = "^0.23.0"
 
 [tool.poetry.dev-dependencies]
+minos-microservice-common = { path = "../minos-microservice-common", develop = true }
 black = "^19.10b"
 isort = "^5.8.0"
 pytest = "^6.2.4"
