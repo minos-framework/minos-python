@@ -31,9 +31,9 @@ from minos.common import (
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_USER_CONTEXT_VAR,
+    BrokerClient,
+    BrokerClientPool,
     BrokerMessage,
-    DynamicBroker,
-    DynamicBrokerPool,
 )
 
 from .context import (
@@ -66,7 +66,7 @@ class SagaManager(MinosSetup):
 
     @inject
     def __init__(
-        self, storage: SagaExecutionStorage, broker_pool: DynamicBrokerPool = Provide["broker_pool"], *args, **kwargs,
+        self, storage: SagaExecutionStorage, broker_pool: BrokerClientPool = Provide["broker_pool"], *args, **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.storage = storage
@@ -227,13 +227,12 @@ class SagaManager(MinosSetup):
             raise exc
 
     @staticmethod
-    async def _get_response(handler: DynamicBroker, execution: SagaExecution, **kwargs) -> SagaResponse:
+    async def _get_response(broker: BrokerClient, execution: SagaExecution, **kwargs) -> SagaResponse:
         message: Optional[BrokerMessage] = None
-        while message is None or UUID(message.headers["saga"]) != execution.uuid:
+        while message is None or "saga" not in message.headers or UUID(message.headers["saga"]) != execution.uuid:
             try:
-                entry = await handler.get_one(**kwargs)
+                message = await broker.receive(**kwargs)
             except Exception as exc:
                 execution.status = SagaStatus.Errored
                 raise SagaFailedExecutionException(exc)
-            message = entry.data
         return SagaResponse.from_message(message)

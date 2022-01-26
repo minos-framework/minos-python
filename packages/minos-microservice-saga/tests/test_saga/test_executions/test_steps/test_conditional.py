@@ -3,7 +3,6 @@ from contextlib import (
     suppress,
 )
 from unittest.mock import (
-    AsyncMock,
     patch,
 )
 from uuid import (
@@ -49,10 +48,6 @@ class TestConditionalSageStepExecution(MinosTestCase):
             "execution_uuid": uuid4(),
             "user": uuid4(),
         }
-
-        mock = AsyncMock()
-        mock.return_value.data.ok = True
-        self.broker.get_one = mock
 
         self.definition = ConditionalSagaStep(
             [
