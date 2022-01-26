@@ -38,7 +38,7 @@ class TestBrokerClient(PostgresAsyncTestCase):
         self.publisher = InMemoryBrokerPublisher.from_config(self.config)
         self.subscriber_builder = InMemoryBrokerSubscriberBuilder()
         self.broker = BrokerClient.from_config(
-            self.config, topic=self.topic, publisher=self.publisher, subscriber_builder=self.subscriber_builder,
+            self.config, topic=self.topic, publisher=self.publisher, subscriber_builder=self.subscriber_builder
         )
 
     async def asyncSetUp(self):
@@ -59,7 +59,7 @@ class TestBrokerClient(PostgresAsyncTestCase):
 
     async def test_setup_destroy(self):
         broker = BrokerClient.from_config(
-            self.config, topic=self.topic, publisher=self.publisher, subscriber_builder=self.subscriber_builder,
+            self.config, topic=self.topic, publisher=self.publisher, subscriber_builder=self.subscriber_builder
         )
         self.assertFalse(broker.already_setup)
         async with broker:

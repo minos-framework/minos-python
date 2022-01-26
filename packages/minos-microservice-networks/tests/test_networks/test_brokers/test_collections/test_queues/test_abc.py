@@ -31,9 +31,7 @@ class TestBrokerQueue(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(BrokerQueue, (ABC, MinosSetup)))
         # noinspection PyUnresolvedReferences
-        self.assertEqual(
-            {"_enqueue", "_dequeue"}, BrokerQueue.__abstractmethods__,
-        )
+        self.assertEqual({"_enqueue", "_dequeue"}, BrokerQueue.__abstractmethods__)
 
     async def test_iter(self):
         messages = [

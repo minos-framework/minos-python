@@ -133,9 +133,9 @@ class PostgreSqlBrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder):
     def with_config(self, config: MinosConfig):
         """Set config.
 
-         :param config: The config to be set.
-         :return: This method return the builder instance.
-         """
+        :param config: The config to be set.
+        :return: This method return the builder instance.
+        """
         # noinspection PyProtectedMember
         self.kwargs |= config.broker.queue._asdict()
         return super().with_config(config)

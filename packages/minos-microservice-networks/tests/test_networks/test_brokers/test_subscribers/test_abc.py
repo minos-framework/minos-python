@@ -33,9 +33,7 @@ class TestBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(BrokerSubscriber, (ABC, MinosSetup)))
         # noinspection PyUnresolvedReferences
-        self.assertEqual(
-            {"_receive"}, BrokerSubscriber.__abstractmethods__,
-        )
+        self.assertEqual({"_receive"}, BrokerSubscriber.__abstractmethods__)
 
     def test_topics(self):
         subscriber = _BrokerSubscriber(["foo", "bar", "bar"])
@@ -75,9 +73,7 @@ class TestBrokerSubscriberBuilder(unittest.TestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(BrokerSubscriberBuilder, (ABC, MinosSetup)))
         # noinspection PyUnresolvedReferences
-        self.assertEqual(
-            {"build"}, BrokerSubscriberBuilder.__abstractmethods__,
-        )
+        self.assertEqual({"build"}, BrokerSubscriberBuilder.__abstractmethods__)
 
     def test_with_group_id(self):
         builder = _BrokerSubscriberBuilder().with_group_id("foobar")

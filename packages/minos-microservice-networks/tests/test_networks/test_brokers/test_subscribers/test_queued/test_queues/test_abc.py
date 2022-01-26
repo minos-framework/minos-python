@@ -39,9 +39,7 @@ class TestBrokerSubscriberQueue(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(BrokerSubscriberQueue, (ABC, BrokerQueue)))
         # noinspection PyUnresolvedReferences
-        self.assertEqual(
-            {"_enqueue", "_dequeue"}, BrokerSubscriberQueue.__abstractmethods__,
-        )
+        self.assertEqual({"_enqueue", "_dequeue"}, BrokerSubscriberQueue.__abstractmethods__)
 
     def test_topics(self):
         queue = _BrokerSubscriberQueue(self.topics)
@@ -56,9 +54,7 @@ class TestBrokerSubscriberBuilder(unittest.TestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(BrokerSubscriberQueueBuilder, (ABC, MinosSetup)))
         # noinspection PyUnresolvedReferences
-        self.assertEqual(
-            {"build"}, BrokerSubscriberQueueBuilder.__abstractmethods__,
-        )
+        self.assertEqual({"build"}, BrokerSubscriberQueueBuilder.__abstractmethods__)
 
     def test_with_topics(self):
         builder = _BrokerSubscriberQueueBuilder().with_topics({"one", "two"})
