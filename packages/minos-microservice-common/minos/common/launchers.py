@@ -114,7 +114,7 @@ class EntrypointLauncher(MinosSetup):
         """
 
         basic_config(
-            level=self._log_level, log_format=self._log_format, buffered=False, date_format=self._log_date_format,
+            level=self._log_level, log_format=self._log_format, buffered=False, date_format=self._log_date_format
         )
 
         logger.info("Starting microservice...")
