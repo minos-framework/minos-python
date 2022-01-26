@@ -3,6 +3,13 @@ from __future__ import (
 )
 
 import logging
+from asyncio import (
+    TimeoutError,
+    wait_for,
+)
+from contextlib import (
+    suppress,
+)
 
 from aiokafka import (
     AIOKafkaProducer,
@@ -45,7 +52,8 @@ class KafkaBrokerPublisher(BrokerPublisher):
         await self.client.start()
 
     async def _destroy(self) -> None:
-        await self.client.stop()
+        with suppress(TimeoutError):
+            await wait_for(self.client.stop(), 0.5)
         await super()._destroy()
 
     async def _send(self, message: BrokerMessage) -> None:

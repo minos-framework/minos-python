@@ -13,36 +13,23 @@ from collections.abc import (
 from typing import (
     Optional,
 )
+from uuid import (
+    uuid4,
+)
 
-from aiopg import (
-    Cursor,
-)
-from cached_property import (
-    cached_property,
-)
 from dependency_injector.wiring import (
     Provide,
     inject,
 )
-from psycopg2.sql import (
-    SQL,
-    Identifier,
-)
 
 from minos.common import (
     MinosConfig,
+    MinosSetup,
     NotProvidedException,
 )
 
 from ..exceptions import (
     MinosHandlerNotFoundEnoughEntriesException,
-)
-from ..utils import (
-    consume_queue,
-)
-from .handlers import (
-    BrokerHandlerEntry,
-    BrokerHandlerSetup,
 )
 from .messages import (
     BrokerMessage,
@@ -50,24 +37,39 @@ from .messages import (
 from .publishers import (
     BrokerPublisher,
 )
+from .subscribers import (
+    BrokerSubscriber,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class BrokerClient(BrokerHandlerSetup):
-    """Broker client class."""
+class BrokerClient(MinosSetup):
+    """Broker Client class."""
 
-    def __init__(self, topic: str, publisher: BrokerPublisher, **kwargs):
+    def __init__(self, topic: str, publisher: BrokerPublisher, subscriber: BrokerSubscriber, **kwargs):
         super().__init__(**kwargs)
 
         self.topic = topic
         self.publisher = publisher
+        self.subscriber = subscriber
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> BrokerClient:
+    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerClient:
+        from .subscribers import (
+            InMemoryBrokerSubscriber,
+        )
+
+        if "topic" not in kwargs:
+            kwargs["topic"] = str(uuid4()).replace("-", "")
+
         kwargs["publisher"] = cls._get_publisher(**kwargs)
+
+        kwargs["subscriber"] = InMemoryBrokerSubscriber.from_config(
+            config, topics={kwargs["topic"]}, group_id=None, remove_topics_on_destroy=True,
+        )
         # noinspection PyProtectedMember
-        return cls(**config.broker.queue._asdict(), **kwargs)
+        return cls(**kwargs)
 
     # noinspection PyUnusedLocal
     @staticmethod
@@ -85,8 +87,10 @@ class BrokerClient(BrokerHandlerSetup):
 
     async def _setup(self) -> None:
         await super()._setup()
+        await self.subscriber.setup()
 
     async def _destroy(self) -> None:
+        await self.subscriber.destroy()
         await super()._destroy()
 
     # noinspection PyUnusedLocal
@@ -116,87 +120,22 @@ class BrokerClient(BrokerHandlerSetup):
         :return: A list of ``HandlerEntry`` instances.
         """
         try:
-            entries = await wait_for(self._get_many(count, **kwargs), timeout=timeout)
+            messages = await wait_for(self._get_many(count, **kwargs), timeout=timeout)
         except TimeoutError:
             raise MinosHandlerNotFoundEnoughEntriesException(
                 f"Timeout exceeded while trying to fetch {count!r} entries from {self.topic!r}."
             )
 
-        for entry in entries:
-            message = entry.data
+        for message in messages:
             logger.info(f"Dispatching '{message!s}'...")
             yield message
 
-    async def _get_many(self, count: int, max_wait: Optional[float] = 10.0) -> list[BrokerHandlerEntry]:
+    async def _get_many(self, count, *args, **kwargs) -> list[BrokerMessage]:
         result = list()
-        async with self.cursor() as cursor:
+        async for message in self.subscriber:
+            result.append(message)
 
-            await cursor.execute(self._queries["listen"])
-            try:
-                while len(result) < count:
-                    await self._wait_for_entries(cursor, count - len(result), max_wait)
-                    result += await self._get_entries(cursor, count - len(result))
-            finally:
-                await cursor.execute(self._queries["unlisten"])
+            if len(result) == count:
+                break
 
         return result
-
-    async def _wait_for_entries(self, cursor: Cursor, count: int, max_wait: Optional[float]) -> None:
-        if await self._get_count(cursor):
-            return
-
-        while True:
-            try:
-                return await wait_for(consume_queue(cursor.connection.notifies, count), max_wait)
-            except TimeoutError:
-                if await self._get_count(cursor):
-                    return
-
-    async def _get_count(self, cursor) -> int:
-        await cursor.execute(self._queries["count_not_processed"], (self.topic,))
-        count = (await cursor.fetchone())[0]
-        return count
-
-    async def _get_entries(self, cursor: Cursor, count: int) -> list[BrokerHandlerEntry]:
-        entries = list()
-        async with cursor.begin():
-            await cursor.execute(self._queries["select_not_processed"], (self.topic, count))
-            for entry in self._build_entries(await cursor.fetchall()):
-                await cursor.execute(self._queries["delete_processed"], (entry.id,))
-                entries.append(entry)
-        return entries
-
-    @cached_property
-    def _queries(self) -> dict[str, str]:
-        # noinspection PyTypeChecker
-        return {
-            "listen": _LISTEN_QUERY.format(Identifier(self.topic)),
-            "unlisten": _UNLISTEN_QUERY.format(Identifier(self.topic)),
-            "count_not_processed": _COUNT_NOT_PROCESSED_QUERY,
-            "select_not_processed": _SELECT_NOT_PROCESSED_ROWS_QUERY,
-            "delete_processed": _DELETE_PROCESSED_QUERY,
-        }
-
-    @staticmethod
-    def _build_entries(rows: list[tuple]) -> list[BrokerHandlerEntry]:
-        return [BrokerHandlerEntry(*row) for row in rows]
-
-
-_LISTEN_QUERY = SQL("LISTEN {}")
-
-_UNLISTEN_QUERY = SQL("UNLISTEN {}")
-
-# noinspection SqlDerivedTableAlias
-_COUNT_NOT_PROCESSED_QUERY = SQL(
-    "SELECT COUNT(*) FROM (SELECT id FROM consumer_queue WHERE topic = %s FOR UPDATE SKIP LOCKED) s"
-)
-
-_SELECT_NOT_PROCESSED_ROWS_QUERY = SQL(
-    "SELECT id, topic, partition, data, retry, created_at, updated_at "
-    "FROM consumer_queue "
-    "WHERE topic = %s "
-    "ORDER BY created_at "
-    "LIMIT %s "
-    "FOR UPDATE SKIP LOCKED"
-)
-_DELETE_PROCESSED_QUERY = SQL("DELETE FROM consumer_queue WHERE id = %s")

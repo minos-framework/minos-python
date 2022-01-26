@@ -6,4 +6,5 @@ from .memory import (
 )
 from .pg import (
     PostgreSqlBrokerPublisherQueue,
+    PostgreSqlBrokerPublisherQueueQueryFactory,
 )
