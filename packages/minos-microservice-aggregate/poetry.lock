@@ -474,7 +474,7 @@ description = "Python Package with the common network classes and utilities used
 category = "main"
 optional = false
 python-versions = "^3.9"
-develop = false
+develop = true
 
 [package.dependencies]
 aiohttp = "^3.7.4"
@@ -938,7 +938,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "cb39a95e79e45ae59db082faff3a42732231005e229d20887daedfa3035d898a"
+content-hash = "66ca4d7ca4a33f18b80dc1fa606614b1eb3092788dc551ff8fb000f1361e4c22"
 
 [metadata.files]
 aiohttp = [
