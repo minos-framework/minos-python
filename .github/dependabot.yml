@@ -1,6 +1,10 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
+    directory: "/packages/minos-python"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "pip"
     directory: "/packages/minos-microservice-aggregate"
     schedule:
       interval: "weekly"
