@@ -1,0 +1,7 @@
+minos.saga.executions.steps.local module
+========================================
+
+.. automodule:: minos.saga.executions.steps.local
+   :members:
+   :undoc-members:
+   :show-inheritance:

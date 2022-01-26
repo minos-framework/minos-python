@@ -1,0 +1,23 @@
+minos.networks.discovery package
+================================
+
+.. automodule:: minos.networks.discovery
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.discovery.clients
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.discovery.connectors

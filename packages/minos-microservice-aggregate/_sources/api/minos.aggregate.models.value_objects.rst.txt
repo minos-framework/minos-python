@@ -1,0 +1,7 @@
+minos.aggregate.models.value\_objects module
+============================================
+
+.. automodule:: minos.aggregate.models.value_objects
+   :members:
+   :undoc-members:
+   :show-inheritance:

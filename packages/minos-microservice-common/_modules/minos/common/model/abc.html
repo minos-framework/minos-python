@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.common.model.abc &mdash; Minos Microservice Common 0.3.4 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Common
+          </a>
+              <div class="version">
+                0.3.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../runthetests.html">Run the tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/minos.html">minos namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../history.html">History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Minos Microservice Common</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.common.model.abc</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.common.model.abc</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">abstractmethod</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">base64</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">b64decode</span><span class="p">,</span>
+    <span class="n">b64encode</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Mapping</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+    <span class="n">Iterator</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+    <span class="n">TypedDict</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">..exceptions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EmptyMinosModelSequenceException</span><span class="p">,</span>
+    <span class="n">MultiTypeMinosModelSequenceException</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..importlib</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">classname</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..meta</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">classproperty</span><span class="p">,</span>
+    <span class="n">property_or_classproperty</span><span class="p">,</span>
+    <span class="n">self_or_classmethod</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..protocol</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MinosAvroProtocol</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.fields</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Field</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.serializers</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AvroDataDecoder</span><span class="p">,</span>
+    <span class="n">AvroDataEncoder</span><span class="p">,</span>
+    <span class="n">AvroSchemaDecoder</span><span class="p">,</span>
+    <span class="n">AvroSchemaEncoder</span><span class="p">,</span>
+    <span class="n">DataDecoder</span><span class="p">,</span>
+    <span class="n">DataEncoder</span><span class="p">,</span>
+    <span class="n">SchemaDecoder</span><span class="p">,</span>
+    <span class="n">SchemaEncoder</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.types</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MissingSentinel</span><span class="p">,</span>
+    <span class="n">ModelType</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Model"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model">[docs]</a><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for ``minos`` model entities.&quot;&quot;&quot;</span>
+
+    <span class="n">_field_cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Field</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span>
+
+    <span class="n">_fields</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Field</span><span class="p">]</span>
+    <span class="n">__eq_reversing</span><span class="p">:</span> <span class="nb">bool</span>
+
+<div class="viewcode-block" id="Model.__init__"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Field</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Field</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Class constructor.</span>
+
+<span class="sd">        :param fields: Dictionary that contains the ``Field`` instances of the model indexed by name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">fields</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">field</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fields</span> <span class="o">=</span> <span class="n">fields</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__eq_reversing</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Model.from_typed_dict"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.from_typed_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_typed_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">typed_dict</span><span class="p">:</span> <span class="n">TypedDict</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build a ``Model`` from a ``TypeDict`` and ``data``.</span>
+
+<span class="sd">        :param typed_dict: ``TypeDict`` object containing the DTO&#39;s structure</span>
+<span class="sd">        :param args: Positional arguments to be passed to the model constructor.</span>
+<span class="sd">        :param kwargs: Named arguments to be passed to the model constructor.</span>
+<span class="sd">        :return: A new ``DataTransferObject`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_model_type</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">from_typed_dict</span><span class="p">(</span><span class="n">typed_dict</span><span class="p">),</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.from_model_type"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.from_model_type">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">from_model_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">model_type</span><span class="p">:</span> <span class="n">ModelType</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build a ``Model`` from a ``ModelType``.</span>
+
+<span class="sd">        :param model_type: ``ModelType`` object containing the DTO&#39;s structure</span>
+<span class="sd">        :param args: Positional arguments to be passed to the model constructor.</span>
+<span class="sd">        :param kwargs: Named arguments to be passed to the model constructor.</span>
+<span class="sd">        :return: A new ``DeclarativeModel`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="Model.from_avro_str"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.from_avro_str">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_avro_str</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Build a single instance or a sequence of instances from bytes</span>
+
+<span class="sd">        :param raw: A ``str`` representation of the model.</span>
+<span class="sd">        :return: A single instance or a sequence of instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">b64decode</span><span class="p">(</span><span class="n">raw</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_avro_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="c1"># noinspection PyUnusedLocal</span>
+<div class="viewcode-block" id="Model.from_avro_bytes"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.from_avro_bytes">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_avro_bytes</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">batch_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Build a single instance or a sequence of instances from bytes</span>
+
+<span class="sd">        :param raw: A ``bytes`` representation of the model.</span>
+<span class="sd">        :param batch_mode: If ``True`` the data is processed as a list of models, otherwise the data is processed as a</span>
+<span class="sd">        single model.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: A single instance or a sequence of instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">MinosAvroProtocol</span><span class="o">.</span><span class="n">decode_schema</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">MinosAvroProtocol</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">batch_mode</span><span class="o">=</span><span class="n">batch_mode</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">batch_mode</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">from_avro</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">entry</span><span class="p">)</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_avro</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.from_avro"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.from_avro">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_avro</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">schema</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build a new instance from the ``avro`` schema and data.</span>
+
+<span class="sd">        :param schema: The avro schema of the model.</span>
+<span class="sd">        :param data: The avro data of the model.</span>
+<span class="sd">        :return: A new ``DynamicModel`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">schema_decoder</span> <span class="o">=</span> <span class="n">AvroSchemaDecoder</span><span class="p">()</span>
+        <span class="n">type_</span> <span class="o">=</span> <span class="n">schema_decoder</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
+
+        <span class="n">data_decoder</span> <span class="o">=</span> <span class="n">AvroDataDecoder</span><span class="p">()</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="n">data_decoder</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">type_</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">instance</span></div>
+
+<div class="viewcode-block" id="Model.to_avro_str"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.to_avro_str">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">to_avro_str</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">models</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the avro string representation of the given object instances.</span>
+
+<span class="sd">        :param models: A sequence of minos models.</span>
+<span class="sd">        :return: A bytes object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">b64encode</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">to_avro_bytes</span><span class="p">(</span><span class="n">models</span><span class="p">))</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Model.to_avro_bytes"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.to_avro_bytes">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">to_avro_bytes</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">models</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Create a ``bytes`` representation of the given object instances.</span>
+
+<span class="sd">        :param models: A sequence of minos models.</span>
+<span class="sd">        :return: A bytes object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">EmptyMinosModelSequenceException</span><span class="p">(</span><span class="s2">&quot;&#39;models&#39; parameter cannot be empty.&quot;</span><span class="p">)</span>
+
+        <span class="n">model_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">models</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">model_type</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">MultiTypeMinosModelSequenceException</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Every model must have type </span><span class="si">{</span><span class="n">model_type</span><span class="si">}</span><span class="s2"> to be valid. Found types: </span><span class="si">{</span><span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">avro_schema</span> <span class="o">=</span> <span class="n">models</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">avro_schema</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="k">return</span> <span class="n">MinosAvroProtocol</span><span class="o">.</span><span class="n">encode</span><span class="p">([</span><span class="n">model</span><span class="o">.</span><span class="n">avro_data</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">],</span> <span class="n">avro_schema</span><span class="p">,</span> <span class="n">batch_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+    <span class="c1"># noinspection PyMethodParameters</span>
+    <span class="nd">@property_or_classproperty</span>
+    <span class="k">def</span> <span class="nf">model_type</span><span class="p">(</span><span class="n">self_or_cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelType</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the model type of the instance.</span>
+
+<span class="sd">        :return: A ``ModelType`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="k">return</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span><span class="n">self_or_cls</span><span class="p">)</span>
+
+    <span class="c1"># noinspection PyMethodParameters</span>
+    <span class="nd">@classproperty</span>
+    <span class="k">def</span> <span class="nf">classname</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Compute the current class namespace.</span>
+<span class="sd">        :return: An string object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="k">return</span> <span class="n">classname</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+
+    <span class="c1"># noinspection PyMethodParameters</span>
+    <span class="nd">@property_or_classproperty</span>
+    <span class="k">def</span> <span class="nf">type_hints</span><span class="p">(</span><span class="n">self_or_cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the type hinting of the instance or class.</span>
+
+<span class="sd">        :return: A dictionary in which the keys are the field names and the values are the types.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">self_or_cls</span><span class="o">.</span><span class="n">_type_hints</span><span class="p">())</span>
+
+    <span class="c1"># noinspection PyMethodParameters</span>
+    <span class="nd">@self_or_classmethod</span>
+    <span class="k">def</span> <span class="nf">_type_hints</span><span class="p">(</span><span class="n">self_or_cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">self_or_cls</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+            <span class="k">yield from</span> <span class="p">((</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">real_type</span><span class="p">)</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">self_or_cls</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+    <span class="c1"># noinspection PyMethodParameters</span>
+    <span class="nd">@property_or_classproperty</span>
+    <span class="k">def</span> <span class="nf">type_hints_parameters</span><span class="p">(</span><span class="n">self_or_cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">TypeVar</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the sequence of generic type hints parameters..</span>
+
+<span class="sd">        :return: A tuple of `TypeVar` instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">self_or_cls</span><span class="p">,</span> <span class="s2">&quot;__parameters__&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">())</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Field</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Fields getter&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fields</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fields</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fields</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> does not contain the </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> field&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">item</span> <span class="o">!=</span> <span class="s2">&quot;_fields&quot;</span> <span class="ow">and</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fields</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fields</span><span class="p">[</span><span class="n">item</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> does not contain the </span><span class="si">{</span><span class="n">item</span><span class="si">!r}</span><span class="s2"> field.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># noinspection PyMethodParameters</span>
+    <span class="nd">@property_or_classproperty</span>
+    <span class="k">def</span> <span class="nf">avro_schema</span><span class="p">(</span><span class="n">self_or_cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Compute the avro schema of the model.</span>
+
+<span class="sd">        :return: A dictionary object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">encoder</span> <span class="o">=</span> <span class="n">AvroSchemaEncoder</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">encoder</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">self_or_cls</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">avro_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Compute the avro data of the model.</span>
+
+<span class="sd">        :return: A dictionary object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">encoder</span> <span class="o">=</span> <span class="n">AvroDataEncoder</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">encoder</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">avro_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generate bytes representation of the current instance.</span>
+
+<span class="sd">        :return: A bytes object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="k">return</span> <span class="n">b64encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">avro_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generate bytes representation of the current instance.</span>
+
+<span class="sd">        :return: A bytes object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="k">return</span> <span class="n">MinosAvroProtocol</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avro_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">avro_schema</span><span class="p">)</span>
+
+    <span class="c1"># noinspection PyMethodParameters,PyUnusedLocal</span>
+<div class="viewcode-block" id="Model.encode_schema"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.encode_schema">[docs]</a>    <span class="nd">@self_or_classmethod</span>
+    <span class="k">def</span> <span class="nf">encode_schema</span><span class="p">(</span><span class="n">self_or_cls</span><span class="p">,</span> <span class="n">encoder</span><span class="p">:</span> <span class="n">SchemaEncoder</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Encode schema with the given encoder.</span>
+
+<span class="sd">        :param encoder: The encoder instance.</span>
+<span class="sd">        :param target: An optional pre-encoded schema.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: The encoded schema of the instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">MissingSentinel</span></div>
+
+    <span class="c1"># noinspection PyUnusedLocal</span>
+<div class="viewcode-block" id="Model.decode_schema"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.decode_schema">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">decode_schema</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">decoder</span><span class="p">:</span> <span class="n">SchemaDecoder</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Decode schema with the given encoder.</span>
+
+<span class="sd">        :param decoder: The decoder instance.</span>
+<span class="sd">        :param target: The schema to be decoded.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: The decoded schema as a type.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">MissingSentinel</span></div>
+
+    <span class="c1"># noinspection PyMethodMayBeStatic,PyUnusedLocal</span>
+<div class="viewcode-block" id="Model.encode_data"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.encode_data">[docs]</a>    <span class="k">def</span> <span class="nf">encode_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoder</span><span class="p">:</span> <span class="n">DataEncoder</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Encode data with the given encoder.</span>
+
+<span class="sd">        :param encoder: The encoder instance.</span>
+<span class="sd">        :param target: An optional pre-encoded data.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: The encoded data of the instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">MissingSentinel</span></div>
+
+    <span class="c1"># noinspection PyUnusedLocal</span>
+<div class="viewcode-block" id="Model.decode_data"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.decode_data">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">decode_data</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="n">decoder</span><span class="p">:</span> <span class="n">DataDecoder</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">type_</span><span class="p">:</span> <span class="n">ModelType</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Decode data with the given decoder.</span>
+
+<span class="sd">        :param decoder: The decoder instance.</span>
+<span class="sd">        :param target: The data to be decoded.</span>
+<span class="sd">        :param type_: The data type.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: A decoded instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">MissingSentinel</span></div>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__eq_reversing</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__eq_reversing</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">return</span> <span class="n">other</span> <span class="o">==</span> <span class="bp">self</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__eq_reversing</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">fields_repr</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">fields_repr</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Model</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+minos.common.model.serializers.avro package
+===========================================
+
+.. automodule:: minos.common.model.serializers.avro
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.common.model.serializers.avro.data
+   minos.common.model.serializers.avro.schema

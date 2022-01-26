@@ -1,0 +1,15 @@
+minos.common.configuration package
+==================================
+
+.. automodule:: minos.common.configuration
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.common.configuration.config

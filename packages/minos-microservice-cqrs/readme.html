@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction &mdash; Minos Microservice CQRS 0.2.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Run the tests" href="runthetests.html" />
+    <link rel="prev" title="Welcome to Minos Microservice CQRS’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Minos Microservice CQRS
+          </a>
+              <div class="version">
+                0.2.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#minos-microservice-cqrs">Minos Microservice CQRS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#set-up-a-development-environment">Set up a development environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-the-tests">Run the tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-contribute">How to contribute</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#create-an-issue">Create an issue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#submit-a-pull-request">Submit a Pull Request</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#credits">Credits</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="runthetests.html">Run the tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/minos.html">minos namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Minos Microservice CQRS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Introduction</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/readme.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline"></a></h1>
+<section id="minos-microservice-cqrs">
+<h2>Minos Microservice CQRS<a class="headerlink" href="#minos-microservice-cqrs" title="Permalink to this headline"></a></h2>
+<a class="reference external image-reference" href="https://codecov.io/gh/Clariteia/minos_microservice_cqrs"><img alt="codecov" src="https://codecov.io/gh/Clariteia/minos_microservice_cqrs/branch/main/graph/badge.svg" /></a>
+<a class="reference external image-reference" href="https://github.com/Clariteia/minos_microservice_cqrs/actions/workflows/python-tests.yml/badge.svg"><img alt="Tests" src="https://github.com/Clariteia/minos_microservice_cqrs/actions/workflows/python-tests.yml/badge.svg" /></a>
+<p>Minos is a framework which helps you create <a class="reference external" href="https://www.reactivemanifesto.org/">reactive</a> microservices in Python.
+Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
+asynchronous environment.</p>
+<section id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline"></a></h3>
+<p>The official documentation as well as the API you can find it under <a class="reference external" href="https://clariteia.github.io/minos_microservice_cqrs/">https://clariteia.github.io/minos_microservice_cqrs/</a>.
+Please, submit any issue regarding documentation as well!</p>
+</section>
+<section id="set-up-a-development-environment">
+<h3>Set up a development environment<a class="headerlink" href="#set-up-a-development-environment" title="Permalink to this headline"></a></h3>
+<p>Minos uses <code class="docutils literal notranslate"><span class="pre">poetry</span></code> as its default package manager. Please refer to the
+<a class="reference external" href="https://python-poetry.org/docs/#installation">Poetry installation guide</a> for instructions on how to install it.</p>
+<p>Now you con install all the dependencies by running</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make install
+</pre></div>
+</div>
+<p>In order to make the pre-commits checks available to git, run</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pre-commit install
+</pre></div>
+</div>
+<p>Make yourself sure you are able to run the tests. Refer to the appropriate section in this guide.</p>
+</section>
+<section id="run-the-tests">
+<h3>Run the tests<a class="headerlink" href="#run-the-tests" title="Permalink to this headline"></a></h3>
+<p>In order to run the tests, please make sure you have the <a class="reference external" href="https://docs.docker.com/engine/install/">Docker Engine</a>
+and <a class="reference external" href="https://docs.docker.com/compose/install/">Docker Compose</a> installed.</p>
+<p>Move into <code class="docutils literal notranslate"><span class="pre">tests/</span></code> directory</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> tests/
+</pre></div>
+</div>
+<p>Run service dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker-compose up -d
+</pre></div>
+</div>
+<p>Install library dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make install
+</pre></div>
+</div>
+<p>Run tests:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make <span class="nb">test</span>
+</pre></div>
+</div>
+</section>
+<section id="how-to-contribute">
+<h3>How to contribute<a class="headerlink" href="#how-to-contribute" title="Permalink to this headline"></a></h3>
+<p>Minos being an open-source project, we are looking forward to having your contributions. No matter whether it is a pull
+request with new features, or the creation of an issue related to a bug you have found.</p>
+<p>Please consider these guidelines before you submit any modification.</p>
+<section id="create-an-issue">
+<h4>Create an issue<a class="headerlink" href="#create-an-issue" title="Permalink to this headline"></a></h4>
+<ol class="arabic simple">
+<li><p>If you happen to find a bug, please file a new issue filling the ‘Bug report’ template.</p></li>
+<li><p>Set the appropriate labels, so we can categorise it easily.</p></li>
+<li><p>Wait for any core developer’s feedback on it.</p></li>
+</ol>
+</section>
+<section id="submit-a-pull-request">
+<h4>Submit a Pull Request<a class="headerlink" href="#submit-a-pull-request" title="Permalink to this headline"></a></h4>
+<ol class="arabic simple">
+<li><p>Create an issue following the previous steps.</p></li>
+<li><p>Fork the project.</p></li>
+<li><p>Push your changes to a local branch.</p></li>
+<li><p>Run the tests!</p></li>
+<li><p>Submit a pull request from your fork’s branch.</p></li>
+</ol>
+</section>
+</section>
+<section id="credits">
+<h3>Credits<a class="headerlink" href="#credits" title="Permalink to this headline"></a></h3>
+<p>This package was created with
+.. image:: <a class="reference external" href="https://github.com/audreyr/cookiecutter">https://github.com/audreyr/cookiecutter</a></p>
+<blockquote>
+<div><blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">target</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://github.com/audreyr/cookiecutter">https://github.com/audreyr/cookiecutter</a></p>
+</dd>
+<dt class="field-even">alt</dt>
+<dd class="field-even"><p>Cookiecutter</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>and the</p>
+</div></blockquote>
+<img alt="https://github.com/Clariteia/minos-pypackage:target:https://github.com/Clariteia/minos-pypackage:alt:MinosPackageprojecttemplate." src="https://github.com/Clariteia/minos-pypackage:target:https://github.com/Clariteia/minos-pypackage:alt:MinosPackageprojecttemplate." />
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Minos Microservice CQRS’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="runthetests.html" class="btn btn-neutral float-right" title="Run the tests" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

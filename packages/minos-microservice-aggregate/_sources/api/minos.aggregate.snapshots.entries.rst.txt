@@ -1,0 +1,7 @@
+minos.aggregate.snapshots.entries module
+========================================
+
+.. automodule:: minos.aggregate.snapshots.entries
+   :members:
+   :undoc-members:
+   :show-inheritance:

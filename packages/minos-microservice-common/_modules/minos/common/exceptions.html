@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.common.exceptions &mdash; Minos Microservice Common 0.3.4 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Minos Microservice Common
+          </a>
+              <div class="version">
+                0.3.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../runthetests.html">Run the tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/minos.html">minos namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../history.html">History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Minos Microservice Common</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>minos.common.exceptions</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.common.exceptions</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="MinosException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosException">[docs]</a><span class="k">class</span> <span class="nc">MinosException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception class for import packages or modules&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s2">&quot;_message&quot;</span>
+
+<div class="viewcode-block" id="MinosException.__init__"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosException.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_message</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_message</span> <span class="o">=</span> <span class="n">error_message</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(message=</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_message</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;represent in a string format the error message passed during the instantiation&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_message</span></div>
+
+
+<div class="viewcode-block" id="NotProvidedException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.NotProvidedException">[docs]</a><span class="k">class</span> <span class="nc">NotProvidedException</span><span class="p">(</span><span class="n">MinosException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when a dependency is needed but not provided.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="MinosImportException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosImportException">[docs]</a><span class="k">class</span> <span class="nc">MinosImportException</span><span class="p">(</span><span class="n">MinosException</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MinosProtocolException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosProtocolException">[docs]</a><span class="k">class</span> <span class="nc">MinosProtocolException</span><span class="p">(</span><span class="n">MinosException</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MinosMessageException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosMessageException">[docs]</a><span class="k">class</span> <span class="nc">MinosMessageException</span><span class="p">(</span><span class="n">MinosException</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MinosConfigException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosConfigException">[docs]</a><span class="k">class</span> <span class="nc">MinosConfigException</span><span class="p">(</span><span class="n">MinosException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base config exception.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="MinosBrokerException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosBrokerException">[docs]</a><span class="k">class</span> <span class="nc">MinosBrokerException</span><span class="p">(</span><span class="n">MinosException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base broker exception&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="MinosHandlerException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosHandlerException">[docs]</a><span class="k">class</span> <span class="nc">MinosHandlerException</span><span class="p">(</span><span class="n">MinosException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base handler exception&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="MinosLockException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosLockException">[docs]</a><span class="k">class</span> <span class="nc">MinosLockException</span><span class="p">(</span><span class="n">MinosException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base lock exception&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="MinosModelException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosModelException">[docs]</a><span class="k">class</span> <span class="nc">MinosModelException</span><span class="p">(</span><span class="n">MinosException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when some mandatory condition is not satisfied by a model.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="EmptyMinosModelSequenceException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.EmptyMinosModelSequenceException">[docs]</a><span class="k">class</span> <span class="nc">EmptyMinosModelSequenceException</span><span class="p">(</span><span class="n">MinosModelException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when a sequence must be not empty, but it is empty.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MultiTypeMinosModelSequenceException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MultiTypeMinosModelSequenceException">[docs]</a><span class="k">class</span> <span class="nc">MultiTypeMinosModelSequenceException</span><span class="p">(</span><span class="n">MinosModelException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when a sequence doesn&#39;t satisfy the condition to have the same type for each item.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MinosModelAttributeException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosModelAttributeException">[docs]</a><span class="k">class</span> <span class="nc">MinosModelAttributeException</span><span class="p">(</span><span class="n">MinosException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base model attributes exception.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MinosReqAttributeException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosReqAttributeException">[docs]</a><span class="k">class</span> <span class="nc">MinosReqAttributeException</span><span class="p">(</span><span class="n">MinosModelAttributeException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when some required attributes are not provided.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MinosTypeAttributeException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosTypeAttributeException">[docs]</a><span class="k">class</span> <span class="nc">MinosTypeAttributeException</span><span class="p">(</span><span class="n">MinosModelAttributeException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when there are any mismatching between the expected and observed attribute type.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MinosTypeAttributeException.__init__"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosTypeAttributeException.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_type</span> <span class="o">=</span> <span class="n">target_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;The </span><span class="si">{</span><span class="n">target_type</span><span class="si">!r}</span><span class="s2"> expected type for </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> does not match with &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;the given data type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">!r}</span><span class="s2"> (</span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="MinosMalformedAttributeException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosMalformedAttributeException">[docs]</a><span class="k">class</span> <span class="nc">MinosMalformedAttributeException</span><span class="p">(</span><span class="n">MinosModelAttributeException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when there are any kind of problems with the type definition.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MinosParseAttributeException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosParseAttributeException">[docs]</a><span class="k">class</span> <span class="nc">MinosParseAttributeException</span><span class="p">(</span><span class="n">MinosModelAttributeException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when there are any kind of problems with the parsing logic.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MinosParseAttributeException.__init__"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosParseAttributeException.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">exception</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exception</span> <span class="o">=</span> <span class="n">exception</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span><span class="si">}</span><span class="s2"> was raised while parsing </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2"> field with </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2"> value.&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="MinosAttributeValidationException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosAttributeValidationException">[docs]</a><span class="k">class</span> <span class="nc">MinosAttributeValidationException</span><span class="p">(</span><span class="n">MinosModelAttributeException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when some fields are not valid.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MinosAttributeValidationException.__init__"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.MinosAttributeValidationException.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2"> value does not pass the </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2"> field validation.&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="DataDecoderException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.DataDecoderException">[docs]</a><span class="k">class</span> <span class="nc">DataDecoderException</span><span class="p">(</span><span class="n">MinosModelException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base data decoder exception.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DataDecoderMalformedTypeException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.DataDecoderMalformedTypeException">[docs]</a><span class="k">class</span> <span class="nc">DataDecoderMalformedTypeException</span><span class="p">(</span><span class="n">DataDecoderException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when malformed types are provided.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DataDecoderRequiredValueException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.DataDecoderRequiredValueException">[docs]</a><span class="k">class</span> <span class="nc">DataDecoderRequiredValueException</span><span class="p">(</span><span class="n">DataDecoderException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when required values are not provided.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DataDecoderTypeException"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.DataDecoderTypeException">[docs]</a><span class="k">class</span> <span class="nc">DataDecoderTypeException</span><span class="p">(</span><span class="n">DataDecoderException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when expected and provided types do not match.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DataDecoderTypeException.__init__"><a class="viewcode-back" href="../../../api/minos.common.exceptions.html#minos.common.exceptions.DataDecoderTypeException.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_type</span> <span class="o">=</span> <span class="n">target_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;The </span><span class="si">{</span><span class="n">target_type</span><span class="si">!r}</span><span class="s2"> expected type does not match the given data type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">!r}</span><span class="s2"> (</span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

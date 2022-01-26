@@ -1,0 +1,7 @@
+minos.saga.executions.steps.remote module
+=========================================
+
+.. automodule:: minos.saga.executions.steps.remote
+   :members:
+   :undoc-members:
+   :show-inheritance:

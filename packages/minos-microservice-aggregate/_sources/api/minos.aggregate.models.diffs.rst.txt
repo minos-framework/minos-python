@@ -1,0 +1,16 @@
+minos.aggregate.models.diffs package
+====================================
+
+.. automodule:: minos.aggregate.models.diffs
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.aggregate.models.diffs.aggregates
+   minos.aggregate.models.diffs.fields

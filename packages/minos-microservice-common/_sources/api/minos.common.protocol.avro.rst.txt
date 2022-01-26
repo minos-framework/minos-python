@@ -1,0 +1,17 @@
+minos.common.protocol.avro package
+==================================
+
+.. automodule:: minos.common.protocol.avro
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.common.protocol.avro.base
+   minos.common.protocol.avro.databases
+   minos.common.protocol.avro.messages

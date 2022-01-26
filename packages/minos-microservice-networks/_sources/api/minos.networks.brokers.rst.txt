@@ -1,0 +1,25 @@
+minos.networks.brokers package
+==============================
+
+.. automodule:: minos.networks.brokers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.brokers.dynamic
+   minos.networks.brokers.handlers
+   minos.networks.brokers.publishers
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.brokers.messages

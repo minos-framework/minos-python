@@ -1,0 +1,17 @@
+minos.networks.rest package
+===========================
+
+.. automodule:: minos.networks.rest
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.rest.handlers
+   minos.networks.rest.requests
+   minos.networks.rest.services

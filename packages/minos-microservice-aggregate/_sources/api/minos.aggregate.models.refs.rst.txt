@@ -1,0 +1,18 @@
+minos.aggregate.models.refs package
+===================================
+
+.. automodule:: minos.aggregate.models.refs
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.aggregate.models.refs.extractors
+   minos.aggregate.models.refs.injectors
+   minos.aggregate.models.refs.models
+   minos.aggregate.models.refs.resolvers

@@ -1,0 +1,18 @@
+minos.saga.executions.steps package
+===================================
+
+.. automodule:: minos.saga.executions.steps
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.saga.executions.steps.abc
+   minos.saga.executions.steps.conditional
+   minos.saga.executions.steps.local
+   minos.saga.executions.steps.remote

@@ -1,0 +1,7 @@
+minos.aggregate.transactions.entries module
+===========================================
+
+.. automodule:: minos.aggregate.transactions.entries
+   :members:
+   :undoc-members:
+   :show-inheritance:

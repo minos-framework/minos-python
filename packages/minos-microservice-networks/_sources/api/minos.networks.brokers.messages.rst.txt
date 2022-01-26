@@ -1,0 +1,7 @@
+minos.networks.brokers.messages module
+======================================
+
+.. automodule:: minos.networks.brokers.messages
+   :members:
+   :undoc-members:
+   :show-inheritance:

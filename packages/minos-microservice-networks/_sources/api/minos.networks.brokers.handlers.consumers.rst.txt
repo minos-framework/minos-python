@@ -1,0 +1,7 @@
+minos.networks.brokers.handlers.consumers module
+================================================
+
+.. automodule:: minos.networks.brokers.handlers.consumers
+   :members:
+   :undoc-members:
+   :show-inheritance:

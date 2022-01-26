@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.networks.decorators.api &mdash; Minos Microservice Network 0.3.2 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Network
+          </a>
+              <div class="version">
+                0.3.2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../runthetests.html">Run the tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/minos.html">minos namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../history.html">History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Minos Microservice Network</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.networks.decorators.api</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.networks.decorators.api</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">.definitions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BrokerCommandEnrouteDecorator</span><span class="p">,</span>
+    <span class="n">BrokerEventEnrouteDecorator</span><span class="p">,</span>
+    <span class="n">BrokerQueryEnrouteDecorator</span><span class="p">,</span>
+    <span class="n">PeriodicEventEnrouteDecorator</span><span class="p">,</span>
+    <span class="n">RestCommandEnrouteDecorator</span><span class="p">,</span>
+    <span class="n">RestQueryEnrouteDecorator</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="BrokerEnroute"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.api.html#minos.networks.decorators.api.BrokerEnroute">[docs]</a><span class="k">class</span> <span class="nc">BrokerEnroute</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Broker Enroute class&quot;&quot;&quot;</span>
+
+    <span class="n">command</span> <span class="o">=</span> <span class="n">BrokerCommandEnrouteDecorator</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">BrokerQueryEnrouteDecorator</span>
+    <span class="n">event</span> <span class="o">=</span> <span class="n">BrokerEventEnrouteDecorator</span></div>
+
+
+<div class="viewcode-block" id="RestEnroute"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.api.html#minos.networks.decorators.api.RestEnroute">[docs]</a><span class="k">class</span> <span class="nc">RestEnroute</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Rest Enroute class&quot;&quot;&quot;</span>
+
+    <span class="n">command</span> <span class="o">=</span> <span class="n">RestCommandEnrouteDecorator</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">RestQueryEnrouteDecorator</span></div>
+
+
+<div class="viewcode-block" id="PeriodicEnroute"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.api.html#minos.networks.decorators.api.PeriodicEnroute">[docs]</a><span class="k">class</span> <span class="nc">PeriodicEnroute</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Periodic Enroute class.&quot;&quot;&quot;</span>
+
+    <span class="n">event</span> <span class="o">=</span> <span class="n">PeriodicEventEnrouteDecorator</span></div>
+
+
+<div class="viewcode-block" id="Enroute"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.api.html#minos.networks.decorators.api.Enroute">[docs]</a><span class="k">class</span> <span class="nc">Enroute</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Enroute decorator main class&quot;&quot;&quot;</span>
+
+    <span class="n">broker</span> <span class="o">=</span> <span class="n">BrokerEnroute</span>
+    <span class="n">rest</span> <span class="o">=</span> <span class="n">RestEnroute</span>
+    <span class="n">periodic</span> <span class="o">=</span> <span class="n">PeriodicEnroute</span></div>
+
+
+<span class="n">enroute</span> <span class="o">=</span> <span class="n">Enroute</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

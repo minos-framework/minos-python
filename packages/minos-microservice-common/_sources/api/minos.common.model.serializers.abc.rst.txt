@@ -1,0 +1,7 @@
+minos.common.model.serializers.abc module
+=========================================
+
+.. automodule:: minos.common.model.serializers.abc
+   :members:
+   :undoc-members:
+   :show-inheritance:

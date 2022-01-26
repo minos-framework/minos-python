@@ -1,0 +1,12 @@
+minos namespace
+===============
+
+.. py:module:: minos
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.cqrs

@@ -1,0 +1,7 @@
+minos.aggregate.models.diffs.aggregates module
+==============================================
+
+.. automodule:: minos.aggregate.models.diffs.aggregates
+   :members:
+   :undoc-members:
+   :show-inheritance:

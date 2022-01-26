@@ -1,0 +1,7 @@
+minos.cqrs.handlers module
+==========================
+
+.. automodule:: minos.cqrs.handlers
+   :members:
+   :undoc-members:
+   :show-inheritance:

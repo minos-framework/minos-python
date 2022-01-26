@@ -1,0 +1,7 @@
+minos.aggregate.snapshots.pg.queries module
+===========================================
+
+.. automodule:: minos.aggregate.snapshots.pg.queries
+   :members:
+   :undoc-members:
+   :show-inheritance:

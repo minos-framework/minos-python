@@ -1,0 +1,16 @@
+minos.networks.decorators.callables package
+===========================================
+
+.. automodule:: minos.networks.decorators.callables
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.decorators.callables.checkers
+   minos.networks.decorators.callables.handlers

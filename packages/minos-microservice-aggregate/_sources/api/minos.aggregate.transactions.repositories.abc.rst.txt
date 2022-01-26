@@ -1,0 +1,7 @@
+minos.aggregate.transactions.repositories.abc module
+====================================================
+
+.. automodule:: minos.aggregate.transactions.repositories.abc
+   :members:
+   :undoc-members:
+   :show-inheritance:

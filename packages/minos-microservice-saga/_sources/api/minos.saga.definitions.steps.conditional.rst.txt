@@ -1,0 +1,7 @@
+minos.saga.definitions.steps.conditional module
+===============================================
+
+.. automodule:: minos.saga.definitions.steps.conditional
+   :members:
+   :undoc-members:
+   :show-inheritance:

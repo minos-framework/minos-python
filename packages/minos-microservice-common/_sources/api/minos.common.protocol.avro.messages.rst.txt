@@ -1,0 +1,7 @@
+minos.common.protocol.avro.messages module
+==========================================
+
+.. automodule:: minos.common.protocol.avro.messages
+   :members:
+   :undoc-members:
+   :show-inheritance:

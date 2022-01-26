@@ -1,0 +1,7 @@
+minos.saga.definitions.saga module
+==================================
+
+.. automodule:: minos.saga.definitions.saga
+   :members:
+   :undoc-members:
+   :show-inheritance:

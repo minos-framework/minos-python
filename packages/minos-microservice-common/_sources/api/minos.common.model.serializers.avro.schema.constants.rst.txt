@@ -1,0 +1,7 @@
+minos.common.model.serializers.avro.schema.constants module
+===========================================================
+
+.. automodule:: minos.common.model.serializers.avro.schema.constants
+   :members:
+   :undoc-members:
+   :show-inheritance:

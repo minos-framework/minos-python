@@ -1,0 +1,7 @@
+minos.common.model.serializers.avro.data.decoder module
+=======================================================
+
+.. automodule:: minos.common.model.serializers.avro.data.decoder
+   :members:
+   :undoc-members:
+   :show-inheritance:

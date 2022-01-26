@@ -1,0 +1,7 @@
+minos.networks.rest.handlers module
+===================================
+
+.. automodule:: minos.networks.rest.handlers
+   :members:
+   :undoc-members:
+   :show-inheritance:

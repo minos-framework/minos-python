@@ -1,0 +1,7 @@
+minos.common.protocol.avro.base module
+======================================
+
+.. automodule:: minos.common.protocol.avro.base
+   :members:
+   :undoc-members:
+   :show-inheritance:

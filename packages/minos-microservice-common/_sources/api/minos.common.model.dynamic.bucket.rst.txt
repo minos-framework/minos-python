@@ -1,0 +1,7 @@
+minos.common.model.dynamic.bucket module
+========================================
+
+.. automodule:: minos.common.model.dynamic.bucket
+   :members:
+   :undoc-members:
+   :show-inheritance:

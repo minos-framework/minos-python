@@ -1,0 +1,7 @@
+minos.common.launchers module
+=============================
+
+.. automodule:: minos.common.launchers
+   :members:
+   :undoc-members:
+   :show-inheritance:

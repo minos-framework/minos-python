@@ -1,0 +1,7 @@
+minos.aggregate.queries module
+==============================
+
+.. automodule:: minos.aggregate.queries
+   :members:
+   :undoc-members:
+   :show-inheritance:

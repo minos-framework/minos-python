@@ -1,0 +1,7 @@
+minos.common.storage.abc module
+===============================
+
+.. automodule:: minos.common.storage.abc
+   :members:
+   :undoc-members:
+   :show-inheritance:

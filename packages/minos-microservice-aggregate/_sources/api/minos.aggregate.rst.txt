@@ -1,0 +1,28 @@
+minos.aggregate package
+=======================
+
+.. automodule:: minos.aggregate
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.aggregate.events
+   minos.aggregate.models
+   minos.aggregate.snapshots
+   minos.aggregate.transactions
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.aggregate.contextvars
+   minos.aggregate.exceptions
+   minos.aggregate.queries

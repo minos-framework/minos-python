@@ -1,0 +1,7 @@
+minos.common.uuid module
+========================
+
+.. automodule:: minos.common.uuid
+   :members:
+   :undoc-members:
+   :show-inheritance:

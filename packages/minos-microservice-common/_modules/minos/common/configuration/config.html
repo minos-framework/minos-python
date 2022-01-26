@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.common.configuration.config &mdash; Minos Microservice Common 0.3.4 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Common
+          </a>
+              <div class="version">
+                0.3.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../runthetests.html">Run the tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/minos.html">minos namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../history.html">History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Minos Microservice Common</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.common.configuration.config</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.common.configuration.config</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">namedtuple</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Path</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">yaml</span>
+
+<span class="kn">from</span> <span class="nn">..exceptions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MinosConfigException</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">BROKER</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;Broker&quot;</span><span class="p">,</span> <span class="s2">&quot;host port queue&quot;</span><span class="p">)</span>
+<span class="n">QUEUE</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;Queue&quot;</span><span class="p">,</span> <span class="s2">&quot;database user password host port records retry&quot;</span><span class="p">)</span>
+<span class="n">SERVICE</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;Service&quot;</span><span class="p">,</span> <span class="s2">&quot;name aggregate injections services&quot;</span><span class="p">)</span>
+<span class="n">STORAGE</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;Storage&quot;</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">)</span>
+
+<span class="n">SAGA</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;Saga&quot;</span><span class="p">,</span> <span class="s2">&quot;storage&quot;</span><span class="p">)</span>
+<span class="n">REST</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;Rest&quot;</span><span class="p">,</span> <span class="s2">&quot;host port&quot;</span><span class="p">)</span>
+<span class="n">REPOSITORY</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;Repository&quot;</span><span class="p">,</span> <span class="s2">&quot;database user password host port&quot;</span><span class="p">)</span>
+<span class="n">SNAPSHOT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;Snapshot&quot;</span><span class="p">,</span> <span class="s2">&quot;database user password host port&quot;</span><span class="p">)</span>
+<span class="n">DISCOVERY</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;Discovery&quot;</span><span class="p">,</span> <span class="s2">&quot;client host port&quot;</span><span class="p">)</span>
+
+<span class="n">_ENVIRONMENT_MAPPER</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;service.name&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_SERVICE_NAME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rest.host&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_REST_HOST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rest.port&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_REST_PORT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.host&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_BROKER_HOST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.port&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_BROKER_PORT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.queue.host&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_BROKER_QUEUE_HOST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.queue.port&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_BROKER_QUEUE_PORT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.queue.database&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_BROKER_QUEUE_DATABASE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.queue.user&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_BROKER_QUEUE_USER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.queue.password&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_BROKER_QUEUE_PASSWORD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;commands.service&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_COMMANDS_SERVICE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;queries.service&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_QUERIES_SERVICE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;repository.host&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_REPOSITORY_HOST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;repository.port&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_REPOSITORY_PORT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;repository.database&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_REPOSITORY_DATABASE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;repository.user&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_REPOSITORY_USER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;repository.password&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_REPOSITORY_PASSWORD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;snapshot.host&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_SNAPSHOT_HOST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;snapshot.port&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_SNAPSHOT_PORT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;snapshot.database&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_SNAPSHOT_DATABASE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;snapshot.user&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_SNAPSHOT_USER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;snapshot.password&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_SNAPSHOT_PASSWORD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;discovery.client&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_DISCOVERY_CLIENT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;discovery.host&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_DISCOVERY_HOST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;discovery.port&quot;</span><span class="p">:</span> <span class="s2">&quot;MINOS_DISCOVERY_PORT&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">_PARAMETERIZED_MAPPER</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;service.name&quot;</span><span class="p">:</span> <span class="s2">&quot;service_name&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rest.host&quot;</span><span class="p">:</span> <span class="s2">&quot;rest_host&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rest.port&quot;</span><span class="p">:</span> <span class="s2">&quot;rest_port&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.host&quot;</span><span class="p">:</span> <span class="s2">&quot;broker_host&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.port&quot;</span><span class="p">:</span> <span class="s2">&quot;broker_port&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.queue.host&quot;</span><span class="p">:</span> <span class="s2">&quot;broker_queue_host&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.queue.port&quot;</span><span class="p">:</span> <span class="s2">&quot;broker_queue_port&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.queue.database&quot;</span><span class="p">:</span> <span class="s2">&quot;broker_queue_database&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.queue.user&quot;</span><span class="p">:</span> <span class="s2">&quot;broker_queue_user&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker.queue.password&quot;</span><span class="p">:</span> <span class="s2">&quot;broker_queue_password&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;commands.service&quot;</span><span class="p">:</span> <span class="s2">&quot;commands_service&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;queries.service&quot;</span><span class="p">:</span> <span class="s2">&quot;queries_service&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;saga.broker&quot;</span><span class="p">:</span> <span class="s2">&quot;saga_broker&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;saga.port&quot;</span><span class="p">:</span> <span class="s2">&quot;saga_port&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;repository.host&quot;</span><span class="p">:</span> <span class="s2">&quot;repository_host&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;repository.port&quot;</span><span class="p">:</span> <span class="s2">&quot;repository_port&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;repository.database&quot;</span><span class="p">:</span> <span class="s2">&quot;repository_database&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;repository.user&quot;</span><span class="p">:</span> <span class="s2">&quot;repository_user&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;repository.password&quot;</span><span class="p">:</span> <span class="s2">&quot;repository_password&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;snapshot.host&quot;</span><span class="p">:</span> <span class="s2">&quot;snapshot_host&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;snapshot.port&quot;</span><span class="p">:</span> <span class="s2">&quot;snapshot_port&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;snapshot.database&quot;</span><span class="p">:</span> <span class="s2">&quot;snapshot_database&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;snapshot.user&quot;</span><span class="p">:</span> <span class="s2">&quot;snapshot_user&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;snapshot.password&quot;</span><span class="p">:</span> <span class="s2">&quot;snapshot_password&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;discovery.client&quot;</span><span class="p">:</span> <span class="s2">&quot;minos_discovery_client&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;discovery.host&quot;</span><span class="p">:</span> <span class="s2">&quot;minos_discovery_host&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;discovery.port&quot;</span><span class="p">:</span> <span class="s2">&quot;minos_discovery_port&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="MinosConfigAbstract"><a class="viewcode-back" href="../../../../api/minos.common.configuration.config.html#minos.common.configuration.config.MinosConfigAbstract">[docs]</a><span class="k">class</span> <span class="nc">MinosConfigAbstract</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Minos abstract config class.&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s2">&quot;_services&quot;</span><span class="p">,</span> <span class="s2">&quot;_path&quot;</span>
+
+<div class="viewcode-block" id="MinosConfigAbstract.__init__"><a class="viewcode-back" href="../../../../api/minos.common.configuration.config.html#minos.common.configuration.config.MinosConfigAbstract.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_services</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="MinosConfig"><a class="viewcode-back" href="../../../../api/minos.common.configuration.config.html#minos.common.configuration.config.MinosConfig">[docs]</a><span class="k">class</span> <span class="nc">MinosConfig</span><span class="p">(</span><span class="n">MinosConfigAbstract</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Minos configuration provides information on the connection points available at that service.</span>
+<span class="sd">    It consists of the following parts:</span>
+
+<span class="sd">    - Service meta-information (such as name, or version).</span>
+<span class="sd">    - REST Service endpoints available.</span>
+<span class="sd">    - Repository database connection for event sourcing.</span>
+<span class="sd">    - Snapshot database connection.</span>
+<span class="sd">    - Events it publishes/consumes from de given Kafka service.</span>
+<span class="sd">    - Commands it reacts to from other microservices.</span>
+<span class="sd">    - Sagas it takes part on.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;_data&quot;</span><span class="p">,</span> <span class="s2">&quot;_with_environment&quot;</span><span class="p">,</span> <span class="s2">&quot;_parameterized&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MinosConfig.__init__"><a class="viewcode-back" href="../../../../api/minos.common.configuration.config.html#minos.common.configuration.config.MinosConfig.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">with_environment</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_with_environment</span> <span class="o">=</span> <span class="n">with_environment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameterized</span> <span class="o">=</span> <span class="n">kwargs</span></div>
+
+    <span class="k">def</span> <span class="nf">_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">MinosConfigException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Check if this path: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> is correct&quot;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">FullLoader</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_PARAMETERIZED_MAPPER</span> <span class="ow">and</span> <span class="n">_PARAMETERIZED_MAPPER</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameterized</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameterized</span><span class="p">[</span><span class="n">_PARAMETERIZED_MAPPER</span><span class="p">[</span><span class="n">key</span><span class="p">]]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_with_environment</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_ENVIRONMENT_MAPPER</span> <span class="ow">and</span> <span class="n">_ENVIRONMENT_MAPPER</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">_ENVIRONMENT_MAPPER</span><span class="p">[</span><span class="n">key</span><span class="p">]]</span>
+
+        <span class="k">def</span> <span class="nf">_fn</span><span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="n">current</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">following</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+
+            <span class="n">part</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">current</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">following</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">part</span>
+
+            <span class="k">return</span> <span class="n">_fn</span><span class="p">(</span><span class="n">following</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_fn</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MinosConfigException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> field is not defined on the configuration!&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">service</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SERVICE</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the service config.</span>
+
+<span class="sd">        :return: A ``SERVICE`` NamedTuple instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SERVICE</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;service.name&quot;</span><span class="p">),</span>
+            <span class="n">aggregate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;service.aggregate&quot;</span><span class="p">),</span>
+            <span class="n">injections</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_service_injections</span><span class="p">,</span>
+            <span class="n">services</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_service_services</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_service_injections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;service.injections&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">MinosConfigException</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_service_services</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;service.services&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">MinosConfigException</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">rest</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">REST</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the rest config.</span>
+
+<span class="sd">        :return: A ``REST`` NamedTuple instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">REST</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;rest.host&quot;</span><span class="p">),</span> <span class="n">port</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;rest.port&quot;</span><span class="p">)))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">broker</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BROKER</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the events config.</span>
+
+<span class="sd">        :return: A ``EVENTS`` NamedTuple instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">queue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_broker_queue</span>
+        <span class="k">return</span> <span class="n">BROKER</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;broker.host&quot;</span><span class="p">),</span> <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;broker.port&quot;</span><span class="p">),</span> <span class="n">queue</span><span class="o">=</span><span class="n">queue</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_broker_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QUEUE</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">QUEUE</span><span class="p">(</span>
+            <span class="n">database</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;broker.queue.database&quot;</span><span class="p">),</span>
+            <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;broker.queue.user&quot;</span><span class="p">),</span>
+            <span class="n">password</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;broker.queue.password&quot;</span><span class="p">),</span>
+            <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;broker.queue.host&quot;</span><span class="p">),</span>
+            <span class="n">port</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;broker.queue.port&quot;</span><span class="p">)),</span>
+            <span class="n">records</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;broker.queue.records&quot;</span><span class="p">)),</span>
+            <span class="n">retry</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;broker.queue.retry&quot;</span><span class="p">)),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">services</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the commands config.</span>
+
+<span class="sd">        :return: A list containing the service class names as string values..</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;services&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">MinosConfigException</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">middleware</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the commands config.</span>
+
+<span class="sd">        :return: A list containing the service class names as string values..</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;middleware&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">MinosConfigException</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">saga</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SAGA</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the sagas config.</span>
+
+<span class="sd">        :return: A ``SAGAS`` NamedTuple instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">storage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_saga_storage</span>
+        <span class="k">return</span> <span class="n">SAGA</span><span class="p">(</span><span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_saga_storage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">STORAGE</span><span class="p">:</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;saga.storage.path&quot;</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span> <span class="k">if</span> <span class="n">raw</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">raw</span>
+
+        <span class="n">queue</span> <span class="o">=</span> <span class="n">STORAGE</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">queue</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">repository</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">REPOSITORY</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the repository config.</span>
+
+<span class="sd">        :return: A ``REPOSITORY`` NamedTuple instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">REPOSITORY</span><span class="p">(</span>
+            <span class="n">database</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;repository.database&quot;</span><span class="p">),</span>
+            <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;repository.user&quot;</span><span class="p">),</span>
+            <span class="n">password</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;repository.password&quot;</span><span class="p">),</span>
+            <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;repository.host&quot;</span><span class="p">),</span>
+            <span class="n">port</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;repository.port&quot;</span><span class="p">)),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SNAPSHOT</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the snapshot config.</span>
+
+<span class="sd">        :return: A ``SNAPSHOT`` NamedTuple instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SNAPSHOT</span><span class="p">(</span>
+            <span class="n">database</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;snapshot.database&quot;</span><span class="p">),</span>
+            <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;snapshot.user&quot;</span><span class="p">),</span>
+            <span class="n">password</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;snapshot.password&quot;</span><span class="p">),</span>
+            <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;snapshot.host&quot;</span><span class="p">),</span>
+            <span class="n">port</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;snapshot.port&quot;</span><span class="p">)),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">discovery</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DISCOVERY</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the sagas config.</span>
+
+<span class="sd">        :return: A ``DISCOVERY`` NamedTuple instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;discovery.client&quot;</span><span class="p">)</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;discovery.host&quot;</span><span class="p">)</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s2">&quot;discovery.port&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">DISCOVERY</span><span class="p">(</span><span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

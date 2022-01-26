@@ -1,0 +1,7 @@
+minos.networks.brokers.dynamic.brokers module
+=============================================
+
+.. automodule:: minos.networks.brokers.dynamic.brokers
+   :members:
+   :undoc-members:
+   :show-inheritance:

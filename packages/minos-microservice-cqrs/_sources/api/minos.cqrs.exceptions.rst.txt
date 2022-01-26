@@ -1,0 +1,7 @@
+minos.cqrs.exceptions module
+============================
+
+.. automodule:: minos.cqrs.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+minos.aggregate.models.refs.extractors module
+=============================================
+
+.. automodule:: minos.aggregate.models.refs.extractors
+   :members:
+   :undoc-members:
+   :show-inheritance:

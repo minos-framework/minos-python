@@ -1,0 +1,7 @@
+minos.saga.manager module
+=========================
+
+.. automodule:: minos.saga.manager
+   :members:
+   :undoc-members:
+   :show-inheritance:

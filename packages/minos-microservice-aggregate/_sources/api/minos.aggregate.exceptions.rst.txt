@@ -1,0 +1,7 @@
+minos.aggregate.exceptions module
+=================================
+
+.. automodule:: minos.aggregate.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:

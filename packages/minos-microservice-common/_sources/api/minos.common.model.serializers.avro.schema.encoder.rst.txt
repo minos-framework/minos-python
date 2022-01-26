@@ -1,0 +1,7 @@
+minos.common.model.serializers.avro.schema.encoder module
+=========================================================
+
+.. automodule:: minos.common.model.serializers.avro.schema.encoder
+   :members:
+   :undoc-members:
+   :show-inheritance:

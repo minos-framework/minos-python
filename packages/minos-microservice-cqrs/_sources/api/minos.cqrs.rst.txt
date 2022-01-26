@@ -1,0 +1,17 @@
+minos.cqrs package
+==================
+
+.. automodule:: minos.cqrs
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.cqrs.exceptions
+   minos.cqrs.handlers
+   minos.cqrs.services

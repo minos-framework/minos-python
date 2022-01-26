@@ -1,0 +1,18 @@
+minos.saga.definitions.steps package
+====================================
+
+.. automodule:: minos.saga.definitions.steps
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.saga.definitions.steps.abc
+   minos.saga.definitions.steps.conditional
+   minos.saga.definitions.steps.local
+   minos.saga.definitions.steps.remote

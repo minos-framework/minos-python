@@ -1,0 +1,7 @@
+minos.networks.discovery.clients.kong module
+============================================
+
+.. automodule:: minos.networks.discovery.clients.kong
+   :members:
+   :undoc-members:
+   :show-inheritance:

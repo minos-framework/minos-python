@@ -1,0 +1,7 @@
+minos.aggregate.transactions.repositories.memory module
+=======================================================
+
+.. automodule:: minos.aggregate.transactions.repositories.memory
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+minos.aggregate.snapshots.memory module
+=======================================
+
+.. automodule:: minos.aggregate.snapshots.memory
+   :members:
+   :undoc-members:
+   :show-inheritance:
