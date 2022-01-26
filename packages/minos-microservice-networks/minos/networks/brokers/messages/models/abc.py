@@ -148,18 +148,13 @@ class BrokerMessage(ABC, Model):
         if type_.classname != BrokerMessage.classname:
             return super().decode_data(decoder, target, type_, **kwargs)
 
-        if target["version"] == 1:
-            from .v1 import (
-                BrokerMessageV1,
-            )
+        # The versioning bifurcation must be done here.
 
-            name = BrokerMessageV1.classname
-        else:  # Set the highest available version.
-            from .v1 import (
-                BrokerMessageV1,
-            )
+        from .v1 import (
+            BrokerMessageV1,
+        )
 
-            name = BrokerMessageV1.classname
+        name = BrokerMessageV1.classname
 
         # noinspection PyTypeChecker
         type_ = ModelType.build(name, {n: t for n, t in type_.type_hints.items() if n != "version"})
