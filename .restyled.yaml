@@ -9,7 +9,6 @@ exclude:
   - ".github/workflows/**/*"
 restylers:
   - name: black
-    image: restyled/restyler-black
     command:
       - black
     arguments: ["--line-length", "120"]
@@ -18,7 +17,6 @@ restylers:
     interpreters:
       - python
   - name: isort
-    image: restyled/restyler-isort
     command:
       - isort
     arguments: []
