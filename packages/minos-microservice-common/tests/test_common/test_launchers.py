@@ -84,7 +84,13 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
             common,
         )
 
-        self.assertEqual(call(modules=[tests, common]), mock.call_args)
+        self.assertEqual(0, len(mock.call_args.args))
+        self.assertEqual(1, len(mock.call_args.kwargs))
+        observed = mock.call_args.kwargs["modules"]
+
+        self.assertIn(tests, observed)
+        self.assertIn(common, observed)
+
         await self.launcher.destroy()
 
     async def test_destroy(self):
