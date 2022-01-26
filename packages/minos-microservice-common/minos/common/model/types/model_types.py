@@ -36,7 +36,7 @@ class ModelType(type):
 
     @classmethod
     def build(
-        mcs, name_: str, type_hints_: Optional[dict[str, type]] = None, *, namespace_: Optional[str] = None, **kwargs,
+        mcs, name_: str, type_hints_: Optional[dict[str, type]] = None, *, namespace_: Optional[str] = None, **kwargs
     ) -> ModelType:
         """Build a new ``ModelType`` instance.
 

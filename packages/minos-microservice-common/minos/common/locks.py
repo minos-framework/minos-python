@@ -11,7 +11,7 @@ from cached_property import (
 
 
 class Lock(AbstractAsyncContextManager):
-    """"Lock base class."""
+    """Lock base class."""
 
     key: Hashable
 

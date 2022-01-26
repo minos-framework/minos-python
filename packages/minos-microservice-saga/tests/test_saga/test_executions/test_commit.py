@@ -74,9 +74,7 @@ class TestTransactionCommitter(MinosTestCase):
         observed = self.broker_publisher.messages
         expected = [*self._build_reserve_messages(observed[:3]), *self._build_commit_messages(observed[3:])]
 
-        self.assertEqual(
-            expected, observed,
-        )
+        self.assertEqual(expected, observed)
 
     async def test_commit_false(self):
         self.broker_subscriber_builder.with_messages(
@@ -99,9 +97,7 @@ class TestTransactionCommitter(MinosTestCase):
 
         observed = self.broker_publisher.messages
         expected = self._build_reject_messages(observed)
-        self.assertEqual(
-            expected, observed,
-        )
+        self.assertEqual(expected, observed)
 
     def _build_reserve_messages(self, observed: list[BrokerMessage]) -> list[BrokerMessage]:
         return [

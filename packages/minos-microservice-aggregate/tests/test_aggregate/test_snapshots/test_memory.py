@@ -267,7 +267,7 @@ class TestInMemorySnapshotRepository(MinosTestCase):
         observed = await self.snapshot_repository.get("tests.utils.Car", self.uuid_2)
 
         expected = Car(
-            3, "blue", uuid=self.uuid_2, version=2, created_at=observed.created_at, updated_at=observed.updated_at,
+            3, "blue", uuid=self.uuid_2, version=2, created_at=observed.created_at, updated_at=observed.updated_at
         )
         self.assertEqual(expected, observed)
 
@@ -277,7 +277,7 @@ class TestInMemorySnapshotRepository(MinosTestCase):
         )
 
         expected = Car(
-            3, "blue", uuid=self.uuid_2, version=4, created_at=observed.created_at, updated_at=observed.updated_at,
+            3, "blue", uuid=self.uuid_2, version=4, created_at=observed.created_at, updated_at=observed.updated_at
         )
         self.assertEqual(expected, observed)
 

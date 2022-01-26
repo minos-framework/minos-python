@@ -66,7 +66,7 @@ class SagaManager(MinosSetup):
 
     @inject
     def __init__(
-        self, storage: SagaExecutionStorage, broker_pool: BrokerClientPool = Provide["broker_pool"], *args, **kwargs,
+        self, storage: SagaExecutionStorage, broker_pool: BrokerClientPool = Provide["broker_pool"], *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.storage = storage
@@ -143,7 +143,7 @@ class SagaManager(MinosSetup):
         )
 
     async def _run_new(
-        self, definition: Saga, context: Optional[SagaContext] = None, user: Optional[UUID] = None, **kwargs,
+        self, definition: Saga, context: Optional[SagaContext] = None, user: Optional[UUID] = None, **kwargs
     ) -> Union[UUID, SagaExecution]:
         if REQUEST_USER_CONTEXT_VAR.get() is not None:
             if user is not None:

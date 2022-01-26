@@ -53,7 +53,7 @@ class RequestExecutor(Executor):
 
     @inject
     def __init__(
-        self, *args, user: Optional[UUID], broker_publisher: BrokerPublisher = Provide["broker_publisher"], **kwargs,
+        self, *args, user: Optional[UUID], broker_publisher: BrokerPublisher = Provide["broker_publisher"], **kwargs
     ):
         super().__init__(*args, **kwargs)
 

@@ -27,9 +27,7 @@ from ..callables import (
 class CheckDecorator:
     """Enroute Check Decorator class."""
 
-    def __init__(
-        self, handler_meta: HandlerMeta, max_attempts: int = 10, delay: Union[float, timedelta] = 0.1,
-    ):
+    def __init__(self, handler_meta: HandlerMeta, max_attempts: int = 10, delay: Union[float, timedelta] = 0.1):
         if isinstance(delay, timedelta):
             delay = delay.total_seconds()
 

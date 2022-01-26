@@ -28,10 +28,10 @@ class TestAggregateDifferences(MinosTestCase):
         self.another_datetime = current_datetime()
 
         self.initial = Car(
-            3, "blue", uuid=self.uuid, version=1, created_at=self.initial_datetime, updated_at=self.initial_datetime,
+            3, "blue", uuid=self.uuid, version=1, created_at=self.initial_datetime, updated_at=self.initial_datetime
         )
         self.final = Car(
-            5, "yellow", uuid=self.uuid, version=3, created_at=self.initial_datetime, updated_at=self.final_datetime,
+            5, "yellow", uuid=self.uuid, version=3, created_at=self.initial_datetime, updated_at=self.final_datetime
         )
         self.another = Car(
             3,

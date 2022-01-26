@@ -129,7 +129,7 @@ class Aggregate(Entity):
             yield aggregate
 
     @classmethod
-    async def create(cls: Type[T], *args, **kwargs,) -> T:
+    async def create(cls: Type[T], *args, **kwargs) -> T:
         """Create a new ``Aggregate`` instance.
 
         :param args: Additional positional arguments.
@@ -222,9 +222,7 @@ class Aggregate(Entity):
             new = await self.create(**values, _repository=self._repository, _snapshot=self._snapshot)
             self._fields |= new.fields
         else:
-            await self.update(
-                **values, _repository=self._repository, _snapshot=self._snapshot,
-            )
+            await self.update(**values, _repository=self._repository, _snapshot=self._snapshot)
 
     async def refresh(self) -> None:
         """Refresh the state of the given instance.
