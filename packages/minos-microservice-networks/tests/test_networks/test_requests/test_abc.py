@@ -95,18 +95,6 @@ class TestResponse(unittest.IsolatedAsyncioTestCase):
         response = Response(1234)
         self.assertEqual(1234, await response.content())
 
-    async def test_raw_content(self):
-        response = Response(self.data)
-        self.assertEqual([item.avro_data for item in self.data], await response.raw_content())
-
-    async def test_raw_content_single(self):
-        response = Response(self.data[0])
-        self.assertEqual(self.data[0].avro_data, await response.raw_content())
-
-    async def test_raw_content_simple(self):
-        response = Response(1234)
-        self.assertEqual(1234, await response.raw_content())
-
     async def test_eq_true(self):
         self.assertEqual(Response(self.data), Response(self.data))
 
