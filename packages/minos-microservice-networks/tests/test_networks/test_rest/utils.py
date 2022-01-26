@@ -37,7 +37,9 @@ def json_mocked_request(data: Any, **kwargs) -> web.Request:
 
 def form_mocked_request(data: dict[str, Any], **kwargs) -> web.Request:
     """For testng purposes. """
-    return mocked_request(urlencode(data, doseq=True).encode(), content_type="application/x-www-form-encoded", **kwargs)
+    return mocked_request(
+        urlencode(data, doseq=True).encode(), content_type="application/x-www-form-urlencoded", **kwargs
+    )
 
 
 def avro_mocked_request(data: Any, schema: Any, **kwargs) -> web.Request:
@@ -72,7 +74,7 @@ def mocked_request(
         headers = headers.copy()
 
     if user is not None:
-        headers["User"] = str(user)
+        headers["user"] = str(user)
 
     if content_type is not None:
         headers["Content-Type"] = content_type
