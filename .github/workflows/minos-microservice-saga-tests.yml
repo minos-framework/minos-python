@@ -6,9 +6,6 @@ on:
       - main
       - '*.*.*'
   pull_request:
-    branches-ignore:
-      - main
-      - '*.*.*'
     paths:
       - 'packages/minos-microservice-saga/**'
 
