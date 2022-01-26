@@ -1,4 +1,4 @@
-name: "Upload Package: minos-microservice-cqrs"
+name: "Publish: minos-microservice-cqrs"
 
 on:
   release:

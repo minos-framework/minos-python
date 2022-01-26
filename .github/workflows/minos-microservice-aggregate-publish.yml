@@ -1,4 +1,4 @@
-name: "Upload Package: minos-microservice-aggregate"
+name: "Publish: minos-microservice-aggregate"
 
 on:
   release:
