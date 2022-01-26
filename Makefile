@@ -2,6 +2,9 @@
 
 DOCS_TARGET := ./docs/api-reference/packages
 
+install:
+	poetry install
+
 docs:
 	mkdir -p $DOCS_TARGET
 
