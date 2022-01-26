@@ -17,7 +17,7 @@ reformat:
 
 docs:
 	rm -rf docs/api
-	poetry run $(MAKE) -C docs clean html
+	$(MAKE) --directory=docs html
 
 release:
 	$(MAKE) dist
