@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "minos-python"
+version = "0.1.0"
+description = ""
+authors = ["Clariteia Devs <devs@clariteia.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+minos-microservice-common = { path = "packages/minos-microservice-common", develop = true }
+minos-microservice-networks = { path = "packages/minos-microservice-networks", develop = true }
+minos-microservice-aggregate = { path = "packages/minos-microservice-aggregate", develop = true }
+minos-microservice-saga = { path = "packages/minos-microservice-saga", develop = true }
+minos-microservice-cqrs = { path = "packages/minos-microservice-cqrs", develop = true }
+
+[tool.poetry.dev-dependencies]
+black = "^19.10b"
+isort = "^5.8.0"
+pytest = "^6.2.4"
+coverage = "^5.5"
+flake8 = "^3.9.2"
+Sphinx = "^4.0.1"
+pre-commit = "^2.12.1"
+sphinx-autodoc-typehints = "^1.12.0"
+sphinxcontrib-apidoc = "^0.3.0"
+sphinx-rtd-theme = "^0.5.2"
+m2r2 = "^0.3.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
