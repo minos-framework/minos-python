@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - main
-      - '*.*.*'
   pull_request:
     paths:
       - 'packages/minos-microservice-aggregate/**'
+      - 'packages/minos-microservice-networks/**'
+      - 'packages/minos-microservice-common/**'
 
 jobs:
   build:
