@@ -1,8 +1,9 @@
-``# minos-python
 
 <div align="center">
   <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/minos-python/main/logo.png" alt="Minos logo"></a>
 </div>
+
+# minos-python: The framework which helps you create reactive microservices in Python
 
 -----------------
 
