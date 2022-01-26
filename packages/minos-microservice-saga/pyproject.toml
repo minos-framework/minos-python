@@ -32,8 +32,8 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.9"
 minos-microservice-common = "^0.3.0"
-minos-microservice-networks = "^0.3.1"
-minos-microservice-aggregate = "^0.2.0"
+minos-microservice-networks = { git = "https://github.com/Clariteia/minos_microservice_networks.git", rev = "5e2284fd12e8b735ec35397a8b11b57ce0a09a3b" }
+minos-microservice-aggregate = { git = "https://github.com/Clariteia/minos_microservice_aggregate.git", rev = "668d6d4a34146d3dd83f48cc044c2c1b553c6d64" }
 dependency-injector = "^4.32.2"
 
 [tool.poetry.dev-dependencies]
