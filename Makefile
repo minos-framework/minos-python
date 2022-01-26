@@ -4,6 +4,11 @@ DOCS_TARGET := ./docs/api-reference/packages
 
 install:
 	poetry install
+	$(MAKE) --directory=packages/minos-microservice-aggregate install
+	$(MAKE) --directory=packages/minos-microservice-common install
+	$(MAKE) --directory=packages/minos-microservice-cqrs install
+	$(MAKE) --directory=packages/minos-microservice-networks install
+	$(MAKE) --directory=packages/minos-microservice-saga install
 
 docs:
 	mkdir -p $(DOCS_TARGET)
