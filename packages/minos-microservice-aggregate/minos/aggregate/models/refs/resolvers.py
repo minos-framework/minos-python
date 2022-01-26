@@ -42,9 +42,7 @@ class ModelRefResolver:
 
     # noinspection PyUnusedLocal
     @inject
-    def __init__(
-        self, broker_pool: BrokerClientPool = Provide["broker_pool"], **kwargs,
-    ):
+    def __init__(self, broker_pool: BrokerClientPool = Provide["broker_pool"], **kwargs):
         self.broker_pool = broker_pool
 
     # noinspection PyUnusedLocal

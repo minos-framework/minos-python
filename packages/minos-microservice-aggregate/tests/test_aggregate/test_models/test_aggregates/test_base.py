@@ -160,9 +160,7 @@ class TestAggregate(MinosTestCase):
         expected = Car(
             3, "blue", uuid=uuid, version=1, created_at=car.created_at, updated_at=car.updated_at, **self.kwargs
         )
-        self.assertEqual(
-            expected, await Car.get(uuid, **self.kwargs),
-        )
+        self.assertEqual(expected, await Car.get(uuid, **self.kwargs))
 
         await car.save()
         expected = Car(
@@ -173,9 +171,7 @@ class TestAggregate(MinosTestCase):
         expected = Car(
             5, "red", uuid=uuid, version=2, created_at=car.created_at, updated_at=car.updated_at, **self.kwargs
         )
-        self.assertEqual(
-            expected, await Car.get(uuid, **self.kwargs),
-        )
+        self.assertEqual(expected, await Car.get(uuid, **self.kwargs))
 
     async def test_save_raises(self):
         with self.assertRaises(EventRepositoryException):

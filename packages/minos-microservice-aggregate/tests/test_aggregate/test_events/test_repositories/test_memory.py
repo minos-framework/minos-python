@@ -271,7 +271,7 @@ class TestInMemoryRepositorySelect(MinosTestCase, TestRepositorySelect):
         observed = [
             v
             async for v in self.event_repository.select(
-                transaction_uuid_in=(self.first_transaction, self.second_transaction,)
+                transaction_uuid_in=(self.first_transaction, self.second_transaction)
             )
         ]
         self.assert_equal_repository_entries(expected, observed)

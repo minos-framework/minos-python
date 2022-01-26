@@ -187,7 +187,7 @@ class EventRepository(ABC, MinosSetup):
         iterable = self._transaction_repository.select(
             destination_uuid=entry.transaction_uuid,
             uuid_ne=transaction_uuid_ne,
-            status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING,),
+            status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING),
         )
 
         transaction_uuids = {e.uuid async for e in iterable}

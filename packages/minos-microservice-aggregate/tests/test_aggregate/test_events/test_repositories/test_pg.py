@@ -55,7 +55,7 @@ class TestPostgreSqlEventRepository(MinosTestCase, PostgresAsyncTestCase, TestRe
         super().tearDown()
 
     def test_constructor(self):
-        repository = PostgreSqlEventRepository("host", 1234, "database", "user", "password",)
+        repository = PostgreSqlEventRepository("host", 1234, "database", "user", "password")
         self.assertIsInstance(repository, EventRepository)
         self.assertEqual("host", repository.host)
         self.assertEqual(1234, repository.port)
@@ -316,7 +316,7 @@ class TestPostgreSqlRepositorySelect(MinosTestCase, PostgresAsyncTestCase, TestR
         observed = [
             v
             async for v in self.event_repository.select(
-                transaction_uuid_in=(self.first_transaction, self.second_transaction,)
+                transaction_uuid_in=(self.first_transaction, self.second_transaction)
             )
         ]
         self.assert_equal_repository_entries(expected, observed)

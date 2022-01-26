@@ -490,7 +490,7 @@ class TestTransactionEntry(MinosTestCase):
         second = TransactionEntry(destination_uuid=first.uuid)
         await second.save()
 
-        self.assertEqual((NULL_UUID, first.uuid, second.uuid,), await second.uuids)
+        self.assertEqual((NULL_UUID, first.uuid, second.uuid), await second.uuids)
 
     async def test_destination(self):
         first = TransactionEntry()
