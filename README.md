@@ -6,6 +6,10 @@ Minos is a framework which helps you create [reactive](https://www.reactivemanif
 Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
 asynchronous environment.
 
+## Documentation
+
+The official API Reference is publicly available at: [minos-framework.github.io/minos-python](https://minos-framework.github.io/minos-python)
+
 ## Packages
 
 * [`minos-microservice-aggregate`](packages/minos-microservice-aggregate)
