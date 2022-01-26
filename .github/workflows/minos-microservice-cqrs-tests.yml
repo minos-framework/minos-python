@@ -1,6 +1,13 @@
 name: "Test Package: minos-microservice-cqrs"
 
-on: push
+on:
+  push:
+    branches:
+      - main
+      - '*.*.*'
+  pull_request:
+    paths:
+      - 'packages/minos-microservice-cqrs/**'
 
 jobs:
   build:

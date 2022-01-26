@@ -1,6 +1,13 @@
 name: "Test Package: minos-microservice-aggregate"
 
-on: push
+on:
+  push:
+    branches:
+      - main
+      - '*.*.*'
+  pull_request:
+    paths:
+      - 'packages/minos-microservice-aggregate/**'
 
 jobs:
   build:
@@ -9,7 +16,7 @@ jobs:
     defaults:
       run:
         working-directory: packages/minos-microservice-aggregate
-        
+
     services:
       postgres:
         image: postgres

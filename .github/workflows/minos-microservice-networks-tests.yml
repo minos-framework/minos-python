@@ -1,6 +1,13 @@
 name: "Test Package: minos-microservice-networks"
 
-on: push
+on:
+  push:
+    branches:
+      - main
+      - '*.*.*'
+  pull_request:
+    paths:
+      - 'packages/minos-microservice-networks/**'
 
 jobs:
   build:
