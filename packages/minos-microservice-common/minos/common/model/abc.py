@@ -287,9 +287,9 @@ class Model(Mapping):
         # noinspection PyTypeChecker
         return MinosAvroProtocol.encode(self.avro_data, self.avro_schema)
 
-    # noinspection PyMethodParameters,PyUnusedLocal
-    @self_or_classmethod
-    def encode_schema(self_or_cls, encoder: SchemaEncoder, target: Any, **kwargs) -> Any:
+    # noinspection PyUnusedLocal
+    @staticmethod
+    def encode_schema(encoder: SchemaEncoder, target: Any, **kwargs) -> Any:
         """Encode schema with the given encoder.
 
         :param encoder: The encoder instance.
@@ -300,8 +300,8 @@ class Model(Mapping):
         return MissingSentinel
 
     # noinspection PyUnusedLocal
-    @classmethod
-    def decode_schema(cls, decoder: SchemaDecoder, target: Any, **kwargs) -> Any:
+    @staticmethod
+    def decode_schema(decoder: SchemaDecoder, target: Any, **kwargs) -> Any:
         """Decode schema with the given encoder.
 
         :param decoder: The decoder instance.
@@ -311,8 +311,9 @@ class Model(Mapping):
         """
         return MissingSentinel
 
-    # noinspection PyMethodMayBeStatic,PyUnusedLocal
-    def encode_data(self, encoder: DataEncoder, target: Any, **kwargs) -> Any:
+    # noinspection PyUnusedLocal
+    @staticmethod
+    def encode_data(encoder: DataEncoder, target: Any, **kwargs) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
@@ -323,8 +324,8 @@ class Model(Mapping):
         return MissingSentinel
 
     # noinspection PyUnusedLocal
-    @classmethod
-    def decode_data(cls: T, decoder: DataDecoder, target: Any, type_: ModelType, **kwargs) -> Any:
+    @staticmethod
+    def decode_data(decoder: DataDecoder, target: Any, type_: ModelType, **kwargs) -> Any:
         """Decode data with the given decoder.
 
         :param decoder: The decoder instance.

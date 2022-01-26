@@ -31,7 +31,6 @@ from ..decorators import (
 )
 from ..requests import (
     REQUEST_USER_CONTEXT_VAR,
-    Response,
     ResponseException,
 )
 from .requests import (
@@ -136,11 +135,12 @@ class RestHandler(MinosSetup):
                 response = fn(request)
                 if isawaitable(response):
                     response = await response
-                if isinstance(response, Response):
-                    response = await response.raw_content()
-                if response is None:
-                    return web.json_response()
-                return web.json_response(response)
+
+                if not isinstance(response, RestResponse):
+                    response = RestResponse.from_response(response)
+
+                return web.Response(body=await response.content(), content_type=response.content_type)
+
             except ResponseException as exc:
                 logger.warning(f"Raised an application exception: {exc!s}")
                 raise web.HTTPBadRequest(text=str(exc))

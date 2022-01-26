@@ -25,7 +25,7 @@ class DiscoveryClient(ABC):
 
     @property
     def route(self) -> str:
-        """Get the full http route to the repository.
+        """Get the full http route to the discovery.
 
         :return: An ``str`` value.
         """

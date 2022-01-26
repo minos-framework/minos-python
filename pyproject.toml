@@ -14,7 +14,7 @@ minos-microservice-saga = { path = "packages/minos-microservice-saga", develop =
 minos-microservice-cqrs = { path = "packages/minos-microservice-cqrs", develop = true }
 
 [tool.poetry.dev-dependencies]
-black = "^19.10b"
+black = "^21.12b0"
 isort = "^5.8.0"
 pytest = "^6.2.4"
 coverage = "^6.3"

@@ -15,9 +15,11 @@ from dependency_injector.wiring import (
 )
 
 from minos.networks import (
+    BrokerClient,
+    BrokerClientPool,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
     BrokerPublisher,
-    DynamicBroker,
-    DynamicBrokerPool,
 )
 
 from .steps import (
@@ -37,7 +39,7 @@ class TransactionCommitter:
         self,
         execution_uuid: UUID,
         executed_steps: list[SagaStepExecution],
-        broker_pool: DynamicBrokerPool = Provide["broker_pool"],
+        broker_pool: BrokerClientPool = Provide["broker_pool"],
         broker_publisher: BrokerPublisher = Provide["broker_publisher"],
         **kwargs,
     ):
@@ -65,7 +67,7 @@ class TransactionCommitter:
     async def _reserve(self) -> bool:
         async with self.broker_pool.acquire() as broker:
             futures = (
-                broker.send(data=uuid, topic=f"Reserve{service_name.title()}Transaction")
+                broker.send(BrokerMessageV1(f"Reserve{service_name.title()}Transaction", BrokerMessageV1Payload(uuid)))
                 for (uuid, service_name) in self.transactions
             )
             await gather(*futures)
@@ -74,7 +76,9 @@ class TransactionCommitter:
 
     async def _commit(self) -> None:
         futures = (
-            self.broker_publisher.send(data=uuid, topic=f"Commit{service_name.title()}Transaction")
+            self.broker_publisher.send(
+                BrokerMessageV1(f"Commit{service_name.title()}Transaction", BrokerMessageV1Payload(uuid))
+            )
             for (uuid, service_name) in self.transactions
         )
         await gather(*futures)
@@ -88,7 +92,9 @@ class TransactionCommitter:
         :return: This method does not return anything.
         """
         futures = (
-            self.broker_publisher.send(data=uuid, topic=f"Reject{service_name.title()}Transaction")
+            self.broker_publisher.send(
+                BrokerMessageV1(f"Reject{service_name.title()}Transaction", BrokerMessageV1Payload(uuid))
+            )
             for (uuid, service_name) in self.transactions
         )
         await gather(*futures)
@@ -96,9 +102,9 @@ class TransactionCommitter:
         logger.info("Successfully rejected!")
 
     @staticmethod
-    async def _get_response(handler: DynamicBroker, count: int, **kwargs) -> bool:
-        entries = await handler.get_many(count, **kwargs)
-        return all(entry.data.ok for entry in entries)
+    async def _get_response(handler: BrokerClient, count: int, **kwargs) -> bool:
+        messages = [message async for message in handler.receive_many(count, **kwargs)]
+        return all(message.ok for message in messages)
 
     @cached_property
     def transactions(self) -> list[tuple[UUID, str]]:

@@ -38,6 +38,7 @@ aiohttp = "^3.7.4"
 dependency-injector = "^4.32.2"
 minos-microservice-common = "^0.3.0"
 crontab = "^0.23.0"
+orjson = "^3.6.5"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }

@@ -1,13 +1,14 @@
-from collections import (
-    namedtuple,
-)
 from datetime import (
     timedelta,
+)
+from functools import (
+    total_ordering,
 )
 from pathlib import (
     Path,
 )
 from typing import (
+    Any,
     Callable,
     Optional,
 )
@@ -24,15 +25,34 @@ from minos.networks import (
 )
 
 BASE_PATH = Path(__file__).parent
+CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
 
+@total_ordering
 class FakeModel(DeclarativeModel):
     """For testing purposes"""
 
-    text: str
+    data: Any
+
+    def __lt__(self, other: Any) -> bool:
+        # noinspection PyBroadException
+        return isinstance(other, type(self)) and self.data < other.data
 
 
-Message = namedtuple("Message", ["topic", "partition", "value"])
+class FakeAsyncIterator:
+    """For testing purposes."""
+
+    def __init__(self, seq):
+        self.iter = iter(seq)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        try:
+            return next(self.iter)
+        except StopIteration:
+            raise StopAsyncIteration
 
 
 class FakeDispatcher:
