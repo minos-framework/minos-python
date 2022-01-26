@@ -1,8 +1,6 @@
 name: "Publish: Documentation"
 
-on:
-  release:
-    types: [ created ]
+on: push
 
 jobs:
   deploy:
