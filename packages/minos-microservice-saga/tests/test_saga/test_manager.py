@@ -1,8 +1,5 @@
 import unittest
 import warnings
-from collections import (
-    namedtuple,
-)
 from shutil import (
     rmtree,
 )
@@ -23,6 +20,8 @@ from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_USER_CONTEXT_VAR,
     BrokerMessage,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
 )
 from minos.saga import (
     SagaContext,
@@ -49,6 +48,25 @@ class TestSagaManager(MinosTestCase):
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
 
+        self.uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
+
+        self.receive_messages = [
+            BrokerMessageV1(
+                "topicReply",
+                BrokerMessageV1Payload(
+                    [Foo("foo")],
+                    headers={"saga": str(self.uuid), "transactions": str(self.uuid), "related_services": "foo"},
+                ),
+            ),
+            BrokerMessageV1(
+                "topicReply",
+                BrokerMessageV1Payload(
+                    [Foo("foo")],
+                    headers={"saga": str(self.uuid), "transactions": str(self.uuid), "related_services": "foo"},
+                ),
+            ),
+        ]
+
         self.user = uuid4()
         REQUEST_USER_CONTEXT_VAR.set(self.user)
         self.manager: SagaManager = SagaManager.from_config(self.config)
@@ -70,267 +88,107 @@ class TestSagaManager(MinosTestCase):
             self.assertIsInstance(saga_manager, SagaManager)
 
     async def test_run_with_pause_on_memory(self):
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
-
-        Message = namedtuple("Message", ["data"])
-        expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
-        with patch("uuid.uuid4", return_value=expected_uuid):
-            self.broker.get_one = AsyncMock(
-                side_effect=[
-                    Message(
-                        BrokerMessage(
-                            "topicReply",
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo",
-                            },
-                        )
-                    ),
-                    Message(
-                        BrokerMessage(
-                            "topicReply",
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo",
-                            },
-                        )
-                    ),
-                    Message(BrokerMessage("", None, headers={"related_services": "order"},),),
-                    Message(BrokerMessage("", None, headers={"related_services": "foo"},),),
-                    Message(BrokerMessage("", None, headers={"related_services": "order"},),),
-                    Message(BrokerMessage("", None, headers={"related_services": "foo"},),),
-                ]
-            )
-
-            execution = await self.manager.run(ADD_ORDER)
-            self.assertEqual(SagaStatus.Finished, execution.status)
-            with self.assertRaises(SagaExecutionNotFoundException):
-                self.manager.storage.load(execution.uuid)
-
-        self.assertEqual(
+        self.broker_subscriber_builder.with_messages(
             [
-                call(
-                    topic="CreateOrder",
-                    data=Foo("create_order!"),
-                    headers={"saga": str(expected_uuid), "transactions": str(expected_uuid)},
-                    user=self.user,
-                    reply_topic="TheReplyTopic",
-                ),
-                call(
-                    topic="CreateTicket",
-                    data=Foo("create_ticket!"),
-                    headers={"saga": str(expected_uuid), "transactions": str(expected_uuid)},
-                    user=self.user,
-                    reply_topic="TheReplyTopic",
-                ),
-                call(topic="ReserveFooTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
-                call(topic="ReserveOrderTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
-                call(topic="CommitFooTransaction", data=execution.uuid),
-                call(topic="CommitOrderTransaction", data=execution.uuid),
-            ],
-            send_mock.call_args_list,
+                *self.receive_messages,
+                BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "order"})),
+                BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "foo"})),
+                BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "order"})),
+                BrokerMessageV1("", BrokerMessageV1Payload(None, headers={"related_services": "foo"})),
+            ]
         )
 
+        with patch("uuid.uuid4", return_value=self.uuid):
+            execution = await self.manager.run(ADD_ORDER)
+
+        self.assertEqual(SagaStatus.Finished, execution.status)
+        with self.assertRaises(SagaExecutionNotFoundException):
+            self.manager.storage.load(execution.uuid)
+
+        observed = self.broker_publisher.messages
+        expected = self._build_expected_messages(observed)
+        self.assertEqual(expected, observed)
+
     async def test_run_with_pause_on_memory_without_commit(self):
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
+        self.broker_subscriber_builder.with_messages(self.receive_messages)
 
-        Message = namedtuple("Message", ["data"])
-        expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
-        with patch("uuid.uuid4", return_value=expected_uuid):
-            self.broker.get_one = AsyncMock(
-                side_effect=[
-                    Message(
-                        BrokerMessage(
-                            "topicReply",
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo",
-                            },
-                        )
-                    ),
-                    Message(
-                        BrokerMessage(
-                            "topicReply",
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo",
-                            },
-                        )
-                    ),
-                ]
-            )
+        with patch("uuid.uuid4", return_value=self.uuid), patch("minos.saga.SagaExecution.commit") as commit_mock:
+            execution = await self.manager.run(ADD_ORDER, autocommit=False)
 
-            with patch("minos.saga.SagaExecution.commit") as commit_mock:
-                execution = await self.manager.run(ADD_ORDER, autocommit=False)
-            self.assertEqual(SagaStatus.Finished, execution.status)
+        self.assertEqual(SagaStatus.Finished, execution.status)
 
         self.assertEqual(0, commit_mock.call_count)
 
     async def test_run_with_pause_on_memory_with_headers(self):
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
+        self.broker_subscriber_builder.with_messages(self.receive_messages)
 
-        Message = namedtuple("Message", ["data"])
-        expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
-        with patch("uuid.uuid4", return_value=expected_uuid):
-            self.broker.get_one = AsyncMock(
-                side_effect=[
-                    Message(
-                        BrokerMessage(
-                            "topicReply",
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo",
-                            },
-                        )
-                    ),
-                    Message(
-                        BrokerMessage(
-                            "topicReply",
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo,bar",
-                            },
-                        )
-                    ),
-                ]
-            )
+        request_headers = {"hello": "world"}
+        REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
 
-            request_headers = {"hello": "world"}
-            REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
+        with patch("uuid.uuid4", return_value=self.uuid):
             await self.manager.run(ADD_ORDER, autocommit=False)
-            self.assertEqual({"hello", "related_services"}, request_headers.keys())
-            self.assertEqual("world", request_headers["hello"])
-            self.assertEqual({"foo", "bar", "order"}, set(request_headers["related_services"].split(",")))
+
+        self.assertEqual({"hello", "related_services"}, request_headers.keys())
+        self.assertEqual("world", request_headers["hello"])
+        self.assertEqual({"foo", "order"}, set(request_headers["related_services"].split(",")))
 
     async def test_run_with_pause_on_memory_with_headers_already_related_services(self):
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
+        self.broker_subscriber_builder.with_messages(self.receive_messages)
+        request_headers = {"hello": "world", "related_services": "order,one"}
+        REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
 
-        Message = namedtuple("Message", ["data"])
-        expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
-        with patch("uuid.uuid4", return_value=expected_uuid):
-            self.broker.get_one = AsyncMock(
-                side_effect=[
-                    Message(
-                        BrokerMessage(
-                            "topicReply",
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo",
-                            },
-                        )
-                    ),
-                    Message(
-                        BrokerMessage(
-                            "topicReply",
-                            [Foo("foo")],
-                            headers={
-                                "saga": str(expected_uuid),
-                                "transactions": str(expected_uuid),
-                                "related_services": "foo,bar",
-                            },
-                        )
-                    ),
-                ]
-            )
-
-            request_headers = {"hello": "world", "related_services": "order,one"}
-            REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
+        with patch("uuid.uuid4", return_value=self.uuid):
             await self.manager.run(ADD_ORDER, autocommit=False)
-            self.assertEqual({"hello", "related_services"}, request_headers.keys())
-            self.assertEqual("world", request_headers["hello"])
-            self.assertEqual({"foo", "bar", "one", "order"}, set(request_headers["related_services"].split(",")))
+
+        self.assertEqual({"hello", "related_services"}, request_headers.keys())
+        self.assertEqual("world", request_headers["hello"])
+        self.assertEqual({"foo", "one", "order"}, set(request_headers["related_services"].split(",")))
 
     async def test_run_with_pause_on_memory_with_error(self):
-        self.broker.get_one = AsyncMock(side_effect=ValueError)
-
-        with patch("minos.saga.SagaExecution.reject") as reject_mock:
-            execution = await self.manager.run(ADD_ORDER, raise_on_error=False)
-        self.assertEqual(SagaStatus.Errored, execution.status)
-        self.assertEqual([call()], reject_mock.call_args_list)
+        with patch("minos.networks.BrokerClient.receive", side_effect=ValueError):
+            with patch("minos.saga.SagaExecution.reject") as reject_mock:
+                execution = await self.manager.run(ADD_ORDER, raise_on_error=False)
+            self.assertEqual(SagaStatus.Errored, execution.status)
+            self.assertEqual([call()], reject_mock.call_args_list)
 
     async def test_run_with_pause_on_memory_without_autocommit(self):
-        self.broker.get_one = AsyncMock(side_effect=ValueError)
-
-        with patch("minos.saga.SagaExecution.reject") as reject_mock:
-            execution = await self.manager.run(ADD_ORDER, autocommit=False, raise_on_error=False)
-        self.assertEqual(SagaStatus.Errored, execution.status)
-        self.assertEqual(0, reject_mock.call_count)
+        with patch("minos.networks.BrokerClient.receive", side_effect=ValueError):
+            with patch("minos.saga.SagaExecution.reject") as reject_mock:
+                execution = await self.manager.run(ADD_ORDER, autocommit=False, raise_on_error=False)
+            self.assertEqual(SagaStatus.Errored, execution.status)
+            self.assertEqual(0, reject_mock.call_count)
 
     async def test_run_with_pause_on_memory_with_error_raises(self):
-        self.broker.get_one = AsyncMock(side_effect=ValueError)
-
-        with self.assertRaises(SagaFailedExecutionException):
-            await self.manager.run(ADD_ORDER)
+        with patch("minos.networks.BrokerClient.receive", side_effect=ValueError):
+            with self.assertRaises(SagaFailedExecutionException):
+                await self.manager.run(ADD_ORDER)
 
     async def test_run_with_pause_on_disk(self):
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
-
-        get_mock = AsyncMock()
-        get_mock.return_value.data.ok = True
-        self.broker.get_one = get_mock
-
-        execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
-        self.assertEqual(SagaStatus.Paused, execution.status)
-
-        response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
-        execution = await self.manager.run(response=response, pause_on_disk=True)
-        self.assertEqual(SagaStatus.Paused, execution.status)
-
-        response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
-        execution = await self.manager.run(response=response, pause_on_disk=True)
-        with self.assertRaises(SagaExecutionNotFoundException):
-            self.manager.storage.load(execution.uuid)
-
-        self.assertEqual(
-            [
-                call(
-                    topic="CreateOrder",
-                    data=Foo("create_order!"),
-                    headers={"saga": str(execution.uuid), "transactions": str(execution.uuid)},
-                    user=self.user,
-                    reply_topic="orderReply",
-                ),
-                call(
-                    topic="CreateTicket",
-                    data=Foo("create_ticket!"),
-                    headers={"saga": str(execution.uuid), "transactions": str(execution.uuid)},
-                    user=self.user,
-                    reply_topic="orderReply",
-                ),
-                call(topic="ReserveFooTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
-                call(topic="ReserveOrderTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
-                call(topic="CommitFooTransaction", data=execution.uuid),
-                call(topic="CommitOrderTransaction", data=execution.uuid),
-            ],
-            send_mock.call_args_list,
+        self.broker_subscriber_builder.with_messages(
+            [BrokerMessageV1("", BrokerMessageV1Payload()), BrokerMessageV1("", BrokerMessageV1Payload())]
         )
 
-    async def test_run_with_pause_on_disk_without_commit(self):
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
+        with patch("uuid.uuid4", return_value=self.uuid):
+            execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
+            self.assertEqual(SagaStatus.Paused, execution.status)
 
-        get_mock = AsyncMock()
-        get_mock.return_value.data.ok = True
-        self.broker.get_one = get_mock
+            response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
+            execution = await self.manager.run(response=response, pause_on_disk=True)
+            self.assertEqual(SagaStatus.Paused, execution.status)
+
+            response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
+            execution = await self.manager.run(response=response, pause_on_disk=True)
+            self.assertEqual(SagaStatus.Finished, execution.status)
+
+        with self.assertRaises(SagaExecutionNotFoundException):
+            self.manager.storage.load(self.uuid)
+
+        observed = self.broker_publisher.messages
+        expected = self._build_expected_messages(observed)
+        self.assertEqual(expected, observed)
+
+    async def test_run_with_pause_on_disk_without_commit(self):
+        self.broker_subscriber_builder.with_messages([BrokerMessageV1("", BrokerMessageV1Payload())])
 
         execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
@@ -347,13 +205,13 @@ class TestSagaManager(MinosTestCase):
         self.assertEqual(0, commit_mock.call_count)
 
     async def test_run_with_pause_on_disk_with_headers(self):
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
-
-        get_mock = AsyncMock()
-        get_mock.return_value.data.ok = True
-        self.broker.get_one = get_mock
-
+        self.broker_subscriber_builder.with_messages(
+            [
+                BrokerMessageV1("", BrokerMessageV1Payload()),
+                BrokerMessageV1("", BrokerMessageV1Payload()),
+                BrokerMessageV1("", BrokerMessageV1Payload()),
+            ]
+        )
         request_headers = {"related_services": "one"}
         REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
         execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
@@ -402,9 +260,6 @@ class TestSagaManager(MinosTestCase):
         self.assertEqual(0, reject_mock.call_count)
 
     async def test_run_with_user_context_var(self):
-        send_mock = AsyncMock()
-        self.broker_publisher.send = send_mock
-
         saga_manager = SagaManager.from_config(self.config)
 
         with warnings.catch_warnings():
@@ -412,7 +267,54 @@ class TestSagaManager(MinosTestCase):
             # noinspection PyUnresolvedReferences
             await saga_manager.run(ADD_ORDER, user=uuid4(), pause_on_disk=True)
 
-        self.assertEqual(self.user, send_mock.call_args.kwargs["user"])
+        observed = self.broker_publisher.messages
+        self.assertEqual(1, len(observed))
+
+        self.assertEqual(str(self.user), observed[0].headers["user"])
+
+    def _build_expected_messages(self, observed: list[BrokerMessage]) -> list[BrokerMessage]:
+        return [
+            BrokerMessageV1(
+                topic="CreateOrder",
+                payload=BrokerMessageV1Payload(
+                    Foo("create_order!"),
+                    headers={"saga": str(self.uuid), "transactions": str(self.uuid), "user": str(self.user)},
+                ),
+                identifier=observed[0].identifier,
+                reply_topic=observed[0].reply_topic,
+            ),
+            BrokerMessageV1(
+                topic="CreateTicket",
+                payload=BrokerMessageV1Payload(
+                    Foo("create_ticket!"),
+                    headers={"saga": str(self.uuid), "transactions": str(self.uuid), "user": str(self.user)},
+                ),
+                identifier=observed[1].identifier,
+                reply_topic=observed[1].reply_topic,
+            ),
+            BrokerMessageV1(
+                topic="ReserveFooTransaction",
+                payload=BrokerMessageV1Payload(self.uuid),
+                identifier=observed[2].identifier,
+                reply_topic=observed[2].reply_topic,
+            ),
+            BrokerMessageV1(
+                topic="ReserveOrderTransaction",
+                payload=BrokerMessageV1Payload(self.uuid),
+                identifier=observed[3].identifier,
+                reply_topic=observed[3].reply_topic,
+            ),
+            BrokerMessageV1(
+                topic="CommitFooTransaction",
+                payload=BrokerMessageV1Payload(self.uuid),
+                identifier=observed[4].identifier,
+            ),
+            BrokerMessageV1(
+                topic="CommitOrderTransaction",
+                payload=BrokerMessageV1Payload(self.uuid),
+                identifier=observed[5].identifier,
+            ),
+        ]
 
 
 if __name__ == "__main__":

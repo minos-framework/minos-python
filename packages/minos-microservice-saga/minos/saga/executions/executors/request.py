@@ -21,6 +21,8 @@ from minos.common import (
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
     BrokerPublisher,
 )
 
@@ -89,19 +91,21 @@ class RequestExecutor(Executor):
 
         headers = (REQUEST_HEADERS_CONTEXT_VAR.get() or dict()).copy()
         headers["saga"] = str(self.execution_uuid)
+        if self.user is not None:
+            headers["user"] = str(self.user)
         if headers.get("transactions"):
             headers["transactions"] += f",{self.execution_uuid!s}"
         else:
             headers["transactions"] = f"{self.execution_uuid!s}"
 
         try:
-            await self.broker_publisher.send(
+            message = BrokerMessageV1(
                 topic=request.target,
-                data=await request.content(),
-                user=self.user,
+                payload=BrokerMessageV1Payload(content=await request.content(), headers=headers),
                 reply_topic=reply_topic,
-                headers=headers,
             )
+
+            await self.broker_publisher.send(message)
         except Exception as exc:
             raise ExecutorException(exc)
 

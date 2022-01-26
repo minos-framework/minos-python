@@ -37,19 +37,25 @@ from minos.aggregate import (
 from minos.common import (
     Lock,
     MinosPool,
-    MinosSetup,
     current_datetime,
+)
+from minos.networks import (
+    BrokerClientPool,
+    InMemoryBrokerPublisher,
+    InMemoryBrokerSubscriberBuilder,
 )
 
 BASE_PATH = Path(__file__).parent
+CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
 
 class MinosTestCase(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.broker_publisher = FakeBroker()
-        self.broker_pool = FakeBrokerPool()
+        self.broker_publisher = InMemoryBrokerPublisher()
+        self.broker_pool = BrokerClientPool.from_config(CONFIG_FILE_PATH)
+        self.broker_subscriber_builder = InMemoryBrokerSubscriberBuilder()
         self.lock_pool = FakeLockPool()
         self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
         self.event_repository = InMemoryEventRepository(
@@ -63,6 +69,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
 
         self.container = containers.DynamicContainer()
         self.container.broker_publisher = providers.Object(self.broker_publisher)
+        self.container.broker_subscriber_builder = providers.Object(self.broker_subscriber_builder)
         self.container.broker_pool = providers.Object(self.broker_pool)
         self.container.transaction_repository = providers.Object(self.transaction_repository)
         self.container.lock_pool = providers.Object(self.lock_pool)
@@ -112,19 +119,6 @@ class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
             self.assertAlmostEqual(e.created_at or current_datetime(), o.created_at, delta=timedelta(seconds=5))
 
 
-class FakeBroker(MinosSetup):
-    """For testing purposes."""
-
-    async def send(self, *args, **kwargs) -> None:
-        """For testing purposes."""
-
-    async def get_one(self, *args, **kwargs):
-        """For testing purposes."""
-
-    async def get_many(self, *args, **kwargs):
-        """For testing purposes."""
-
-
 class FakeAsyncIterator:
     """For testing purposes."""
 
@@ -158,16 +152,6 @@ class FakeLockPool(MinosPool):
 
     async def _create_instance(self):
         return FakeLock()
-
-    async def _destroy_instance(self, instance) -> None:
-        """For testing purposes."""
-
-
-class FakeBrokerPool(MinosPool):
-    """For testing purposes."""
-
-    async def _create_instance(self):
-        return FakeBroker()
 
     async def _destroy_instance(self, instance) -> None:
         """For testing purposes."""
