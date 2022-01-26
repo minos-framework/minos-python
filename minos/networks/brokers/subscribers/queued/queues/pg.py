@@ -16,6 +16,10 @@ from psycopg2.sql import (
     Identifier,
 )
 
+from minos.common import (
+    MinosConfig,
+)
+
 from ....collections import (
     PostgreSqlBrokerQueue,
     PostgreSqlBrokerQueueQueryFactory,
@@ -25,6 +29,7 @@ from ....messages import (
 )
 from .abc import (
     BrokerSubscriberQueue,
+    BrokerSubscriberQueueBuilder,
 )
 
 logger = logging.getLogger(__name__)
@@ -120,3 +125,24 @@ class PostgreSqlBrokerSubscriberQueueQueryFactory(PostgreSqlBrokerQueueQueryFact
             "LIMIT %s "
             "FOR UPDATE SKIP LOCKED"
         )
+
+
+class PostgreSqlBrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder):
+    """PostgreSql Broker Subscriber Queue Builder class."""
+
+    def with_config(self, config: MinosConfig):
+        """Set config.
+
+         :param config: The config to be set.
+         :return: This method return the builder instance.
+         """
+        # noinspection PyProtectedMember
+        self.kwargs |= config.broker.queue._asdict()
+        return super().with_config(config)
+
+    def build(self) -> PostgreSqlBrokerSubscriberQueue:
+        """Build the instance.
+
+        :return: A ``BrokerSubscriberQueue`` instance.
+        """
+        return PostgreSqlBrokerSubscriberQueue(**self.kwargs)

@@ -4,11 +4,15 @@ from unittest.mock import (
     call,
 )
 
+from minos.common import (
+    NotProvidedException,
+)
 from minos.networks import (
     BrokerHandler,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     InMemoryBrokerPublisher,
+    InMemoryBrokerSubscriberBuilder,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -23,11 +27,20 @@ class TestBrokerHandler(unittest.IsolatedAsyncioTestCase):
         ]
 
         self.publisher = InMemoryBrokerPublisher()
+        self.subscriber_builder = InMemoryBrokerSubscriberBuilder()
+
+    async def test_from_config_raises(self):
+        with self.assertRaises(NotProvidedException):
+            BrokerHandler.from_config(CONFIG_FILE_PATH)
+        with self.assertRaises(NotProvidedException):
+            BrokerHandler.from_config(CONFIG_FILE_PATH, publisher=self.publisher)
 
     async def test_run(self):
         dispatch_mock = AsyncMock(side_effect=[None, ValueError])
 
-        async with BrokerHandler.from_config(CONFIG_FILE_PATH, publisher=self.publisher) as handler:
+        async with BrokerHandler.from_config(
+            CONFIG_FILE_PATH, publisher=self.publisher, subscriber_builder=self.subscriber_builder
+        ) as handler:
             handler._subscriber.receive = AsyncMock(side_effect=self.messages)
             handler._dispatcher.dispatch = dispatch_mock
             await handler.run()

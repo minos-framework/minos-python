@@ -4,12 +4,21 @@ from asyncio import (
     create_task,
     wait_for,
 )
+from collections.abc import (
+    Awaitable,
+    Iterable,
+)
 from contextlib import (
     suppress,
 )
 from typing import (
-    Awaitable,
+    Any,
     NoReturn,
+    Optional,
+)
+
+from minos.common import (
+    MinosConfig,
 )
 
 from ...messages import (
@@ -17,9 +26,11 @@ from ...messages import (
 )
 from ..abc import (
     BrokerSubscriber,
+    BrokerSubscriberBuilder,
 )
 from .queues import (
     BrokerSubscriberQueue,
+    BrokerSubscriberQueueBuilder,
 )
 
 
@@ -68,3 +79,72 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
 
     def _receive(self) -> Awaitable[BrokerMessage]:
         return self.queue.dequeue()
+
+
+class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
+    """Queued Broker Subscriber Publisher class."""
+
+    def __init__(
+        self, *args, impl_builder: BrokerSubscriberBuilder, queue_builder: BrokerSubscriberQueueBuilder, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self.impl_builder = impl_builder
+        self.queue_builder = queue_builder
+
+    def with_config(self, config: MinosConfig) -> BrokerSubscriberBuilder:
+        """Set config.
+
+        :param config: The config to be set.
+        :return: This method return the builder instance.
+        """
+        self.impl_builder.with_config(config)
+        self.queue_builder.with_config(config)
+        return super().with_config(config)
+
+    def with_kwargs(self, kwargs: dict[str, Any]) -> BrokerSubscriberBuilder:
+        """Set kwargs.
+
+        :param kwargs: The kwargs to be set.
+        :return: This method return the builder instance.
+        """
+        self.impl_builder.with_kwargs(kwargs)
+        self.queue_builder.with_kwargs(kwargs)
+        return super().with_kwargs(kwargs)
+
+    def with_topics(self, topics: Iterable[str]) -> BrokerSubscriberBuilder:
+        """Set topics.
+
+        :param topics: The topics to be set.
+        :return: This method return the builder instance.
+        """
+        topics = set(topics)
+        self.impl_builder.with_topics(topics)
+        self.queue_builder.with_topics(topics)
+        return super().with_topics(topics)
+
+    def with_group_id(self, group_id: Optional[str]) -> BrokerSubscriberBuilder:
+        """Set group_id.
+
+        :param group_id: The group_id to be set.
+        :return: This method return the builder instance.
+        """
+        self.impl_builder.with_group_id(group_id)
+        return super().with_group_id(group_id)
+
+    def with_remove_topics_on_destroy(self, remove_topics_on_destroy: bool) -> BrokerSubscriberBuilder:
+        """Set remove_topics_on_destroy.
+
+        :param remove_topics_on_destroy: The remove_topics_on_destroy flag to be set.
+        :return: This method return the builder instance.
+        """
+        self.impl_builder.with_remove_topics_on_destroy(remove_topics_on_destroy)
+        return super().with_remove_topics_on_destroy(remove_topics_on_destroy)
+
+    def build(self) -> BrokerSubscriber:
+        """Build the instance.
+
+        :return: A ``QueuedBrokerSubscriber`` instance.
+        """
+        impl = self.impl_builder.build()
+        queue = self.queue_builder.build()
+        return QueuedBrokerSubscriber(impl=impl, queue=queue, **self.kwargs)

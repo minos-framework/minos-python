@@ -8,6 +8,9 @@ from asyncio import (
     create_task,
     gather,
 )
+from collections.abc import (
+    Iterable,
+)
 from typing import (
     NoReturn,
     Optional,
@@ -21,6 +24,7 @@ from dependency_injector.wiring import (
 from minos.common import (
     MinosConfig,
     MinosSetup,
+    NotProvidedException,
 )
 
 from ..dispatchers import (
@@ -28,6 +32,7 @@ from ..dispatchers import (
 )
 from ..subscribers import (
     BrokerSubscriber,
+    BrokerSubscriberBuilder,
 )
 
 logger = logging.getLogger(__name__)
@@ -50,12 +55,8 @@ class BrokerHandler(MinosSetup):
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerHandler:
-        from ..subscribers import (
-            KafkaBrokerSubscriber,
-        )
-
         dispatcher = cls._get_dispatcher(config, **kwargs)
-        subscriber = KafkaBrokerSubscriber.from_config(config, topics=set(dispatcher.actions.keys()))
+        subscriber = cls._get_subscriber(config, topics=set(dispatcher.actions.keys()), **kwargs)
 
         return cls(dispatcher, subscriber, **kwargs)
 
@@ -64,7 +65,7 @@ class BrokerHandler(MinosSetup):
     def _get_dispatcher(
         config: MinosConfig,
         dispatcher: Optional[BrokerDispatcher] = None,
-        broker_dispatcher: BrokerDispatcher = Provide["broker_dispatcher"],
+        broker_dispatcher: Optional[BrokerDispatcher] = Provide["broker_dispatcher"],
         **kwargs,
     ) -> BrokerDispatcher:
         if dispatcher is None:
@@ -72,6 +73,34 @@ class BrokerHandler(MinosSetup):
         if dispatcher is None or isinstance(dispatcher, Provide):
             dispatcher = BrokerDispatcher.from_config(config, **kwargs)
         return dispatcher
+
+    @staticmethod
+    @inject
+    def _get_subscriber(
+        config: MinosConfig,
+        topics: Iterable[str],
+        subscriber: Optional[BrokerSubscriber] = None,
+        broker_subscriber: Optional[BrokerSubscriber] = Provide["broker_subscriber"],
+        subscriber_builder: Optional[BrokerSubscriberBuilder] = None,
+        broker_subscriber_builder: Optional[BrokerSubscriberBuilder] = Provide["broker_subscriber_builder"],
+        **kwargs,
+    ) -> BrokerSubscriber:
+        if not isinstance(subscriber, BrokerSubscriber):
+            subscriber = broker_subscriber
+
+        if not isinstance(subscriber, BrokerSubscriber):
+            if not isinstance(subscriber_builder, BrokerSubscriberBuilder):
+                subscriber_builder = broker_subscriber_builder
+
+            if isinstance(subscriber_builder, BrokerSubscriberBuilder):
+                subscriber = (
+                    subscriber_builder.copy().with_config(config).with_topics(topics).with_kwargs(kwargs).build()
+                )
+
+        if not isinstance(subscriber, BrokerSubscriber):
+            raise NotProvidedException(f"A {BrokerSubscriber!r} or {BrokerSubscriberBuilder!r} must be provided.")
+
+        return subscriber
 
     async def _setup(self) -> None:
         await super()._setup()

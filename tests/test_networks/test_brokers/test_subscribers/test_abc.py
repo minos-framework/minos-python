@@ -14,7 +14,14 @@ from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerSubscriber,
+    BrokerSubscriberBuilder,
 )
+
+
+class _BrokerSubscriberBuilder(BrokerSubscriberBuilder):
+    def build(self) -> BrokerSubscriber:
+        """For testing purposes."""
+        return _BrokerSubscriber(**self.kwargs)
 
 
 class _BrokerSubscriber(BrokerSubscriber):
@@ -62,6 +69,37 @@ class TestBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
                 await subscriber.destroy()
 
         self.assertEqual(expected, observed)
+
+
+class TestBrokerSubscriberBuilder(unittest.TestCase):
+    def test_abstract(self):
+        self.assertTrue(issubclass(BrokerSubscriberBuilder, (ABC, MinosSetup)))
+        # noinspection PyUnresolvedReferences
+        self.assertEqual(
+            {"build"}, BrokerSubscriberBuilder.__abstractmethods__,
+        )
+
+    def test_with_group_id(self):
+        builder = _BrokerSubscriberBuilder().with_group_id("foobar")
+        self.assertIsInstance(builder, _BrokerSubscriberBuilder)
+        self.assertEqual({"group_id": "foobar"}, builder.kwargs)
+
+    def test_with_remove_topics_on_destroy(self):
+        builder = _BrokerSubscriberBuilder().with_remove_topics_on_destroy(False)
+        self.assertIsInstance(builder, _BrokerSubscriberBuilder)
+        self.assertEqual({"remove_topics_on_destroy": False}, builder.kwargs)
+
+    def test_with_topics(self):
+        builder = _BrokerSubscriberBuilder().with_topics({"one", "two"})
+        self.assertIsInstance(builder, _BrokerSubscriberBuilder)
+        self.assertEqual({"topics": {"one", "two"}}, builder.kwargs)
+
+    def test_build(self):
+        builder = _BrokerSubscriberBuilder().with_topics({"one", "two"})
+        self.assertIsInstance(builder, _BrokerSubscriberBuilder)
+        subscriber = builder.build()
+        self.assertIsInstance(subscriber, _BrokerSubscriber)
+        self.assertEqual({"one", "two"}, subscriber.topics)
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ from minos.networks import (
     BrokerClient,
     BrokerClientPool,
     InMemoryBrokerPublisher,
+    InMemoryBrokerSubscriberBuilder,
 )
 from tests.utils import (
     BASE_PATH,
@@ -20,7 +21,10 @@ class TestBrokerClientPool(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.publisher = InMemoryBrokerPublisher.from_config(self.config)
-        self.pool = BrokerClientPool.from_config(self.config, publisher=self.publisher)
+        self.subscriber_builder = InMemoryBrokerSubscriberBuilder()
+        self.pool = BrokerClientPool.from_config(
+            self.config, publisher=self.publisher, subscriber_builder=self.subscriber_builder
+        )
 
     async def asyncSetUp(self):
         await super().asyncSetUp()

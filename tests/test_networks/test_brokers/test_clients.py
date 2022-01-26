@@ -20,6 +20,7 @@ from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     InMemoryBrokerPublisher,
+    InMemoryBrokerSubscriberBuilder,
     MinosHandlerNotFoundEnoughEntriesException,
 )
 from tests.utils import (
@@ -35,7 +36,10 @@ class TestBrokerClient(PostgresAsyncTestCase):
         super().setUp()
         self.topic = "fooReply"
         self.publisher = InMemoryBrokerPublisher.from_config(self.config)
-        self.broker = BrokerClient.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
+        self.subscriber_builder = InMemoryBrokerSubscriberBuilder()
+        self.broker = BrokerClient.from_config(
+            self.config, topic=self.topic, publisher=self.publisher, subscriber_builder=self.subscriber_builder,
+        )
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -49,10 +53,14 @@ class TestBrokerClient(PostgresAsyncTestCase):
 
     async def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):
-            BrokerClient.from_config(config=self.config)
+            BrokerClient.from_config(self.config)
+        with self.assertRaises(NotProvidedException):
+            BrokerClient.from_config(self.config, publisher=self.publisher)
 
     async def test_setup_destroy(self):
-        broker = BrokerClient.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
+        broker = BrokerClient.from_config(
+            self.config, topic=self.topic, publisher=self.publisher, subscriber_builder=self.subscriber_builder,
+        )
         self.assertFalse(broker.already_setup)
         async with broker:
             self.assertTrue(broker.already_setup)

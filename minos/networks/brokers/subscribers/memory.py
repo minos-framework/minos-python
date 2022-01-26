@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 from asyncio import (
     Queue,
 )
@@ -10,6 +14,7 @@ from ..messages import (
 )
 from .abc import (
     BrokerSubscriber,
+    BrokerSubscriberBuilder,
 )
 
 
@@ -34,3 +39,23 @@ class InMemoryBrokerSubscriber(BrokerSubscriber):
 
     async def _receive(self) -> BrokerMessage:
         return await self._queue.get()
+
+
+class InMemoryBrokerSubscriberBuilder(BrokerSubscriberBuilder):
+    """In Memory Broker Subscriber Builder class."""
+
+    def with_messages(self, messages: Iterable[BrokerMessage]) -> InMemoryBrokerSubscriberBuilder:
+        """Set messages.
+
+        :param messages: The topics to be set.
+        :return: This method return the builder instance.
+        """
+        self.kwargs["messages"] = messages
+        return self
+
+    def build(self) -> BrokerSubscriber:
+        """Build the instance.
+
+        :return: An ``InMemoryBrokerSubscriber`` instance.
+        """
+        return InMemoryBrokerSubscriber(**self.kwargs)

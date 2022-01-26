@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 import logging
 from abc import (
     ABC,
@@ -5,7 +9,13 @@ from abc import (
 from collections.abc import (
     Iterable,
 )
+from typing import (
+    TypeVar,
+)
 
+from .....utils import (
+    Builder,
+)
 from ....collections import (
     BrokerQueue,
 )
@@ -30,3 +40,19 @@ class BrokerSubscriberQueue(BrokerQueue, ABC):
         :return: A list of string values.
         """
         return self._topics
+
+
+class BrokerSubscriberQueueBuilder(Builder[BrokerSubscriberQueue], ABC):
+    """Broker Subscriber Queue Builder class."""
+
+    def with_topics(self: B, topics: Iterable[str]) -> B:
+        """Set topics.
+
+        :param topics: The topics to be set.
+        :return: This method return the builder instance.
+        """
+        self.kwargs["topics"] = set(topics)
+        return self
+
+
+B = TypeVar("B", bound=BrokerSubscriberQueueBuilder)
