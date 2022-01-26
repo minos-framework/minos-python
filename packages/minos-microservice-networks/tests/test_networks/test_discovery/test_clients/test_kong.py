@@ -52,7 +52,10 @@ class TestKong(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected_service, mock.call_args_list[0])
 
         # noinspection HttpUrlsUsage
-        expected_paths = call("http://123.456.123.1:1234/test/routes", json={"paths": ["/foo", "/bar"]},)
+        expected_paths = call(
+            "http://123.456.123.1:1234/services/test/routes",
+            json={"paths": ["/foo", "/bar"], "methods": ["POST", "GET", "DELETE"], "strip_path": False},
+        )
         self.assertEqual(expected_paths, mock.call_args_list[1])
 
     @patch("aiohttp.ClientSession.post")
