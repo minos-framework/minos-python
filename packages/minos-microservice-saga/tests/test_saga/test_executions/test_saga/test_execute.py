@@ -1,13 +1,18 @@
 import unittest
+from contextlib import (
+    suppress,
+)
 from unittest.mock import (
-    AsyncMock,
-    call,
     patch,
 )
 from uuid import (
     uuid4,
 )
 
+from minos.networks import (
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
+)
 from minos.saga import (
     Saga,
     SagaContext,
@@ -36,16 +41,7 @@ from tests.utils import (
 class TestSagaExecution(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-
-        mock = AsyncMock()
-        mock.return_value.data.ok = True
-        self.broker.get_one = mock
-
-        self.publish_mock = AsyncMock()
-        self.broker_publisher.send = self.publish_mock
-
-    async def test_execute(self):
-        saga = (
+        self.saga = (
             Saga()
             .remote_step(send_create_order)
             .on_success(handle_order_success)
@@ -54,25 +50,31 @@ class TestSagaExecution(MinosTestCase):
             .on_success(handle_ticket_success)
             .commit()
         )
-        execution = SagaExecution.from_definition(saga)
+
+    async def test_execute(self):
+        self.broker_subscriber_builder.with_messages(
+            [BrokerMessageV1("", BrokerMessageV1Payload()), BrokerMessageV1("", BrokerMessageV1Payload())]
+        )
+        execution = SagaExecution.from_definition(self.saga)
 
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
-        self.assertEqual(1, self.publish_mock.call_count)
-        self.publish_mock.reset_mock()
+        self.assertEqual(1, len(self.broker_publisher.messages))
+        self.broker_publisher.messages.clear()
+
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         response = SagaResponse(Foo("order"), {"ticket"})
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(response)
-        self.assertEqual(1, self.publish_mock.call_count)
-        self.publish_mock.reset_mock()
+        self.assertEqual(1, len(self.broker_publisher.messages))
+        self.broker_publisher.messages.clear()
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         response = SagaResponse(Foo("ticket"), {"ticket"})
         context = await execution.execute(response)
-        self.assertEqual(4, self.publish_mock.call_count)
-        self.publish_mock.reset_mock()
+        self.assertEqual(4, len(self.broker_publisher.messages))
+        self.broker_publisher.messages.clear()
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(SagaContext(order=Foo("order"), ticket=Foo("ticket")), context)
 
@@ -88,15 +90,19 @@ class TestSagaExecution(MinosTestCase):
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
 
-        self.assertEqual(1, self.publish_mock.call_count)
-        args = call(
-            topic="CreateOrder",
-            data=Foo(foo="create_order!"),
-            user=user,
-            reply_topic="orderReply",
-            headers={"saga": str(execution.uuid), "transactions": str(execution.uuid)},
-        )
-        self.assertEqual(args, self.publish_mock.call_args)
+        observed = self.broker_publisher.messages
+        expected = [
+            BrokerMessageV1(
+                topic="CreateOrder",
+                payload=BrokerMessageV1Payload(
+                    Foo(foo="create_order!"),
+                    headers={"saga": str(execution.uuid), "transactions": str(execution.uuid), "user": str(user)},
+                ),
+                reply_topic=observed[0].reply_topic,
+                identifier=observed[0].identifier,
+            )
+        ]
+        self.assertEqual(expected, observed)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
     async def test_execute_failure(self):
@@ -112,45 +118,34 @@ class TestSagaExecution(MinosTestCase):
         )
         execution = SagaExecution.from_definition(saga)
 
-        with self.assertRaises(SagaPausedExecutionStepException):
+        with suppress(SagaPausedExecutionStepException):
             await execution.execute()
-        self.assertEqual(1, self.publish_mock.call_count)
-        self.publish_mock.reset_mock()
-        self.assertEqual(SagaStatus.Paused, execution.status)
-
         response = SagaResponse(Foo("order"), {"ticket"})
-        with self.assertRaises(SagaPausedExecutionStepException):
+        with suppress(SagaPausedExecutionStepException):
             await execution.execute(response)
-        self.assertEqual(1, self.publish_mock.call_count)
-        self.publish_mock.reset_mock()
-        self.assertEqual(SagaStatus.Paused, execution.status)
 
-        self.publish_mock.reset_mock()
+        self.broker_publisher.messages.clear()
         response = SagaResponse(Foo("ticket"), {"ticket"})
         with self.assertRaises(SagaFailedExecutionStepException):
             await execution.execute(response)
-        self.assertEqual(4, self.publish_mock.call_count)
-        self.publish_mock.reset_mock()
+        self.assertEqual(4, len(self.broker_publisher.messages))
+        self.broker_publisher.messages.clear()
+
         self.assertEqual(SagaStatus.Errored, execution.status)
 
         response = SagaResponse(Foo("fixed failure!"), {"ticket"})
         await execution.execute(response)
-        self.assertEqual(0, self.publish_mock.call_count)
+        self.assertEqual(0, len(self.broker_publisher.messages))
 
         with self.assertRaises(SagaExecutionAlreadyExecutedException):
             await execution.execute()
 
     async def test_execute_commit(self):  # FIXME: This test must be rewritten according to transactions integration
-        saga = (
-            Saga()
-            .remote_step(send_create_order)
-            .on_success(handle_order_success)
-            .on_failure(send_delete_order)
-            .remote_step(send_create_ticket)
-            .on_success(handle_ticket_success)
-            .commit()
+        self.broker_subscriber_builder.with_messages(
+            [BrokerMessageV1("", BrokerMessageV1Payload()), BrokerMessageV1("", BrokerMessageV1Payload())]
         )
-        execution = SagaExecution.from_definition(saga)
+
+        execution = SagaExecution.from_definition(self.saga)
 
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
@@ -162,24 +157,15 @@ class TestSagaExecution(MinosTestCase):
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         response = SagaResponse(Foo("ticket"), {"ticket"})
-        self.publish_mock.reset_mock()
+        self.broker_publisher.messages.clear()
         context = await execution.execute(response)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(SagaContext(order=Foo("order"), ticket=Foo("ticket")), context)
-        self.assertEqual(4, self.publish_mock.call_count)
+        self.assertEqual(4, len(self.broker_publisher.messages))
 
     async def test_execute_commit_without_autocommit(self):
-        saga = (
-            Saga()
-            .remote_step(send_create_order)
-            .on_success(handle_order_success)
-            .on_failure(send_delete_order)
-            .remote_step(send_create_ticket)
-            .on_success(handle_ticket_success)
-            .commit()
-        )
-        execution = SagaExecution.from_definition(saga)
+        execution = SagaExecution.from_definition(self.saga)
 
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
@@ -191,24 +177,15 @@ class TestSagaExecution(MinosTestCase):
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         response = SagaResponse(Foo("ticket"), {"ticket"})
-        self.publish_mock.reset_mock()
+        self.broker_publisher.messages.clear()
         context = await execution.execute(response, autocommit=False)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(SagaContext(order=Foo("order"), ticket=Foo("ticket")), context)
-        self.assertEqual(0, self.publish_mock.call_count)
+        self.assertEqual(0, len(self.broker_publisher.messages))
 
     async def test_execute_commit_raises(self):
-        saga = (
-            Saga()
-            .remote_step(send_create_order)
-            .on_success(handle_order_success)
-            .on_failure(send_delete_order)
-            .remote_step(send_create_ticket)
-            .on_success(handle_ticket_success)
-            .commit()
-        )
-        execution = SagaExecution.from_definition(saga)
+        execution = SagaExecution.from_definition(self.saga)
 
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
@@ -219,99 +196,62 @@ class TestSagaExecution(MinosTestCase):
             await execution.execute(response)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        self.publish_mock.reset_mock()
+        self.broker_publisher.messages.clear()
         response = SagaResponse(Foo("order2"), {"ticket"})
         with patch("minos.saga.TransactionCommitter.commit", side_effect=ValueError):
             with self.assertRaises(SagaFailedCommitCallbackException):
                 await execution.execute(response)
 
         self.assertEqual(SagaStatus.Errored, execution.status)
-        self.assertEqual(1, self.publish_mock.call_count)
+        self.assertEqual(1, len(self.broker_publisher.messages))
 
     async def test_commit_raises(self):
-        saga = (
-            Saga()
-            .remote_step(send_create_order)
-            .on_success(handle_order_success)
-            .on_failure(send_delete_order)
-            .remote_step(send_create_ticket)
-            .on_success(handle_ticket_success)
-            .commit()
-        )
-        execution = SagaExecution.from_definition(saga)
+        execution = SagaExecution.from_definition(self.saga)
 
         with self.assertRaises(ValueError):
             await execution.commit()
 
     async def test_rollback(self):
-        saga = (
-            Saga()
-            .remote_step(send_create_order)
-            .on_success(handle_order_success)
-            .on_failure(send_delete_order)
-            .remote_step(send_create_order)
-            .commit()
-        )
-        execution = SagaExecution.from_definition(saga)
+        execution = SagaExecution.from_definition(self.saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
         response = SagaResponse(Foo("order1"), {"ticket"})
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(response)
 
-        self.publish_mock.reset_mock()
+        self.broker_publisher.messages.clear()
         await execution.rollback()
-        self.assertEqual(3, self.publish_mock.call_count)
+        self.assertEqual(3, len(self.broker_publisher.messages))
+        self.broker_publisher.messages.clear()
 
-        self.publish_mock.reset_mock()
         with self.assertRaises(SagaRollbackExecutionException):
             await execution.rollback()
-        self.assertEqual(0, self.publish_mock.call_count)
+        self.assertEqual(0, len(self.broker_publisher.messages))
+        self.broker_publisher.messages.clear()
 
     async def test_rollback_without_autoreject(self):
-        saga = (
-            Saga()
-            .remote_step(send_create_order)
-            .on_success(handle_order_success)
-            .on_failure(send_delete_order)
-            .remote_step(send_create_order)
-            .commit()
-        )
-        execution = SagaExecution.from_definition(saga)
+        execution = SagaExecution.from_definition(self.saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
         response = SagaResponse(Foo("order1"), {"ticket"})
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(response)
 
-        self.publish_mock.reset_mock()
+        self.broker_publisher.messages.clear()
         await execution.rollback(autoreject=False)
-        self.assertEqual(1, self.publish_mock.call_count)
+        self.assertEqual(1, len(self.broker_publisher.messages))
 
     async def test_rollback_raises(self):
-        saga = (
-            Saga()
-            .remote_step(send_create_order)
-            .on_success(handle_order_success)
-            .on_failure(send_delete_order)
-            .remote_step(send_create_order)
-            .commit()
-        )
-        execution = SagaExecution.from_definition(saga)
+        execution = SagaExecution.from_definition(self.saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
         response = SagaResponse(Foo("order1"), {"ticket"})
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(response)
 
-        async def _fn(*args, **kwargs):
-            raise ValueError("This is an exception")
-
-        self.publish_mock.side_effect = _fn
-        self.publish_mock.reset_mock()
-
-        with self.assertRaises(SagaRollbackExecutionException):
-            await execution.rollback()
+        with patch("minos.networks.InMemoryBrokerPublisher.send", side_effect=ValueError):
+            with self.assertRaises(SagaRollbackExecutionException):
+                await execution.rollback()
 
 
 if __name__ == "__main__":
