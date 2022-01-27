@@ -469,7 +469,7 @@ class TestEventRepository(MinosTestCase):
 
         transaction_uuid = uuid4()
         iterable = self.event_repository.select(
-            aggregate_uuid=aggregate_uuid, aggregate_name=aggregate_name, id_gt=56, transaction_uuid=transaction_uuid,
+            aggregate_uuid=aggregate_uuid, aggregate_name=aggregate_name, id_gt=56, transaction_uuid=transaction_uuid
         )
         observed = [a async for a in iterable]
         self.assertEqual(list(range(5)), observed)

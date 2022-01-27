@@ -61,9 +61,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
     data: Union[MT, UUID]
 
     @inject
-    def __init__(
-        self, data: Union[MT, UUID], *args, broker_pool: BrokerClientPool = Provide["broker_pool"], **kwargs,
-    ):
+    def __init__(self, data: Union[MT, UUID], *args, broker_pool: BrokerClientPool = Provide["broker_pool"], **kwargs):
         if not isinstance(data, UUID) and not hasattr(data, "uuid"):
             raise ValueError(f"data must be an {UUID!r} instance or have 'uuid' as one of its fields")
         DeclarativeModel.__init__(self, data, *args, **kwargs)

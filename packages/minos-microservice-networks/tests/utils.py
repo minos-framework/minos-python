@@ -136,7 +136,7 @@ class FakeService:
     @enroute.broker.query(topic="GetTickets")
     async def get_tickets(self, request: Request) -> Response:
         """For testing purposes."""
-        return Response(": ".join(("Get Tickets", await request.content(),)))
+        return Response(": ".join(("Get Tickets", await request.content())))
 
     @create_ticket.check()
     @get_tickets.check()
@@ -147,7 +147,7 @@ class FakeService:
     @enroute.broker.event(topic="TicketAdded")
     async def ticket_added(request: Request) -> Response:
         """For testing purposes."""
-        return Response(": ".join(("Ticket Added", await request.content(),)))
+        return Response(": ".join(("Ticket Added", await request.content())))
 
     @staticmethod
     @ticket_added.__func__.check()

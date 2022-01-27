@@ -220,8 +220,8 @@ class RestRequest(Request):
         # noinspection GrazieInspection
         """Check if the request has query params.
 
-                :return: ``True`` if it has query params or ``False`` otherwise.
-                """
+        :return: ``True`` if it has query params or ``False`` otherwise.
+        """
         sentinel = object()
         return next(iter(self._raw_query_params), sentinel) is not sentinel
 

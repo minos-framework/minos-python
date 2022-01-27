@@ -29,9 +29,7 @@ class TestBrokerPublisher(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(BrokerPublisher, (ABC, MinosSetup)))
         # noinspection PyUnresolvedReferences
-        self.assertEqual(
-            {"_send"}, BrokerPublisher.__abstractmethods__,
-        )
+        self.assertEqual({"_send"}, BrokerPublisher.__abstractmethods__)
 
     async def test_send(self):
         publisher = _BrokerPublisher()

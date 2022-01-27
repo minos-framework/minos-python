@@ -11,7 +11,7 @@ from .abc import (
 
 
 class DataTransferObject(DynamicModel):
-    """Data Transfer Object to build the objects dynamically from bytes """
+    """Data Transfer Object to build the objects dynamically from bytes"""
 
     def __init__(self, name: str, *args, namespace: str = str(), **kwargs):
         super().__init__(*args, **kwargs)

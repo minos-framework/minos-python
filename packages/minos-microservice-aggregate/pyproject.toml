@@ -37,7 +37,7 @@ minos-microservice-networks = "^0.3.0"
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }
 minos-microservice-networks = { path = "../minos-microservice-networks", develop = true }
-black = "^19.10b"
+black = "^21.12b0"
 isort = "^5.8.0"
 pytest = "^6.2.4"
 coverage = "^6.3"

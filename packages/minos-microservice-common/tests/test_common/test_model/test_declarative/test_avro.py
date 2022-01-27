@@ -156,9 +156,7 @@ class TestModelAvro(MinosTestCase):
 
         encoder = shopping_mock.call_args_list[0].args[0]
 
-        self.assertEqual(
-            [call(encoder, shopping_list.model_type)], shopping_mock.call_args_list,
-        )
+        self.assertEqual([call(encoder, shopping_list.model_type)], shopping_mock.call_args_list)
 
         self.assertEqual([call(encoder, user.model_type)], user_mock.call_args_list)
 
@@ -240,7 +238,7 @@ class TestModelAvro(MinosTestCase):
             decoder = mock.call_args_list[0].args[0]
 
             self.assertEqual(
-                [call(decoder, shopping_list.avro_schema[0]), call(decoder, user.avro_schema[0])], mock.call_args_list,
+                [call(decoder, shopping_list.avro_schema[0]), call(decoder, user.avro_schema[0])], mock.call_args_list
             )
 
     def test_decode_data(self):
@@ -255,9 +253,7 @@ class TestModelAvro(MinosTestCase):
 
         self.assertEqual(
             [
-                call(
-                    decoder, {"user": {"id": 1234, "username": None}, "cost": float("inf")}, shopping_list.model_type,
-                ),
+                call(decoder, {"user": {"id": 1234, "username": None}, "cost": float("inf")}, shopping_list.model_type),
                 call(decoder, {"id": 1234, "username": None}, user.model_type),
             ],
             mock.call_args_list,
