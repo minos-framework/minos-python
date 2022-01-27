@@ -3,7 +3,7 @@ name: "Publish: Documentation"
 on:
   push:
     branches:
-      - main
+      - releases
 
 jobs:
   deploy:
