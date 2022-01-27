@@ -21,6 +21,8 @@ author = "Clariteia Devs"
 
 language = None
 
+templates_path = ['_templates']
+
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 pygments_style = 'sphinx'
@@ -33,4 +35,4 @@ html_extra_path = ['api-reference']
 
 html_sidebars = {"**": ["about.html", "navigation.html", "searchbox.html"]}
 
-html_static_path = []
+html_static_path = ["_static"]
