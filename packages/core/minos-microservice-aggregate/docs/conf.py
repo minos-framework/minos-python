@@ -22,7 +22,11 @@ import sys
 
 sys.path.insert(0, os.path.abspath(".."))
 
-from minos import aggregate
+import sphinx_rtd_theme
+
+from minos import (
+    aggregate,
+)
 
 # -- General configuration ---------------------------------------------
 
@@ -33,7 +37,6 @@ from minos import aggregate
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 
-import sphinx_rtd_theme
 
 extensions = [
     "sphinxcontrib.apidoc",
