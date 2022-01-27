@@ -1,8 +1,11 @@
 name: "Publish: minos-microservice-common"
 
 on:
-  release:
-    types: [ created ]
+  push:
+    branches:
+      - releases
+    paths:
+      - 'packages/minos-microservice-common/**'
 
 jobs:
   deploy:

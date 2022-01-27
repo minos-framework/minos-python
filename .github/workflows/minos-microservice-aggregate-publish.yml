@@ -1,8 +1,11 @@
 name: "Publish: minos-microservice-aggregate"
 
 on:
-  release:
-    types: [ created ]
+  push:
+    branches:
+      - releases
+    paths:
+      - 'packages/minos-microservice-aggregate/**'
 
 jobs:
   deploy:
