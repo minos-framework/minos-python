@@ -30,7 +30,7 @@ from .setup import (
 
 
 class DependencyInjector:
-    """Async wrapper of ``dependency_injector.containers.Container``. """
+    """Async wrapper of ``dependency_injector.containers.Container``."""
 
     def __init__(self, config: MinosConfig, **kwargs: Union[MinosSetup, Type[MinosSetup], str]):
         self.config = config

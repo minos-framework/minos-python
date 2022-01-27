@@ -151,7 +151,7 @@ class SnapshotEntry:
 
     @property
     def encoded_data(self) -> Optional[str]:
-        """ Get the encoded data if available.
+        """Get the encoded data if available.
 
         :return: A ``str`` instance or ``None``.
         """

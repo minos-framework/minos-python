@@ -103,7 +103,7 @@ class PostgreSqlMinosDatabase(MinosSetup):
 
     # noinspection PyUnusedLocal
     async def submit_query(
-        self, operation: Any, parameters: Any = None, *, timeout: Optional[float] = None, lock: Any = None, **kwargs,
+        self, operation: Any, parameters: Any = None, *, timeout: Optional[float] = None, lock: Any = None, **kwargs
     ) -> None:
         """Submit a SQL query.
 
@@ -179,6 +179,6 @@ class PostgreSqlMinosDatabase(MinosSetup):
             return pool, False
 
         pool = PostgreSqlPool(
-            host=self.host, port=self.port, database=self.database, user=self.user, password=self.password,
+            host=self.host, port=self.port, database=self.database, user=self.user, password=self.password
         )
         return pool, True

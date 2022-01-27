@@ -53,9 +53,7 @@ class TestBuilder(unittest.TestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(Builder, (ABC, MinosSetup)))
         # noinspection PyUnresolvedReferences
-        self.assertEqual(
-            {"build"}, Builder.__abstractmethods__,
-        )
+        self.assertEqual({"build"}, Builder.__abstractmethods__)
 
     def test_new(self):
         builder = _Builder.new()

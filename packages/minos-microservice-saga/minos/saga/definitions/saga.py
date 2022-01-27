@@ -40,9 +40,7 @@ class Saga:
     """
 
     # noinspection PyUnusedLocal
-    def __init__(
-        self, *args, steps: list[SagaStep] = None, committed: bool = False, commit: None = None, **kwargs,
-    ):
+    def __init__(self, *args, steps: list[SagaStep] = None, committed: bool = False, commit: None = None, **kwargs):
         if steps is None:
             steps = list()
 
