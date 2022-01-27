@@ -323,4 +323,5 @@ $RECYCLE.BIN/
 *.lmdb
 
 # Sphinx Api Documentation
-**/docs/api
+**/docs/api*
+**/docs/_build
