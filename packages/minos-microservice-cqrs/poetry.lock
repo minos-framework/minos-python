@@ -460,7 +460,7 @@ develop = true
 
 [package.dependencies]
 minos-microservice-common = "^0.3.4"
-minos-microservice-networks = "^0.3.0"
+minos-microservice-networks = {path = "../minos-microservice-networks", develop = true}
 
 [package.source]
 type = "directory"
@@ -506,6 +506,7 @@ aiopg = "^1.2.1"
 crontab = "^0.23.0"
 dependency-injector = "^4.32.2"
 minos-microservice-common = "^0.3.0"
+orjson = "^3.6.5"
 
 [package.source]
 type = "directory"
