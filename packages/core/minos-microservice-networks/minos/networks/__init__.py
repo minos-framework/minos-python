@@ -1,6 +1,6 @@
-__author__ = """Clariteia Devs"""
-__email__ = "devs@clariteia.com"
-__version__ = "0.3.2"
+__author__ = "Minos Framework Devs"
+__email__ = "hey@minos.run"
+__version__ = "0.4.0"
 
 from .brokers import (
     REQUEST_HEADERS_CONTEXT_VAR,

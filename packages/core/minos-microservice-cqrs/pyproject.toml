@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "minos-microservice-cqrs"
-version = "0.2.1"
+version = "0.4.0"
 description = "Minos Microservice CQRS package"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
 homepage = "http://www.minos.run/"
-authors = ["Clariteia Devs <devs@clariteia.com>"]
+authors = ["Minos Framework Devs <hey@minos.run>"]
 license = "MIT"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -31,10 +31,10 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
+minos-microservice-aggregate = "^0.4.0"
+minos-microservice-common = "^0.4.0"
+minos-microservice-networks = "^0.4.0"
 dependency-injector = "^4.34.0"
-minos-microservice-common = "^0.3.0"
-minos-microservice-networks = "^0.3.0"
-minos-microservice-aggregate = "^0.2.2"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }

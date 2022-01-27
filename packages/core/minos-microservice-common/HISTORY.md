@@ -264,3 +264,8 @@ History
 --------------------
 
 * Add `batch_mode: bool` argument to manage if the `avro` serialization is performed for a single model or a batch of models.
+
+0.4.0 (2022-01-27)
+------------------
+
+* Add waiting time before destroying the `minos.common.MinosPool` acquired instances.

@@ -61,7 +61,7 @@ master_doc = "index"
 # General information about the project.
 project = "Minos Microservice Network"
 copyright = "2021, Clariteia"
-author = "Clariteia Devs"
+author = "Minos Framework Devs"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -145,7 +145,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass
 # [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "minos.tex", "Minos Microservice Network Documentation", "Clariteia Devs", "manual"),
+    (master_doc, "minos.tex", "Minos Microservice Network Documentation", "Minos Framework Devs", "manual"),
 ]
 
 # -- Options for manual page output ------------------------------------

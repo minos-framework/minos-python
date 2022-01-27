@@ -2,7 +2,7 @@
 name = "minos-python"
 version = "0.1.0"
 description = ""
-authors = ["Clariteia Devs <devs@clariteia.com>"]
+authors = ["Minos Framework Devs <hey@minos.run>"]
 license = "MIT"
 
 [tool.poetry.dependencies]

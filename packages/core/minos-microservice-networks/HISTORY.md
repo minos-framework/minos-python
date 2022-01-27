@@ -170,3 +170,24 @@ History
 * Add `Request.params(...)` method allowing to access to the request's params.
 * Add `Request.has_content: bool` and `Request.has_params: bool` to check for the existence of `content` and `params` respectively.
 * Add `InMemoryRequest` class that allows to create requests for testing or calling service handling functions directly.
+
+0.4.0 (2022-01-27)
+------------------
+
+* Add `BrokerDispatcher` to break the direct relationship between `BrokerHandler` and `BrokerPublisher`.
+* Add `content_type` argument to `RestResponse`'s constructor to be able to retrieve the result in a format other than `json`.
+* Add versioning to `BrokerMessage` and implement the `BrokerMessageV1` and `BrokerMessageV1Payload` to be able to work with different microservice versions in the future.
+* Refactor `BrokerPublisher.send` method to follow the `(message: BrokerMessage) -> None` prototype instead of a big list of arguments referred to the messages attributes.
+* Refactor `brokers.publishers` module.
+  * Add `BrokerPublisher` base class with a `send(message: BrokerMessage) -> Awaitable[None]` method.
+  * Add `BrokerPublisherQueue` base class with an `enqueue(message: BrokerMessage) -> Awaitable[None]` and a `dequeue() -> Awaitable[BrokerMessage]` methods.
+  * Add `KafkaBrokerPublisher` as the `kafka`'s implementation of the publisher.
+  * Add `PostgreSqlBrokerPublisherQueue` as the `postgres` implementation of the publisher's message queue.
+* Refactor `brokers.handlers`.
+  * Add `BrokerSubscriber` base class with a `receive() -> Awaitable[BrokerMessage]` method.
+  * Add `BrokerSubscriberQueue` base class with an `enqueue(message: BrokerMessage) -> Awaitable[None]` and a `dequeue() -> Awaitable[BrokerMessage]` methods.
+  * Add `KafkaBrokerSubscriber` as the `kafka`'s implementation of the subscriber.
+  * Add `PostgreSqlBrokerSubscriberQueue` as the `postgres` implementation of the subscriber's message queue.
+* Refactor `DynamicBroker` and `DynamicBrokerPool` as `BrokerClient` and `BrokerClientPool`. The new `BrokerClient` has a `send(message: BrokerMessage) -> Awaitable[None]` method for sending messages and a `receive() -> Awaitable[BrokerMessage]` to receive them.
+* Implement a builder pattern on `BrokerPublisher`
+* Be compatible with `minos-microservice-common~=0.4.0`.

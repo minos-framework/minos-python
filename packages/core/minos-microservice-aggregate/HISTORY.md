@@ -45,3 +45,8 @@
 * Remove the `data` wrapper from the `IncrementalSet`'s avro serialization.
 * Remove the `data` wrapper from the `ValueObjectSet`'s avro serialization.
 * Remove the `data` wrapper from the `EntitySet`'s avro serialization.
+
+## 0.4.0 (2022-01-27)
+
+* Be compatible with `minos-microservice-common~=0.4.0`.
+* Be compatible with `minos-microservice-networks~=0.4.0`.
