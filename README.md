@@ -1,10 +1,9 @@
 
-<div align="center">
+<p align="center">
   <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
-</div>
+</p>
 
 # minos-python: The framework which helps you create reactive microservices in Python
------------------
 
 ## Summary
 
@@ -18,15 +17,22 @@ The official API Reference is publicly available at [GiHub Pages](https://minos-
 
 ## Packages
 
-* [minos-microservice-aggregate](https://minos-framework.github.io/minos-python/packages/minos-microservice-aggregate)
-* [minos-microservice-common](https://minos-framework.github.io/minos-python/packages/minos-microservice-common)
-* [minos-microservice-cqrs](https://minos-framework.github.io/minos-python/packages/minos-microservice-cqrs)
-* [minos-microservice-networks](https://minos-framework.github.io/minos-python/packages/minos-microservice-networks)
-* [minos-microservice-saga](https://minos-framework.github.io/minos-python/packages/minos-microservice-saga)
+This project follows a modular structure based on python packages.
 
-## Plugins
+### Core
 
-[TODO]
+The core packages provide the base implementation of the framework.
+
+* [minos-microservice-aggregate](https://minos-framework.github.io/minos-python/packages/minos-microservice-aggregate): The implementation of the Aggregate pattern.
+* [minos-microservice-common](https://minos-framework.github.io/minos-python/packages/minos-microservice-common): The implementation of common classes and utilities to be used by another packages.
+* [minos-microservice-cqrs](https://minos-framework.github.io/minos-python/packages/minos-microservice-cqrs): The implementation of the CQRS pattern.
+* [minos-microservice-networks](https://minos-framework.github.io/minos-python/packages/minos-microservice-networks): The implementation of the rest server, the broker client, the discovery connector, etc.
+* [minos-microservice-saga](https://minos-framework.github.io/minos-python/packages/minos-microservice-saga): The implementation of the SAGA pattern.
+
+### Plugins
+
+The plugin packages provide connectors to external technologies like brokers, discovery services, databases, serializers and so on. 
+
 
 ## Getting Help
 
