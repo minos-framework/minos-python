@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.requests.abc &mdash; Minos Microservice Network 0.3.2 documentation</title>
+  <title>minos.networks.requests.abc &mdash; Minos Microservice Network 0.4.0 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.3.2
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -91,10 +91,6 @@
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">UUID</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AvroDataEncoder</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">..exceptions</span> <span class="kn">import</span> <span class="p">(</span>
@@ -174,12 +170,15 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
+<span class="n">sentinel</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+
+
 <div class="viewcode-block" id="Response"><a class="viewcode-back" href="../../../../api/minos.networks.requests.abc.html#minos.networks.requests.abc.Response">[docs]</a><span class="k">class</span> <span class="nc">Response</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Response definition.&quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s2">&quot;_data&quot;</span>
 
-<div class="viewcode-block" id="Response.__init__"><a class="viewcode-back" href="../../../../api/minos.networks.requests.abc.html#minos.networks.requests.abc.Response.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+<div class="viewcode-block" id="Response.__init__"><a class="viewcode-back" href="../../../../api/minos.networks.requests.abc.html#minos.networks.requests.abc.Response.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">sentinel</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span></div>
 
     <span class="c1"># noinspection PyUnusedLocal</span>
@@ -191,14 +190,13 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span></div>
 
-    <span class="c1"># noinspection PyUnusedLocal</span>
-<div class="viewcode-block" id="Response.raw_content"><a class="viewcode-back" href="../../../../api/minos.networks.requests.abc.html#minos.networks.requests.abc.Response.raw_content">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">raw_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Raw response content.</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">has_content</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Check if the request has content.</span>
 
-<span class="sd">        :param kwargs: Additional named arguments.</span>
-<span class="sd">        :return: A list of raw items.</span>
+<span class="sd">        :return: ``True`` if it has content or ``False`` otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">AvroDataEncoder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">sentinel</span>
 
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_data</span>

@@ -1,0 +1,7 @@
+minos.networks.brokers.collections.queues.abc module
+====================================================
+
+.. automodule:: minos.networks.brokers.collections.queues.abc
+   :members:
+   :undoc-members:
+   :show-inheritance:

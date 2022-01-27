@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.rest.requests &mdash; Minos Microservice Network 0.3.2 documentation</title>
+  <title>minos.networks.rest.requests &mdash; Minos Microservice Network 0.4.0 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.3.2
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -90,11 +90,13 @@
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Awaitable</span><span class="p">,</span>
     <span class="n">Optional</span><span class="p">,</span>
     <span class="n">Union</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">parse_qsl</span><span class="p">,</span>
+    <span class="n">urlencode</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">UUID</span><span class="p">,</span>
@@ -104,11 +106,17 @@
 <span class="kn">from</span> <span class="nn">cached_property</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">cached_property</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">orjson</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">orjson</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AvroDataDecoder</span><span class="p">,</span>
+    <span class="n">AvroDataEncoder</span><span class="p">,</span>
     <span class="n">AvroSchemaDecoder</span><span class="p">,</span>
+    <span class="n">AvroSchemaEncoder</span><span class="p">,</span>
     <span class="n">MinosAvroProtocol</span><span class="p">,</span>
+    <span class="n">TypeHintBuilder</span><span class="p">,</span>
     <span class="n">import_module</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -154,9 +162,9 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the UUID of the user making the Request.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="s2">&quot;User&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;user&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="n">UUID</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;User&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">UUID</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">])</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">headers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
@@ -188,7 +196,7 @@
     <span class="k">def</span> <span class="nf">_content_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
         <span class="n">mapper</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;application/json&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_json</span><span class="p">,</span>
-            <span class="s2">&quot;application/x-www-form-encoded&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_form</span><span class="p">,</span>
+            <span class="s2">&quot;application/x-www-form-urlencoded&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_form</span><span class="p">,</span>
             <span class="s2">&quot;avro/binary&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_avro</span><span class="p">,</span>
             <span class="s2">&quot;text/plain&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_text</span><span class="p">,</span>
             <span class="s2">&quot;application/octet-stream&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_bytes</span><span class="p">,</span>
@@ -287,8 +295,8 @@
         <span class="c1"># noinspection GrazieInspection</span>
         <span class="sd">&quot;&quot;&quot;Check if the request has query params.</span>
 
-<span class="sd">                :return: ``True`` if it has query params or ``False`` otherwise.</span>
-<span class="sd">                &quot;&quot;&quot;</span>
+<span class="sd">        :return: ``True`` if it has query params or ``False`` otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sentinel</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
         <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw_query_params</span><span class="p">),</span> <span class="n">sentinel</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">sentinel</span>
 
@@ -315,7 +323,88 @@
 
 
 <div class="viewcode-block" id="RestResponse"><a class="viewcode-back" href="../../../../api/minos.networks.rest.requests.html#minos.networks.rest.requests.RestResponse">[docs]</a><span class="k">class</span> <span class="nc">RestResponse</span><span class="p">(</span><span class="n">Response</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Rest Response class.&quot;&quot;&quot;</span></div>
+    <span class="sd">&quot;&quot;&quot;Rest Response class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RestResponse.__init__"><a class="viewcode-back" href="../../../../api/minos.networks.rest.requests.html#minos.networks.rest.requests.RestResponse.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">content_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;application/json&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">content_type</span> <span class="o">=</span> <span class="n">content_type</span></div>
+
+<div class="viewcode-block" id="RestResponse.from_response"><a class="viewcode-back" href="../../../../api/minos.networks.rest.requests.html#minos.networks.rest.requests.RestResponse.from_response">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_response</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Response</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">RestResponse</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build a new ``RestRequest`` from another response.</span>
+
+<span class="sd">        :param response: The base response.</span>
+<span class="sd">        :return: A ``RestResponse`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">RestResponse</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">response</span>
+
+        <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">RestResponse</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">RestResponse</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span></div>
+
+    <span class="c1"># noinspection PyUnusedLocal</span>
+<div class="viewcode-block" id="RestResponse.content"><a class="viewcode-back" href="../../../../api/minos.networks.rest.requests.html#minos.networks.rest.requests.RestResponse.content">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Raw response content.</span>
+
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: The raw content as a ``bytes`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_content</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_content_parser</span><span class="p">()</span></div>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">_content_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]]:</span>
+        <span class="n">mapper</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;application/json&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_json</span><span class="p">,</span>
+            <span class="s2">&quot;application/x-www-form-urlencoded&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_form</span><span class="p">,</span>
+            <span class="s2">&quot;avro/binary&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_avro</span><span class="p">,</span>
+            <span class="s2">&quot;text/plain&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_text</span><span class="p">,</span>
+            <span class="s2">&quot;application/octet-stream&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_bytes</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mapper</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_bytes</span>
+
+        <span class="k">return</span> <span class="n">mapper</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">content_type</span><span class="p">]</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_raw_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">orjson</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw_data</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_raw_form</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">urlencode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw_data</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_raw_avro</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="n">type_</span> <span class="o">=</span> <span class="n">TypeHintBuilder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">AvroSchemaEncoder</span><span class="p">(</span><span class="n">type_</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">AvroDataEncoder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">MinosAvroProtocol</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_raw_text</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw_data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Given &#39;Content-Type&#39; (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">content_type</span><span class="si">!r}</span><span class="s2">) is not supported for the given data: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw_data</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_data</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_raw_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw_data</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Given &#39;Content-Type&#39; (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">content_type</span><span class="si">!r}</span><span class="s2">) is not supported for the given data: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw_data</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_data</span>
+
+    <span class="c1"># noinspection PyUnusedLocal</span>
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">_raw_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Raw response content.</span>
+
+<span class="sd">        :return: A list of raw items.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AvroDataEncoder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="RestResponseException"><a class="viewcode-back" href="../../../../api/minos.networks.rest.requests.html#minos.networks.rest.requests.RestResponseException">[docs]</a><span class="k">class</span> <span class="nc">RestResponseException</span><span class="p">(</span><span class="n">ResponseException</span><span class="p">):</span>

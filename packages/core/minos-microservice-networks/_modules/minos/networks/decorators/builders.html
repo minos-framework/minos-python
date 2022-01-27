@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.decorators.builders &mdash; Minos Microservice Network 0.3.2 documentation</title>
+  <title>minos.networks.decorators.builders &mdash; Minos Microservice Network 0.4.0 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.3.2
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -138,41 +138,41 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">middleware</span> <span class="o">=</span> <span class="n">middleware</span></div>
 
 <div class="viewcode-block" id="EnrouteBuilder.get_rest_command_query"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.builders.html#minos.networks.decorators.builders.EnrouteBuilder.get_rest_command_query">[docs]</a>    <span class="k">def</span> <span class="nf">get_rest_command_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">RestEnrouteDecorator</span><span class="p">,</span> <span class="n">Handler</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Get the rest handlers for commands and queries.</span>
+        <span class="sd">&quot;&quot;&quot;Get the rest actions for commands and queries.</span>
 
-<span class="sd">        :return: A dictionary with decorator classes as keys and callable handlers as values.</span>
+<span class="sd">        :return: A dictionary with decorator classes as keys and callable actions as values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># noinspection PyTypeChecker</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="s2">&quot;get_rest_command_query&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="EnrouteBuilder.get_broker_command_query_event"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.builders.html#minos.networks.decorators.builders.EnrouteBuilder.get_broker_command_query_event">[docs]</a>    <span class="k">def</span> <span class="nf">get_broker_command_query_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">BrokerEnrouteDecorator</span><span class="p">,</span> <span class="n">Handler</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Get the broker handlers for commands, queries and events.</span>
+        <span class="sd">&quot;&quot;&quot;Get the broker actions for commands, queries and events.</span>
 
-<span class="sd">        :return: A dictionary with decorator classes as keys and callable handlers as values.</span>
+<span class="sd">        :return: A dictionary with decorator classes as keys and callable actions as values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># noinspection PyTypeChecker</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="s2">&quot;get_broker_command_query_event&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="EnrouteBuilder.get_broker_command_query"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.builders.html#minos.networks.decorators.builders.EnrouteBuilder.get_broker_command_query">[docs]</a>    <span class="k">def</span> <span class="nf">get_broker_command_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">BrokerEnrouteDecorator</span><span class="p">,</span> <span class="n">Handler</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Get the broker handlers for commands and queries.</span>
+        <span class="sd">&quot;&quot;&quot;Get the broker actions for commands and queries.</span>
 
-<span class="sd">        :return: A dictionary with decorator classes as keys and callable handlers as values.</span>
+<span class="sd">        :return: A dictionary with decorator classes as keys and callable actions as values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># noinspection PyTypeChecker</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="s2">&quot;get_broker_command_query&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="EnrouteBuilder.get_broker_event"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.builders.html#minos.networks.decorators.builders.EnrouteBuilder.get_broker_event">[docs]</a>    <span class="k">def</span> <span class="nf">get_broker_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">BrokerEnrouteDecorator</span><span class="p">,</span> <span class="n">Handler</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Get the broker handlers for events.</span>
+        <span class="sd">&quot;&quot;&quot;Get the broker actions for events.</span>
 
-<span class="sd">        :return: A dictionary with decorator classes as keys and callable handlers as values.</span>
+<span class="sd">        :return: A dictionary with decorator classes as keys and callable actions as values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># noinspection PyTypeChecker</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="s2">&quot;get_broker_event&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="EnrouteBuilder.get_periodic_event"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.builders.html#minos.networks.decorators.builders.EnrouteBuilder.get_periodic_event">[docs]</a>    <span class="k">def</span> <span class="nf">get_periodic_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">PeriodicEnrouteDecorator</span><span class="p">,</span> <span class="n">Handler</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Get the periodic handlers for events.</span>
+        <span class="sd">&quot;&quot;&quot;Get the periodic actions for events.</span>
 
-<span class="sd">        :return: A dictionary with decorator classes as keys and callable handlers as values.</span>
+<span class="sd">        :return: A dictionary with decorator classes as keys and callable actions as values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># noinspection PyTypeChecker</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="s2">&quot;get_periodic_event&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>

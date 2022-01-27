@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.rest.handlers &mdash; Minos Microservice Network 0.3.2 documentation</title>
+  <title>minos.networks.rest.handlers &mdash; Minos Microservice Network 0.4.0 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.3.2
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -106,7 +106,6 @@
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">..requests</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">REQUEST_USER_CONTEXT_VAR</span><span class="p">,</span>
-    <span class="n">Response</span><span class="p">,</span>
     <span class="n">ResponseException</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.requests</span> <span class="kn">import</span> <span class="p">(</span>
@@ -211,11 +210,12 @@
                 <span class="n">response</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">isawaitable</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
                     <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">response</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">Response</span><span class="p">):</span>
-                    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">response</span><span class="o">.</span><span class="n">raw_content</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">web</span><span class="o">.</span><span class="n">json_response</span><span class="p">()</span>
-                <span class="k">return</span> <span class="n">web</span><span class="o">.</span><span class="n">json_response</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">RestResponse</span><span class="p">):</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="n">RestResponse</span><span class="o">.</span><span class="n">from_response</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">web</span><span class="o">.</span><span class="n">Response</span><span class="p">(</span><span class="n">body</span><span class="o">=</span><span class="k">await</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">(),</span> <span class="n">content_type</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">content_type</span><span class="p">)</span>
+
             <span class="k">except</span> <span class="n">ResponseException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Raised an application exception: </span><span class="si">{</span><span class="n">exc</span><span class="si">!s}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">raise</span> <span class="n">web</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">))</span>

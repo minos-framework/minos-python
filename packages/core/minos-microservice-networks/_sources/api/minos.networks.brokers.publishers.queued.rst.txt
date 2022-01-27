@@ -1,0 +1,23 @@
+minos.networks.brokers.publishers.queued package
+================================================
+
+.. automodule:: minos.networks.brokers.publishers.queued
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.brokers.publishers.queued.queues
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.brokers.publishers.queued.impl

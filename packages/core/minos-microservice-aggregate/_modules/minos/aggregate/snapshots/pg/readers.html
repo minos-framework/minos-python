@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.snapshots.pg.readers &mdash; Minos Microservice Aggregate 0.2.4 documentation</title>
+  <title>minos.aggregate.snapshots.pg.readers &mdash; Minos Microservice Aggregate 0.4.0 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.2.4
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -123,7 +123,7 @@
 <div class="viewcode-block" id="PostgreSqlSnapshotReader"><a class="viewcode-back" href="../../../../../api/minos.aggregate.snapshots.pg.readers.html#minos.aggregate.snapshots.pg.readers.PostgreSqlSnapshotReader">[docs]</a><span class="k">class</span> <span class="nc">PostgreSqlSnapshotReader</span><span class="p">(</span><span class="n">PostgreSqlSnapshotSetup</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;PostgreSQL Snapshot class.</span>
 
-<span class="sd">   The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.</span>
+<span class="sd">    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PostgreSqlSnapshotReader.get"><a class="viewcode-back" href="../../../../../api/minos.aggregate.snapshots.pg.readers.html#minos.aggregate.snapshots.pg.readers.PostgreSqlSnapshotReader.get">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aggregate_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Aggregate</span><span class="p">:</span>
@@ -150,7 +150,7 @@
 
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_entries</span><span class="p">(</span>
-                <span class="n">aggregate_name</span><span class="p">,</span> <span class="n">_EqualCondition</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="n">uuid</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span> <span class="o">|</span> <span class="p">{</span><span class="s2">&quot;exclude_deleted&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                <span class="n">aggregate_name</span><span class="p">,</span> <span class="n">_EqualCondition</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="n">uuid</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span> <span class="o">|</span> <span class="p">{</span><span class="s2">&quot;exclude_deleted&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
             <span class="p">)</span><span class="o">.</span><span class="fm">__anext__</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">StopAsyncIteration</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">AggregateNotFoundException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Some aggregates could not be found: </span><span class="si">{</span><span class="n">uuid</span><span class="si">!s}</span><span class="s2">&quot;</span><span class="p">)</span></div>
@@ -200,7 +200,7 @@
             <span class="n">transaction_uuids</span> <span class="o">=</span> <span class="k">await</span> <span class="n">transaction</span><span class="o">.</span><span class="n">uuids</span>
 
         <span class="n">qb</span> <span class="o">=</span> <span class="n">PostgreSqlSnapshotQueryBuilder</span><span class="p">(</span>
-            <span class="n">aggregate_name</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">ordering</span><span class="p">,</span> <span class="n">limit</span><span class="p">,</span> <span class="n">transaction_uuids</span><span class="p">,</span> <span class="n">exclude_deleted</span><span class="p">,</span>
+            <span class="n">aggregate_name</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">ordering</span><span class="p">,</span> <span class="n">limit</span><span class="p">,</span> <span class="n">transaction_uuids</span><span class="p">,</span> <span class="n">exclude_deleted</span>
         <span class="p">)</span>
         <span class="n">query</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">qb</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 

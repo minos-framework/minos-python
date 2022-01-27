@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>History &mdash; Minos Microservice Network 0.3.2 documentation</title>
+  <title>History &mdash; Minos Microservice Network 0.4.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <a href="index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.3.2
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -71,6 +71,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#id21">0.3.0 (2021-11-22)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id22">0.3.1 (2021-11-30)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id23">0.3.2 (2021-12-27)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id24">0.4.0 (2022-01-27)</a></li>
 </ul>
 </li>
 </ul>
@@ -292,6 +293,34 @@
 <li><p>Add <code class="docutils literal notranslate"><span class="pre">Request.params(...)</span></code> method allowing to access to the request’s params.</p></li>
 <li><p>Add <code class="docutils literal notranslate"><span class="pre">Request.has_content:</span> <span class="pre">bool</span></code> and <code class="docutils literal notranslate"><span class="pre">Request.has_params:</span> <span class="pre">bool</span></code> to check for the existence of <code class="docutils literal notranslate"><span class="pre">content</span></code> and <code class="docutils literal notranslate"><span class="pre">params</span></code> respectively.</p></li>
 <li><p>Add <code class="docutils literal notranslate"><span class="pre">InMemoryRequest</span></code> class that allows to create requests for testing or calling service handling functions directly.</p></li>
+</ul>
+</section>
+<section id="id24">
+<h2>0.4.0 (2022-01-27)<a class="headerlink" href="#id24" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">BrokerDispatcher</span></code> to break the direct relationship between <code class="docutils literal notranslate"><span class="pre">BrokerHandler</span></code> and <code class="docutils literal notranslate"><span class="pre">BrokerPublisher</span></code>.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">content_type</span></code> argument to <code class="docutils literal notranslate"><span class="pre">RestResponse</span></code>‘s constructor to be able to retrieve the result in a format other than <code class="docutils literal notranslate"><span class="pre">json</span></code>.</p></li>
+<li><p>Add versioning to <code class="docutils literal notranslate"><span class="pre">BrokerMessage</span></code> and implement the <code class="docutils literal notranslate"><span class="pre">BrokerMessageV1</span></code> and <code class="docutils literal notranslate"><span class="pre">BrokerMessageV1Payload</span></code> to be able to work with different microservice versions in the future.</p></li>
+<li><p>Refactor <code class="docutils literal notranslate"><span class="pre">BrokerPublisher.send</span></code> method to follow the <code class="docutils literal notranslate"><span class="pre">(message:</span> <span class="pre">BrokerMessage)</span> <span class="pre">-&gt;</span> <span class="pre">None</span></code> prototype instead of a big list of arguments referred to the messages attributes.</p></li>
+<li><p>Refactor <code class="docutils literal notranslate"><span class="pre">brokers.publishers</span></code> module.</p>
+<ul>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">BrokerPublisher</span></code> base class with a <code class="docutils literal notranslate"><span class="pre">send(message:</span> <span class="pre">BrokerMessage)</span> <span class="pre">-&gt;</span> <span class="pre">Awaitable[None]</span></code> method.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">BrokerPublisherQueue</span></code> base class with an <code class="docutils literal notranslate"><span class="pre">enqueue(message:</span> <span class="pre">BrokerMessage)</span> <span class="pre">-&gt;</span> <span class="pre">Awaitable[None]</span></code> and a <code class="docutils literal notranslate"><span class="pre">dequeue()</span> <span class="pre">-&gt;</span> <span class="pre">Awaitable[BrokerMessage]</span></code> methods.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">KafkaBrokerPublisher</span></code> as the <code class="docutils literal notranslate"><span class="pre">kafka</span></code>‘s implementation of the publisher.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">PostgreSqlBrokerPublisherQueue</span></code> as the <code class="docutils literal notranslate"><span class="pre">postgres</span></code> implementation of the publisher’s message queue.</p></li>
+</ul>
+</li>
+<li><p>Refactor <code class="docutils literal notranslate"><span class="pre">brokers.handlers</span></code>.</p>
+<ul>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">BrokerSubscriber</span></code> base class with a <code class="docutils literal notranslate"><span class="pre">receive()</span> <span class="pre">-&gt;</span> <span class="pre">Awaitable[BrokerMessage]</span></code> method.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">BrokerSubscriberQueue</span></code> base class with an <code class="docutils literal notranslate"><span class="pre">enqueue(message:</span> <span class="pre">BrokerMessage)</span> <span class="pre">-&gt;</span> <span class="pre">Awaitable[None]</span></code> and a <code class="docutils literal notranslate"><span class="pre">dequeue()</span> <span class="pre">-&gt;</span> <span class="pre">Awaitable[BrokerMessage]</span></code> methods.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">KafkaBrokerSubscriber</span></code> as the <code class="docutils literal notranslate"><span class="pre">kafka</span></code>‘s implementation of the subscriber.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">PostgreSqlBrokerSubscriberQueue</span></code> as the <code class="docutils literal notranslate"><span class="pre">postgres</span></code> implementation of the subscriber’s message queue.</p></li>
+</ul>
+</li>
+<li><p>Refactor <code class="docutils literal notranslate"><span class="pre">DynamicBroker</span></code> and <code class="docutils literal notranslate"><span class="pre">DynamicBrokerPool</span></code> as <code class="docutils literal notranslate"><span class="pre">BrokerClient</span></code> and <code class="docutils literal notranslate"><span class="pre">BrokerClientPool</span></code>. The new <code class="docutils literal notranslate"><span class="pre">BrokerClient</span></code> has a <code class="docutils literal notranslate"><span class="pre">send(message:</span> <span class="pre">BrokerMessage)</span> <span class="pre">-&gt;</span> <span class="pre">Awaitable[None]</span></code> method for sending messages and a <code class="docutils literal notranslate"><span class="pre">receive()</span> <span class="pre">-&gt;</span> <span class="pre">Awaitable[BrokerMessage]</span></code> to receive them.</p></li>
+<li><p>Implement a builder pattern on <code class="docutils literal notranslate"><span class="pre">BrokerPublisher</span></code></p></li>
+<li><p>Be compatible with <code class="docutils literal notranslate"><span class="pre">minos-microservice-common~=0.4.0</span></code>.</p></li>
 </ul>
 </section>
 </section>

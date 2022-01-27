@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.common.model.abc &mdash; Minos Microservice Common 0.3.4 documentation</title>
+  <title>minos.common.model.abc &mdash; Minos Microservice Common 0.4.0 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Common
           </a>
               <div class="version">
-                0.3.4
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -362,9 +362,9 @@
         <span class="c1"># noinspection PyTypeChecker</span>
         <span class="k">return</span> <span class="n">MinosAvroProtocol</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avro_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">avro_schema</span><span class="p">)</span>
 
-    <span class="c1"># noinspection PyMethodParameters,PyUnusedLocal</span>
-<div class="viewcode-block" id="Model.encode_schema"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.encode_schema">[docs]</a>    <span class="nd">@self_or_classmethod</span>
-    <span class="k">def</span> <span class="nf">encode_schema</span><span class="p">(</span><span class="n">self_or_cls</span><span class="p">,</span> <span class="n">encoder</span><span class="p">:</span> <span class="n">SchemaEncoder</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="c1"># noinspection PyUnusedLocal</span>
+<div class="viewcode-block" id="Model.encode_schema"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.encode_schema">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">encode_schema</span><span class="p">(</span><span class="n">encoder</span><span class="p">:</span> <span class="n">SchemaEncoder</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Encode schema with the given encoder.</span>
 
 <span class="sd">        :param encoder: The encoder instance.</span>
@@ -375,8 +375,8 @@
         <span class="k">return</span> <span class="n">MissingSentinel</span></div>
 
     <span class="c1"># noinspection PyUnusedLocal</span>
-<div class="viewcode-block" id="Model.decode_schema"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.decode_schema">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">decode_schema</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">decoder</span><span class="p">:</span> <span class="n">SchemaDecoder</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<div class="viewcode-block" id="Model.decode_schema"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.decode_schema">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">decode_schema</span><span class="p">(</span><span class="n">decoder</span><span class="p">:</span> <span class="n">SchemaDecoder</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Decode schema with the given encoder.</span>
 
 <span class="sd">        :param decoder: The decoder instance.</span>
@@ -386,8 +386,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">MissingSentinel</span></div>
 
-    <span class="c1"># noinspection PyMethodMayBeStatic,PyUnusedLocal</span>
-<div class="viewcode-block" id="Model.encode_data"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.encode_data">[docs]</a>    <span class="k">def</span> <span class="nf">encode_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoder</span><span class="p">:</span> <span class="n">DataEncoder</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="c1"># noinspection PyUnusedLocal</span>
+<div class="viewcode-block" id="Model.encode_data"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.encode_data">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">encode_data</span><span class="p">(</span><span class="n">encoder</span><span class="p">:</span> <span class="n">DataEncoder</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Encode data with the given encoder.</span>
 
 <span class="sd">        :param encoder: The encoder instance.</span>
@@ -398,8 +399,8 @@
         <span class="k">return</span> <span class="n">MissingSentinel</span></div>
 
     <span class="c1"># noinspection PyUnusedLocal</span>
-<div class="viewcode-block" id="Model.decode_data"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.decode_data">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">decode_data</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="n">decoder</span><span class="p">:</span> <span class="n">DataDecoder</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">type_</span><span class="p">:</span> <span class="n">ModelType</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<div class="viewcode-block" id="Model.decode_data"><a class="viewcode-back" href="../../../../api/minos.common.model.abc.html#minos.common.model.abc.Model.decode_data">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">decode_data</span><span class="p">(</span><span class="n">decoder</span><span class="p">:</span> <span class="n">DataDecoder</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">type_</span><span class="p">:</span> <span class="n">ModelType</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Decode data with the given decoder.</span>
 
 <span class="sd">        :param decoder: The decoder instance.</span>

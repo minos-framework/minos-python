@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.common.model.dynamic.abc module &mdash; Minos Microservice Common 0.3.4 documentation</title>
+  <title>minos.common.model.dynamic.abc module &mdash; Minos Microservice Common 0.4.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Common
           </a>
               <div class="version">
-                0.3.4
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -88,7 +89,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="module-minos.common.model.dynamic.abc">
+  <section id="module-minos.common.model.dynamic.abc">
 <span id="minos-common-model-dynamic-abc-module"></span><h1>minos.common.model.dynamic.abc module<a class="headerlink" href="#module-minos.common.model.dynamic.abc" title="Permalink to this headline"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="minos.common.model.dynamic.abc.DynamicModel">
@@ -136,7 +137,7 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="minos.common.model.dynamic.abc.DynamicModel.avro_schema">
-<span class="sig-name descname"><span class="pre">avro_schema</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[{'name':</span> <span class="pre">'DynamicModel',</span> <span class="pre">'namespace':</span> <span class="pre">'minos.common.model.dynamic.abc.d24b92f8-bb71-4223-b6b6-00376bd379ad',</span> <span class="pre">'type':</span> <span class="pre">'record',</span> <span class="pre">'fields':</span> <span class="pre">[]}]</span></em><a class="headerlink" href="#minos.common.model.dynamic.abc.DynamicModel.avro_schema" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">avro_schema</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[{'name':</span> <span class="pre">'DynamicModel',</span> <span class="pre">'namespace':</span> <span class="pre">'minos.common.model.dynamic.abc.77ed6c68-464b-4eef-af10-cf5a184f8f54',</span> <span class="pre">'type':</span> <span class="pre">'record',</span> <span class="pre">'fields':</span> <span class="pre">[]}]</span></em><a class="headerlink" href="#minos.common.model.dynamic.abc.DynamicModel.avro_schema" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -160,7 +161,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.common.model.dynamic.abc.DynamicModel.decode_data">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.abc.DynamicModel.decode_data" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.abc.DynamicModel.decode_data" title="Permalink to this definition"></a></dt>
 <dd><p>Decode data with the given decoder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -182,7 +183,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.common.model.dynamic.abc.DynamicModel.decode_schema">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.abc.DynamicModel.decode_schema" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.abc.DynamicModel.decode_schema" title="Permalink to this definition"></a></dt>
 <dd><p>Decode schema with the given encoder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -203,7 +204,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.common.model.dynamic.abc.DynamicModel.encode_data">
-<span class="sig-name descname"><span class="pre">encode_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.abc.DynamicModel.encode_data" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">encode_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.abc.DynamicModel.encode_data" title="Permalink to this definition"></a></dt>
 <dd><p>Encode data with the given encoder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -224,7 +225,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.common.model.dynamic.abc.DynamicModel.encode_schema">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">encode_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.abc.DynamicModel.encode_schema" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">encode_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.abc.DynamicModel.encode_schema" title="Permalink to this definition"></a></dt>
 <dd><p>Encode schema with the given encoder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -423,7 +424,7 @@
 
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>

@@ -1,7 +1,23 @@
-minos.networks.brokers.messages module
-======================================
+minos.networks.brokers.messages package
+=======================================
 
 .. automodule:: minos.networks.brokers.messages
    :members:
    :undoc-members:
    :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.brokers.messages.models
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.brokers.messages.contextvars

@@ -12,9 +12,5 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   minos.networks.brokers.handlers.abc
-   minos.networks.brokers.handlers.consumers
-   minos.networks.brokers.handlers.entries
-   minos.networks.brokers.handlers.handlers
-   minos.networks.brokers.handlers.requests
+   minos.networks.brokers.handlers.impl
    minos.networks.brokers.handlers.services

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.discovery.clients.abc &mdash; Minos Microservice Network 0.3.2 documentation</title>
+  <title>minos.networks.discovery.clients.abc &mdash; Minos Microservice Network 0.4.0 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.3.2
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -100,7 +100,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">route</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Get the full http route to the repository.</span>
+        <span class="sd">&quot;&quot;&quot;Get the full http route to the discovery.</span>
 
 <span class="sd">        :return: An ``str`` value.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -117,7 +117,7 @@
         <span class="n">retry_tries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
         <span class="n">retry_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot; Perform a subscription query.</span>
+        <span class="sd">&quot;&quot;&quot;Perform a subscription query.</span>
 
 <span class="sd">        :param host: The ip of the microservice to be subscribed.</span>
 <span class="sd">        :param port: The port of the microservice to be subscribed.</span>
@@ -157,7 +157,7 @@
 
 <div class="viewcode-block" id="DiscoveryClient.unsubscribe"><a class="viewcode-back" href="../../../../../api/minos.networks.discovery.clients.abc.html#minos.networks.discovery.clients.abc.DiscoveryClient.unsubscribe">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">unsubscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">retry_tries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">retry_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot; Perform an unsubscribe query.</span>
+        <span class="sd">&quot;&quot;&quot;Perform an unsubscribe query.</span>
 
 <span class="sd">        :param name: The name of the microservice to be unsubscribed.</span>
 <span class="sd">        :param retry_tries: Number of attempts before raising a failure exception.</span>

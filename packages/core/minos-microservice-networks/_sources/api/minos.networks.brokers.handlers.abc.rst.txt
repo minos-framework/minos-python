@@ -1,7 +1,0 @@
-minos.networks.brokers.handlers.abc module
-==========================================
-
-.. automodule:: minos.networks.brokers.handlers.abc
-   :members:
-   :undoc-members:
-   :show-inheritance:

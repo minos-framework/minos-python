@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.decorators.builders module &mdash; Minos Microservice Network 0.3.2 documentation</title>
+  <title>minos.networks.decorators.builders module &mdash; Minos Microservice Network 0.4.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.3.2
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -103,13 +103,13 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.networks.decorators.builders.EnrouteBuilder.get_broker_command_query">
 <span class="sig-name descname"><span class="pre">get_broker_command_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/decorators/builders.html#EnrouteBuilder.get_broker_command_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.decorators.builders.EnrouteBuilder.get_broker_command_query" title="Permalink to this definition"></a></dt>
-<dd><p>Get the broker handlers for commands and queries.</p>
+<dd><p>Get the broker actions for commands and queries.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<a class="reference internal" href="minos.networks.decorators.definitions.broker.html#minos.networks.decorators.definitions.broker.BrokerEnrouteDecorator" title="minos.networks.decorators.definitions.broker.BrokerEnrouteDecorator"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.decorators.definitions.broker.BrokerEnrouteDecorator</span></code></a>, <code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Callable</span></code>[[<a class="reference internal" href="minos.networks.requests.abc.html#minos.networks.requests.abc.Request" title="minos.networks.requests.abc.Request"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.requests.abc.Request</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Awaitable</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<a class="reference internal" href="minos.networks.requests.abc.html#minos.networks.requests.abc.Response" title="minos.networks.requests.abc.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.requests.abc.Response</span></code></a>]]]]</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A dictionary with decorator classes as keys and callable handlers as values.</p>
+<dd class="field-even"><p>A dictionary with decorator classes as keys and callable actions as values.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -117,13 +117,13 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.networks.decorators.builders.EnrouteBuilder.get_broker_command_query_event">
 <span class="sig-name descname"><span class="pre">get_broker_command_query_event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/decorators/builders.html#EnrouteBuilder.get_broker_command_query_event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.decorators.builders.EnrouteBuilder.get_broker_command_query_event" title="Permalink to this definition"></a></dt>
-<dd><p>Get the broker handlers for commands, queries and events.</p>
+<dd><p>Get the broker actions for commands, queries and events.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<a class="reference internal" href="minos.networks.decorators.definitions.broker.html#minos.networks.decorators.definitions.broker.BrokerEnrouteDecorator" title="minos.networks.decorators.definitions.broker.BrokerEnrouteDecorator"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.decorators.definitions.broker.BrokerEnrouteDecorator</span></code></a>, <code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Callable</span></code>[[<a class="reference internal" href="minos.networks.requests.abc.html#minos.networks.requests.abc.Request" title="minos.networks.requests.abc.Request"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.requests.abc.Request</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Awaitable</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<a class="reference internal" href="minos.networks.requests.abc.html#minos.networks.requests.abc.Response" title="minos.networks.requests.abc.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.requests.abc.Response</span></code></a>]]]]</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A dictionary with decorator classes as keys and callable handlers as values.</p>
+<dd class="field-even"><p>A dictionary with decorator classes as keys and callable actions as values.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -131,13 +131,13 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.networks.decorators.builders.EnrouteBuilder.get_broker_event">
 <span class="sig-name descname"><span class="pre">get_broker_event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/decorators/builders.html#EnrouteBuilder.get_broker_event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.decorators.builders.EnrouteBuilder.get_broker_event" title="Permalink to this definition"></a></dt>
-<dd><p>Get the broker handlers for events.</p>
+<dd><p>Get the broker actions for events.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<a class="reference internal" href="minos.networks.decorators.definitions.broker.html#minos.networks.decorators.definitions.broker.BrokerEnrouteDecorator" title="minos.networks.decorators.definitions.broker.BrokerEnrouteDecorator"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.decorators.definitions.broker.BrokerEnrouteDecorator</span></code></a>, <code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Callable</span></code>[[<a class="reference internal" href="minos.networks.requests.abc.html#minos.networks.requests.abc.Request" title="minos.networks.requests.abc.Request"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.requests.abc.Request</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Awaitable</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<a class="reference internal" href="minos.networks.requests.abc.html#minos.networks.requests.abc.Response" title="minos.networks.requests.abc.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.requests.abc.Response</span></code></a>]]]]</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A dictionary with decorator classes as keys and callable handlers as values.</p>
+<dd class="field-even"><p>A dictionary with decorator classes as keys and callable actions as values.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -145,13 +145,13 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.networks.decorators.builders.EnrouteBuilder.get_periodic_event">
 <span class="sig-name descname"><span class="pre">get_periodic_event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/decorators/builders.html#EnrouteBuilder.get_periodic_event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.decorators.builders.EnrouteBuilder.get_periodic_event" title="Permalink to this definition"></a></dt>
-<dd><p>Get the periodic handlers for events.</p>
+<dd><p>Get the periodic actions for events.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<a class="reference internal" href="minos.networks.decorators.definitions.periodic.html#minos.networks.decorators.definitions.periodic.PeriodicEnrouteDecorator" title="minos.networks.decorators.definitions.periodic.PeriodicEnrouteDecorator"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.decorators.definitions.periodic.PeriodicEnrouteDecorator</span></code></a>, <code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Callable</span></code>[[<a class="reference internal" href="minos.networks.requests.abc.html#minos.networks.requests.abc.Request" title="minos.networks.requests.abc.Request"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.requests.abc.Request</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Awaitable</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<a class="reference internal" href="minos.networks.requests.abc.html#minos.networks.requests.abc.Response" title="minos.networks.requests.abc.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.requests.abc.Response</span></code></a>]]]]</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A dictionary with decorator classes as keys and callable handlers as values.</p>
+<dd class="field-even"><p>A dictionary with decorator classes as keys and callable actions as values.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -159,13 +159,13 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.networks.decorators.builders.EnrouteBuilder.get_rest_command_query">
 <span class="sig-name descname"><span class="pre">get_rest_command_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/decorators/builders.html#EnrouteBuilder.get_rest_command_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.decorators.builders.EnrouteBuilder.get_rest_command_query" title="Permalink to this definition"></a></dt>
-<dd><p>Get the rest handlers for commands and queries.</p>
+<dd><p>Get the rest actions for commands and queries.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<a class="reference internal" href="minos.networks.decorators.definitions.rest.html#minos.networks.decorators.definitions.rest.RestEnrouteDecorator" title="minos.networks.decorators.definitions.rest.RestEnrouteDecorator"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.decorators.definitions.rest.RestEnrouteDecorator</span></code></a>, <code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Callable</span></code>[[<a class="reference internal" href="minos.networks.requests.abc.html#minos.networks.requests.abc.Request" title="minos.networks.requests.abc.Request"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.requests.abc.Request</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Awaitable</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<a class="reference internal" href="minos.networks.requests.abc.html#minos.networks.requests.abc.Response" title="minos.networks.requests.abc.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.requests.abc.Response</span></code></a>]]]]</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A dictionary with decorator classes as keys and callable handlers as values.</p>
+<dd class="field-even"><p>A dictionary with decorator classes as keys and callable actions as values.</p>
 </dd>
 </dl>
 </dd></dl>

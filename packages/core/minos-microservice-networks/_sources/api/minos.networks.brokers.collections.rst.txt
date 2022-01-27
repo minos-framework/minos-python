@@ -1,0 +1,15 @@
+minos.networks.brokers.collections package
+==========================================
+
+.. automodule:: minos.networks.brokers.collections
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.brokers.collections.queues

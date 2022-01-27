@@ -1,0 +1,7 @@
+minos.networks.brokers.pools module
+===================================
+
+.. automodule:: minos.networks.brokers.pools
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+minos.networks.brokers.publishers.kafka module
+==============================================
+
+.. automodule:: minos.networks.brokers.publishers.kafka
+   :members:
+   :undoc-members:
+   :show-inheritance:

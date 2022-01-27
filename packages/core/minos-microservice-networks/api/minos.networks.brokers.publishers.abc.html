@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.brokers.publishers.abc module &mdash; Minos Microservice Network 0.3.2 documentation</title>
+  <title>minos.networks.brokers.publishers.abc module &mdash; Minos Microservice Network 0.4.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -18,8 +18,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="minos.networks.brokers.publishers.producers module" href="minos.networks.brokers.publishers.producers.html" />
-    <link rel="prev" title="minos.networks.brokers.publishers package" href="minos.networks.brokers.publishers.html" />
+    <link rel="next" title="minos.networks.brokers.publishers.compositions module" href="minos.networks.brokers.publishers.compositions.html" />
+    <link rel="prev" title="minos.networks.brokers.publishers.queued.impl module" href="minos.networks.brokers.publishers.queued.impl.html" />
     <link href="../_static/style.css" rel="stylesheet" type="text/css">
 
 </head>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.3.2
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -92,18 +92,18 @@
   <section id="module-minos.networks.brokers.publishers.abc">
 <span id="minos-networks-brokers-publishers-abc-module"></span><h1>minos.networks.brokers.publishers.abc module<a class="headerlink" href="#module-minos.networks.brokers.publishers.abc" title="Permalink to this headline"></a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisherSetup">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.networks.brokers.publishers.abc.</span></span><span class="sig-name descname"><span class="pre">BrokerPublisherSetup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/brokers/publishers/abc.html#BrokerPublisherSetup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisherSetup" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.database.abc.PostgreSqlMinosDatabase</span></code></p>
-<p>Broker Publisher Setup class.</p>
+<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisher">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.networks.brokers.publishers.abc.</span></span><span class="sig-name descname"><span class="pre">BrokerPublisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">already_setup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/brokers/publishers/abc.html#BrokerPublisher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisher" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.MinosSetup</span></code></p>
+<p>Broker Publisher class.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisherSetup.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisherSetup.__init__" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisher.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">already_setup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisher.__init__" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisherSetup.already_destroyed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_destroyed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisherSetup.already_destroyed" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisher.already_destroyed">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_destroyed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisher.already_destroyed" title="Permalink to this definition"></a></dt>
 <dd><p>Already Destroy getter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -116,8 +116,8 @@
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisherSetup.already_setup">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_setup</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisherSetup.already_setup" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisher.already_setup">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_setup</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisher.already_setup" title="Permalink to this definition"></a></dt>
 <dd><p>Already Setup getter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -130,28 +130,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisherSetup.cursor">
-<span class="sig-name descname"><span class="pre">cursor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisherSetup.cursor" title="Permalink to this definition"></a></dt>
-<dd><p>Get a new cursor.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>args</strong> – Additional positional arguments.</p></li>
-<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.AsyncContextManager</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">aiopg.connection.Cursor</span></code>]</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A Cursor wrapped into an asynchronous context manager.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisherSetup.destroy">
-<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisherSetup.destroy" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisher.destroy">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisher.destroy" title="Permalink to this definition"></a></dt>
 <dd><p>Destroy miscellaneous repository things.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -164,8 +144,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisherSetup.from_config">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisherSetup.from_config" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisher.from_config">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisher.from_config" title="Permalink to this definition"></a></dt>
 <dd><p>Build a new instance from config.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -184,68 +164,12 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisherSetup.locked_cursor">
-<span class="sig-name descname"><span class="pre">locked_cursor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisherSetup.locked_cursor" title="Permalink to this definition"></a></dt>
-<dd><p>Get a new locked cursor.</p>
+<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisher.send">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/brokers/publishers/abc.html#BrokerPublisher.send"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisher.send" title="Permalink to this definition"></a></dt>
+<dd><p>Send a message.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>key</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.Hashable</span></code>) – The key to be used for locking.</p></li>
-<li><p><strong>args</strong> – Additional positional arguments.</p></li>
-<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.AsyncContextManager</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">aiopg.connection.Cursor</span></code>]</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A Cursor wrapped into an asynchronous context manager.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisherSetup.pool">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pool</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">minos.common.database.pools.PostgreSqlPool</span></em><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisherSetup.pool" title="Permalink to this definition"></a></dt>
-<dd><p>Get the connections pool.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.database.pools.PostgreSqlPool</span></code></p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">Pool</span></code> object.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisherSetup.setup">
-<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisherSetup.setup" title="Permalink to this definition"></a></dt>
-<dd><p>Setup miscellaneous repository things.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>This method does not return anything.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisherSetup.submit_query">
-<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">submit_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisherSetup.submit_query" title="Permalink to this definition"></a></dt>
-<dd><p>Submit a SQL query.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>operation</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>) – Query to be executed.</p></li>
-<li><p><strong>parameters</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>]) – Parameters to be projected into the query.</p></li>
-<li><p><strong>timeout</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – An optional timeout.</p></li>
-<li><p><strong>lock</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>]) – Optional key to perform the query with locking. If not set, the query is performed without any
-lock.</p></li>
-<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>message</strong> (<a class="reference internal" href="minos.networks.brokers.messages.models.abc.html#minos.networks.brokers.messages.models.abc.BrokerMessage" title="minos.networks.brokers.messages.models.abc.BrokerMessage"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.brokers.messages.models.abc.BrokerMessage</span></code></a>) – The message to be sent.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
@@ -257,48 +181,15 @@ lock.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisherSetup.submit_query_and_fetchone">
-<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">submit_query_and_fetchone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisherSetup.submit_query_and_fetchone" title="Permalink to this definition"></a></dt>
-<dd><p>Submit a SQL query and gets the first response.</p>
+<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisher.setup">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisher.setup" title="Permalink to this definition"></a></dt>
+<dd><p>Setup miscellaneous repository things.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>args</strong> – Additional positional arguments.</p></li>
-<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
-</ul>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>This method does not return anything.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="minos.networks.brokers.publishers.abc.BrokerPublisherSetup.submit_query_and_iter">
-<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">submit_query_and_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">streaming_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.publishers.abc.BrokerPublisherSetup.submit_query_and_iter" title="Permalink to this definition"></a></dt>
-<dd><p>Submit a SQL query and return an asynchronous iterator.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>operation</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>) – Query to be executed.</p></li>
-<li><p><strong>parameters</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>]) – Parameters to be projected into the query.</p></li>
-<li><p><strong>timeout</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – An optional timeout.</p></li>
-<li><p><strong>lock</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – Optional key to perform the query with locking. If not set, the query is performed without any
-lock.</p></li>
-<li><p><strong>streaming_mode</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the data fetching is performed in streaming mode, that is iterating over the
-cursor and yielding once a time (requires an opening connection to do that). Otherwise, all the data is
-fetched and keep in memory before yielding it.</p></li>
-<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.AsyncIterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>]</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>This method does not return anything.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method does not return anything.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -311,8 +202,8 @@ fetched and keep in memory before yielding it.</p></li>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="minos.networks.brokers.publishers.html" class="btn btn-neutral float-left" title="minos.networks.brokers.publishers package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="minos.networks.brokers.publishers.producers.html" class="btn btn-neutral float-right" title="minos.networks.brokers.publishers.producers module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="minos.networks.brokers.publishers.queued.impl.html" class="btn btn-neutral float-left" title="minos.networks.brokers.publishers.queued.impl module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.networks.brokers.publishers.compositions.html" class="btn btn-neutral float-right" title="minos.networks.brokers.publishers.compositions module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

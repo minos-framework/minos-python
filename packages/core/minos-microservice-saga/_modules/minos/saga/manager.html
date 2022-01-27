@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.saga.manager &mdash; Minos Microservice Saga 0.3.5 documentation</title>
+  <title>minos.saga.manager &mdash; Minos Microservice Saga 0.4.0 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../index.html" class="icon icon-home"> Minos Microservice Saga
           </a>
               <div class="version">
-                0.3.5
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -44,7 +44,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../runthetests.html">Run the tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/minos.html">minos namespace</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../history.html">History</a></li>
 </ul>
 
@@ -106,9 +105,9 @@
 <span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">REQUEST_HEADERS_CONTEXT_VAR</span><span class="p">,</span>
     <span class="n">REQUEST_USER_CONTEXT_VAR</span><span class="p">,</span>
+    <span class="n">BrokerClient</span><span class="p">,</span>
+    <span class="n">BrokerClientPool</span><span class="p">,</span>
     <span class="n">BrokerMessage</span><span class="p">,</span>
-    <span class="n">DynamicBroker</span><span class="p">,</span>
-    <span class="n">DynamicBrokerPool</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">.context</span> <span class="kn">import</span> <span class="p">(</span>
@@ -141,7 +140,7 @@
 
 <div class="viewcode-block" id="SagaManager.__init__"><a class="viewcode-back" href="../../../api/minos.saga.manager.html#minos.saga.manager.SagaManager.__init__">[docs]</a>    <span class="nd">@inject</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">:</span> <span class="n">SagaExecutionStorage</span><span class="p">,</span> <span class="n">broker_pool</span><span class="p">:</span> <span class="n">DynamicBrokerPool</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;broker_pool&quot;</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">:</span> <span class="n">SagaExecutionStorage</span><span class="p">,</span> <span class="n">broker_pool</span><span class="p">:</span> <span class="n">BrokerClientPool</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;broker_pool&quot;</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">storage</span>
@@ -218,7 +217,7 @@
         <span class="p">)</span></div>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_run_new</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">definition</span><span class="p">:</span> <span class="n">Saga</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SagaContext</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">definition</span><span class="p">:</span> <span class="n">Saga</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SagaContext</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">UUID</span><span class="p">,</span> <span class="n">SagaExecution</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">REQUEST_USER_CONTEXT_VAR</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -302,15 +301,14 @@
             <span class="k">raise</span> <span class="n">exc</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_get_response</span><span class="p">(</span><span class="n">handler</span><span class="p">:</span> <span class="n">DynamicBroker</span><span class="p">,</span> <span class="n">execution</span><span class="p">:</span> <span class="n">SagaExecution</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SagaResponse</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_get_response</span><span class="p">(</span><span class="n">broker</span><span class="p">:</span> <span class="n">BrokerClient</span><span class="p">,</span> <span class="n">execution</span><span class="p">:</span> <span class="n">SagaExecution</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SagaResponse</span><span class="p">:</span>
         <span class="n">message</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BrokerMessage</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">while</span> <span class="n">message</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">UUID</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;saga&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="n">execution</span><span class="o">.</span><span class="n">uuid</span><span class="p">:</span>
+        <span class="k">while</span> <span class="n">message</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s2">&quot;saga&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">headers</span> <span class="ow">or</span> <span class="n">UUID</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;saga&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="n">execution</span><span class="o">.</span><span class="n">uuid</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">entry</span> <span class="o">=</span> <span class="k">await</span> <span class="n">handler</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">receive</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="n">execution</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">SagaStatus</span><span class="o">.</span><span class="n">Errored</span>
                 <span class="k">raise</span> <span class="n">SagaFailedExecutionException</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">data</span>
         <span class="k">return</span> <span class="n">SagaResponse</span><span class="o">.</span><span class="n">from_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 </pre></div>
 

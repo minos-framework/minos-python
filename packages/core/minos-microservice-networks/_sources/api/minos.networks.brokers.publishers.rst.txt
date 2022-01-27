@@ -6,6 +6,14 @@ minos.networks.brokers.publishers package
    :undoc-members:
    :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.brokers.publishers.queued
+
 Submodules
 ----------
 
@@ -13,6 +21,6 @@ Submodules
    :maxdepth: 4
 
    minos.networks.brokers.publishers.abc
-   minos.networks.brokers.publishers.producers
-   minos.networks.brokers.publishers.publishers
-   minos.networks.brokers.publishers.services
+   minos.networks.brokers.publishers.compositions
+   minos.networks.brokers.publishers.kafka
+   minos.networks.brokers.publishers.memory

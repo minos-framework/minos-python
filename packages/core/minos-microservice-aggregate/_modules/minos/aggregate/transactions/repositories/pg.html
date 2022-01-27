@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.transactions.repositories.pg &mdash; Minos Microservice Aggregate 0.2.4 documentation</title>
+  <title>minos.aggregate.transactions.repositories.pg &mdash; Minos Microservice Aggregate 0.4.0 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.2.4
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -126,7 +126,7 @@
         <span class="p">}</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">updated_at</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">submit_query_and_fetchone</span><span class="p">(</span>
-                <span class="n">_INSERT_TRANSACTIONS_VALUES_QUERY</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="n">transaction</span><span class="o">.</span><span class="n">uuid</span><span class="o">.</span><span class="n">int</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">32</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">_INSERT_TRANSACTIONS_VALUES_QUERY</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="n">transaction</span><span class="o">.</span><span class="n">uuid</span><span class="o">.</span><span class="n">int</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">32</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">StopAsyncIteration</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">TransactionRepositoryConflictException</span><span class="p">(</span>

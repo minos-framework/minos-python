@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.decorators.definitions.checkers &mdash; Minos Microservice Network 0.3.2 documentation</title>
+  <title>minos.networks.decorators.definitions.checkers &mdash; Minos Microservice Network 0.4.0 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.3.2
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -102,9 +102,7 @@
 <div class="viewcode-block" id="CheckDecorator"><a class="viewcode-back" href="../../../../../api/minos.networks.decorators.definitions.checkers.html#minos.networks.decorators.definitions.checkers.CheckDecorator">[docs]</a><span class="k">class</span> <span class="nc">CheckDecorator</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Enroute Check Decorator class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="CheckDecorator.__init__"><a class="viewcode-back" href="../../../../../api/minos.networks.decorators.definitions.checkers.html#minos.networks.decorators.definitions.checkers.CheckDecorator.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">handler_meta</span><span class="p">:</span> <span class="n">HandlerMeta</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">delay</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
-    <span class="p">):</span>
+<div class="viewcode-block" id="CheckDecorator.__init__"><a class="viewcode-back" href="../../../../../api/minos.networks.decorators.definitions.checkers.html#minos.networks.decorators.definitions.checkers.CheckDecorator.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handler_meta</span><span class="p">:</span> <span class="n">HandlerMeta</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">delay</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">delay</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">):</span>
             <span class="n">delay</span> <span class="o">=</span> <span class="n">delay</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
 
