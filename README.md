@@ -4,7 +4,6 @@
 </div>
 
 # minos-python: The framework which helps you create reactive microservices in Python
-dfasfdasfds
 -----------------
 
 ## Summary
