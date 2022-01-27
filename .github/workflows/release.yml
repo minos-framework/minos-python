@@ -1,8 +1,9 @@
 name: "Release"
 
 on:
-  release:
-    types: [ created ]
+  push:
+    branches:
+      - '*.*.x'
 
 jobs:
   deploy:
@@ -13,9 +14,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
 
-      - name: Merge staging -> releases
-        uses: devmasx/merge-branch@master
+      - name: Release Templates
+        uses: softprops/action-gh-release@v1
         with:
-          type: now
-          target_branch: releases
-          github_token: ${{ github.token }}
+          draft: true
