@@ -1,22 +1,21 @@
-name: "Publish Documentation: minos-microservice-aggregate"
+name: "Publish: Documentation"
 
 on:
-  release:
-    types: [ created ]
+  push:
+    branches:
+      - releases
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     container: python:3.9-buster
-    defaults:
-      run:
-        working-directory: packages/minos-microservice-aggregate
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
 
       - name: Install Poetry
-        uses: snok/install-poetry@v1
+        uses: snok/install-poetry@v1.1.4
 
       - name: Install dependencies
         run: make install

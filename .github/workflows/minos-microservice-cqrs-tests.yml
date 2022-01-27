@@ -1,4 +1,4 @@
-name: "Test Package: minos-microservice-cqrs"
+name: "Test: minos-microservice-cqrs"
 
 on:
   push:

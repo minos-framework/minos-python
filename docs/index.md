@@ -1,7 +1,7 @@
 
-<div align="center">
+<p align="center">
   <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/minos-python/main/logo.png" alt="Minos logo"></a>
-</div>
+</p>
 
 # minos-python: The framework which helps you create reactive microservices in Python
 
@@ -9,21 +9,15 @@
 
 ## Summary
 
-Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python.
-Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
-asynchronous environment.
-
-## Documentation
-
-The official API Reference is publicly available at: [minos-framework.github.io/minos-python](https://minos-framework.github.io/minos-python)
+Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python. Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an asynchronous environment.
 
 ## Packages
 
-* [`minos-microservice-aggregate`](packages/minos-microservice-aggregate)
-* [`minos-microservice-common`](packages/minos-microservice-common)
-* [`minos-microservice-cqrs`](packages/minos-microservice-cqrs)
-* [`minos-microservice-networks`](packages/minos-microservice-networks)
-* [`minos-microservice-saga`](packages/minos-microservice-saga)
+* [minos-microservice-aggregate](packages/minos-microservice-aggregate)
+* [minos-microservice-common](packages/minos-microservice-common)
+* [minos-microservice-cqrs](packages/minos-microservice-cqrs)
+* [minos-microservice-networks](packages/minos-microservice-networks)
+* [minos-microservice-saga](packages/minos-microservice-saga)
 
 ## Plugins
 

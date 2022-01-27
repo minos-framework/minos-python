@@ -1,8 +1,11 @@
-name: "Upload Package: minos-microservice-cqrs"
+name: "Publish: minos-microservice-cqrs"
 
 on:
-  release:
-    types: [ created ]
+  push:
+    branches:
+      - releases
+    paths:
+      - 'packages/minos-microservice-cqrs/**'
 
 jobs:
   deploy:

@@ -1,3 +1,0 @@
-# minos-python - docs
-
-[TODO]

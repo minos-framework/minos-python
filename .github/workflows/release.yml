@@ -1,0 +1,21 @@
+name: "Release"
+
+on:
+  release:
+    types: [ created ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container: python:3.9-buster
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Merge staging -> releases
+        uses: devmasx/merge-branch@master
+        with:
+          type: now
+          target_branch: releases
+          github_token: ${{ github.token }}
