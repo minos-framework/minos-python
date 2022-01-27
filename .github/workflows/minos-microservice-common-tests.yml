@@ -6,7 +6,7 @@ on:
       - main
   pull_request:
     paths:
-      - 'packages/minos-microservice-common/**'
+      - 'packages/core/minos-microservice-common/**'
 
 jobs:
   build:
@@ -14,7 +14,7 @@ jobs:
     container: python:3.9-buster
     defaults:
       run:
-        working-directory: packages/minos-microservice-common
+        working-directory: packages/core/minos-microservice-common
 
     services:
       postgres:
@@ -52,7 +52,7 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./packages/minos-microservice-common/coverage.xml
+          files: ./packages/core/minos-microservice-common/coverage.xml
           fail_ci_if_error: true
 
       - name: Generate documentation

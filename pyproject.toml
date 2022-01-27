@@ -7,11 +7,11 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = { path = "packages/minos-microservice-common", develop = true }
-minos-microservice-networks = { path = "packages/minos-microservice-networks", develop = true }
-minos-microservice-aggregate = { path = "packages/minos-microservice-aggregate", develop = true }
-minos-microservice-saga = { path = "packages/minos-microservice-saga", develop = true }
-minos-microservice-cqrs = { path = "packages/minos-microservice-cqrs", develop = true }
+minos-microservice-common = { path = "packages/core/minos-microservice-common", develop = true }
+minos-microservice-networks = { path = "packages/core/minos-microservice-networks", develop = true }
+minos-microservice-aggregate = { path = "packages/core/minos-microservice-aggregate", develop = true }
+minos-microservice-saga = { path = "packages/core/minos-microservice-saga", develop = true }
+minos-microservice-cqrs = { path = "packages/core/minos-microservice-cqrs", develop = true }
 
 [tool.poetry.dev-dependencies]
 black = "^21.12b0"

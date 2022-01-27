@@ -5,7 +5,7 @@ on:
     branches:
       - releases
     paths:
-      - 'packages/minos-microservice-common/**'
+      - 'packages/core/minos-microservice-common/**'
 
 jobs:
   deploy:
@@ -13,7 +13,7 @@ jobs:
     container: python:3.9-buster
     defaults:
       run:
-        working-directory: packages/minos-microservice-common
+        working-directory: packages/core/minos-microservice-common
 
     steps:
 
