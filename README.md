@@ -4,7 +4,7 @@
 </div>
 
 # minos-python: The framework which helps you create reactive microservices in Python
-
+dfasfdasfds
 -----------------
 
 ## Summary
@@ -15,15 +15,15 @@ asynchronous environment.
 
 ## Documentation
 
-The official API Reference is publicly available at: [minos-framework.github.io/minos-python](https://minos-framework.github.io/minos-python)
+The official API Reference is publicly available at [GiHub Pages](https://minos-framework.github.io/minos-python).
 
 ## Packages
 
-* [`minos-microservice-aggregate`](packages/minos-microservice-aggregate)
-* [`minos-microservice-common`](packages/minos-microservice-common)
-* [`minos-microservice-cqrs`](packages/minos-microservice-cqrs)
-* [`minos-microservice-networks`](packages/minos-microservice-networks)
-* [`minos-microservice-saga`](packages/minos-microservice-saga)
+* [minos-microservice-aggregate](https://minos-framework.github.io/minos-python/packages/minos-microservice-aggregate)
+* [minos-microservice-common](https://minos-framework.github.io/minos-python/packages/minos-microservice-common)
+* [minos-microservice-cqrs](https://minos-framework.github.io/minos-python/packages/minos-microservice-cqrs)
+* [minos-microservice-networks](https://minos-framework.github.io/minos-python/packages/minos-microservice-networks)
+* [minos-microservice-saga](https://minos-framework.github.io/minos-python/packages/minos-microservice-saga)
 
 ## Plugins
 

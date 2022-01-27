@@ -33,4 +33,4 @@ html_extra_path = ['api-reference']
 
 html_sidebars = {"**": ["about.html", "navigation.html", "searchbox.html"]}
 
-html_static_path = ['_static']
+html_static_path = []
