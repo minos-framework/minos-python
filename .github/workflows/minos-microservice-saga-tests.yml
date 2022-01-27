@@ -6,10 +6,10 @@ on:
       - main
   pull_request:
     paths:
-      - 'packages/minos-microservice-saga/**'
-      - 'packages/minos-microservice-networks/**'
-      - 'packages/minos-microservice-aggregate/**'
-      - 'packages/minos-microservice-common/**'
+      - 'packages/core/minos-microservice-saga/**'
+      - 'packages/core/minos-microservice-networks/**'
+      - 'packages/core/minos-microservice-aggregate/**'
+      - 'packages/core/minos-microservice-common/**'
 
 jobs:
   build:
@@ -17,7 +17,7 @@ jobs:
     container: python:3.9-buster
     defaults:
       run:
-        working-directory: packages/minos-microservice-saga
+        working-directory: packages/core/minos-microservice-saga
 
     steps:
       - name: Check out repository code
@@ -39,7 +39,7 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./packages/minos-microservice-saga/coverage.xml
+          files: ./packages/core/minos-microservice-saga/coverage.xml
           fail_ci_if_error: true
 
       - name: Generate documentation

@@ -6,21 +6,21 @@ install:
 	poetry install
 
 docs:
-	mkdir -p $(DOCS_TARGET)
+	mkdir -p $(DOCS_TARGET)/core
 
-	$(MAKE) --directory=packages/minos-microservice-aggregate install docs
-	cp -R packages/minos-microservice-aggregate/docs/_build/html $(DOCS_TARGET)/minos-microservice-aggregate
+	$(MAKE) --directory=packages/core/minos-microservice-aggregate install docs
+	cp -R packages/core/minos-microservice-aggregate/docs/_build/html $(DOCS_TARGET)/core/minos-microservice-aggregate
 
-	$(MAKE) --directory=packages/minos-microservice-common install docs
-	cp -R packages/minos-microservice-common/docs/_build/html $(DOCS_TARGET)/minos-microservice-common
+	$(MAKE) --directory=packages/core/minos-microservice-common install docs
+	cp -R packages/core/minos-microservice-common/docs/_build/html $(DOCS_TARGET)/core/minos-microservice-common
 
-	$(MAKE) --directory=packages/minos-microservice-cqrs install docs
-	cp -R packages/minos-microservice-cqrs/docs/_build/html $(DOCS_TARGET)/minos-microservice-cqrs
+	$(MAKE) --directory=packages/core/minos-microservice-cqrs install docs
+	cp -R packages/core/minos-microservice-cqrs/docs/_build/html $(DOCS_TARGET)/core/minos-microservice-cqrs
 
-	$(MAKE) --directory=packages/minos-microservice-networks install docs
-	cp -R packages/minos-microservice-networks/docs/_build/html $(DOCS_TARGET)/minos-microservice-networks
+	$(MAKE) --directory=packages/core/minos-microservice-networks install docs
+	cp -R packages/core/minos-microservice-networks/docs/_build/html $(DOCS_TARGET)/core/minos-microservice-networks
 
-	$(MAKE) --directory=packages/minos-microservice-saga install docs
-	cp -R packages/minos-microservice-saga/docs/_build/html $(DOCS_TARGET)/minos-microservice-saga
+	$(MAKE) --directory=packages/core/minos-microservice-saga install docs
+	cp -R packages/core/minos-microservice-saga/docs/_build/html $(DOCS_TARGET)/core/minos-microservice-saga
 
 	poetry run $(MAKE) --directory=docs html

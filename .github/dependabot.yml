@@ -5,22 +5,22 @@ updates:
     schedule:
       interval: "monthly"
   - package-ecosystem: "pip"
-    directory: "/packages/minos-microservice-aggregate"
+    directory: "/packages/core/minos-microservice-aggregate"
     schedule:
       interval: "monthly"
   - package-ecosystem: "pip"
-    directory: "/packages/minos-microservice-common"
+    directory: "/packages/core/minos-microservice-common"
     schedule:
       interval: "monthly"
   - package-ecosystem: "pip"
-    directory: "/packages/minos-microservice-cqrs"
+    directory: "/packages/core/minos-microservice-cqrs"
     schedule:
       interval: "monthly"
   - package-ecosystem: "pip"
-    directory: "/packages/minos-microservice-networks"
+    directory: "/packages/core/minos-microservice-networks"
     schedule:
       interval: "monthly"
   - package-ecosystem: "pip"
-    directory: "/packages/minos-microservice-saga"
+    directory: "/packages/core/minos-microservice-saga"
     schedule:
       interval: "monthly"
