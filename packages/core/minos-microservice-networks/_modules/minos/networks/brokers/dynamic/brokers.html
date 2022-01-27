@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.networks.brokers.dynamic.brokers &mdash; Minos Microservice Network 0.3.2 documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link href="../../../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Network
+          </a>
+              <div class="version">
+                0.3.2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../runthetests.html">Run the tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/minos.html">minos namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../history.html">History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Minos Microservice Network</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.networks.brokers.dynamic.brokers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.networks.brokers.dynamic.brokers</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">asyncio</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="ne">TimeoutError</span><span class="p">,</span>
+    <span class="n">wait_for</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Optional</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UUID</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">aiopg</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Cursor</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">cached_property</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">cached_property</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">dependency_injector.wiring</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Provide</span><span class="p">,</span>
+    <span class="n">inject</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">psycopg2.sql</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SQL</span><span class="p">,</span>
+    <span class="n">Identifier</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MinosConfig</span><span class="p">,</span>
+    <span class="n">NotProvidedException</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">...exceptions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MinosHandlerNotFoundEnoughEntriesException</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">...utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">consume_queue</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..handlers</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BrokerHandlerEntry</span><span class="p">,</span>
+    <span class="n">BrokerHandlerSetup</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..publishers</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BrokerPublisher</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DynamicBroker"><a class="viewcode-back" href="../../../../../api/minos.networks.brokers.dynamic.brokers.html#minos.networks.brokers.dynamic.brokers.DynamicBroker">[docs]</a><span class="k">class</span> <span class="nc">DynamicBroker</span><span class="p">(</span><span class="n">BrokerHandlerSetup</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dynamic Broker class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DynamicBroker.__init__"><a class="viewcode-back" href="../../../../../api/minos.networks.brokers.dynamic.brokers.html#minos.networks.brokers.dynamic.brokers.DynamicBroker.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">publisher</span><span class="p">:</span> <span class="n">BrokerPublisher</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">topic</span> <span class="o">=</span> <span class="n">topic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">publisher</span> <span class="o">=</span> <span class="n">publisher</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">MinosConfig</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicBroker</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;publisher&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_publisher</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># noinspection PyProtectedMember</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">_asdict</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># noinspection PyUnusedLocal</span>
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@inject</span>
+    <span class="k">def</span> <span class="nf">_get_publisher</span><span class="p">(</span>
+        <span class="n">publisher</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BrokerPublisher</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">broker_publisher</span><span class="p">:</span> <span class="n">BrokerPublisher</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;broker_publisher&quot;</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BrokerPublisher</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">publisher</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">publisher</span> <span class="o">=</span> <span class="n">broker_publisher</span>
+        <span class="k">if</span> <span class="n">publisher</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">publisher</span><span class="p">,</span> <span class="n">Provide</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">NotProvidedException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">BrokerPublisher</span><span class="si">!r}</span><span class="s2"> object must be provided.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">publisher</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_setup</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_destroy</span><span class="p">()</span>
+
+    <span class="c1"># noinspection PyUnusedLocal</span>
+<div class="viewcode-block" id="DynamicBroker.send"><a class="viewcode-back" href="../../../../../api/minos.networks.brokers.dynamic.brokers.html#minos.networks.brokers.dynamic.brokers.DynamicBroker.send">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">reply_topic</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UUID</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Send a ``BrokerMessage``.</span>
+
+<span class="sd">        :param args: Additional positional arguments.</span>
+<span class="sd">        :param reply_topic: This argument is ignored if ignored in favor of ``self.topic``.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: The ``UUID`` identifier of the message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">reply_topic</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">topic</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DynamicBroker.get_one"><a class="viewcode-back" href="../../../../../api/minos.networks.brokers.dynamic.brokers.html#minos.networks.brokers.dynamic.brokers.DynamicBroker.get_one">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BrokerHandlerEntry</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get one handler entry from the given topics.</span>
+
+<span class="sd">        :param args: Additional positional parameters to be passed to get_many.</span>
+<span class="sd">        :param kwargs: Additional named parameters to be passed to get_many.</span>
+<span class="sd">        :return: A ``HandlerEntry`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_many</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">kwargs</span> <span class="o">|</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})))[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DynamicBroker.get_many"><a class="viewcode-back" href="../../../../../api/minos.networks.brokers.dynamic.brokers.html#minos.networks.brokers.dynamic.brokers.DynamicBroker.get_many">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_many</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BrokerHandlerEntry</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get multiple handler entries from the given topics.</span>
+
+<span class="sd">        :param timeout: Maximum time in seconds to wait for messages.</span>
+<span class="sd">        :param count: Number of entries to be collected.</span>
+<span class="sd">        :return: A list of ``HandlerEntry`` instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">entries</span> <span class="o">=</span> <span class="k">await</span> <span class="n">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_many</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TimeoutError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MinosHandlerNotFoundEnoughEntriesException</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Timeout exceeded while trying to fetch </span><span class="si">{</span><span class="n">count</span><span class="si">!r}</span><span class="s2"> entries from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">topic</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dispatching &#39;</span><span class="si">{</span><span class="n">entries</span> <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">!s}</span><span class="s2">&#39;...&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">entries</span></div>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_get_many</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_wait</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BrokerHandlerEntry</span><span class="p">]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+
+            <span class="k">await</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_queries</span><span class="p">[</span><span class="s2">&quot;listen&quot;</span><span class="p">])</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">count</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_entries</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">count</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">),</span> <span class="n">max_wait</span><span class="p">)</span>
+                    <span class="n">result</span> <span class="o">+=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_entries</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">count</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="k">await</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_queries</span><span class="p">[</span><span class="s2">&quot;unlisten&quot;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_wait_for_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">,</span> <span class="n">count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_wait</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_count</span><span class="p">(</span><span class="n">cursor</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="k">await</span> <span class="n">wait_for</span><span class="p">(</span><span class="n">consume_queue</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">notifies</span><span class="p">,</span> <span class="n">count</span><span class="p">),</span> <span class="n">max_wait</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TimeoutError</span><span class="p">:</span>
+                <span class="k">if</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_count</span><span class="p">(</span><span class="n">cursor</span><span class="p">):</span>
+                    <span class="k">return</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_get_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_queries</span><span class="p">[</span><span class="s2">&quot;count_not_processed&quot;</span><span class="p">],</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">topic</span><span class="p">,))</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="p">(</span><span class="k">await</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">count</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_get_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">,</span> <span class="n">count</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BrokerHandlerEntry</span><span class="p">]:</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="n">cursor</span><span class="o">.</span><span class="n">begin</span><span class="p">():</span>
+            <span class="k">await</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_queries</span><span class="p">[</span><span class="s2">&quot;select_not_processed&quot;</span><span class="p">],</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">topic</span><span class="p">,</span> <span class="n">count</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_entries</span><span class="p">(</span><span class="k">await</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()):</span>
+                <span class="k">await</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_queries</span><span class="p">[</span><span class="s2">&quot;delete_processed&quot;</span><span class="p">],</span> <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+                <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">entries</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">_queries</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;listen&quot;</span><span class="p">:</span> <span class="n">_LISTEN_QUERY</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Identifier</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">topic</span><span class="p">)),</span>
+            <span class="s2">&quot;unlisten&quot;</span><span class="p">:</span> <span class="n">_UNLISTEN_QUERY</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Identifier</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">topic</span><span class="p">)),</span>
+            <span class="s2">&quot;count_not_processed&quot;</span><span class="p">:</span> <span class="n">_COUNT_NOT_PROCESSED_QUERY</span><span class="p">,</span>
+            <span class="s2">&quot;select_not_processed&quot;</span><span class="p">:</span> <span class="n">_SELECT_NOT_PROCESSED_ROWS_QUERY</span><span class="p">,</span>
+            <span class="s2">&quot;delete_processed&quot;</span><span class="p">:</span> <span class="n">_DELETE_PROCESSED_QUERY</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_build_entries</span><span class="p">(</span><span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BrokerHandlerEntry</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">BrokerHandlerEntry</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span></div>
+
+
+<span class="n">_LISTEN_QUERY</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;LISTEN </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">_UNLISTEN_QUERY</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;UNLISTEN </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># noinspection SqlDerivedTableAlias</span>
+<span class="n">_COUNT_NOT_PROCESSED_QUERY</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span>
+    <span class="s2">&quot;SELECT COUNT(*) FROM (SELECT id FROM consumer_queue WHERE topic = </span><span class="si">%s</span><span class="s2"> FOR UPDATE SKIP LOCKED) s&quot;</span>
+<span class="p">)</span>
+
+<span class="n">_SELECT_NOT_PROCESSED_ROWS_QUERY</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span>
+    <span class="s2">&quot;SELECT id, topic, partition, data, retry, created_at, updated_at &quot;</span>
+    <span class="s2">&quot;FROM consumer_queue &quot;</span>
+    <span class="s2">&quot;WHERE topic = </span><span class="si">%s</span><span class="s2"> &quot;</span>
+    <span class="s2">&quot;ORDER BY created_at &quot;</span>
+    <span class="s2">&quot;LIMIT </span><span class="si">%s</span><span class="s2"> &quot;</span>
+    <span class="s2">&quot;FOR UPDATE SKIP LOCKED&quot;</span>
+<span class="p">)</span>
+<span class="n">_DELETE_PROCESSED_QUERY</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;DELETE FROM consumer_queue WHERE id = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

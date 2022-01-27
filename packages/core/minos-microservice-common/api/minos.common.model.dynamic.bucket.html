@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.common.model.dynamic.bucket module &mdash; Minos Microservice Common 0.3.4 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.common.model.dynamic.dto module" href="minos.common.model.dynamic.dto.html" />
+    <link rel="prev" title="minos.common.model.dynamic.abc module" href="minos.common.model.dynamic.abc.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Minos Microservice Common
+          </a>
+              <div class="version">
+                0.3.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../runthetests.html">Run the tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="minos.html">minos namespace</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="minos.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="minos.common.html">minos.common package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="minos.common.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="minos.common.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Minos Microservice Common</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="minos.html">minos namespace</a> &raquo;</li>
+          <li><a href="minos.common.html">minos.common package</a> &raquo;</li>
+          <li><a href="minos.common.model.html">minos.common.model package</a> &raquo;</li>
+          <li><a href="minos.common.model.dynamic.html">minos.common.model.dynamic package</a> &raquo;</li>
+      <li>minos.common.model.dynamic.bucket module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/minos.common.model.dynamic.bucket.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="module-minos.common.model.dynamic.bucket">
+<span id="minos-common-model-dynamic-bucket-module"></span><h1>minos.common.model.dynamic.bucket module<a class="headerlink" href="#module-minos.common.model.dynamic.bucket" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.common.model.dynamic.bucket.</span></span><span class="sig-name descname"><span class="pre">BucketModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fields</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/model/dynamic/bucket.html#BucketModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.common.model.dynamic.abc.html#minos.common.model.dynamic.abc.DynamicModel" title="minos.common.model.dynamic.abc.DynamicModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.dynamic.abc.DynamicModel</span></code></a></p>
+<p>Bucket Model class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fields</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Class constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fields</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Iterable</span></code>[<a class="reference internal" href="minos.common.model.fields.html#minos.common.model.fields.Field" title="minos.common.model.fields.Field"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.fields.Field</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="minos.common.model.fields.html#minos.common.model.fields.Field" title="minos.common.model.fields.Field"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.fields.Field</span></code></a>]]) – Dictionary that contains the <code class="docutils literal notranslate"><span class="pre">Field</span></code> instances of the model indexed by name.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.avro_bytes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avro_bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.avro_bytes" title="Permalink to this definition"></a></dt>
+<dd><p>Generate bytes representation of the current instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A bytes object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.avro_data">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avro_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.avro_data" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the avro data of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dictionary object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.avro_schema">
+<span class="sig-name descname"><span class="pre">avro_schema</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[{'name':</span> <span class="pre">'BucketModel',</span> <span class="pre">'namespace':</span> <span class="pre">'minos.common.model.dynamic.bucket.7c589d96-7eae-49f6-9aac-6a7c08dbbf3e',</span> <span class="pre">'type':</span> <span class="pre">'record',</span> <span class="pre">'fields':</span> <span class="pre">[]}]</span></em><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.avro_schema" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.avro_str">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avro_str</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.avro_str" title="Permalink to this definition"></a></dt>
+<dd><p>Generate bytes representation of the current instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A bytes object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.classname">
+<span class="sig-name descname"><span class="pre">classname</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'minos.common.model.dynamic.bucket.BucketModel'</span></em><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.classname" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.decode_data">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.decode_data" title="Permalink to this definition"></a></dt>
+<dd><p>Decode data with the given decoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>decoder</strong> (<a class="reference internal" href="minos.common.model.serializers.abc.html#minos.common.model.serializers.abc.DataDecoder" title="minos.common.model.serializers.abc.DataDecoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.serializers.abc.DataDecoder</span></code></a>) – The decoder instance.</p></li>
+<li><p><strong>target</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>) – The data to be decoded.</p></li>
+<li><p><strong>type</strong> – The data type.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A decoded instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.decode_schema">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.decode_schema" title="Permalink to this definition"></a></dt>
+<dd><p>Decode schema with the given encoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>decoder</strong> (<a class="reference internal" href="minos.common.model.serializers.abc.html#minos.common.model.serializers.abc.SchemaDecoder" title="minos.common.model.serializers.abc.SchemaDecoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.serializers.abc.SchemaDecoder</span></code></a>) – The decoder instance.</p></li>
+<li><p><strong>target</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>) – The schema to be decoded.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The decoded schema as a type.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.empty">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">empty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/model/dynamic/bucket.html#BucketModel.empty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.empty" title="Permalink to this definition"></a></dt>
+<dd><p>Build an empty <code class="docutils literal notranslate"><span class="pre">BucketModel</span></code> instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, bound= <a class="reference internal" href="#minos.common.model.dynamic.bucket.BucketModel" title="minos.common.model.dynamic.bucket.BucketModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.dynamic.bucket.BucketModel</span></code></a>)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">BucketModel</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.encode_data">
+<span class="sig-name descname"><span class="pre">encode_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.encode_data" title="Permalink to this definition"></a></dt>
+<dd><p>Encode data with the given encoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoder</strong> (<a class="reference internal" href="minos.common.model.serializers.abc.html#minos.common.model.serializers.abc.DataEncoder" title="minos.common.model.serializers.abc.DataEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.serializers.abc.DataEncoder</span></code></a>) – The encoder instance.</p></li>
+<li><p><strong>target</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>) – An optional pre-encoded data.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The encoded data of the instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.encode_schema">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">encode_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.encode_schema" title="Permalink to this definition"></a></dt>
+<dd><p>Encode schema with the given encoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoder</strong> (<a class="reference internal" href="minos.common.model.serializers.abc.html#minos.common.model.serializers.abc.SchemaEncoder" title="minos.common.model.serializers.abc.SchemaEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.serializers.abc.SchemaEncoder</span></code></a>) – The encoder instance.</p></li>
+<li><p><strong>target</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>) – An optional pre-encoded schema.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The encoded schema of the instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.fields">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="minos.common.model.fields.html#minos.common.model.fields.Field" title="minos.common.model.fields.Field"><span class="pre">minos.common.model.fields.Field</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.fields" title="Permalink to this definition"></a></dt>
+<dd><p>Fields getter</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="minos.common.model.fields.html#minos.common.model.fields.Field" title="minos.common.model.fields.Field"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.fields.Field</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.from_avro">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_avro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.from_avro" title="Permalink to this definition"></a></dt>
+<dd><p>Build a new instance from the <code class="docutils literal notranslate"><span class="pre">avro</span></code> schema and data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>schema</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>) – The avro schema of the model.</p></li>
+<li><p><strong>data</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>) – The avro data of the model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, bound= <a class="reference internal" href="minos.common.model.abc.html#minos.common.model.abc.Model" title="minos.common.model.abc.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.abc.Model</span></code></a>)</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A new <code class="docutils literal notranslate"><span class="pre">DynamicModel</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.from_avro_bytes">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_avro_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.from_avro_bytes" title="Permalink to this definition"></a></dt>
+<dd><p>Build a single instance or a sequence of instances from bytes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>raw</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code>) – A <code class="docutils literal notranslate"><span class="pre">bytes</span></code> representation of the model.</p></li>
+<li><p><strong>batch_mode</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the data is processed as a list of models, otherwise the data is processed as a</p></li>
+</ul>
+</dd>
+</dl>
+<p>single model.
+:param kwargs: Additional named arguments.
+:rtype: <code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, bound= <a class="reference internal" href="minos.common.model.abc.html#minos.common.model.abc.Model" title="minos.common.model.abc.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.abc.Model</span></code></a>), <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, bound= <a class="reference internal" href="minos.common.model.abc.html#minos.common.model.abc.Model" title="minos.common.model.abc.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.abc.Model</span></code></a>)]]
+:return: A single instance or a sequence of instances.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.from_avro_str">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_avro_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.from_avro_str" title="Permalink to this definition"></a></dt>
+<dd><p>Build a single instance or a sequence of instances from bytes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>raw</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – A <code class="docutils literal notranslate"><span class="pre">str</span></code> representation of the model.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, bound= <a class="reference internal" href="minos.common.model.abc.html#minos.common.model.abc.Model" title="minos.common.model.abc.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.abc.Model</span></code></a>), <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, bound= <a class="reference internal" href="minos.common.model.abc.html#minos.common.model.abc.Model" title="minos.common.model.abc.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.abc.Model</span></code></a>)]]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A single instance or a sequence of instances.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.from_model_type">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_model_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.from_model_type" title="Permalink to this definition"></a></dt>
+<dd><p>Build a <code class="docutils literal notranslate"><span class="pre">DynamicModel</span></code> from a <code class="docutils literal notranslate"><span class="pre">ModelType</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_type</strong> (<a class="reference internal" href="minos.common.model.types.model_types.html#minos.common.model.types.model_types.ModelType" title="minos.common.model.types.model_types.ModelType"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.types.model_types.ModelType</span></code></a>) – <code class="docutils literal notranslate"><span class="pre">ModelType</span></code> object containing the model structure</p></li>
+<li><p><strong>args</strong> – Positional arguments to be passed to the model constructor.</p></li>
+<li><p><strong>kwargs</strong> – Named arguments to be passed to the model constructor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, bound= <a class="reference internal" href="minos.common.model.dynamic.abc.html#minos.common.model.dynamic.abc.DynamicModel" title="minos.common.model.dynamic.abc.DynamicModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.dynamic.abc.DynamicModel</span></code></a>)</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A new <code class="docutils literal notranslate"><span class="pre">DynamicModel</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.from_typed_dict">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_typed_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">typed_dict</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.from_typed_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Build a <code class="docutils literal notranslate"><span class="pre">Model</span></code> from a <code class="docutils literal notranslate"><span class="pre">TypeDict</span></code> and <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>typed_dict</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypedDict</span></code>) – <code class="docutils literal notranslate"><span class="pre">TypeDict</span></code> object containing the DTO’s structure</p></li>
+<li><p><strong>args</strong> – Positional arguments to be passed to the model constructor.</p></li>
+<li><p><strong>kwargs</strong> – Named arguments to be passed to the model constructor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, bound= <a class="reference internal" href="minos.common.model.abc.html#minos.common.model.abc.Model" title="minos.common.model.abc.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.abc.Model</span></code></a>)</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A new <code class="docutils literal notranslate"><span class="pre">DataTransferObject</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">D[k]</span> <span class="pre">if</span> <span class="pre">k</span> <span class="pre">in</span> <span class="pre">D,</span> <span class="pre">else</span> <span class="pre">d.</span>&#160; <span class="pre">d</span> <span class="pre">defaults</span> <span class="pre">to</span> <span class="pre">None.</span></span></span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.get" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">set-like</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">items</span></span></span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.items" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">set-like</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">keys</span></span></span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.keys" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.model_type">
+<span class="sig-name descname"><span class="pre">model_type</span></span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.model_type" title="Permalink to this definition"></a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.types.model_types.BucketModel</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.to_avro_bytes">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_avro_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">models</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.to_avro_bytes" title="Permalink to this definition"></a></dt>
+<dd><p>Create a <code class="docutils literal notranslate"><span class="pre">bytes</span></code> representation of the given object instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>models</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, bound= <a class="reference internal" href="minos.common.model.abc.html#minos.common.model.abc.Model" title="minos.common.model.abc.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.abc.Model</span></code></a>)]) – A sequence of minos models.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A bytes object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.to_avro_str">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_avro_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">models</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.to_avro_str" title="Permalink to this definition"></a></dt>
+<dd><p>Build the avro string representation of the given object instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>models</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, bound= <a class="reference internal" href="minos.common.model.abc.html#minos.common.model.abc.Model" title="minos.common.model.abc.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.abc.Model</span></code></a>)]) – A sequence of minos models.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A bytes object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.type_hints">
+<span class="sig-name descname"><span class="pre">type_hints</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.type_hints" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.type_hints_parameters">
+<span class="sig-name descname"><span class="pre">type_hints_parameters</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.type_hints_parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.dynamic.bucket.BucketModel.values">
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">an</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">values</span></span></span><a class="headerlink" href="#minos.common.model.dynamic.bucket.BucketModel.values" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.common.model.dynamic.abc.html" class="btn btn-neutral float-left" title="minos.common.model.dynamic.abc module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.common.model.dynamic.dto.html" class="btn btn-neutral float-right" title="minos.common.model.dynamic.dto module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

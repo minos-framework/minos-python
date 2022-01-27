@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.saga.manager &mdash; Minos Microservice Saga 0.3.5 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link href="../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Minos Microservice Saga
+          </a>
+              <div class="version">
+                0.3.5
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../runthetests.html">Run the tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/minos.html">minos namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../history.html">History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Minos Microservice Saga</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>minos.saga.manager</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.saga.manager</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">reduce</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">or_</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UUID</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">dependency_injector.wiring</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Provide</span><span class="p">,</span>
+    <span class="n">inject</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MinosConfig</span><span class="p">,</span>
+    <span class="n">MinosSetup</span><span class="p">,</span>
+    <span class="n">NotProvidedException</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">REQUEST_HEADERS_CONTEXT_VAR</span><span class="p">,</span>
+    <span class="n">REQUEST_USER_CONTEXT_VAR</span><span class="p">,</span>
+    <span class="n">BrokerMessage</span><span class="p">,</span>
+    <span class="n">DynamicBroker</span><span class="p">,</span>
+    <span class="n">DynamicBrokerPool</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">.context</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SagaContext</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.definitions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Saga</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SagaFailedExecutionException</span><span class="p">,</span>
+    <span class="n">SagaPausedExecutionStepException</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.executions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SagaExecution</span><span class="p">,</span>
+    <span class="n">SagaExecutionStorage</span><span class="p">,</span>
+    <span class="n">SagaStatus</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.messages</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SagaResponse</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SagaManager"><a class="viewcode-back" href="../../../api/minos.saga.manager.html#minos.saga.manager.SagaManager">[docs]</a><span class="k">class</span> <span class="nc">SagaManager</span><span class="p">(</span><span class="n">MinosSetup</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Saga Manager implementation class.</span>
+
+<span class="sd">    The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SagaManager.__init__"><a class="viewcode-back" href="../../../api/minos.saga.manager.html#minos.saga.manager.SagaManager.__init__">[docs]</a>    <span class="nd">@inject</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">:</span> <span class="n">SagaExecutionStorage</span><span class="p">,</span> <span class="n">broker_pool</span><span class="p">:</span> <span class="n">DynamicBrokerPool</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;broker_pool&quot;</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">storage</span>
+
+        <span class="k">if</span> <span class="n">broker_pool</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">broker_pool</span><span class="p">,</span> <span class="n">Provide</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">NotProvidedException</span><span class="p">(</span><span class="s2">&quot;A handler pool instance is required.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">broker_pool</span> <span class="o">=</span> <span class="n">broker_pool</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">MinosConfig</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SagaManager</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build an instance from config.</span>
+
+<span class="sd">        :param args: Additional positional arguments.</span>
+<span class="sd">        :param config: Config instance.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: A new ``SagaManager`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">storage</span> <span class="o">=</span> <span class="n">SagaExecutionStorage</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SagaManager.run"><a class="viewcode-back" href="../../../api/minos.saga.manager.html#minos.saga.manager.SagaManager.run">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">definition</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Saga</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SagaContext</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">response</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SagaResponse</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">autocommit</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">pause_on_disk</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">raise_on_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">return_execution</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">UUID</span><span class="p">,</span> <span class="n">SagaExecution</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Perform a run of a ``Saga``.</span>
+
+<span class="sd">        The run can be a new one (if a name is provided) or continue execution a previous one (if a reply is provided).</span>
+
+<span class="sd">        :param definition: Saga definition to be executed.</span>
+<span class="sd">        :param context: Initial context to be used during the execution. (Only used for new executions)</span>
+<span class="sd">        :param response: The reply that relaunches a saga execution.</span>
+<span class="sd">        :param user: The user identifier to be injected on remote steps.</span>
+<span class="sd">        :param autocommit: If ``True`` the transactions are committed/rejected automatically. Otherwise, the ``commit``</span>
+<span class="sd">            or ``reject`` must to be called manually.</span>
+<span class="sd">        :param pause_on_disk: If ``True`` the pauses until remote steps&#39; responses are paused on disk (background,</span>
+<span class="sd">            non-blocking the execution). Otherwise, the pauses are waited on memory (online, blocking the execution)</span>
+<span class="sd">        :param raise_on_error: If ``True`` exceptions are raised on error. Otherwise, the execution is returned normally</span>
+<span class="sd">            but with ``Errored`` status.</span>
+<span class="sd">        :param return_execution: If ``True`` the ``SagaExecution`` instance is returned. Otherwise, only the</span>
+<span class="sd">            identifier (``UUID``) is returned.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: This method does not return anything.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_and_run</span><span class="p">(</span>
+                <span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">,</span>
+                <span class="n">autocommit</span><span class="o">=</span><span class="n">autocommit</span><span class="p">,</span>
+                <span class="n">pause_on_disk</span><span class="o">=</span><span class="n">pause_on_disk</span><span class="p">,</span>
+                <span class="n">raise_on_error</span><span class="o">=</span><span class="n">raise_on_error</span><span class="p">,</span>
+                <span class="n">return_execution</span><span class="o">=</span><span class="n">return_execution</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_new</span><span class="p">(</span>
+            <span class="n">definition</span><span class="o">=</span><span class="n">definition</span><span class="p">,</span>
+            <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+            <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span>
+            <span class="n">autocommit</span><span class="o">=</span><span class="n">autocommit</span><span class="p">,</span>
+            <span class="n">pause_on_disk</span><span class="o">=</span><span class="n">pause_on_disk</span><span class="p">,</span>
+            <span class="n">raise_on_error</span><span class="o">=</span><span class="n">raise_on_error</span><span class="p">,</span>
+            <span class="n">return_execution</span><span class="o">=</span><span class="n">return_execution</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_run_new</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">definition</span><span class="p">:</span> <span class="n">Saga</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SagaContext</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">UUID</span><span class="p">,</span> <span class="n">SagaExecution</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">REQUEST_USER_CONTEXT_VAR</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The `user` Argument will be ignored in favor of the `user` ContextVar&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="n">REQUEST_USER_CONTEXT_VAR</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+        <span class="n">execution</span> <span class="o">=</span> <span class="n">SagaExecution</span><span class="o">.</span><span class="n">from_definition</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">execution</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_load_and_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">SagaResponse</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">UUID</span><span class="p">,</span> <span class="n">SagaExecution</span><span class="p">]:</span>
+        <span class="n">execution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">execution</span><span class="p">,</span> <span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">execution</span><span class="p">:</span> <span class="n">SagaExecution</span><span class="p">,</span>
+        <span class="n">pause_on_disk</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">raise_on_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">return_execution</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">UUID</span><span class="p">,</span> <span class="n">SagaExecution</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pause_on_disk</span><span class="p">:</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_with_pause_on_disk</span><span class="p">(</span><span class="n">execution</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_with_pause_on_memory</span><span class="p">(</span><span class="n">execution</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SagaFailedExecutionException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">execution</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">raise_on_error</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">exc</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The execution identified by </span><span class="si">{</span><span class="n">execution</span><span class="o">.</span><span class="n">uuid</span><span class="si">!s}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">exc</span><span class="o">.</span><span class="n">exception</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">headers</span> <span class="o">:=</span> <span class="n">REQUEST_HEADERS_CONTEXT_VAR</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">related_services</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">or_</span><span class="p">,</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">related_services</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">execution</span><span class="o">.</span><span class="n">executed_steps</span><span class="p">),</span> <span class="nb">set</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">execution</span><span class="o">.</span><span class="n">paused_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">related_services</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">execution</span><span class="o">.</span><span class="n">paused_step</span><span class="o">.</span><span class="n">related_services</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">raw_related_services</span> <span class="o">:=</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;related_services&quot;</span><span class="p">):</span>
+                    <span class="n">related_services</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">raw_related_services</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+
+                <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;related_services&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">related_services</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">execution</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">SagaStatus</span><span class="o">.</span><span class="n">Finished</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">execution</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">return_execution</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">execution</span>
+
+        <span class="k">return</span> <span class="n">execution</span><span class="o">.</span><span class="n">uuid</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_run_with_pause_on_disk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">execution</span><span class="p">:</span> <span class="n">SagaExecution</span><span class="p">,</span> <span class="n">autocommit</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">execution</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">autocommit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">autocommit</span><span class="p">:</span>
+                <span class="k">await</span> <span class="n">execution</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SagaPausedExecutionStepException</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">execution</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SagaFailedExecutionException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">autocommit</span><span class="p">:</span>
+                <span class="k">await</span> <span class="n">execution</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">exc</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_run_with_pause_on_memory</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">execution</span><span class="p">:</span> <span class="n">SagaExecution</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SagaResponse</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">autocommit</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># noinspection PyUnresolvedReferences</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker_pool</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span> <span class="k">as</span> <span class="n">broker</span><span class="p">:</span>
+                <span class="k">while</span> <span class="n">execution</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="n">SagaStatus</span><span class="o">.</span><span class="n">Created</span><span class="p">,</span> <span class="n">SagaStatus</span><span class="o">.</span><span class="n">Paused</span><span class="p">):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">await</span> <span class="n">execution</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">,</span> <span class="n">autocommit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="n">SagaPausedExecutionStepException</span><span class="p">:</span>
+                        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_response</span><span class="p">(</span><span class="n">broker</span><span class="p">,</span> <span class="n">execution</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">execution</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">autocommit</span><span class="p">:</span>
+                <span class="k">await</span> <span class="n">execution</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SagaFailedExecutionException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">autocommit</span><span class="p">:</span>
+                <span class="k">await</span> <span class="n">execution</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">exc</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_get_response</span><span class="p">(</span><span class="n">handler</span><span class="p">:</span> <span class="n">DynamicBroker</span><span class="p">,</span> <span class="n">execution</span><span class="p">:</span> <span class="n">SagaExecution</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SagaResponse</span><span class="p">:</span>
+        <span class="n">message</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BrokerMessage</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">while</span> <span class="n">message</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">UUID</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;saga&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="n">execution</span><span class="o">.</span><span class="n">uuid</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">entry</span> <span class="o">=</span> <span class="k">await</span> <span class="n">handler</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="n">execution</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">SagaStatus</span><span class="o">.</span><span class="n">Errored</span>
+                <span class="k">raise</span> <span class="n">SagaFailedExecutionException</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">return</span> <span class="n">SagaResponse</span><span class="o">.</span><span class="n">from_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

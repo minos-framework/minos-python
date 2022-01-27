@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>minos-python: The framework which helps you create reactive microservices in Python &mdash; Minos Python  documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +17,9 @@
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link href="_static/style.css" rel="stylesheet" type="text/css">
+
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -38,8 +41,13 @@
               <div class="local-toc"><ul>
 <li><a class="reference internal" href="#">minos-python: The framework which helps you create reactive microservices in Python</a><ul>
 <li><a class="reference internal" href="#summary">Summary</a></li>
-<li><a class="reference internal" href="#packages">Packages</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+<li><a class="reference internal" href="#packages">Packages</a><ul>
+<li><a class="reference internal" href="#core">Core</a></li>
 <li><a class="reference internal" href="#plugins">Plugins</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#source-code">Source Code</a></li>
 <li><a class="reference internal" href="#getting-help">Getting Help</a></li>
 <li><a class="reference internal" href="#discussion-and-development">Discussion and Development</a></li>
 <li><a class="reference internal" href="#how-to-contribute">How to contribute</a><ul>
@@ -77,49 +85,63 @@
            <div itemprop="articleBody">
              
   <p align="center">
-  <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/minos-python/main/logo.png" alt="Minos logo"></a>
-</p><div class="section" id="minos-python-the-framework-which-helps-you-create-reactive-microservices-in-python">
+  <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
+</p><section id="minos-python-the-framework-which-helps-you-create-reactive-microservices-in-python">
 <h1>minos-python: The framework which helps you create reactive microservices in Python<a class="headerlink" href="#minos-python-the-framework-which-helps-you-create-reactive-microservices-in-python" title="Permalink to this headline"></a></h1>
-<hr class="docutils" />
-<div class="section" id="summary">
+<section id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline"></a></h2>
-<p>Minos is a framework which helps you create <a class="reference external" href="https://www.reactivemanifesto.org/">reactive</a> microservices in Python. Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an asynchronous environment.</p>
-</div>
-<div class="section" id="packages">
+<p>Minos is a framework which helps you create <a class="reference external" href="https://www.reactivemanifesto.org/">reactive</a> microservices in Python.
+Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
+asynchronous environment.</p>
+</section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline"></a></h2>
+<p>The official API Reference is publicly available at <a class="reference external" href="https://minos-framework.github.io/minos-python">GiHub Pages</a>.</p>
+</section>
+<section id="packages">
 <h2>Packages<a class="headerlink" href="#packages" title="Permalink to this headline"></a></h2>
+<p>This project follows a modular structure based on python packages.</p>
+<section id="core">
+<h3>Core<a class="headerlink" href="#core" title="Permalink to this headline"></a></h3>
+<p>The core packages provide the base implementation of the framework.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="packages/minos-microservice-aggregate">minos-microservice-aggregate</a></p></li>
-<li><p><a class="reference external" href="packages/minos-microservice-common">minos-microservice-common</a></p></li>
-<li><p><a class="reference external" href="packages/minos-microservice-cqrs">minos-microservice-cqrs</a></p></li>
-<li><p><a class="reference external" href="packages/minos-microservice-networks">minos-microservice-networks</a></p></li>
-<li><p><a class="reference external" href="packages/minos-microservice-saga">minos-microservice-saga</a></p></li>
+<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/core/minos-microservice-aggregate">minos-microservice-aggregate</a>: The implementation of the Aggregate pattern.</p></li>
+<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/core/minos-microservice-common">minos-microservice-common</a>: The implementation of common classes and utilities to be used by another packages.</p></li>
+<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/core/minos-microservice-cqrs">minos-microservice-cqrs</a>: The implementation of the CQRS pattern.</p></li>
+<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/core/minos-microservice-networks">minos-microservice-networks</a>: The implementation of the rest server, the broker client, the discovery connector, etc.</p></li>
+<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/core/minos-microservice-saga">minos-microservice-saga</a>: The implementation of the SAGA pattern.</p></li>
 </ul>
-</div>
-<div class="section" id="plugins">
-<h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline"></a></h2>
-<p>[TODO]</p>
-</div>
-<div class="section" id="getting-help">
+</section>
+<section id="plugins">
+<h3>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline"></a></h3>
+<p>The plugin packages provide connectors to external technologies like brokers, discovery services, databases, serializers and so on.</p>
+</section>
+</section>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this headline"></a></h2>
+<p>The source code of this project is hosted at <a class="reference external" href="https://github.com/minos-framework/minos-python">GitHub</a>.</p>
+</section>
+<section id="getting-help">
 <h2>Getting Help<a class="headerlink" href="#getting-help" title="Permalink to this headline"></a></h2>
 <p>For usage questions, the best place to go to is <a class="reference external" href="https://stackoverflow.com/questions/tagged/minos">StackOverflow</a>.</p>
-</div>
-<div class="section" id="discussion-and-development">
+</section>
+<section id="discussion-and-development">
 <h2>Discussion and Development<a class="headerlink" href="#discussion-and-development" title="Permalink to this headline"></a></h2>
 <p>Most development discussions take place over the <a class="reference external" href="https://github.com/minos-framework/minos-python/issues">GitHub Issues</a>. In addition, a <a class="reference external" href="https://gitter.im/minos-framework/community">Gitter channel</a> is available for development-related questions.</p>
-</div>
-<div class="section" id="how-to-contribute">
+</section>
+<section id="how-to-contribute">
 <h2>How to contribute<a class="headerlink" href="#how-to-contribute" title="Permalink to this headline"></a></h2>
 <p>We are looking forward to having your contributions. No matter whether it is a pull request with new features, or the creation of an issue related to a bug you have found.</p>
 <p>Please consider these guidelines before you submit any modification.</p>
-<div class="section" id="create-an-issue">
+<section id="create-an-issue">
 <h3>Create an issue<a class="headerlink" href="#create-an-issue" title="Permalink to this headline"></a></h3>
 <ol class="arabic simple">
 <li><p>If you happen to find a bug, please file a new issue filling the ‘Bug report’ template.</p></li>
 <li><p>Set the appropriate labels, so we can categorise it easily.</p></li>
 <li><p>Wait for any core developer’s feedback on it.</p></li>
 </ol>
-</div>
-<div class="section" id="submit-a-pull-request">
+</section>
+<section id="submit-a-pull-request">
 <h3>Submit a Pull Request<a class="headerlink" href="#submit-a-pull-request" title="Permalink to this headline"></a></h3>
 <ol class="arabic simple">
 <li><p>Create an issue following the previous steps.</p></li>
@@ -128,13 +150,13 @@
 <li><p>Run the tests!</p></li>
 <li><p>Submit a pull request from your fork’s branch.</p></li>
 </ol>
-</div>
-</div>
-<div class="section" id="license">
+</section>
+</section>
+<section id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline"></a></h2>
 <p>This project is distributed under the <a class="reference external" href="https://raw.githubusercontent.com/minos-framework/minos-python/main/LICENSE">MIT</a> license.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
