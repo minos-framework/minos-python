@@ -104,7 +104,7 @@ class SagaResponse:
         else:
             related_services = set()
 
-        return SagaResponse(message.data, related_services, message.status, uuid)
+        return SagaResponse(message.content, related_services, message.status, uuid)
 
     # noinspection PyUnusedLocal
     async def content(self, **kwargs) -> Any:
