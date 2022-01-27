@@ -504,6 +504,7 @@ aiopg = "^1.2.1"
 crontab = "^0.23.0"
 dependency-injector = "^4.32.2"
 minos-microservice-common = "^0.3.0"
+orjson = "^3.6.5"
 
 [package.source]
 type = "directory"

@@ -458,7 +458,7 @@ develop = true
 
 [package.dependencies]
 minos-microservice-common = "^0.3.4"
-minos-microservice-networks = {path = "../minos-microservice-networks", develop = true}
+minos-microservice-networks = "^0.3.0"
 
 [package.source]
 type = "directory"
@@ -966,7 +966,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "6eb3d63202b5ff9dc23e422ef3752f204fa619e59ad09ab19a16a8812c625111"
+content-hash = "c91b1fd59d007d9d1a52ec6720ee101eceeaecdb5d8bcfa99b948d60036f1319"
 
 [metadata.files]
 aiohttp = [
