@@ -17,7 +17,7 @@ master_doc = 'index'
 
 project = 'Minos Python'
 copyright = "2021, Clariteia"
-author = "Clariteia Devs"
+author = "Minos Framework Devs"
 
 language = None
 

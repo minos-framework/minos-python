@@ -30,7 +30,7 @@ class TestAggregateWithPostgreSql(MinosTestCase, PostgresAsyncTestCase):
         self.transaction_repository = PostgreSqlTransactionRepository.from_config(self.config)
 
         self.event_repository = PostgreSqlEventRepository.from_config(
-            self.config, transaction_repository=self.transaction_repository,
+            self.config, transaction_repository=self.transaction_repository
         )
         self.snapshot_repository = PostgreSqlSnapshotRepository.from_config(
             self.config, event_repository=self.event_repository, transaction_repository=self.transaction_repository

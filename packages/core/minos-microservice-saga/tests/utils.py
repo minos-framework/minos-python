@@ -3,7 +3,6 @@ from __future__ import (
 )
 
 import sys
-import typing as t
 import unittest
 from pathlib import (
     Path,
@@ -12,9 +11,6 @@ from typing import (
     Any,
 )
 
-from aiomisc.pool import (
-    T,
-)
 from dependency_injector import (
     containers,
     providers,
@@ -33,7 +29,9 @@ from minos.common import (
     MinosSetup,
 )
 from minos.networks import (
-    REQUEST_REPLY_TOPIC_CONTEXT_VAR,
+    BrokerClientPool,
+    InMemoryBrokerPublisher,
+    InMemoryBrokerSubscriberBuilder,
 )
 from minos.saga import (
     Saga,
@@ -43,6 +41,7 @@ from minos.saga import (
 )
 
 BASE_PATH = Path(__file__).parent
+CONFIG_FILE_PATH = BASE_PATH / "config.yml"
 
 
 class MinosTestCase(unittest.IsolatedAsyncioTestCase):
@@ -51,12 +50,12 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
 
         self.config = MinosConfig(BASE_PATH / "config.yml")
 
-        self.broker_publisher = FakeBrokerPublisher()
-        self.broker = FakeBroker("TheReplyTopic", self.broker_publisher)
-        self.broker_pool = FakePool(self.broker)
+        self.broker_publisher = InMemoryBrokerPublisher()
+        self.broker_pool = BrokerClientPool.from_config(CONFIG_FILE_PATH)
+        self.broker_subscriber_builder = InMemoryBrokerSubscriberBuilder()
 
         self.lock = FakeLock()
-        self.lock_pool = FakePool(self.lock)
+        self.lock_pool = FakeLockPool()
 
         self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
         self.event_repository = InMemoryEventRepository(
@@ -72,12 +71,18 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         self.container.config = providers.Object(self.config)
         self.container.broker_pool = providers.Object(self.broker_pool)
         self.container.broker_publisher = providers.Object(self.broker_publisher)
+        self.container.broker_subscriber_builder = providers.Object(self.broker_subscriber_builder)
         self.container.lock_pool = providers.Object(self.lock_pool)
         self.container.transaction_repository = providers.Object(self.transaction_repository)
         self.container.event_repository = providers.Object(self.event_repository)
         self.container.snapshot_repository = providers.Object(self.snapshot_repository)
         self.container.wire(
-            modules=[sys.modules["minos.saga"], sys.modules["minos.aggregate"], sys.modules["minos.common"]]
+            modules=[
+                sys.modules["minos.networks"],
+                sys.modules["minos.saga"],
+                sys.modules["minos.aggregate"],
+                sys.modules["minos.common"],
+            ]
         )
 
     async def asyncSetUp(self):
@@ -118,62 +123,17 @@ class FakeLock(Lock):
             key = "fake"
         super().__init__(key, *args, **kwargs)
 
-    async def __aenter__(self):
-        """For testing purposes."""
-        return self
-
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """For testing purposes."""
+        return
 
 
-class FakeBroker:
+class FakeLockPool(MinosPool):
     """For testing purposes."""
 
-    def __init__(self, topic, publisher):
-        super().__init__()
-        self.topic = topic
-        self.publisher = publisher
-        self._token = None
+    async def _create_instance(self):
+        return FakeLock()
 
-    async def send(self, *args, **kwargs) -> None:
-        """For testing purposes."""
-        await self.publisher.send(*args, reply_topic=self.topic, **kwargs)
-
-    async def get_many(self, count: int, *args, **kwargs) -> list[Any]:
-        """For testing purposes."""
-        return [await self.get_one(*args, **kwargs) for _ in range(count)]
-
-    async def get_one(self, *args, **kwargs) -> Any:
-        """For testing purposes."""
-
-    async def __aenter__(self):
-        """For testing purposes."""
-        if self._token is None:
-            self._token = REQUEST_REPLY_TOPIC_CONTEXT_VAR.set(self.topic)
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """For testing purposes."""
-        if self._token is not None:
-            REQUEST_REPLY_TOPIC_CONTEXT_VAR.reset(self._token)
-            self._token = None
-
-
-class FakePool(MinosPool):
-    """For testing purposes."""
-
-    def __init__(self, instance):
-        super().__init__()
-        self.instance = instance
-
-    def acquire(self, *args, **kwargs):
-        """For testing purposes."""
-        return self.instance
-
-    async def _create_instance(self) -> T:
-        """For testing purposes."""
-
-    async def _destroy_instance(self, instance: t.Any) -> None:
+    async def _destroy_instance(self, instance) -> None:
         """For testing purposes."""
 
 

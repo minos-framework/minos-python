@@ -187,7 +187,7 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
 
         iterable = self.reader.find(
-            "tests.utils.Car", condition, ordering=Ordering.ASC("updated_at"), transaction_uuid=self.transaction_3,
+            "tests.utils.Car", condition, ordering=Ordering.ASC("updated_at"), transaction_uuid=self.transaction_3
         )
         observed = [v async for v in iterable]
 
@@ -278,7 +278,7 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
         observed = await self.reader.get("tests.utils.Car", self.uuid_2)
 
         expected = Car(
-            3, "blue", uuid=self.uuid_2, version=2, created_at=observed.created_at, updated_at=observed.updated_at,
+            3, "blue", uuid=self.uuid_2, version=2, created_at=observed.created_at, updated_at=observed.updated_at
         )
         self.assertEqual(expected, observed)
 
@@ -289,7 +289,7 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
         )
 
         expected = Car(
-            3, "blue", uuid=self.uuid_2, version=4, created_at=observed.created_at, updated_at=observed.updated_at,
+            3, "blue", uuid=self.uuid_2, version=4, created_at=observed.created_at, updated_at=observed.updated_at
         )
         self.assertEqual(expected, observed)
 

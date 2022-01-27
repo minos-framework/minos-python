@@ -38,7 +38,7 @@ from minos.common import (
     current_datetime,
 )
 from minos.networks import (
-    BrokerMessageStrategy,
+    BrokerMessageV1,
 )
 from tests.utils import (
     FakeAsyncIterator,
@@ -235,9 +235,7 @@ class TestEventRepository(MinosTestCase):
             return e
 
         submit_mock = AsyncMock(side_effect=_fn)
-        send_mock = AsyncMock()
         self.event_repository._submit = submit_mock
-        self.broker_publisher.send = send_mock
 
         uuid = uuid4()
         aggregate_diff = AggregateDiff(
@@ -254,34 +252,35 @@ class TestEventRepository(MinosTestCase):
 
         await self.event_repository.submit(aggregate_diff)
 
-        args = [
-            call(
-                AggregateDiff(
-                    uuid=uuid,
-                    name="example.Car",
-                    version=56,
-                    action=Action.UPDATE,
-                    created_at=created_at,
-                    fields_diff=field_diff_container,
-                ),
-                "CarUpdated",
-                strategy=BrokerMessageStrategy.MULTICAST,
-            ),
-            call(
-                AggregateDiff(
-                    uuid=uuid,
-                    name="example.Car",
-                    version=56,
-                    action=Action.UPDATE,
-                    created_at=created_at,
-                    fields_diff=field_diff_container,
-                ),
-                "CarUpdated.colors.create",
-                strategy=BrokerMessageStrategy.MULTICAST,
-            ),
-        ]
+        observed = self.broker_publisher.messages
 
-        self.assertEqual(args, send_mock.call_args_list)
+        self.assertEqual(2, len(observed))
+        self.assertIsInstance(observed[0], BrokerMessageV1)
+        self.assertEqual("CarUpdated", observed[0].topic)
+        self.assertEqual(
+            AggregateDiff(
+                uuid=uuid,
+                name="example.Car",
+                version=56,
+                action=Action.UPDATE,
+                created_at=created_at,
+                fields_diff=field_diff_container,
+            ),
+            observed[0].content,
+        )
+        self.assertEqual("CarUpdated.colors.create", observed[1].topic)
+        self.assertIsInstance(observed[1], BrokerMessageV1)
+        self.assertEqual(
+            AggregateDiff(
+                uuid=uuid,
+                name="example.Car",
+                version=56,
+                action=Action.UPDATE,
+                created_at=created_at,
+                fields_diff=field_diff_container,
+            ),
+            observed[1].content,
+        )
 
     async def test_submit_not_send_events(self):
         created_at = current_datetime()
@@ -295,9 +294,7 @@ class TestEventRepository(MinosTestCase):
             return e
 
         submit_mock = AsyncMock(side_effect=_fn)
-        send_mock = AsyncMock()
         self.event_repository._submit = submit_mock
-        self.broker_publisher.send = send_mock
 
         uuid = uuid4()
         aggregate_diff = EventEntry.from_aggregate_diff(
@@ -317,7 +314,9 @@ class TestEventRepository(MinosTestCase):
 
         await self.event_repository.submit(aggregate_diff)
 
-        self.assertEqual(0, send_mock.call_count)
+        observed = self.broker_publisher.messages
+
+        self.assertEqual(0, len(observed))
 
     async def test_submit_raises_missing_action(self):
         entry = EventEntry(uuid4(), "example.Car", 0, bytes())
@@ -470,7 +469,7 @@ class TestEventRepository(MinosTestCase):
 
         transaction_uuid = uuid4()
         iterable = self.event_repository.select(
-            aggregate_uuid=aggregate_uuid, aggregate_name=aggregate_name, id_gt=56, transaction_uuid=transaction_uuid,
+            aggregate_uuid=aggregate_uuid, aggregate_name=aggregate_name, id_gt=56, transaction_uuid=transaction_uuid
         )
         observed = [a async for a in iterable]
         self.assertEqual(list(range(5)), observed)

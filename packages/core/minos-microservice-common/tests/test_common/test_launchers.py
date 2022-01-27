@@ -35,7 +35,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         import tests
 
         self.launcher = EntrypointLauncher(
-            config=self.config, injections=self.injections, services=self.services, external_modules=[tests],
+            config=self.config, injections=self.injections, services=self.services, external_modules=[tests]
         )
 
     def test_from_config(self):

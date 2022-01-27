@@ -13,6 +13,9 @@ from aiohttp.web_exceptions import (
     HTTPBadRequest,
     HTTPInternalServerError,
 )
+from orjson import (
+    orjson,
+)
 
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -74,7 +77,7 @@ class TestRestHandler(PostgresAsyncTestCase):
         handler = self.handler.get_callback(_Cls._fn)
         response = await handler(json_mocked_request({"foo": "bar"}))
         self.assertIsInstance(response, web.Response)
-        self.assertEqual('{"foo": "bar"}', response.text)
+        self.assertEqual(orjson.dumps({"foo": "bar"}), response.body)
         self.assertEqual("application/json", response.content_type)
 
     async def test_get_callback_none(self):

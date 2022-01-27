@@ -27,7 +27,7 @@ async def _fn(request: Request) -> Response:
     return Response(f"{await request.content()}bar")
 
 
-Raw = namedtuple("Raw", ["headers", "data"])
+Raw = namedtuple("Raw", ["headers", "content"])
 
 
 class TestMiddleware(MinosTestCase):

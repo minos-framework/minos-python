@@ -22,9 +22,7 @@ class TestRequest(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(Request, ABC))
         # noinspection PyUnresolvedReferences
-        self.assertEqual(
-            {"__eq__", "__repr__", "has_content", "has_params", "user"}, Request.__abstractmethods__,
-        )
+        self.assertEqual({"__eq__", "__repr__", "has_content", "has_params", "user"}, Request.__abstractmethods__)
 
     async def test_content_raises(self):
         class _Request(Request):
@@ -94,18 +92,6 @@ class TestResponse(unittest.IsolatedAsyncioTestCase):
     async def test_content_simple(self):
         response = Response(1234)
         self.assertEqual(1234, await response.content())
-
-    async def test_raw_content(self):
-        response = Response(self.data)
-        self.assertEqual([item.avro_data for item in self.data], await response.raw_content())
-
-    async def test_raw_content_single(self):
-        response = Response(self.data[0])
-        self.assertEqual(self.data[0].avro_data, await response.raw_content())
-
-    async def test_raw_content_simple(self):
-        response = Response(1234)
-        self.assertEqual(1234, await response.raw_content())
 
     async def test_eq_true(self):
         self.assertEqual(Response(self.data), Response(self.data))

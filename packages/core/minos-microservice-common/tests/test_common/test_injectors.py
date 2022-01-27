@@ -52,7 +52,7 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(injector.lock_pool, injector.container.lock_pool())
 
     async def test_wire_unwire(self):
-        injector = DependencyInjector(self.config, lock_pool=FakeLockPool,)
+        injector = DependencyInjector(self.config, lock_pool=FakeLockPool)
 
         mock = MagicMock()
         injector.container.wire = mock

@@ -18,10 +18,6 @@ from uuid import (
     UUID,
 )
 
-from minos.common import (
-    AvroDataEncoder,
-)
-
 from ..exceptions import (
     MinosException,
     NotHasContentException,
@@ -99,12 +95,15 @@ class Request(ABC):
         raise NotImplementedError
 
 
+sentinel = object()
+
+
 class Response:
     """Response definition."""
 
     __slots__ = "_data"
 
-    def __init__(self, data: Any):
+    def __init__(self, data: Any = sentinel):
         self._data = data
 
     # noinspection PyUnusedLocal
@@ -116,14 +115,13 @@ class Response:
         """
         return self._data
 
-    # noinspection PyUnusedLocal
-    async def raw_content(self, **kwargs) -> Any:
-        """Raw response content.
+    @property
+    def has_content(self) -> bool:
+        """Check if the request has content.
 
-        :param kwargs: Additional named arguments.
-        :return: A list of raw items.
+        :return: ``True`` if it has content or ``False`` otherwise.
         """
-        return AvroDataEncoder(self._data).build()
+        return self._data is not sentinel
 
     def __eq__(self, other: Response) -> bool:
         return type(self) == type(other) and self._data == other._data

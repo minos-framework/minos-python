@@ -36,7 +36,9 @@ from minos.common import (
     NotProvidedException,
 )
 from minos.networks import (
-    BrokerMessageStrategy,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
+    BrokerMessageV1Strategy,
     BrokerPublisher,
 )
 
@@ -185,7 +187,7 @@ class EventRepository(ABC, MinosSetup):
         iterable = self._transaction_repository.select(
             destination_uuid=entry.transaction_uuid,
             uuid_ne=transaction_uuid_ne,
-            status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING,),
+            status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING),
         )
 
         transaction_uuids = {e.uuid async for e in iterable}
@@ -216,9 +218,13 @@ class EventRepository(ABC, MinosSetup):
             Action.UPDATE: "Updated",
             Action.DELETE: "Deleted",
         }
-
         topic = f"{aggregate_diff.simplified_name}{suffix_mapper[aggregate_diff.action]}"
-        futures = [self._broker_publisher.send(aggregate_diff, topic, strategy=BrokerMessageStrategy.MULTICAST)]
+        message = BrokerMessageV1(
+            topic=topic,
+            payload=BrokerMessageV1Payload(content=aggregate_diff),
+            strategy=BrokerMessageV1Strategy.MULTICAST,
+        )
+        futures = [self._broker_publisher.send(message)]
 
         if aggregate_diff.action == Action.UPDATE:
             from ...models import (
@@ -230,11 +236,13 @@ class EventRepository(ABC, MinosSetup):
                 composed_topic = f"{topic}.{diff.name}"
                 if isinstance(diff, IncrementalFieldDiff):
                     composed_topic += f".{diff.action.value}"
-                futures.append(
-                    self._broker_publisher.send(
-                        decomposed_aggregate_diff, composed_topic, strategy=BrokerMessageStrategy.MULTICAST
-                    )
+
+                message = BrokerMessageV1(
+                    topic=composed_topic,
+                    payload=BrokerMessageV1Payload(content=decomposed_aggregate_diff),
+                    strategy=BrokerMessageV1Strategy.MULTICAST,
                 )
+                futures.append(self._broker_publisher.send(message))
 
         await gather(*futures)
 
