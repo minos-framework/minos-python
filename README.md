@@ -33,11 +33,11 @@ This project follows a modular structure based on python packages.
 
 The core packages provide the base implementation of the framework.
 
-* [minos-microservice-aggregate](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-aggregate): The implementation of the Aggregate pattern.
-* [minos-microservice-common](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-common): The implementation of common classes and utilities to be used by another packages.
-* [minos-microservice-cqrs](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-cqrs): The implementation of the CQRS pattern.
-* [minos-microservice-networks](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-networks): The implementation of the rest server, the broker client, the discovery connector, etc.
-* [minos-microservice-saga](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-saga): The implementation of the SAGA pattern.
+* [minos-microservice-aggregate](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-aggregate): The Aggregate pattern implementation.
+* [minos-microservice-common](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-common): The common core.
+* [minos-microservice-cqrs](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-cqrs): The CQRS pattern implementation.
+* [minos-microservice-networks](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-networks): The networks core.
+* [minos-microservice-saga](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-saga): The SAGA pattern implementation.
 
 ### Plugins
 
