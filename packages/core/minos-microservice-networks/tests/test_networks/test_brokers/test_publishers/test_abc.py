@@ -1,41 +1,45 @@
 import unittest
+from abc import (
+    ABC,
+)
+from unittest.mock import (
+    AsyncMock,
+    call,
+)
 
-import aiopg
-
-from minos.common.testing import (
-    PostgresAsyncTestCase,
+from minos.common import (
+    MinosSetup,
 )
 from minos.networks import (
-    BrokerPublisherSetup,
+    BrokerMessage,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
+    BrokerPublisher,
 )
-from tests.utils import (
-    BASE_PATH,
-)
 
 
-class TestBrokerSetup(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+class _BrokerPublisher(BrokerPublisher):
+    """For testing purposes."""
 
-    def setUp(self) -> None:
-        super().setUp()
-        self.broker_setup = BrokerPublisherSetup(**self.config.broker.queue._asdict())
+    async def _send(self, message: BrokerMessage) -> None:
+        """For testing purposes."""
 
-    async def test_setup(self):
-        async with self.broker_setup:
-            pass
 
-        async with aiopg.connect(**self.broker_queue_db) as connection:
-            async with connection.cursor() as cursor:
-                await cursor.execute(
-                    "SELECT 1 "
-                    "FROM information_schema.tables "
-                    "WHERE table_schema = 'public' AND table_name = 'producer_queue';"
-                )
-                ret = []
-                async for row in cursor:
-                    ret.append(row)
+class TestBrokerPublisher(unittest.IsolatedAsyncioTestCase):
+    def test_abstract(self):
+        self.assertTrue(issubclass(BrokerPublisher, (ABC, MinosSetup)))
+        # noinspection PyUnresolvedReferences
+        self.assertEqual({"_send"}, BrokerPublisher.__abstractmethods__)
 
-        assert ret == [(1,)]
+    async def test_send(self):
+        publisher = _BrokerPublisher()
+        mock = AsyncMock()
+        publisher._send = mock
+
+        message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
+        await publisher.send(message)
+
+        self.assertEqual([call(message)], mock.call_args_list)
 
 
 if __name__ == "__main__":

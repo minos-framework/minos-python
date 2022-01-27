@@ -51,7 +51,7 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
         }
         try:
             updated_at = await self.submit_query_and_fetchone(
-                _INSERT_TRANSACTIONS_VALUES_QUERY, params, lock=transaction.uuid.int & (1 << 32) - 1,
+                _INSERT_TRANSACTIONS_VALUES_QUERY, params, lock=transaction.uuid.int & (1 << 32) - 1
             )
         except StopAsyncIteration:
             raise TransactionRepositoryConflictException(

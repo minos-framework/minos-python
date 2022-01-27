@@ -147,3 +147,10 @@ History
 
 * Fix bug related with `Transaction` scopes and sub-`Saga` executions launched from `RemoteStep` calls
 * Add support for `minos-microservice-network~=0.3.1`.
+
+0.4.0 (2022-01-27)
+------------------
+
+* Be compatible with `minos-microservice-common~=0.4.0`.
+* Be compatible with `minos-microservice-aggregate~=0.4.0`.
+* Be compatible with `minos-microservice-networks~=0.4.0`.

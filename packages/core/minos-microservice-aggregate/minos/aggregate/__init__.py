@@ -1,6 +1,6 @@
-__author__ = """Clariteia Devs"""
-__email__ = "devs@clariteia.com"
-__version__ = "0.2.4"
+__author__ = "Minos Framework Devs"
+__email__ = "hey@minos.run"
+__version__ = "0.4.0"
 
 from .contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,

@@ -38,9 +38,7 @@ class TransactionRepository(ABC, MinosSetup):
     """Transaction Repository base class."""
 
     @inject
-    def __init__(
-        self, lock_pool: MinosPool[Lock] = Provide["lock_pool"], *args, **kwargs,
-    ):
+    def __init__(self, lock_pool: MinosPool[Lock] = Provide["lock_pool"], *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         if lock_pool is None or isinstance(lock_pool, Provide):

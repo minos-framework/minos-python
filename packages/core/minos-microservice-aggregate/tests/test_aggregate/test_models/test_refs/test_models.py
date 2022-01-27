@@ -4,10 +4,6 @@ from typing import (
     Generic,
     Union,
 )
-from unittest.mock import (
-    call,
-    patch,
-)
 from uuid import (
     UUID,
     uuid4,
@@ -23,6 +19,10 @@ from minos.common import (
     Field,
     Model,
     ModelType,
+)
+from minos.networks import (
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
 )
 from tests.utils import (
     MinosTestCase,
@@ -47,8 +47,7 @@ class TestSubAggregate(unittest.TestCase):
         self.assertEqual(3028, product.quantity)
 
 
-FakeEntry = ModelType.build("FakeEntry", {"data": Any})
-FakeMessage = ModelType.build("FakeMessage", {"data": Any})
+FakeMessage = ModelType.build("FakeMessage", {"content": Any})
 
 Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
 Foo = ModelType.build("Foo", {"another": ModelRef[Bar]})
@@ -220,16 +219,20 @@ class TestModelRef(MinosTestCase):
     async def test_resolve(self):
         another = uuid4()
 
+        self.broker_subscriber_builder.with_messages([BrokerMessageV1("", BrokerMessageV1Payload(Bar(another, 1)))])
+
         ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
         self.assertEqual(ref.data, another)
 
-        with patch("tests.utils.FakeBroker.send") as send_mock:
-            with patch("tests.utils.FakeBroker.get_one") as get_many:
-                get_many.return_value = FakeEntry(FakeMessage(Bar(another, 1)))
-                await ref.resolve()
+        await ref.resolve()
 
-        self.assertEqual([call(data={"uuid": another}, topic="GetBar")], send_mock.call_args_list)
+        observed = self.broker_publisher.messages
+        self.assertEqual(1, len(observed))
+
+        self.assertIsInstance(observed[0], BrokerMessageV1)
+        self.assertEqual("GetBar", observed[0].topic)
+        self.assertEqual({"uuid": another}, observed[0].content)
         self.assertEqual(ref.data, Bar(another, 1))
 
     async def test_resolve_already(self):
@@ -237,10 +240,10 @@ class TestModelRef(MinosTestCase):
 
         ref = ModelRef(Bar(uuid, 1))
 
-        with patch("tests.utils.FakeBroker.send") as send_mock:
-            await ref.resolve()
+        await ref.resolve()
 
-        self.assertEqual([], send_mock.call_args_list)
+        observed = self.broker_publisher.messages
+        self.assertEqual(0, len(observed))
 
     async def test_resolved(self):
         self.assertFalse(ModelRef(uuid4()).resolved)

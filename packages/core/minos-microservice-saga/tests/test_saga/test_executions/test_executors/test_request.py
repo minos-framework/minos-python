@@ -12,6 +12,8 @@ from minos.common import (
 )
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
 )
 from minos.saga import (
     Executor,
@@ -43,6 +45,7 @@ class TestRequestExecutor(MinosTestCase):
 
     def test_constructor_without_broker(self):
         with self.assertRaises(NotProvidedException):
+            # noinspection PyTypeChecker
             RequestExecutor(broker_publisher=None, execution_uuid=self.execution_uuid, user=self.user)
 
     async def test_exec(self):
@@ -55,16 +58,24 @@ class TestRequestExecutor(MinosTestCase):
 
         self.assertEqual(1, mock.call_count)
         args = call(
-            data=Foo("create_product!"),
-            topic="CreateProduct",
-            headers={"saga": str(self.execution_uuid), "transactions": str(self.execution_uuid)},
-            user=self.user,
-            reply_topic="orderReply",
+            BrokerMessageV1(
+                topic="CreateProduct",
+                identifier=mock.call_args.args[0].identifier,
+                payload=BrokerMessageV1Payload(
+                    content=Foo("create_product!"),
+                    headers={
+                        "saga": str(self.execution_uuid),
+                        "transactions": str(self.execution_uuid),
+                        "user": str(self.user),
+                    },
+                ),
+                reply_topic="orderReply",
+            ),
         )
         self.assertEqual(args, mock.call_args)
 
     async def test_exec_none_user(self):
-        executor = RequestExecutor(execution_uuid=self.execution_uuid, user=None,)
+        executor = RequestExecutor(execution_uuid=self.execution_uuid, user=None)
         operation = SagaOperation(send_create_product)
         context = SagaContext(product=Foo("create_product!"))
 
@@ -74,11 +85,15 @@ class TestRequestExecutor(MinosTestCase):
 
         self.assertEqual(1, mock.call_count)
         args = call(
-            data=Foo("create_product!"),
-            topic="CreateProduct",
-            headers={"saga": str(self.execution_uuid), "transactions": str(self.execution_uuid)},
-            user=None,
-            reply_topic="orderReply",
+            BrokerMessageV1(
+                topic="CreateProduct",
+                identifier=mock.call_args.args[0].identifier,
+                payload=BrokerMessageV1Payload(
+                    content=Foo("create_product!"),
+                    headers={"saga": str(self.execution_uuid), "transactions": str(self.execution_uuid)},
+                ),
+                reply_topic="orderReply",
+            ),
         )
         self.assertEqual(args, mock.call_args)
 
@@ -86,7 +101,7 @@ class TestRequestExecutor(MinosTestCase):
         another = uuid4()
         request_headers = {"foo": "bar", "transactions": str(another)}
         REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
-        executor = RequestExecutor(execution_uuid=self.execution_uuid, user=None,)
+        executor = RequestExecutor(execution_uuid=self.execution_uuid, user=None)
         operation = SagaOperation(send_create_product)
         context = SagaContext(product=Foo("create_product!"))
 
@@ -96,15 +111,19 @@ class TestRequestExecutor(MinosTestCase):
 
         args = [
             call(
-                data=Foo("create_product!"),
-                topic="CreateProduct",
-                headers={
-                    "saga": str(self.execution_uuid),
-                    "transactions": f"{another!s},{self.execution_uuid!s}",
-                    "foo": "bar",
-                },
-                user=None,
-                reply_topic="orderReply",
+                BrokerMessageV1(
+                    topic="CreateProduct",
+                    identifier=mock.call_args.args[0].identifier,
+                    payload=BrokerMessageV1Payload(
+                        content=Foo("create_product!"),
+                        headers={
+                            "saga": str(self.execution_uuid),
+                            "transactions": f"{another!s},{self.execution_uuid!s}",
+                            "foo": "bar",
+                        },
+                    ),
+                    reply_topic="orderReply",
+                ),
             )
         ]
         self.assertEqual(args, mock.call_args_list)

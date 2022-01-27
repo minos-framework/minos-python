@@ -17,7 +17,7 @@ from ..locks import (
 
 
 class PostgreSqlLock(Lock):
-    """"PostgreSql Lock class."""
+    """ "PostgreSql Lock class."""
 
     cursor: Optional[Cursor]
 

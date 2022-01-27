@@ -100,7 +100,7 @@ class AvroDataEncoder(DataEncoder):
         if isinstance(value, UUID):
             return self._build_uuid(value, **kwargs)
 
-        if isinstance(value, (list, set,)):
+        if isinstance(value, (list, set)):
             return [self._build(v, **kwargs) for v in value]
 
         if isinstance(value, dict):
