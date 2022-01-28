@@ -33,5 +33,10 @@ install:
 update:
 	poetry update
 
-pre-commit-install:
-	pre-commit install --hook-type pre-push
+check:
+	$(MAKE) install
+	$(MAKE) reformat
+	$(MAKE) lint
+	$(MAKE) test
+	$(MAKE) docs
+	$(MAKE) dist
