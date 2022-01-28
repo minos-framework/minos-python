@@ -250,8 +250,8 @@ class RestRequest(Request):
 class RestResponse(Response):
     """Rest Response class."""
 
-    def __init__(self, *args, content_type: str = "application/json"):
-        super().__init__(*args)
+    def __init__(self, *args, content_type: str = "application/json", **kwargs):
+        super().__init__(*args, **kwargs)
         self.content_type = content_type
 
     @classmethod
