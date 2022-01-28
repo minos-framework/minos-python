@@ -26,6 +26,7 @@ from minos.common import (
 )
 from minos.networks import (
     EnrouteDecorator,
+    HandlerWrapper,
     Request,
     WrappedRequest,
 )
@@ -59,9 +60,9 @@ class Service(ABC):
     def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
         result = dict()
         for name, fn in getmembers(cls, predicate=lambda x: ismethod(x) or isfunction(x)):
-            if not hasattr(fn, "__decorators__"):
+            if not isinstance(fn, HandlerWrapper):
                 continue
-            result[name] = fn.__decorators__
+            result[name] = fn.meta.decorators
         return result
 
     @staticmethod
