@@ -32,3 +32,6 @@ install:
 
 update:
 	poetry update
+
+pre-commit-install:
+	pre-commit install --hook-type pre-push

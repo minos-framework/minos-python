@@ -24,3 +24,10 @@ docs:
 	cp -R packages/core/minos-microservice-saga/docs/_build/html $(DOCS_TARGET)/core/minos-microservice-saga
 
 	poetry run $(MAKE) --directory=docs html
+
+pre-commit-install:
+	$(MAKE) --directory=packages/core/minos-microservice-aggregate pre-commit-install
+	$(MAKE) --directory=packages/core/minos-microservice-common pre-commit-install
+	$(MAKE) --directory=packages/core/minos-microservice-cqrs pre-commit-install
+	$(MAKE) --directory=packages/core/minos-microservice-networks pre-commit-install
+	$(MAKE) --directory=packages/core/minos-microservice-saga pre-commit-install
