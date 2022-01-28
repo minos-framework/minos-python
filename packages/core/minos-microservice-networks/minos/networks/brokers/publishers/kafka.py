@@ -14,9 +14,6 @@ from contextlib import (
 from aiokafka import (
     AIOKafkaProducer,
 )
-from cached_property import (
-    cached_property,
-)
 
 from minos.common import (
     MinosConfig,
@@ -40,6 +37,8 @@ class KafkaBrokerPublisher(BrokerPublisher):
         self.broker_host = broker_host
         self.broker_port = broker_port
 
+        self._client = None
+
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> KafkaBrokerPublisher:
         kwargs["broker_host"] = config.broker.host
@@ -59,10 +58,15 @@ class KafkaBrokerPublisher(BrokerPublisher):
     async def _send(self, message: BrokerMessage) -> None:
         await self.client.send_and_wait(message.topic, message.avro_bytes)
 
-    @cached_property
+    @property
     def client(self) -> AIOKafkaProducer:
         """Get the client instance.
 
         :return: An ``AIOKafkaProducer`` instance.
         """
+        if self._client is None:
+            self._client = self._build_client()
+        return self._client
+
+    def _build_client(self) -> AIOKafkaProducer:
         return AIOKafkaProducer(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
