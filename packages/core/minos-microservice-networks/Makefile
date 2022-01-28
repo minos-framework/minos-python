@@ -32,3 +32,11 @@ install:
 
 update:
 	poetry update
+
+check:
+	$(MAKE) install
+	$(MAKE) reformat
+	$(MAKE) lint
+	$(MAKE) test
+	$(MAKE) docs
+	$(MAKE) dist

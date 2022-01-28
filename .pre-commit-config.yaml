@@ -1,0 +1,38 @@
+repos:
+    -   repo: local
+        hooks:
+
+            -   id: minos-microservice-aggregate-check
+                pass_filenames: false
+                entry: make --directory=packages/core/minos-microservice-aggregate check
+                name: Check minos-microservice-aggregate
+                files: ^packages/core/minos-microservice-aggregate/
+                language: system
+
+            -   id: minos-microservice-common-check
+                pass_filenames: false
+                entry: make --directory=packages/core/minos-microservice-common check
+                name: Check minos-microservice-common
+                files: ^packages/core/minos-microservice-common/
+                language: system
+
+            -   id: minos-microservice-cqrs-check
+                pass_filenames: false
+                entry: make --directory=packages/core/minos-microservice-cqrs check
+                name: Check minos-microservice-cqrs
+                files: ^packages/core/minos-microservice-cqrs/
+                language: system
+
+            -   id: minos-microservice-networks-check
+                pass_filenames: false
+                entry: make --directory=packages/core/minos-microservice-networks check
+                name: Check minos-microservice-networks
+                files: ^packages/core/minos-microservice-networks/
+                language: system
+
+            -   id: minos-microservice-saga-check
+                pass_filenames: false
+                entry: make --directory=packages/core/minos-microservice-saga check
+                name: Check minos-microservice-saga
+                files: ^packages/core/minos-microservice-saga/
+                language: system
