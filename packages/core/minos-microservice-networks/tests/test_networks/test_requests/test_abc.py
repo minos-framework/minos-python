@@ -85,19 +85,25 @@ class TestResponse(unittest.IsolatedAsyncioTestCase):
         response = Response(self.data)
         self.assertEqual(self.data, await response.content())
 
-    async def test_content_single(self):
-        response = Response(self.data[0])
-        self.assertEqual(self.data[0], await response.content())
+    def test_status_default(self):
+        response = Response(self.data)
+        self.assertEqual(200, response.status)
 
-    async def test_content_simple(self):
-        response = Response(1234)
-        self.assertEqual(1234, await response.content())
+    def test_status(self):
+        response = Response(self.data, status=202)
+        self.assertEqual(202, response.status)
+
+    def test_status_raises(self):
+        with self.assertRaises(ValueError):
+            # noinspection PyTypeChecker
+            Response(self.data, status="wrong")
 
     async def test_eq_true(self):
-        self.assertEqual(Response(self.data), Response(self.data))
+        self.assertEqual(Response(self.data, status=202), Response(self.data, status=202))
 
     async def test_eq_false(self):
         self.assertNotEqual(Response(self.data[0]), Response(self.data[1]))
+        self.assertNotEqual(Response(self.data[0], status=400), Response(self.data[0], status=202))
 
     async def test_repr(self):
         response = Response(self.data)

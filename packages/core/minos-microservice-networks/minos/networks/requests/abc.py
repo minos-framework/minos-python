@@ -101,10 +101,13 @@ sentinel = object()
 class Response:
     """Response definition."""
 
-    __slots__ = "_data"
+    __slots__ = "_data", "_status"
 
-    def __init__(self, data: Any = sentinel):
+    def __init__(self, data: Any = sentinel, *, status: int = 200):
+        if not isinstance(status, int):
+            raise ValueError(f"The status argument must be integer. Obtained: {status}")
         self._data = data
+        self._status = status
 
     # noinspection PyUnusedLocal
     async def content(self, **kwargs) -> Any:
@@ -123,8 +126,16 @@ class Response:
         """
         return self._data is not sentinel
 
+    @property
+    def status(self) -> int:
+        """The status code of the response.
+
+        :return: An ``int`` value.
+        """
+        return self._status
+
     def __eq__(self, other: Response) -> bool:
-        return type(self) == type(other) and self._data == other._data
+        return type(self) == type(other) and self._data == other._data and self._status == other._status
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self._data!r})"
