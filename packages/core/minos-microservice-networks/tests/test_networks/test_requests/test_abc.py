@@ -85,6 +85,10 @@ class TestResponse(unittest.IsolatedAsyncioTestCase):
         response = Response(self.data)
         self.assertEqual(self.data, await response.content())
 
+    async def test_content_empty(self):
+        response = Response()
+        self.assertEqual(None, await response.content())
+
     def test_status_default(self):
         response = Response(self.data)
         self.assertEqual(200, response.status)

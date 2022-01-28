@@ -116,6 +116,8 @@ class Response:
         :param kwargs: Additional named arguments.
         :return: A list of items.
         """
+        if not self.has_content:
+            return None
         return self._data
 
     @property
@@ -146,3 +148,15 @@ class Response:
 
 class ResponseException(MinosException):
     """Response Exception class."""
+
+    def __init__(self, *args, status: int = 400):
+        super().__init__(*args)
+        self._status = status
+
+    @property
+    def status(self) -> int:
+        """The status code of the response.
+
+        :return: An ``int`` value.
+        """
+        return self._status
