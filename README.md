@@ -17,7 +17,7 @@
 [![Coverage](https://codecov.io/github/minos-framework/minos-python/coverage.svg?branch=main)](https://codecov.io/gh/minos-framework/minos-python)
 [![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-Ask%20a%20question-green)](https://stackoverflow.com/questions/tagged/minos)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/minos-framework/community)
-[![](https://tokei.rs/b1/github/minos-framework/minos-python?category=code)](https://github.com/minos-framework/minos-python).
+[![](https://tokei.rs/b1/github/minos-framework/minos-python?category=code)](https://github.com/minos-framework/minos-python)
 
 ## Summary
 
