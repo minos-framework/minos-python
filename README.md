@@ -16,6 +16,48 @@
 
 Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python. Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an asynchronous environment.
 
+## Foundational Patterns
+
+The `minos` framework is built strongly following the following set of patterns:
+
+### Application architecture
+
+* [Microservice architecture](https://microservices.io/patterns/microservices.html): Architect an application as a collection of loosely coupled services.
+
+### Decomposition
+
+* [Decompose by subdomain](https://microservices.io/patterns/decomposition/decompose-by-subdomain.html): Define services corresponding to Domain-Driven Design (DDD) subdomains
+* [Self-contained Service](https://microservices.io/patterns/decomposition/self-contained-service.html): Microservices can respond to a synchronous request without waiting for the response from any other service.
+
+### Data management
+
+* [Database per service](https://microservices.io/patterns/data/database-per-service.html): Keep each microservice's persistent data private to that service and accessible only via its API. A service's transactions only involve its database.
+* [Saga](https://microservices.io/patterns/data/saga.html): Transaction that spans multiple services.
+* [CQRS](https://microservices.io/patterns/data/cqrs.html): view database, which is a read-only replica that is designed to support queries that retrieves data from microservice. The application keeps the replica up to date by subscribing to Domain events published by the service that own the data.
+* [Domain event](https://microservices.io/patterns/data/domain-event.html): A service often needs to publish events when it updates its data. These events might be needed, for example, to update a CQRS view.
+* [Event Sourcing](https://microservices.io/patterns/data/event-sourcing.html): Event sourcing persists the state of a business entity such an Order or a Customer as a sequence of state-changing events. Whenever the state of a business entity changes, a new event is appended to the list of events. Since saving an event is a single operation, it is inherently atomic. The application reconstructs an entity's current state by replaying the events.
+
+### Communication style
+
+* [Messaging](https://microservices.io/patterns/communication-style/messaging.html): Services communicating by exchanging messages over messaging channels. (Apache Kafka is used in this case)
+
+### External APIs
+
+* [API gateway](https://microservices.io/patterns/apigateway.html): Single entry point for all clients. The API gateway proxy/route to the appropriate service.
+
+### Service discovery
+
+* [Service registry](https://microservices.io/patterns/service-registry.html): Database of services. A service registry might invoke a service instance's health check API to verify that it is able to handle requests
+* [Self Registration](https://microservices.io/patterns/self-registration.html): Each service instance register on startup and unregister on stop.
+
+### Security
+
+* [Access token](https://microservices.io/patterns/security/access-token.html): The API Gateway authenticates the request and passes an access token (e.g. JSON Web Token) that securely identifies the requestor in each request to the services. A service can include the access token in requests it makes to other services.
+
+### Observability
+
+* [Health Check API](https://microservices.io/patterns/observability/health-check-api.html): A service has a health check API endpoint (e.g. HTTP `/health`) that returns the health of the service.
+
 ## Installation
 
 ### Guided installation
