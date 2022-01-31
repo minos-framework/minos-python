@@ -191,3 +191,8 @@ History
 * Refactor `DynamicBroker` and `DynamicBrokerPool` as `BrokerClient` and `BrokerClientPool`. The new `BrokerClient` has a `send(message: BrokerMessage) -> Awaitable[None]` method for sending messages and a `receive() -> Awaitable[BrokerMessage]` to receive them.
 * Implement a builder pattern on `BrokerPublisher`
 * Be compatible with `minos-microservice-common~=0.4.0`.
+
+0.4.1 (2022-01-31)
+------------------
+
+* Update `README.md`.

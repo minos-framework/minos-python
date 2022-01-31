@@ -1,7 +1,16 @@
-# Minos Microservice Saga
+<p align="center">
+  <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
+</p>
 
-[![codecov](https://codecov.io/gh/Clariteia/minos_microservice_saga/branch/main/graph/badge.svg)](https://codecov.io/gh/Clariteia/minos_microservice_saga)
-![Tests](https://github.com/Clariteia/minos_microservice_saga/actions/workflows/python-tests.yml/badge.svg)
+## minos-microservice-saga
+
+[![PyPI Latest Release](https://img.shields.io/pypi/v/minos-microservice-saga.svg)](https://pypi.org/project/minos-microservice-saga/)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/minos-framework/minos-python/pages%20build%20and%20deployment?label=docs)](https://minos-framework.github.io/minos-python)
+[![License](https://img.shields.io/github/license/minos-framework/minos-python.svg)](https://github.com/minos-framework/minos-python/blob/main/LICENSE)
+[![Coverage](https://codecov.io/github/minos-framework/minos-python/coverage.svg?branch=main)](https://codecov.io/gh/minos-framework/minos-python)
+[![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-Ask%20a%20question-green)](https://stackoverflow.com/questions/tagged/minos)
+
+## Summary
 
 Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python.
 Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
@@ -9,75 +18,19 @@ asynchronous environment.
 
 ## Documentation
 
-The official documentation as well as the API you can find it under https://clariteia.github.io/minos_microservice_saga/. 
-Please, submit any issue regarding documentation as well!
+The official API Reference is publicly available at [GiHub Pages](https://minos-framework.github.io/minos-python).
 
-## Set up a development environment
+## Source Code
 
-Minos uses `poetry` as its default package manager. Please refer to the
-[Poetry installation guide](https://python-poetry.org/docs/#installation) for instructions on how to install it.
+The source code of this project is hosted at [GitHub](https://github.com/minos-framework/minos-python).
 
-Now you con install all the dependencies by running
-```bash
-make install
-```
+## Getting Help
 
-In order to make the pre-commits checks available to git, run
-```bash
-pre-commit install
-```
+For usage questions, the best place to go to is [StackOverflow](https://stackoverflow.com/questions/tagged/minos).
 
-Make yourself sure you are able to run the tests. Refer to the appropriate section in this guide.
+## Discussion and Development
+Most development discussions take place over the [GitHub Issues](https://github.com/minos-framework/minos-python/issues). In addition, a [Gitter channel](https://gitter.im/minos-framework/community) is available for development-related questions.
 
-## Run the tests
+## License
 
-In order to run the tests, please make sure you have the [Docker Engine](https://docs.docker.com/engine/install/)
-and [Docker Compose](https://docs.docker.com/compose/install/) installed.
-
-Move into `tests/` directory
-
-```bash
-cd tests/
-```
-Run service dependencies:
-
-```bash
-docker-compose up -d
-```
-
-Install library dependencies:
-
-```bash
-make install
-```
-
-Run tests:
-
-```bash
-make test
-```
-
-## How to contribute
-
-Minos being an open-source project, we are looking forward to having your contributions. No matter whether it is a pull
-request with new features, or the creation of an issue related to a bug you have found.
-
-Please consider these guidelines before you submit any modification.
-
-### Create an issue
-
-1. If you happen to find a bug, please file a new issue filling the 'Bug report' template.
-2. Set the appropriate labels, so we can categorise it easily.
-3. Wait for any core developer's feedback on it.
-
-### Submit a Pull Request
-
-1. Create an issue following the previous steps.
-2. Fork the project.
-3. Push your changes to a local branch.
-4. Run the tests!
-5. Submit a pull request from your fork's branch.
-
-## Credits
-
-This package was created with ![Cookiecutter](https://github.com/audreyr/cookiecutter) and the ![Minos Package](https://github.com/Clariteia/minos-pypackage) project template.
+This project is distributed under the [MIT](https://raw.githubusercontent.com/minos-framework/minos-python/main/LICENSE) license.

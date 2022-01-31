@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - '*.*.x'
   pull_request:
     paths:
       - 'packages/core/minos-microservice-saga/**'

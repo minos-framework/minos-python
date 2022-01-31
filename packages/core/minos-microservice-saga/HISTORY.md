@@ -154,3 +154,8 @@ History
 * Be compatible with `minos-microservice-common~=0.4.0`.
 * Be compatible with `minos-microservice-aggregate~=0.4.0`.
 * Be compatible with `minos-microservice-networks~=0.4.0`.
+
+0.4.1 (2022-01-31)
+------------------
+
+* Update `README.md`.
