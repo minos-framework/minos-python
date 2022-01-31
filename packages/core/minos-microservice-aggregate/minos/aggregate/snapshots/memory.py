@@ -29,8 +29,8 @@ from ..events import (
     EventRepository,
 )
 from ..exceptions import (
-    AggregateNotFoundException,
-    DeletedAggregateException,
+    NotFoundException,
+    AlreadyDeletedException,
 )
 from ..queries import (
     _Condition,
@@ -90,7 +90,7 @@ class InMemorySnapshotRepository(SnapshotRepository):
         for uuid in uuids:
             try:
                 aggregate = await self.get(aggregate_name, uuid, **kwargs)
-            except DeletedAggregateException:
+            except AlreadyDeletedException:
                 continue
 
             if condition.evaluate(aggregate):
@@ -113,10 +113,10 @@ class InMemorySnapshotRepository(SnapshotRepository):
         entries = await self._get_event_entries(aggregate_name, uuid, transaction_uuids)
 
         if not len(entries):
-            raise AggregateNotFoundException(f"Not found any entries for the {uuid!r} id.")
+            raise NotFoundException(f"Not found any entries for the {uuid!r} id.")
 
         if entries[-1].action.is_delete:
-            raise DeletedAggregateException(f"The {uuid!r} id points to an already deleted aggregate.")
+            raise AlreadyDeletedException(f"The {uuid!r} id points to an already deleted aggregate.")
 
         return self._build_aggregate(entries, **kwargs)
 

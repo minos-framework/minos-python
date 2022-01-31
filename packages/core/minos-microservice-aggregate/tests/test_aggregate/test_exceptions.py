@@ -2,8 +2,8 @@ import unittest
 
 from minos.aggregate import (
     AggregateException,
-    AggregateNotFoundException,
-    DeletedAggregateException,
+    NotFoundException,
+    AlreadyDeletedException,
     EventRepositoryException,
     SnapshotRepositoryException,
 )
@@ -23,10 +23,10 @@ class TestExceptions(unittest.TestCase):
         self.assertTrue(issubclass(SnapshotRepositoryException, AggregateException))
 
     def test_snapshot_aggregate_not_found(self):
-        self.assertTrue(issubclass(AggregateNotFoundException, SnapshotRepositoryException))
+        self.assertTrue(issubclass(NotFoundException, SnapshotRepositoryException))
 
     def test_snapshot_deleted_aggregate(self):
-        self.assertTrue(issubclass(DeletedAggregateException, SnapshotRepositoryException))
+        self.assertTrue(issubclass(AlreadyDeletedException, SnapshotRepositoryException))
 
 
 if __name__ == "__main__":

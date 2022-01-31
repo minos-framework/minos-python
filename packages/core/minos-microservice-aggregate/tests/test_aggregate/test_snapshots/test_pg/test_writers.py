@@ -13,7 +13,7 @@ from uuid import (
 from minos.aggregate import (
     Action,
     Condition,
-    DeletedAggregateException,
+    AlreadyDeletedException,
     EventEntry,
     FieldDiff,
     FieldDiffContainer,
@@ -299,7 +299,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         self.assertEqual(len(expected), len(observed))
         for exp, obs in zip(expected, observed):
             if exp.data is None:
-                with self.assertRaises(DeletedAggregateException):
+                with self.assertRaises(AlreadyDeletedException):
                     # noinspection PyStatementEffect
                     obs.build_aggregate()
             else:

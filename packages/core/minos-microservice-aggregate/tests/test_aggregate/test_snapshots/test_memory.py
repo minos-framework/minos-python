@@ -7,9 +7,9 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    AggregateNotFoundException,
+    NotFoundException,
     Condition,
-    DeletedAggregateException,
+    AlreadyDeletedException,
     EventEntry,
     FieldDiff,
     FieldDiffContainer,
@@ -282,13 +282,13 @@ class TestInMemorySnapshotRepository(MinosTestCase):
         self.assertEqual(expected, observed)
 
     async def test_get_raises(self):
-        with self.assertRaises(DeletedAggregateException):
+        with self.assertRaises(AlreadyDeletedException):
             await self.snapshot_repository.get("tests.utils.Car", self.uuid_1)
-        with self.assertRaises(AggregateNotFoundException):
+        with self.assertRaises(NotFoundException):
             await self.snapshot_repository.get("tests.utils.Car", uuid4())
 
     async def test_get_with_transaction_raises(self):
-        with self.assertRaises(DeletedAggregateException):
+        with self.assertRaises(AlreadyDeletedException):
             await self.snapshot_repository.get(
                 "tests.utils.Car", self.uuid_2, transaction=TransactionEntry(self.transaction_2)
             )
@@ -346,7 +346,7 @@ class TestInMemorySnapshotRepository(MinosTestCase):
         self.assertEqual(len(expected), len(observed))
         for exp, obs in zip(expected, observed):
             if exp.data is None:
-                with self.assertRaises(DeletedAggregateException):
+                with self.assertRaises(AlreadyDeletedException):
                     # noinspection PyStatementEffect
                     obs.build_aggregate()
             else:

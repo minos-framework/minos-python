@@ -56,17 +56,17 @@ class SnapshotRepositoryConflictException(SnapshotRepositoryException):
         self.previous = previous
         self.aggregate_diff = aggregate_diff
         super().__init__(
-            f"Version for {repr(previous.classname)} aggregate must be "
+            f"Version for {repr(previous.classname)} root entity must be "
             f"greater than {previous.version}. Obtained: {aggregate_diff.version}"
         )
 
 
-class AggregateNotFoundException(SnapshotRepositoryException):
-    """Exception to be raised when some aggregate is not found on the repository."""
+class NotFoundException(SnapshotRepositoryException):
+    """Exception to be raised when a ``RootEntity`` is not found on the repository."""
 
 
-class DeletedAggregateException(SnapshotRepositoryException):
-    """Exception to be raised when some aggregate is already deleted from the repository."""
+class AlreadyDeletedException(SnapshotRepositoryException):
+    """Exception to be raised when a ``RootEntity`` is already deleted from the repository."""
 
 
 class ValueObjectException(AggregateException):

@@ -28,7 +28,7 @@ from ..events import (
     EventEntry,
 )
 from ..exceptions import (
-    DeletedAggregateException,
+    AlreadyDeletedException,
 )
 
 if TYPE_CHECKING:
@@ -171,7 +171,7 @@ class SnapshotEntry:
         )
 
         if self.data is None:
-            raise DeletedAggregateException(f"The {self.aggregate_uuid!r} id points to an already deleted aggregate.")
+            raise AlreadyDeletedException(f"The {self.aggregate_uuid!r} id points to an already deleted aggregate.")
         data = dict(self.data)
         data |= {
             "uuid": self.aggregate_uuid,

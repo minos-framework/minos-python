@@ -7,9 +7,9 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    AggregateNotFoundException,
+    NotFoundException,
     Condition,
-    DeletedAggregateException,
+    AlreadyDeletedException,
     EventRepositoryException,
     Ordering,
 )
@@ -77,7 +77,7 @@ class TestAggregate(MinosTestCase):
         self.assertEqual(original, recovered)
 
     async def test_get_raises(self):
-        with self.assertRaises(AggregateNotFoundException):
+        with self.assertRaises(NotFoundException):
             await Car.get(NULL_UUID, **self.kwargs)
 
     async def test_update(self):
@@ -138,7 +138,7 @@ class TestAggregate(MinosTestCase):
         car.color = "red"
         car.doors = 5
 
-        with self.assertRaises(AggregateNotFoundException):
+        with self.assertRaises(NotFoundException):
             await car.refresh()
 
         await car.save()
@@ -182,7 +182,7 @@ class TestAggregate(MinosTestCase):
     async def test_delete(self):
         car = await Car.create(doors=3, color="blue", **self.kwargs)
         await car.delete()
-        with self.assertRaises(DeletedAggregateException):
+        with self.assertRaises(AlreadyDeletedException):
             await Car.get(car.uuid, **self.kwargs)
 
 

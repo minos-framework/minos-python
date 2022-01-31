@@ -17,7 +17,7 @@ from minos.common import (
 )
 
 from ...exceptions import (
-    AggregateNotFoundException,
+    NotFoundException,
 )
 from ...queries import (
     _Condition,
@@ -78,7 +78,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
                 aggregate_name, _EqualCondition("uuid", uuid), **kwargs | {"exclude_deleted": False}
             ).__anext__()
         except StopAsyncIteration:
-            raise AggregateNotFoundException(f"Some aggregates could not be found: {uuid!s}")
+            raise NotFoundException(f"Some aggregates could not be found: {uuid!s}")
 
     async def find(self, *args, **kwargs) -> AsyncIterator[RootEntity]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.

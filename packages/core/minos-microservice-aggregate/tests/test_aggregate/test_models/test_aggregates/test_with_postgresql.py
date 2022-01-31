@@ -1,7 +1,7 @@
 import unittest
 
 from minos.aggregate import (
-    DeletedAggregateException,
+    AlreadyDeletedException,
     EntitySet,
     PostgreSqlEventRepository,
     PostgreSqlSnapshotRepository,
@@ -51,7 +51,7 @@ class TestAggregateWithPostgreSql(MinosTestCase, PostgresAsyncTestCase):
         self.assertEqual(car, await Car.get(car.uuid))
 
         await car.delete()
-        with self.assertRaises(DeletedAggregateException):
+        with self.assertRaises(AlreadyDeletedException):
             await Car.get(car.uuid)
 
         car = await Car.create(doors=3, color="blue")
@@ -62,7 +62,7 @@ class TestAggregateWithPostgreSql(MinosTestCase, PostgresAsyncTestCase):
         self.assertEqual(expected, await Car.get(car.uuid))
 
         await car.delete()
-        with self.assertRaises(DeletedAggregateException):
+        with self.assertRaises(AlreadyDeletedException):
             await Car.get(car.uuid)
 
     async def test_entity_set_value_object_set(self):

@@ -25,7 +25,7 @@ from ...events import (
     EventRepository,
 )
 from ...exceptions import (
-    AggregateNotFoundException,
+    NotFoundException,
     SnapshotRepositoryConflictException,
     TransactionNotFoundException,
 )
@@ -153,7 +153,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         try:
             # noinspection PyTypeChecker
             previous = await self._select_one_aggregate(aggregate_diff.uuid, aggregate_diff.name, **kwargs)
-        except AggregateNotFoundException:
+        except NotFoundException:
             # noinspection PyTypeChecker
             aggregate_cls: Type[RootEntity] = import_module(aggregate_diff.name)
             return aggregate_cls.from_diff(aggregate_diff, **kwargs)
