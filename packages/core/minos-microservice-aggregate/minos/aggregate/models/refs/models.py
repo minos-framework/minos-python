@@ -46,7 +46,7 @@ from ..entities import (
 MT = TypeVar("MT", bound=Model)
 
 
-class ExternalAggregate(Entity):
+class ExternalEntity(Entity):
     """Aggregate Ref class."""
 
     version: int

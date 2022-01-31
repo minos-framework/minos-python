@@ -20,7 +20,7 @@ from .entities import (
     EntitySet,
 )
 from .refs import (
-    ExternalAggregate,
+    ExternalEntity,
     Ref,
     RefExtractor,
     RefInjector,

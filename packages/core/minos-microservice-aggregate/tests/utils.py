@@ -28,7 +28,7 @@ from minos.aggregate import (
     InMemoryTransactionRepository,
     Ref,
     ValueObject,
-    ValueObjectSet, ExternalAggregate,
+    ValueObjectSet, ExternalEntity,
 )
 from minos.common import (
     Lock,

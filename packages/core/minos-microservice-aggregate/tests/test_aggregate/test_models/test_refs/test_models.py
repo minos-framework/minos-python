@@ -11,7 +11,7 @@ from uuid import (
 
 from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
-    ExternalAggregate,
+    ExternalEntity,
     Ref,
 )
 from minos.common import (
@@ -29,7 +29,7 @@ from tests.utils import (
 )
 
 
-class Product(ExternalAggregate):
+class Product(ExternalEntity):
     """For testing purposes."""
 
     title: str

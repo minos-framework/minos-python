@@ -30,7 +30,7 @@ from .models import (
     AggregateDiff,
     Entity,
     EntitySet,
-    ExternalAggregate,
+    ExternalEntity,
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,

@@ -5,7 +5,7 @@ from .injectors import (
     RefInjector,
 )
 from .models import (
-    ExternalAggregate,
+    ExternalEntity,
     Ref,
 )
 from .resolvers import (

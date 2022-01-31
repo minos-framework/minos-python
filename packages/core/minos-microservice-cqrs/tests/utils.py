@@ -8,7 +8,7 @@ from pathlib import (
 
 from minos.aggregate import (
     RootEntity,
-    ExternalAggregate,
+    ExternalEntity,
     Ref,
 )
 from minos.cqrs import (
@@ -51,7 +51,7 @@ class Foo(RootEntity):
     bar: Ref[Bar]
 
 
-class Bar(ExternalAggregate):
+class Bar(ExternalEntity):
     """For testing purposes"""
 
     name: str
