@@ -465,7 +465,7 @@ class TestEventRepository(MinosTestCase):
         self.event_repository._select = mock
 
         aggregate_uuid = uuid4()
-        aggregate_name = "path.to.Aggregate"
+        aggregate_name = "path.to.Product"
 
         transaction_uuid = uuid4()
         iterable = self.event_repository.select(
@@ -477,7 +477,7 @@ class TestEventRepository(MinosTestCase):
         self.assertEqual(1, mock.call_count)
         args = call(
             aggregate_uuid=aggregate_uuid,
-            aggregate_name="path.to.Aggregate",
+            aggregate_name=aggregate_name,
             version=None,
             version_lt=None,
             version_gt=None,

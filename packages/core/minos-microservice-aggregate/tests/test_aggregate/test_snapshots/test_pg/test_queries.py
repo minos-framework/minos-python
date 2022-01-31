@@ -43,8 +43,9 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
+        self.classname = "path.to.Product"
         self.base_parameters = {
-            "aggregate_name": "path.to.Aggregate",
+            "aggregate_name": self.classname,
             "transaction_uuid_1": NULL_UUID,
         }
         self.base_select = _SELECT_ENTRIES_QUERY.format(
@@ -54,8 +55,8 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         )
 
     def test_constructor(self):
-        qb = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE)
-        self.assertEqual("path.to.Aggregate", qb.aggregate_name)
+        qb = PostgreSqlSnapshotQueryBuilder(self.classname, Condition.TRUE)
+        self.assertEqual(self.classname, qb.aggregate_name)
         self.assertEqual(Condition.TRUE, qb.condition)
         self.assertEqual(None, qb.ordering)
         self.assertEqual(None, qb.limit)
@@ -64,9 +65,9 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     def test_constructor_full(self):
         transaction_uuids = (NULL_UUID, uuid4())
         qb = PostgreSqlSnapshotQueryBuilder(
-            "path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10, transaction_uuids, True
+            self.classname, Condition.TRUE, Ordering.ASC("name"), 10, transaction_uuids, True
         )
-        self.assertEqual("path.to.Aggregate", qb.aggregate_name)
+        self.assertEqual(self.classname, qb.aggregate_name)
         self.assertEqual(Condition.TRUE, qb.condition)
         self.assertEqual(Ordering.ASC("name"), qb.ordering)
         self.assertEqual(10, qb.limit)
@@ -74,7 +75,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         self.assertTrue(qb.exclude_deleted)
 
     def test_build_submitting_context_var(self):
-        builder = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE)
+        builder = PostgreSqlSnapshotQueryBuilder(self.classname, Condition.TRUE)
 
         def _fn():
             self.assertEqual(True, IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get())
@@ -91,12 +92,12 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     def test_build_raises(self):
         with self.assertRaises(ValueError):
             # noinspection PyTypeChecker
-            PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", True).build()
+            PostgreSqlSnapshotQueryBuilder(self.classname, True).build()
 
     async def test_build_with_transactions(self):
         transaction_uuids = (NULL_UUID, uuid4())
         observed = PostgreSqlSnapshotQueryBuilder(
-            "path.to.Aggregate", Condition.TRUE, transaction_uuids=transaction_uuids
+            self.classname, Condition.TRUE, transaction_uuids=transaction_uuids
         ).build()
 
         expected_query = SQL(" WHERE ").join(
@@ -123,7 +124,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
 
     async def test_build_true(self):
         condition = Condition.TRUE
-        observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+        observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("TRUE")])
         expected_parameters = self.base_parameters
@@ -133,7 +134,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
 
     async def test_build_false(self):
         condition = Condition.FALSE
-        observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+        observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("FALSE")])
         expected_parameters = self.base_parameters
         self.assertEqual(await self._flatten_query(expected_query), await self._flatten_query(observed[0]))
@@ -143,7 +144,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         uuid = uuid4()
         condition = Condition.EQUAL("uuid", uuid)
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL('("aggregate_uuid" = %(hello)s)')])
         expected_parameters = {"hello": str(uuid)} | self.base_parameters
@@ -154,7 +155,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     async def test_build_fixed_version(self):
         condition = Condition.EQUAL("version", 1)
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL('("version" = %(hello)s)')])
         expected_parameters = {"hello": 1} | self.base_parameters
@@ -165,7 +166,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     async def test_build_fixed_created_at(self):
         condition = Condition.EQUAL("created_at", 1)
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL('("created_at" = %(hello)s)')])
         expected_parameters = {"hello": 1} | self.base_parameters
@@ -176,7 +177,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     async def test_build_fixed_updated_at(self):
         condition = Condition.EQUAL("updated_at", 1)
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL('("updated_at" = %(hello)s)')])
         expected_parameters = {"hello": 1} | self.base_parameters
@@ -187,7 +188,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     async def test_build_lower(self):
         condition = Condition.LOWER("age", 1)
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("(data#>'{age}' < %(hello)s::jsonb)")])
         expected_parameters = {"hello": 1} | self.base_parameters
@@ -198,7 +199,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     async def test_build_lower_equal(self):
         condition = Condition.LOWER_EQUAL("age", 1)
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("(data#>'{age}' <= %(hello)s::jsonb)")])
         expected_parameters = {"hello": 1} | self.base_parameters
@@ -209,7 +210,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     async def test_build_greater(self):
         condition = Condition.GREATER("age", 1)
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("(data#>'{age}' > %(hello)s::jsonb)")])
         expected_parameters = {"hello": 1} | self.base_parameters
@@ -220,7 +221,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     async def test_build_greater_equal(self):
         condition = Condition.GREATER_EQUAL("age", 1)
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("(data#>'{age}' >= %(hello)s::jsonb)")])
         expected_parameters = {"hello": 1} | self.base_parameters
@@ -231,7 +232,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     async def test_build_equal(self):
         condition = Condition.EQUAL("age", 1)
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("(data#>'{age}' = %(hello)s::jsonb)")])
         expected_parameters = {"hello": 1} | self.base_parameters
@@ -242,7 +243,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     async def test_build_not_equal(self):
         condition = Condition.NOT_EQUAL("age", 1)
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("(data#>'{age}' <> %(hello)s::jsonb)")])
         expected_parameters = {"hello": 1} | self.base_parameters
@@ -253,7 +254,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     async def test_build_in(self):
         condition = Condition.IN("age", [1, 2, 3])
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("(data#>'{age}' IN %(hello)s::jsonb)")])
         expected_parameters = {"hello": (1, 2, 3)} | self.base_parameters
@@ -264,7 +265,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     async def test_build_in_empty(self):
         condition = Condition.IN("age", [])
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("FALSE")])
         expected_parameters = self.base_parameters
@@ -275,7 +276,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     async def test_build_not(self):
         condition = Condition.NOT(Condition.LOWER("age", 1))
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("(NOT (data#>'{age}' < %(hello)s::jsonb))")])
         expected_parameters = {"hello": 1} | self.base_parameters
@@ -288,7 +289,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         with patch(
             "minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello", "goodbye"]
         ):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join(
             [self.base_select, SQL("((data#>'{age}' < %(hello)s::jsonb) AND (data#>'{level}' < %(goodbye)s::jsonb))")]
@@ -303,7 +304,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         with patch(
             "minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello", "goodbye"]
         ):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
         expected_query = SQL(" WHERE ").join(
             [self.base_select, SQL("((data#>'{age}' < %(hello)s::jsonb) OR (data#>'{level}' < %(goodbye)s::jsonb))")]
@@ -314,7 +315,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         self.assertEqual(self._flatten_parameters(expected_parameters), self._flatten_parameters(observed[1]))
 
     async def test_build_exclude_deleted(self):
-        observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, exclude_deleted=True).build()
+        observed = PostgreSqlSnapshotQueryBuilder(self.classname, Condition.TRUE, exclude_deleted=True).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("TRUE AND (data IS NOT NULL)")])
         expected_parameters = self.base_parameters
@@ -324,7 +325,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
 
     async def test_build_fixed_ordering_asc(self):
         ordering = Ordering.ASC("created_at")
-        observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, ordering).build()
+        observed = PostgreSqlSnapshotQueryBuilder(self.classname, Condition.TRUE, ordering).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL('TRUE ORDER BY "created_at" ASC')])
 
@@ -335,7 +336,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
 
     async def test_build_fixed_ordering_desc(self):
         ordering = Ordering.DESC("created_at")
-        observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, ordering).build()
+        observed = PostgreSqlSnapshotQueryBuilder(self.classname, Condition.TRUE, ordering).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL('TRUE ORDER BY "created_at" DESC')])
         expected_parameters = self.base_parameters
@@ -345,7 +346,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
 
     async def test_build_ordering_asc(self):
         ordering = Ordering.ASC("name")
-        observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, ordering).build()
+        observed = PostgreSqlSnapshotQueryBuilder(self.classname, Condition.TRUE, ordering).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("TRUE ORDER BY data#>'{name}' ASC")])
         expected_parameters = self.base_parameters
@@ -355,7 +356,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
 
     async def test_build_ordering_desc(self):
         ordering = Ordering.DESC("name")
-        observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, ordering).build()
+        observed = PostgreSqlSnapshotQueryBuilder(self.classname, Condition.TRUE, ordering).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("TRUE ORDER BY data#>'{name}' DESC")])
 
@@ -365,7 +366,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         self.assertEqual(self._flatten_parameters(expected_parameters), self._flatten_parameters(observed[1]))
 
     async def test_build_limit(self):
-        observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, limit=10).build()
+        observed = PostgreSqlSnapshotQueryBuilder(self.classname, Condition.TRUE, limit=10).build()
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("TRUE LIMIT 10")])
 
@@ -385,7 +386,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         with patch(
             "minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["one", "two", "three"]
         ):
-            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition, ordering, limit).build()
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition, ordering, limit).build()
 
         expected_query = SQL(" WHERE ").join(
             [

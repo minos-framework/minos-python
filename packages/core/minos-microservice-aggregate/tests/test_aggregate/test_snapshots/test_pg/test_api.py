@@ -41,6 +41,8 @@ class TestPostgreSqlSnapshotRepository(MinosTestCase, PostgresAsyncTestCase):
         self.snapshot_repository.reader.find = self.find_mock
         self.snapshot_repository.writer.dispatch = self.dispatch_mock
 
+        self.classname = "path.to.Product"
+
     def test_from_config(self):
         self.assertIsInstance(self.snapshot_repository.reader, PostgreSqlSnapshotReader)
         self.assertIsInstance(self.snapshot_repository.writer, PostgreSqlSnapshotWriter)
@@ -48,20 +50,20 @@ class TestPostgreSqlSnapshotRepository(MinosTestCase, PostgresAsyncTestCase):
     async def test_get(self):
         transaction = TransactionEntry()
         uuid = uuid4()
-        observed = await self.snapshot_repository.get("path.to.Aggregate", uuid, transaction)
+        observed = await self.snapshot_repository.get(self.classname, uuid, transaction)
         self.assertEqual(1, observed)
 
         self.assertEqual(1, self.dispatch_mock.call_count)
         self.assertEqual(call(), self.dispatch_mock.call_args)
 
         self.assertEqual(1, self.get_mock.call_count)
-        args = call(aggregate_name="path.to.Aggregate", uuid=uuid, transaction=transaction)
+        args = call(aggregate_name=self.classname, uuid=uuid, transaction=transaction)
         self.assertEqual(args, self.get_mock.call_args)
 
     async def test_find(self):
         transaction = TransactionEntry()
         iterable = self.snapshot_repository.find(
-            "path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10, True, transaction
+            self.classname, Condition.TRUE, Ordering.ASC("name"), 10, True, transaction
         )
         observed = [a async for a in iterable]
         self.assertEqual(list(range(5)), observed)
@@ -71,7 +73,7 @@ class TestPostgreSqlSnapshotRepository(MinosTestCase, PostgresAsyncTestCase):
 
         self.assertEqual(1, self.find_mock.call_count)
         args = call(
-            aggregate_name="path.to.Aggregate",
+            aggregate_name=self.classname,
             condition=Condition.TRUE,
             ordering=Ordering.ASC("name"),
             limit=10,
