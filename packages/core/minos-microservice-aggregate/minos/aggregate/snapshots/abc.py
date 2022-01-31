@@ -31,7 +31,7 @@ from ..transactions import (
 
 if TYPE_CHECKING:
     from ..models import (
-        Aggregate,
+        RootEntity,
     )
 
 
@@ -43,7 +43,7 @@ class SnapshotRepository(ABC, MinosSetup):
 
     async def get(
         self, aggregate_name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs
-    ) -> Aggregate:
+    ) -> RootEntity:
         """Get an aggregate instance from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
@@ -62,7 +62,7 @@ class SnapshotRepository(ABC, MinosSetup):
         return await self._get(aggregate_name=aggregate_name, uuid=uuid, transaction=transaction, **kwargs)
 
     @abstractmethod
-    async def _get(self, *args, **kwargs) -> Aggregate:
+    async def _get(self, *args, **kwargs) -> RootEntity:
         raise NotImplementedError
 
     async def find(
@@ -74,7 +74,7 @@ class SnapshotRepository(ABC, MinosSetup):
         streaming_mode: bool = False,
         transaction: Optional[TransactionEntry] = None,
         **kwargs,
-    ) -> AsyncIterator[Aggregate]:
+    ) -> AsyncIterator[RootEntity]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.
 
         :param aggregate_name: Class name of the ``Aggregate``.
@@ -110,7 +110,7 @@ class SnapshotRepository(ABC, MinosSetup):
             yield aggregate
 
     @abstractmethod
-    def _find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
+    def _find(self, *args, **kwargs) -> AsyncIterator[RootEntity]:
         raise NotImplementedError
 
     def synchronize(self, **kwargs) -> Awaitable[None]:

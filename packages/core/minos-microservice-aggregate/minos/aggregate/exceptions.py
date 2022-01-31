@@ -12,7 +12,7 @@ from minos.common import (
 
 if TYPE_CHECKING:
     from .models import (
-        Aggregate,
+        RootEntity,
         AggregateDiff,
     )
 
@@ -52,7 +52,7 @@ class SnapshotRepositoryException(AggregateException):
 class SnapshotRepositoryConflictException(SnapshotRepositoryException):
     """Exception to be raised when current version is newer than the one to be processed."""
 
-    def __init__(self, previous: Aggregate, aggregate_diff: AggregateDiff):
+    def __init__(self, previous: RootEntity, aggregate_diff: AggregateDiff):
         self.previous = previous
         self.aggregate_diff = aggregate_diff
         super().__init__(

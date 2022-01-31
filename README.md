@@ -88,10 +88,10 @@ Here is an example of the creation the `Foo` aggregate. In this case, it has two
 ```python
 from __future__ import annotations
 from typing import Optional
-from minos.aggregate import Aggregate, AggregateRef, ModelRef
+from minos.aggregate import RootEntity, AggregateRef, ModelRef
 
 
-class Foo(Aggregate):
+class Foo(RootEntity):
     """Foo Aggregate class."""
 
     bar: str

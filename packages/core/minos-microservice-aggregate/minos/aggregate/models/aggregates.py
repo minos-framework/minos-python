@@ -52,7 +52,7 @@ from .entities import (
 logger = logging.getLogger(__name__)
 
 
-class Aggregate(Entity):
+class RootEntity(Entity):
     """Base aggregate class."""
 
     version: int
@@ -249,7 +249,7 @@ class Aggregate(Entity):
             self.created_at = entry.created_at
         self.updated_at = entry.created_at
 
-    def diff(self, another: Aggregate) -> AggregateDiff:
+    def diff(self, another: RootEntity) -> AggregateDiff:
         """Compute the difference with another aggregate.
 
         Both ``Aggregate`` instances (``self`` and ``another``) must share the same ``uuid`` value.
@@ -304,4 +304,4 @@ class Aggregate(Entity):
         )
 
 
-T = TypeVar("T", bound=Aggregate)
+T = TypeVar("T", bound=RootEntity)

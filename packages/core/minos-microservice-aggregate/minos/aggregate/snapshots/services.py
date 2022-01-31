@@ -41,7 +41,7 @@ from .abc import (
 
 if TYPE_CHECKING:
     from ..models import (
-        Aggregate,
+        RootEntity,
     )
 
 logger = logging.getLogger(__name__)
@@ -108,7 +108,7 @@ class SnapshotService:
         return Response(aggregates)
 
     @cached_property
-    def __aggregate_cls__(self) -> Type[Aggregate]:
+    def __aggregate_cls__(self) -> Type[RootEntity]:
         # noinspection PyTypeChecker
         return import_module(self.config.service.aggregate)
 

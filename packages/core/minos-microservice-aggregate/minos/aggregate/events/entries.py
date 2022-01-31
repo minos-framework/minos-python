@@ -25,7 +25,7 @@ from minos.common import (
 if TYPE_CHECKING:
     from ..models import (
         Action,
-        Aggregate,
+        RootEntity,
         AggregateDiff,
         FieldDiffContainer,
     )
@@ -129,7 +129,7 @@ class EventEntry:
         }
 
     @property
-    def aggregate_cls(self) -> Type[Aggregate]:
+    def aggregate_cls(self) -> Type[RootEntity]:
         """Load the concrete ``Aggregate`` class.
 
         :return: A ``Type`` object.

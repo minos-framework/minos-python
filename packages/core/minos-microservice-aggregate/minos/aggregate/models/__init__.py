@@ -2,7 +2,7 @@ from .actions import (
     Action,
 )
 from .aggregates import (
-    Aggregate,
+    RootEntity,
 )
 from .collections import (
     IncrementalSet,

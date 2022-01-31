@@ -35,7 +35,7 @@ from .fields import (
 
 if TYPE_CHECKING:
     from ..aggregates import (
-        Aggregate,
+        RootEntity,
     )
 
 logger = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ class AggregateDiff(DeclarativeModel):
         return self.fields_diff.get_all(return_diff)
 
     @classmethod
-    def from_difference(cls, a: Aggregate, b: Aggregate, action: Action = Action.UPDATE) -> AggregateDiff:
+    def from_difference(cls, a: RootEntity, b: RootEntity, action: Action = Action.UPDATE) -> AggregateDiff:
         """Build an ``AggregateDiff`` instance from the difference of two aggregates.
 
         :param a: One ``Aggregate`` instance.
@@ -125,7 +125,7 @@ class AggregateDiff(DeclarativeModel):
         )
 
     @classmethod
-    def from_aggregate(cls, aggregate: Aggregate, action: Action = Action.CREATE) -> AggregateDiff:
+    def from_aggregate(cls, aggregate: RootEntity, action: Action = Action.CREATE) -> AggregateDiff:
         """Build an ``AggregateDiff`` from an ``Aggregate`` (considering all fields as differences).
 
         :param aggregate: An ``Aggregate`` instance.
@@ -144,7 +144,7 @@ class AggregateDiff(DeclarativeModel):
         )
 
     @classmethod
-    def from_deleted_aggregate(cls, aggregate: Aggregate, action: Action = Action.DELETE) -> AggregateDiff:
+    def from_deleted_aggregate(cls, aggregate: RootEntity, action: Action = Action.DELETE) -> AggregateDiff:
         """Build an ``AggregateDiff`` from an ``Aggregate`` (considering all fields as differences).
 
         :param aggregate: An ``Aggregate`` instance.

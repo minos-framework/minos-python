@@ -39,7 +39,7 @@ from .queries import (
 
 if TYPE_CHECKING:
     from ...models import (
-        Aggregate,
+        RootEntity,
     )
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
     The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
     """
 
-    async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
+    async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> RootEntity:
         """Get an aggregate instance from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
@@ -80,7 +80,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         except StopAsyncIteration:
             raise AggregateNotFoundException(f"Some aggregates could not be found: {uuid!s}")
 
-    async def find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
+    async def find(self, *args, **kwargs) -> AsyncIterator[RootEntity]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.
 
         :param args: Additional positional arguments.

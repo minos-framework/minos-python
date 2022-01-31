@@ -16,7 +16,7 @@ from uuid import (
 
 from minos.aggregate import (
     TRANSACTION_CONTEXT_VAR,
-    Aggregate,
+    RootEntity,
     Condition,
     Ordering,
     SnapshotRepository,
@@ -33,10 +33,10 @@ from tests.utils import (
 class _SnapshotRepository(SnapshotRepository):
     """For testing purposes."""
 
-    async def _get(self, *args, **kwargs) -> Aggregate:
+    async def _get(self, *args, **kwargs) -> RootEntity:
         """For testing purposes."""
 
-    def _find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
+    def _find(self, *args, **kwargs) -> AsyncIterator[RootEntity]:
         """For testing purposes."""
 
     async def _synchronize(self, **kwargs) -> None:

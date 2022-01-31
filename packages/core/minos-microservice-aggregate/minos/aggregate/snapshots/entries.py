@@ -33,7 +33,7 @@ from ..exceptions import (
 
 if TYPE_CHECKING:
     from ..models import (
-        Aggregate,
+        RootEntity,
     )
 
 
@@ -84,7 +84,7 @@ class SnapshotEntry:
         self.transaction_uuid = transaction_uuid
 
     @classmethod
-    def from_aggregate(cls, aggregate: Aggregate, **kwargs) -> SnapshotEntry:
+    def from_aggregate(cls, aggregate: RootEntity, **kwargs) -> SnapshotEntry:
         """Build a new instance from an ``Aggregate``.
 
         :param aggregate: The aggregate instance.
@@ -160,14 +160,14 @@ class SnapshotEntry:
 
         return json.dumps(self.data)
 
-    def build_aggregate(self, **kwargs) -> Aggregate:
+    def build_aggregate(self, **kwargs) -> RootEntity:
         """Rebuild the stored ``Aggregate`` object instance from the internal state.
 
         :param kwargs: Additional named arguments.
         :return: A ``Aggregate`` instance.
         """
         from ..models import (
-            Aggregate,
+            RootEntity,
         )
 
         if self.data is None:
@@ -180,11 +180,11 @@ class SnapshotEntry:
             "updated_at": self.updated_at,
         }
         data |= kwargs
-        instance = Aggregate.from_avro(self.schema, data)
+        instance = RootEntity.from_avro(self.schema, data)
         return instance
 
     @property
-    def aggregate_cls(self) -> Type[Aggregate]:
+    def aggregate_cls(self) -> Type[RootEntity]:
         """Load the concrete ``Aggregate`` class.
 
         :return: A ``Type`` object.

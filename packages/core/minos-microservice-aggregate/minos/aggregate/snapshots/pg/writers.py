@@ -42,7 +42,7 @@ from .abc import (
 
 if TYPE_CHECKING:
     from ...models import (
-        Aggregate,
+        RootEntity,
         AggregateDiff,
     )
     from .readers import (
@@ -137,7 +137,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
         return snapshot_entry
 
-    async def _build_aggregate(self, event_entry: EventEntry, **kwargs) -> Aggregate:
+    async def _build_aggregate(self, event_entry: EventEntry, **kwargs) -> RootEntity:
         diff = event_entry.aggregate_diff
 
         try:
@@ -148,14 +148,14 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         aggregate = await self._update_if_exists(diff, transaction=transaction, **kwargs)
         return aggregate
 
-    async def _update_if_exists(self, aggregate_diff: AggregateDiff, **kwargs) -> Aggregate:
+    async def _update_if_exists(self, aggregate_diff: AggregateDiff, **kwargs) -> RootEntity:
         # noinspection PyBroadException
         try:
             # noinspection PyTypeChecker
             previous = await self._select_one_aggregate(aggregate_diff.uuid, aggregate_diff.name, **kwargs)
         except AggregateNotFoundException:
             # noinspection PyTypeChecker
-            aggregate_cls: Type[Aggregate] = import_module(aggregate_diff.name)
+            aggregate_cls: Type[RootEntity] = import_module(aggregate_diff.name)
             return aggregate_cls.from_diff(aggregate_diff, **kwargs)
 
         if previous.version >= aggregate_diff.version:
@@ -164,7 +164,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         previous.apply_diff(aggregate_diff)
         return previous
 
-    async def _select_one_aggregate(self, aggregate_uuid: UUID, aggregate_name: str, **kwargs) -> Aggregate:
+    async def _select_one_aggregate(self, aggregate_uuid: UUID, aggregate_name: str, **kwargs) -> RootEntity:
         snapshot_entry = await self._reader.get_entry(aggregate_name, aggregate_uuid, **kwargs)
         return snapshot_entry.build_aggregate(**kwargs)
 

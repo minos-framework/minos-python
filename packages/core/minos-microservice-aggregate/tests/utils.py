@@ -20,7 +20,7 @@ from dependency_injector import (
 )
 
 from minos.aggregate import (
-    Aggregate,
+    RootEntity,
     Entity,
     EntitySet,
     InMemoryEventRepository,
@@ -28,7 +28,7 @@ from minos.aggregate import (
     InMemoryTransactionRepository,
     Ref,
     ValueObject,
-    ValueObjectSet,
+    ValueObjectSet, ExternalAggregate,
 )
 from minos.common import (
     Lock,
@@ -135,7 +135,7 @@ class FakeLockPool(MinosPool):
         """For testing purposes."""
 
 
-class Owner(Aggregate):
+class Owner(RootEntity):
     """Aggregate ``Owner`` class for testing purposes."""
 
     name: str
@@ -143,7 +143,7 @@ class Owner(Aggregate):
     age: Optional[int]
 
 
-class Car(Aggregate):
+class Car(RootEntity):
     """Aggregate ``Car`` class for testing purposes."""
 
     doors: int
@@ -151,7 +151,7 @@ class Car(Aggregate):
     owner: Optional[Ref[Owner]]
 
 
-class Order(Aggregate):
+class Order(RootEntity):
     """For testing purposes"""
 
     products: EntitySet[OrderItem]

@@ -7,7 +7,7 @@ from pathlib import (
 )
 
 from minos.aggregate import (
-    Aggregate,
+    RootEntity,
     ExternalAggregate,
     Ref,
 )
@@ -45,7 +45,7 @@ class FakeCommandService(CommandService):
         """For testing purpose"""
 
 
-class Foo(Aggregate):
+class Foo(RootEntity):
     """For testing purposes"""
 
     bar: Ref[Bar]

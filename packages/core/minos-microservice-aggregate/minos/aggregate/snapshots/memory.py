@@ -47,7 +47,7 @@ from .abc import (
 
 if TYPE_CHECKING:
     from ..models import (
-        Aggregate,
+        RootEntity,
     )
 
 
@@ -83,7 +83,7 @@ class InMemorySnapshotRepository(SnapshotRepository):
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         **kwargs,
-    ) -> AsyncIterator[Aggregate]:
+    ) -> AsyncIterator[RootEntity]:
         uuids = {v.aggregate_uuid async for v in self._event_repository.select(aggregate_name=aggregate_name)}
 
         aggregates = list()
@@ -108,7 +108,7 @@ class InMemorySnapshotRepository(SnapshotRepository):
     # noinspection PyMethodOverriding
     async def _get(
         self, aggregate_name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs
-    ) -> Aggregate:
+    ) -> RootEntity:
         transaction_uuids = await self._get_transaction_uuids(transaction)
         entries = await self._get_event_entries(aggregate_name, uuid, transaction_uuids)
 
@@ -154,7 +154,7 @@ class InMemorySnapshotRepository(SnapshotRepository):
         return entries
 
     @staticmethod
-    def _build_aggregate(entries: list[EventEntry], **kwargs) -> Aggregate:
+    def _build_aggregate(entries: list[EventEntry], **kwargs) -> RootEntity:
         cls = entries[0].aggregate_cls
         aggregate = cls.from_diff(entries[0].aggregate_diff, **kwargs)
         for entry in entries[1:]:
