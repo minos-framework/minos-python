@@ -18,11 +18,11 @@ asynchronous environment.
 
 ## Documentation
 
-The official API Reference is publicly available at [GiHub Pages](https://minos-framework.github.io/minos-python).
+The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).
 
 ## Source Code
 
-The source code of this project is hosted at [GitHub](https://github.com/minos-framework/minos-python).
+The source code of this project is hosted at the [GitHub Repository](https://github.com/minos-framework/minos-python).
 
 ## Getting Help
 
