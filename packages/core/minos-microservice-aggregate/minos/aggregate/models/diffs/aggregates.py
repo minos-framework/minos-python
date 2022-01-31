@@ -125,38 +125,38 @@ class Event(DeclarativeModel):
         )
 
     @classmethod
-    def from_aggregate(cls, aggregate: RootEntity, action: Action = Action.CREATE) -> Event:
+    def from_root_entity(cls, root_entity: RootEntity, action: Action = Action.CREATE) -> Event:
         """Build an ``Event`` from a ``RootEntity`` (considering all fields as differences).
 
-        :param aggregate: A ``RootEntity`` instance.
+        :param root_entity: A ``RootEntity`` instance.
         :param action: The action to that generates the aggregate difference.
         :return: An ``Event`` instance.
         """
 
-        fields_diff = FieldDiffContainer.from_model(aggregate, ignore={"uuid", "version", "created_at", "updated_at"})
+        fields_diff = FieldDiffContainer.from_model(root_entity, ignore={"uuid", "version", "created_at", "updated_at"})
         return cls(
-            uuid=aggregate.uuid,
-            name=aggregate.classname,
-            version=aggregate.version,
+            uuid=root_entity.uuid,
+            name=root_entity.classname,
+            version=root_entity.version,
             action=action,
-            created_at=aggregate.updated_at,
+            created_at=root_entity.updated_at,
             fields_diff=fields_diff,
         )
 
     @classmethod
-    def from_deleted_aggregate(cls, aggregate: RootEntity, action: Action = Action.DELETE) -> Event:
+    def from_deleted_root_entity(cls, root_entity: RootEntity, action: Action = Action.DELETE) -> Event:
         """Build an ``Event`` from a ``RootEntity`` (considering all fields as differences).
 
-        :param aggregate: A ``RootEntity`` instance.
+        :param root_entity: A ``RootEntity`` instance.
         :param action: The action to that generates the aggregate difference.
         :return: An ``Event`` instance.
         """
         return cls(
-            uuid=aggregate.uuid,
-            name=aggregate.classname,
-            version=aggregate.version,
+            uuid=root_entity.uuid,
+            name=root_entity.classname,
+            version=root_entity.version,
             action=action,
-            created_at=aggregate.updated_at,
+            created_at=root_entity.updated_at,
             fields_diff=FieldDiffContainer.empty(),
         )
 

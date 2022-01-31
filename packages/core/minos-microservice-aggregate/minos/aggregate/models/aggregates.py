@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 
 
 class RootEntity(Entity):
-    """Base aggregate class."""
+    """Base Root Entity class."""
 
     version: int
     created_at: datetime
@@ -90,7 +90,7 @@ class RootEntity(Entity):
         """Get one instance from the database based on its identifier.
 
         :param uuid: The identifier of the instance.
-        :param _snapshot: Snapshot to be set to the aggregate.
+        :param _snapshot: Snapshot to be set to the root entity.
         :return: A list of aggregate instances.
         """
         if _snapshot is None or isinstance(_snapshot, Provide):
@@ -155,8 +155,8 @@ class RootEntity(Entity):
 
         instance: T = cls(*args, **kwargs)
 
-        aggregate_diff = Event.from_aggregate(instance)
-        entry = await instance._repository.submit(aggregate_diff)
+        event = Event.from_root_entity(instance)
+        entry = await instance._repository.submit(event)
 
         instance._update_from_repository_entry(entry)
 
@@ -187,11 +187,11 @@ class RootEntity(Entity):
             setattr(self, key, value)
 
         previous = await self.get(self.uuid, _repository=self._repository, _snapshot=self._snapshot)
-        aggregate_diff = self.diff(previous)
-        if not len(aggregate_diff.fields_diff):
+        event = self.diff(previous)
+        if not len(event.fields_diff):
             return self
 
-        entry = await self._repository.submit(aggregate_diff)
+        entry = await self._repository.submit(event)
 
         self._update_from_repository_entry(entry)
 
@@ -233,17 +233,17 @@ class RootEntity(Entity):
         self._fields |= new.fields
 
     async def delete(self) -> None:
-        """Delete the given aggregate instance.
+        """Delete the given root entity instance.
 
         :return: This method does not return anything.
         """
-        aggregate_diff = Event.from_deleted_aggregate(self)
-        entry = await self._repository.submit(aggregate_diff)
+        event = Event.from_deleted_root_entity(self)
+        entry = await self._repository.submit(event)
 
         self._update_from_repository_entry(entry)
 
     def _update_from_repository_entry(self, entry: EventEntry) -> None:
-        self.uuid = entry.aggregate_uuid
+        self.uuid = entry.uuid
         self.version = entry.version
         if entry.action.is_create:
             self.created_at = entry.created_at
@@ -259,20 +259,19 @@ class RootEntity(Entity):
         """
         return Event.from_difference(self, another)
 
-    def apply_diff(self, aggregate_diff: Event) -> None:
+    def apply_diff(self, event: Event) -> None:
         """Apply the differences over the instance.
 
-        :param aggregate_diff: The ``FieldDiffContainer`` containing the values to be set.
+        :param event: The ``FieldDiffContainer`` containing the values to be set.
         :return: This method does not return anything.
         """
-        if self.uuid != aggregate_diff.uuid:
+        if self.uuid != event.uuid:
             raise ValueError(
-                f"To apply the difference, it must have same uuid. "
-                f"Expected: {self.uuid!r} Obtained: {aggregate_diff.uuid!r}"
+                f"To apply the difference, it must have same uuid. " f"Expected: {self.uuid!r} Obtained: {event.uuid!r}"
             )
 
-        logger.debug(f"Applying {aggregate_diff!r} to {self!r}...")
-        for diff in aggregate_diff.fields_diff.flatten_values():
+        logger.debug(f"Applying {event!r} to {self!r}...")
+        for diff in event.fields_diff.flatten_values():
             if isinstance(diff, IncrementalFieldDiff):
                 container = getattr(self, diff.name)
                 if diff.action.is_delete:
@@ -281,25 +280,25 @@ class RootEntity(Entity):
                     container.add(diff.value)
             else:
                 setattr(self, diff.name, diff.value)
-        self.version = aggregate_diff.version
-        self.updated_at = aggregate_diff.created_at
+        self.version = event.version
+        self.updated_at = event.created_at
 
     @classmethod
-    def from_diff(cls: Type[T], aggregate_diff: Event, *args, **kwargs) -> T:
+    def from_diff(cls: Type[T], event: Event, *args, **kwargs) -> T:
         """Build a new instance from an ``Event``.
 
-        :param aggregate_diff: The difference that contains the data.
+        :param event: The difference that contains the data.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A new ``RootEntity`` instance.
         """
         return cls(
             *args,
-            uuid=aggregate_diff.uuid,
-            version=aggregate_diff.version,
-            created_at=aggregate_diff.created_at,
-            updated_at=aggregate_diff.created_at,
-            **aggregate_diff.get_all(),
+            uuid=event.uuid,
+            version=event.version,
+            created_at=event.created_at,
+            updated_at=event.created_at,
+            **event.get_all(),
             **kwargs,
         )
 

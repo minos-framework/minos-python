@@ -140,7 +140,7 @@ class TransactionRepository(ABC, MinosSetup):
         raise NotImplementedError
 
     def write_lock(self) -> Lock:
-        """Get a write lock.
+        """Get write lock.
 
         :return: An asynchronous context manager.
         """

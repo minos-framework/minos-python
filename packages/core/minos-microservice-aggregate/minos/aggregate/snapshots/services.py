@@ -8,7 +8,6 @@ from asyncio import (
 )
 from typing import (
     TYPE_CHECKING,
-    Type,
 )
 from uuid import (
     UUID,
@@ -64,10 +63,10 @@ class SnapshotService:
 
     @classmethod
     def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
-        aggregate_name = config.service.aggregate.rsplit(".", 1)[-1]
+        name = config.service.aggregate.rsplit(".", 1)[-1]
         return {
-            cls.__get_one__.__name__: {enroute.broker.command(f"Get{aggregate_name}")},
-            cls.__get_many__.__name__: {enroute.broker.command(f"Get{aggregate_name}s")},
+            cls.__get_one__.__name__: {enroute.broker.command(f"Get{name}")},
+            cls.__get_many__.__name__: {enroute.broker.command(f"Get{name}s")},
             cls.__synchronize__.__name__: {enroute.periodic.event("* * * * *")},
         }
 
@@ -83,7 +82,7 @@ class SnapshotService:
             raise ResponseException(f"There was a problem while parsing the given request: {exc!r}")
 
         try:
-            aggregate = await self.__aggregate_cls__.get(content["uuid"])
+            aggregate = await self.type_.get(content["uuid"])
         except Exception as exc:
             raise ResponseException(f"There was a problem while getting the aggregate: {exc!r}")
 
@@ -101,14 +100,18 @@ class SnapshotService:
             raise ResponseException(f"There was a problem while parsing the given request: {exc!r}")
 
         try:
-            aggregates = await gather(*(self.__aggregate_cls__.get(uuid) for uuid in content["uuids"]))
+            aggregates = await gather(*(self.type_.get(uuid) for uuid in content["uuids"]))
         except Exception as exc:
             raise ResponseException(f"There was a problem while getting aggregates: {exc!r}")
 
         return Response(aggregates)
 
     @cached_property
-    def __aggregate_cls__(self) -> Type[RootEntity]:
+    def type_(self) -> type[RootEntity]:
+        """Load the concrete ``RootEntity`` class.
+
+        :return: A ``Type`` object.
+        """
         # noinspection PyTypeChecker
         return import_module(self.config.service.aggregate)
 

@@ -156,7 +156,7 @@ class EventRepository(ABC, MinosSetup):
             transaction = TRANSACTION_CONTEXT_VAR.get()
 
             if isinstance(entry, Event):
-                entry = EventEntry.from_aggregate_diff(entry, transaction=transaction)
+                entry = EventEntry.from_event(entry, transaction=transaction)
 
             if not isinstance(entry.action, Action):
                 raise EventRepositoryException("The 'EventEntry.action' attribute must be an 'Action' instance.")
@@ -168,7 +168,7 @@ class EventRepository(ABC, MinosSetup):
                 entry = await self._submit(entry, **kwargs)
 
             if entry.transaction_uuid == NULL_UUID:
-                await self._send_events(entry.aggregate_diff)
+                await self._send_events(entry.event)
 
         finally:
             IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.reset(token)
@@ -194,9 +194,7 @@ class EventRepository(ABC, MinosSetup):
 
         if len(transaction_uuids):
             with suppress(StopAsyncIteration):
-                iterable = self.select(
-                    aggregate_uuid=entry.aggregate_uuid, transaction_uuid_in=tuple(transaction_uuids), **kwargs
-                )
+                iterable = self.select(uuid=entry.uuid, transaction_uuid_in=tuple(transaction_uuids), **kwargs)
 
                 await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
 
@@ -208,7 +206,7 @@ class EventRepository(ABC, MinosSetup):
     async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
         raise NotImplementedError
 
-    async def _send_events(self, aggregate_diff: Event):
+    async def _send_events(self, event: Event):
         from ...models import (
             Action,
         )
@@ -218,28 +216,28 @@ class EventRepository(ABC, MinosSetup):
             Action.UPDATE: "Updated",
             Action.DELETE: "Deleted",
         }
-        topic = f"{aggregate_diff.simplified_name}{suffix_mapper[aggregate_diff.action]}"
+        topic = f"{event.simplified_name}{suffix_mapper[event.action]}"
         message = BrokerMessageV1(
             topic=topic,
-            payload=BrokerMessageV1Payload(content=aggregate_diff),
+            payload=BrokerMessageV1Payload(content=event),
             strategy=BrokerMessageV1Strategy.MULTICAST,
         )
         futures = [self._broker_publisher.send(message)]
 
-        if aggregate_diff.action == Action.UPDATE:
+        if event.action == Action.UPDATE:
             from ...models import (
                 IncrementalFieldDiff,
             )
 
-            for decomposed_aggregate_diff in aggregate_diff.decompose():
-                diff = next(iter(decomposed_aggregate_diff.fields_diff.flatten_values()))
+            for decomposed_event in event.decompose():
+                diff = next(iter(decomposed_event.fields_diff.flatten_values()))
                 composed_topic = f"{topic}.{diff.name}"
                 if isinstance(diff, IncrementalFieldDiff):
                     composed_topic += f".{diff.action.value}"
 
                 message = BrokerMessageV1(
                     topic=composed_topic,
-                    payload=BrokerMessageV1Payload(content=decomposed_aggregate_diff),
+                    payload=BrokerMessageV1Payload(content=decomposed_event),
                     strategy=BrokerMessageV1Strategy.MULTICAST,
                 )
                 futures.append(self._broker_publisher.send(message))
@@ -249,8 +247,8 @@ class EventRepository(ABC, MinosSetup):
     # noinspection PyShadowingBuiltins
     async def select(
         self,
-        aggregate_uuid: Optional[UUID] = None,
-        aggregate_name: Optional[str] = None,
+        uuid: Optional[UUID] = None,
+        name: Optional[str] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
         version_gt: Optional[int] = None,
@@ -268,8 +266,8 @@ class EventRepository(ABC, MinosSetup):
     ) -> AsyncIterator[EventEntry]:
         """Perform a selection query of entries stored in to the repository.
 
-        :param aggregate_uuid: The identifier must be equal to the given value.
-        :param aggregate_name: The classname must be equal to the given value.
+        :param uuid: The identifier must be equal to the given value.
+        :param name: The classname must be equal to the given value.
         :param version: The version must be equal to the given value.
         :param version_lt: The version must be lower than the given value.
         :param version_gt: The version must be greater than the given value.
@@ -286,8 +284,8 @@ class EventRepository(ABC, MinosSetup):
         :return: A list of entries.
         """
         generator = self._select(
-            aggregate_uuid=aggregate_uuid,
-            aggregate_name=aggregate_name,
+            uuid=uuid,
+            name=name,
             version=version,
             version_lt=version_lt,
             version_gt=version_gt,

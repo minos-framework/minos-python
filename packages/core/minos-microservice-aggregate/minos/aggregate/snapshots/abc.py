@@ -41,12 +41,10 @@ class SnapshotRepository(ABC, MinosSetup):
     The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
     """
 
-    async def get(
-        self, aggregate_name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs
-    ) -> RootEntity:
+    async def get(self, name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs) -> RootEntity:
         """Get an aggregate instance from its identifier.
 
-        :param aggregate_name: Class name of the ``RootEntity``.
+        :param name: Class name of the ``RootEntity``.
         :param uuid: Identifier of the ``RootEntity``.
         :param transaction: The transaction within the operation is performed. If not any value is provided, then the
             transaction is extracted from the context var. If not any transaction is being scoped then the query is
@@ -59,7 +57,7 @@ class SnapshotRepository(ABC, MinosSetup):
 
         await self.synchronize(**kwargs)
 
-        return await self._get(aggregate_name=aggregate_name, uuid=uuid, transaction=transaction, **kwargs)
+        return await self._get(name=name, uuid=uuid, transaction=transaction, **kwargs)
 
     @abstractmethod
     async def _get(self, *args, **kwargs) -> RootEntity:
@@ -67,7 +65,7 @@ class SnapshotRepository(ABC, MinosSetup):
 
     async def find(
         self,
-        aggregate_name: str,
+        name: str,
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
@@ -77,7 +75,7 @@ class SnapshotRepository(ABC, MinosSetup):
     ) -> AsyncIterator[RootEntity]:
         """Find a collection of ``RootEntity`` instances based on a ``Condition``.
 
-        :param aggregate_name: Class name of the ``RootEntity``.
+        :param name: Class name of the ``RootEntity``.
         :param condition: The condition that must be satisfied by the ``RootEntity`` instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
@@ -97,7 +95,7 @@ class SnapshotRepository(ABC, MinosSetup):
         await self.synchronize(**kwargs)
 
         iterable = self._find(
-            aggregate_name=aggregate_name,
+            name=name,
             condition=condition,
             ordering=ordering,
             limit=limit,

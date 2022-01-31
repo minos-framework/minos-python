@@ -11,7 +11,6 @@ from typing import (
     Any,
     Iterable,
     Optional,
-    Type,
     Union,
 )
 from uuid import (
@@ -44,8 +43,8 @@ class SnapshotEntry:
     """
 
     __slots__ = (
-        "aggregate_uuid",
-        "aggregate_name",
+        "uuid",
+        "name",
         "version",
         "schema",
         "data",
@@ -57,8 +56,8 @@ class SnapshotEntry:
     # noinspection PyShadowingBuiltins
     def __init__(
         self,
-        aggregate_uuid: UUID,
-        aggregate_name: str,
+        uuid: UUID,
+        name: str,
         version: int,
         schema: Optional[Union[list[dict[str, Any]], dict[str, Any]]] = None,
         data: Optional[dict[str, Any]] = None,
@@ -71,8 +70,8 @@ class SnapshotEntry:
         if isinstance(schema, bytes):
             schema = MinosJsonBinaryProtocol.decode(schema)
 
-        self.aggregate_uuid = aggregate_uuid
-        self.aggregate_name = aggregate_name
+        self.uuid = uuid
+        self.name = name
         self.version = version
 
         self.schema = schema
@@ -84,25 +83,25 @@ class SnapshotEntry:
         self.transaction_uuid = transaction_uuid
 
     @classmethod
-    def from_aggregate(cls, aggregate: RootEntity, **kwargs) -> SnapshotEntry:
+    def from_root_entity(cls, root_entity: RootEntity, **kwargs) -> SnapshotEntry:
         """Build a new instance from a ``RootEntity``.
 
-        :param aggregate: The aggregate instance.
+        :param root_entity: The aggregate instance.
         :return: A new ``MinosSnapshotEntry`` instance.
         """
         data = {
-            k: v for k, v in aggregate.avro_data.items() if k not in {"uuid", "version", "created_at", "updated_at"}
+            k: v for k, v in root_entity.avro_data.items() if k not in {"uuid", "version", "created_at", "updated_at"}
         }
 
         # noinspection PyTypeChecker
         return cls(
-            aggregate_uuid=aggregate.uuid,
-            aggregate_name=aggregate.classname,
-            version=aggregate.version,
-            schema=aggregate.avro_schema,
+            uuid=root_entity.uuid,
+            name=root_entity.classname,
+            version=root_entity.version,
+            schema=root_entity.avro_schema,
             data=data,
-            created_at=aggregate.created_at,
-            updated_at=aggregate.updated_at,
+            created_at=root_entity.created_at,
+            updated_at=root_entity.updated_at,
             **kwargs,
         )
 
@@ -114,8 +113,8 @@ class SnapshotEntry:
         :return: A new ``SnapshotEntry`` instance.
         """
         return cls(
-            aggregate_uuid=entry.aggregate_uuid,
-            aggregate_name=entry.aggregate_name,
+            uuid=entry.uuid,
+            name=entry.name,
             version=entry.version,
             created_at=entry.created_at,
             updated_at=entry.created_at,
@@ -128,8 +127,8 @@ class SnapshotEntry:
         :return: A dictionary in which the keys are attribute names and values the attribute contents.
         """
         return {
-            "aggregate_uuid": self.aggregate_uuid,
-            "aggregate_name": self.aggregate_name,
+            "uuid": self.uuid,
+            "name": self.name,
             "version": self.version,
             "schema": self.encoded_schema,
             "data": self.encoded_data,
@@ -160,7 +159,7 @@ class SnapshotEntry:
 
         return json.dumps(self.data)
 
-    def build_aggregate(self, **kwargs) -> RootEntity:
+    def build(self, **kwargs) -> RootEntity:
         """Rebuild the stored ``RootEntity`` object instance from the internal state.
 
         :param kwargs: Additional named arguments.
@@ -171,10 +170,10 @@ class SnapshotEntry:
         )
 
         if self.data is None:
-            raise AlreadyDeletedException(f"The {self.aggregate_uuid!r} id points to an already deleted aggregate.")
+            raise AlreadyDeletedException(f"The {self.uuid!r} id points to an already deleted aggregate.")
         data = dict(self.data)
         data |= {
-            "uuid": self.aggregate_uuid,
+            "uuid": self.uuid,
             "version": self.version,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
@@ -184,13 +183,13 @@ class SnapshotEntry:
         return instance
 
     @property
-    def aggregate_cls(self) -> Type[RootEntity]:
+    def type_(self) -> type[RootEntity]:
         """Load the concrete ``RootEntity`` class.
 
         :return: A ``Type`` object.
         """
         # noinspection PyTypeChecker
-        return import_module(self.aggregate_name)
+        return import_module(self.name)
 
     def __eq__(self, other: SnapshotEntry) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
@@ -198,7 +197,7 @@ class SnapshotEntry:
     def __iter__(self) -> Iterable:
         # noinspection PyRedundantParentheses
         yield from (
-            self.aggregate_name,
+            self.name,
             self.version,
             self.schema,
             self.data,
@@ -210,7 +209,7 @@ class SnapshotEntry:
     def __repr__(self):
         name = type(self).__name__
         return (
-            f"{name}(aggregate_uuid={self.aggregate_uuid!r}, aggregate_name={self.aggregate_name!r}, "
+            f"{name}(uuid={self.uuid!r}, name={self.name!r}, "
             f"version={self.version!r}, schema={self.schema!r}, data={self.data!r}, "
             f"created_at={self.created_at!r}, updated_at={self.updated_at!r}, "
             f"transaction_uuid={self.transaction_uuid!r})"

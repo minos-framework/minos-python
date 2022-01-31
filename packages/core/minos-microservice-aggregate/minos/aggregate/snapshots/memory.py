@@ -78,18 +78,18 @@ class InMemorySnapshotRepository(SnapshotRepository):
 
     async def _find(
         self,
-        aggregate_name: str,
+        name: str,
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         **kwargs,
     ) -> AsyncIterator[RootEntity]:
-        uuids = {v.aggregate_uuid async for v in self._event_repository.select(aggregate_name=aggregate_name)}
+        uuids = {v.uuid async for v in self._event_repository.select(name=name)}
 
         aggregates = list()
         for uuid in uuids:
             try:
-                aggregate = await self.get(aggregate_name, uuid, **kwargs)
+                aggregate = await self.get(name, uuid, **kwargs)
             except AlreadyDeletedException:
                 continue
 
@@ -106,11 +106,9 @@ class InMemorySnapshotRepository(SnapshotRepository):
             yield aggregate
 
     # noinspection PyMethodOverriding
-    async def _get(
-        self, aggregate_name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs
-    ) -> RootEntity:
+    async def _get(self, name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs) -> RootEntity:
         transaction_uuids = await self._get_transaction_uuids(transaction)
-        entries = await self._get_event_entries(aggregate_name, uuid, transaction_uuids)
+        entries = await self._get_event_entries(name, uuid, transaction_uuids)
 
         if not len(entries):
             raise NotFoundException(f"Not found any entries for the {uuid!r} id.")
@@ -134,12 +132,10 @@ class InMemorySnapshotRepository(SnapshotRepository):
 
         return transaction_uuids
 
-    async def _get_event_entries(
-        self, aggregate_name: str, uuid: UUID, transaction_uuids: tuple[UUID, ...]
-    ) -> list[EventEntry]:
+    async def _get_event_entries(self, name: str, uuid: UUID, transaction_uuids: tuple[UUID, ...]) -> list[EventEntry]:
         entries = [
             v
-            async for v in self._event_repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)
+            async for v in self._event_repository.select(name=name, uuid=uuid)
             if v.transaction_uuid in transaction_uuids
         ]
 
@@ -155,10 +151,10 @@ class InMemorySnapshotRepository(SnapshotRepository):
 
     @staticmethod
     def _build_aggregate(entries: list[EventEntry], **kwargs) -> RootEntity:
-        cls = entries[0].aggregate_cls
-        aggregate = cls.from_diff(entries[0].aggregate_diff, **kwargs)
+        cls = entries[0].type_
+        aggregate = cls.from_diff(entries[0].event, **kwargs)
         for entry in entries[1:]:
-            aggregate.apply_diff(entry.aggregate_diff)
+            aggregate.apply_diff(entry.event)
         return aggregate
 
     async def _synchronize(self, **kwargs) -> None:

@@ -45,7 +45,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         super().setUp()
         self.classname = "path.to.Product"
         self.base_parameters = {
-            "aggregate_name": self.classname,
+            "name": self.classname,
             "transaction_uuid_1": NULL_UUID,
         }
         self.base_select = _SELECT_ENTRIES_QUERY.format(
@@ -56,7 +56,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
 
     def test_constructor(self):
         qb = PostgreSqlSnapshotQueryBuilder(self.classname, Condition.TRUE)
-        self.assertEqual(self.classname, qb.aggregate_name)
+        self.assertEqual(self.classname, qb.name)
         self.assertEqual(Condition.TRUE, qb.condition)
         self.assertEqual(None, qb.ordering)
         self.assertEqual(None, qb.limit)
@@ -67,7 +67,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         qb = PostgreSqlSnapshotQueryBuilder(
             self.classname, Condition.TRUE, Ordering.ASC("name"), 10, transaction_uuids, True
         )
-        self.assertEqual(self.classname, qb.aggregate_name)
+        self.assertEqual(self.classname, qb.name)
         self.assertEqual(Condition.TRUE, qb.condition)
         self.assertEqual(Ordering.ASC("name"), qb.ordering)
         self.assertEqual(10, qb.limit)
@@ -146,7 +146,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
             observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
 
-        expected_query = SQL(" WHERE ").join([self.base_select, SQL('("aggregate_uuid" = %(hello)s)')])
+        expected_query = SQL(" WHERE ").join([self.base_select, SQL('("uuid" = %(hello)s)')])
         expected_parameters = {"hello": str(uuid)} | self.base_parameters
 
         self.assertEqual(await self._flatten_query(expected_query), await self._flatten_query(observed[0]))

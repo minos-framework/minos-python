@@ -22,10 +22,10 @@ class TestExceptions(unittest.TestCase):
     def test_snapshot(self):
         self.assertTrue(issubclass(SnapshotRepositoryException, AggregateException))
 
-    def test_snapshot_aggregate_not_found(self):
+    def test_snapshot_not_found(self):
         self.assertTrue(issubclass(NotFoundException, SnapshotRepositoryException))
 
-    def test_snapshot_deleted_aggregate(self):
+    def test_snapshot_already_deleted(self):
         self.assertTrue(issubclass(AlreadyDeletedException, SnapshotRepositoryException))
 
 

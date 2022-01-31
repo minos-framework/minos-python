@@ -57,7 +57,7 @@ class TestPostgreSqlSnapshotRepository(MinosTestCase, PostgresAsyncTestCase):
         self.assertEqual(call(), self.dispatch_mock.call_args)
 
         self.assertEqual(1, self.get_mock.call_count)
-        args = call(aggregate_name=self.classname, uuid=uuid, transaction=transaction)
+        args = call(name=self.classname, uuid=uuid, transaction=transaction)
         self.assertEqual(args, self.get_mock.call_args)
 
     async def test_find(self):
@@ -73,7 +73,7 @@ class TestPostgreSqlSnapshotRepository(MinosTestCase, PostgresAsyncTestCase):
 
         self.assertEqual(1, self.find_mock.call_count)
         args = call(
-            aggregate_name=self.classname,
+            name=self.classname,
             condition=Condition.TRUE,
             ordering=Ordering.ASC("name"),
             limit=10,

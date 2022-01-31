@@ -55,26 +55,26 @@ class TestEvent(MinosTestCase):
 
     def test_total_ordering(self):
         observed = [
-            Event.from_aggregate(Car(3, "blue", version=4)),
-            Event.from_aggregate(Car(3, "blue", version=1)),
-            Event.from_aggregate(Car(3, "blue", version=3)),
-            Event.from_aggregate(Car(3, "blue", version=2)),
+            Event.from_root_entity(Car(3, "blue", version=4)),
+            Event.from_root_entity(Car(3, "blue", version=1)),
+            Event.from_root_entity(Car(3, "blue", version=3)),
+            Event.from_root_entity(Car(3, "blue", version=2)),
         ]
         observed.sort()
 
         expected = [
-            Event.from_aggregate(Car(3, "blue", version=1)),
-            Event.from_aggregate(Car(3, "blue", version=2)),
-            Event.from_aggregate(Car(3, "blue", version=3)),
-            Event.from_aggregate(Car(3, "blue", version=4)),
+            Event.from_root_entity(Car(3, "blue", version=1)),
+            Event.from_root_entity(Car(3, "blue", version=2)),
+            Event.from_root_entity(Car(3, "blue", version=3)),
+            Event.from_root_entity(Car(3, "blue", version=4)),
         ]
         self.assertEqual(expected, observed)
 
-    def test_from_aggregate(self):
-        observed = Event.from_aggregate(self.initial)
+    def test_from_root_entity(self):
+        observed = Event.from_root_entity(self.initial)
         self.assertEqual(self.diff, observed)
 
-    def test_from_deleted_aggregate(self):
+    def test_from_deleted_root_entity(self):
         expected = Event(
             uuid=self.uuid,
             name=Car.classname,
@@ -83,7 +83,7 @@ class TestEvent(MinosTestCase):
             created_at=self.initial.updated_at,
             fields_diff=FieldDiffContainer.empty(),
         )
-        observed = Event.from_deleted_aggregate(self.initial)
+        observed = Event.from_deleted_root_entity(self.initial)
         self.assertEqual(expected, observed)
 
     def test_from_difference(self):

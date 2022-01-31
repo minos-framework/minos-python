@@ -30,15 +30,15 @@ T = TypeVar("T", bound=PostgreSqlSnapshotSetup)
 
 _CREATE_TABLE_QUERY = """
 CREATE TABLE IF NOT EXISTS snapshot (
-    aggregate_uuid UUID NOT NULL,
-    aggregate_name TEXT NOT NULL,
+    uuid UUID NOT NULL,
+    name TEXT NOT NULL,
     version INT NOT NULL,
     schema BYTEA,
     data JSONB,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
     transaction_uuid UUID NOT NULL DEFAULT uuid_nil(),
-    PRIMARY KEY (aggregate_uuid, transaction_uuid)
+    PRIMARY KEY (uuid, transaction_uuid)
 );
 """.strip()
 
