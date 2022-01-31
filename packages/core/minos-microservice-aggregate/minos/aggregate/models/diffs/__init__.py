@@ -1,5 +1,5 @@
 from .aggregates import (
-    AggregateDiff,
+    Event,
 )
 from .fields import (
     FieldDiff,

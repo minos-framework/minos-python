@@ -27,7 +27,7 @@ from .exceptions import (
 from .models import (
     Action,
     RootEntity,
-    AggregateDiff,
+    Event,
     Entity,
     EntitySet,
     ExternalEntity,

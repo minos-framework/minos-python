@@ -43,7 +43,7 @@ from .abc import (
 if TYPE_CHECKING:
     from ...models import (
         RootEntity,
-        AggregateDiff,
+        Event,
     )
     from .readers import (
         PostgreSqlSnapshotReader,
@@ -148,7 +148,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         aggregate = await self._update_if_exists(diff, transaction=transaction, **kwargs)
         return aggregate
 
-    async def _update_if_exists(self, aggregate_diff: AggregateDiff, **kwargs) -> RootEntity:
+    async def _update_if_exists(self, aggregate_diff: Event, **kwargs) -> RootEntity:
         # noinspection PyBroadException
         try:
             # noinspection PyTypeChecker

@@ -8,7 +8,7 @@ from uuid import (
 
 from minos.aggregate import (
     Action,
-    AggregateDiff,
+    Event,
     FieldDiff,
     FieldDiffContainer,
     Ref,
@@ -29,7 +29,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         self.uuid = uuid4()
         self.bars = [Bar(uuid4(), 1, "hello"), Bar(uuid4(), 1, "world")]
         self.now = current_datetime()
-        self.diff = AggregateDiff(
+        self.diff = Event(
             self.uuid,
             "Foo",
             1,
@@ -39,7 +39,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_handle(self):
-        value = AggregateDiff(
+        value = Event(
             self.uuid,
             "Foo",
             1,
@@ -51,7 +51,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         with patch("minos.aggregate.RefResolver.resolve", return_value=value):
             observed = await PreEventHandler.handle(self.diff)
 
-        expected = AggregateDiff(
+        expected = Event(
             self.uuid,
             "Foo",
             1,
@@ -73,7 +73,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         with patch("minos.aggregate.RefResolver.resolve", side_effect=ValueError):
             observed = await PreEventHandler.handle(self.diff)
 
-        expected = AggregateDiff(
+        expected = Event(
             self.uuid,
             "Foo",
             1,

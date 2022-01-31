@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from ..models import (
         Action,
         RootEntity,
-        AggregateDiff,
+        Event,
         FieldDiffContainer,
     )
     from ..transactions import (
@@ -81,7 +81,7 @@ class EventEntry:
 
     @classmethod
     def from_aggregate_diff(
-        cls, aggregate_diff: AggregateDiff, *, transaction: Optional[TransactionEntry] = None, **kwargs
+        cls, aggregate_diff: Event, *, transaction: Optional[TransactionEntry] = None, **kwargs
     ) -> EventEntry:
         """Build a new instance from an ``Aggregate``.
 
@@ -138,16 +138,16 @@ class EventEntry:
         return import_module(self.aggregate_name)
 
     @property
-    def aggregate_diff(self) -> AggregateDiff:
+    def aggregate_diff(self) -> Event:
         """Get the stored ``AggregateDiff`` instance.
 
         :return: An ``AggregateDiff`` instance.
         """
         from ..models import (
-            AggregateDiff,
+            Event,
         )
 
-        return AggregateDiff(
+        return Event(
             self.aggregate_uuid,
             self.aggregate_name,
             self.version,

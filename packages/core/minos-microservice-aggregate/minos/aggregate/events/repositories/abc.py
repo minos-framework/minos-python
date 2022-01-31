@@ -61,7 +61,7 @@ from ..entries import (
 
 if TYPE_CHECKING:
     from ...models import (
-        AggregateDiff,
+        Event,
     )
 
 
@@ -100,7 +100,7 @@ class EventRepository(ABC, MinosSetup):
         """
         return TransactionEntry(event_repository=self, transaction_repository=self._transaction_repository, **kwargs)
 
-    async def create(self, entry: Union[AggregateDiff, EventEntry]) -> EventEntry:
+    async def create(self, entry: Union[Event, EventEntry]) -> EventEntry:
         """Store new creation entry into the repository.
 
         :param entry: Entry to be stored.
@@ -113,7 +113,7 @@ class EventRepository(ABC, MinosSetup):
         entry.action = Action.CREATE
         return await self.submit(entry)
 
-    async def update(self, entry: Union[AggregateDiff, EventEntry]) -> EventEntry:
+    async def update(self, entry: Union[Event, EventEntry]) -> EventEntry:
         """Store new update entry into the repository.
 
         :param entry: Entry to be stored.
@@ -126,7 +126,7 @@ class EventRepository(ABC, MinosSetup):
         entry.action = Action.UPDATE
         return await self.submit(entry)
 
-    async def delete(self, entry: Union[AggregateDiff, EventEntry]) -> EventEntry:
+    async def delete(self, entry: Union[Event, EventEntry]) -> EventEntry:
         """Store new deletion entry into the repository.
 
         :param entry: Entry to be stored.
@@ -139,7 +139,7 @@ class EventRepository(ABC, MinosSetup):
         entry.action = Action.DELETE
         return await self.submit(entry)
 
-    async def submit(self, entry: Union[AggregateDiff, EventEntry], **kwargs) -> EventEntry:
+    async def submit(self, entry: Union[Event, EventEntry], **kwargs) -> EventEntry:
         """Store new entry into the repository.
 
         :param entry: The entry to be stored.
@@ -148,14 +148,14 @@ class EventRepository(ABC, MinosSetup):
         """
         from ...models import (
             Action,
-            AggregateDiff,
+            Event,
         )
 
         token = IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
         try:
             transaction = TRANSACTION_CONTEXT_VAR.get()
 
-            if isinstance(entry, AggregateDiff):
+            if isinstance(entry, Event):
                 entry = EventEntry.from_aggregate_diff(entry, transaction=transaction)
 
             if not isinstance(entry.action, Action):
@@ -208,7 +208,7 @@ class EventRepository(ABC, MinosSetup):
     async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
         raise NotImplementedError
 
-    async def _send_events(self, aggregate_diff: AggregateDiff):
+    async def _send_events(self, aggregate_diff: Event):
         from ...models import (
             Action,
         )

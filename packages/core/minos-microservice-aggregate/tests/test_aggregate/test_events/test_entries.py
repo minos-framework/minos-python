@@ -8,7 +8,7 @@ from uuid import (
 
 from minos.aggregate import (
     Action,
-    AggregateDiff,
+    Event,
     EventEntry,
     FieldDiff,
     FieldDiffContainer,
@@ -62,7 +62,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
     async def test_from_aggregate_diff(self):
         fields_diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         created_at = current_datetime()
-        aggregate_diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, created_at, fields_diff)
+        aggregate_diff = Event(self.uuid, Car.classname, 1, Action.CREATE, created_at, fields_diff)
 
         entry = EventEntry.from_aggregate_diff(aggregate_diff)
         self.assertEqual(self.uuid, entry.aggregate_uuid)
@@ -78,7 +78,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         transaction = TransactionEntry(self.transaction_uuid)
         fields_diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         created_at = current_datetime()
-        aggregate_diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, created_at, fields_diff)
+        aggregate_diff = Event(self.uuid, Car.classname, 1, Action.CREATE, created_at, fields_diff)
 
         entry = EventEntry.from_aggregate_diff(aggregate_diff, transaction=transaction)
         self.assertEqual(self.uuid, entry.aggregate_uuid)
@@ -119,7 +119,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         version = 1
         now = current_datetime()
 
-        aggregate_diff = AggregateDiff(self.uuid, Car.classname, version, Action.CREATE, now, field_diff_container)
+        aggregate_diff = Event(self.uuid, Car.classname, version, Action.CREATE, now, field_diff_container)
 
         entry = EventEntry.from_aggregate_diff(aggregate_diff)
 

@@ -8,7 +8,7 @@ from uuid import (
 
 from minos.aggregate import (
     Action,
-    AggregateDiff,
+    Event,
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
@@ -35,7 +35,7 @@ class TestAggregateDiff(MinosTestCase):
         self.final = Car(5, "yellow", uuid=self.uuid, version=3)
         self.another = Car(3, "blue", uuid=self.uuid_another, version=1)
 
-        self.diff = AggregateDiff(
+        self.diff = Event(
             uuid=self.uuid,
             name=Car.classname,
             version=1,
@@ -55,27 +55,27 @@ class TestAggregateDiff(MinosTestCase):
 
     def test_total_ordering(self):
         observed = [
-            AggregateDiff.from_aggregate(Car(3, "blue", version=4)),
-            AggregateDiff.from_aggregate(Car(3, "blue", version=1)),
-            AggregateDiff.from_aggregate(Car(3, "blue", version=3)),
-            AggregateDiff.from_aggregate(Car(3, "blue", version=2)),
+            Event.from_aggregate(Car(3, "blue", version=4)),
+            Event.from_aggregate(Car(3, "blue", version=1)),
+            Event.from_aggregate(Car(3, "blue", version=3)),
+            Event.from_aggregate(Car(3, "blue", version=2)),
         ]
         observed.sort()
 
         expected = [
-            AggregateDiff.from_aggregate(Car(3, "blue", version=1)),
-            AggregateDiff.from_aggregate(Car(3, "blue", version=2)),
-            AggregateDiff.from_aggregate(Car(3, "blue", version=3)),
-            AggregateDiff.from_aggregate(Car(3, "blue", version=4)),
+            Event.from_aggregate(Car(3, "blue", version=1)),
+            Event.from_aggregate(Car(3, "blue", version=2)),
+            Event.from_aggregate(Car(3, "blue", version=3)),
+            Event.from_aggregate(Car(3, "blue", version=4)),
         ]
         self.assertEqual(expected, observed)
 
     def test_from_aggregate(self):
-        observed = AggregateDiff.from_aggregate(self.initial)
+        observed = Event.from_aggregate(self.initial)
         self.assertEqual(self.diff, observed)
 
     def test_from_deleted_aggregate(self):
-        expected = AggregateDiff(
+        expected = Event(
             uuid=self.uuid,
             name=Car.classname,
             version=1,
@@ -83,11 +83,11 @@ class TestAggregateDiff(MinosTestCase):
             created_at=self.initial.updated_at,
             fields_diff=FieldDiffContainer.empty(),
         )
-        observed = AggregateDiff.from_deleted_aggregate(self.initial)
+        observed = Event.from_deleted_aggregate(self.initial)
         self.assertEqual(expected, observed)
 
     def test_from_difference(self):
-        expected = AggregateDiff(
+        expected = Event(
             uuid=self.uuid,
             name=Car.classname,
             version=3,
@@ -95,22 +95,22 @@ class TestAggregateDiff(MinosTestCase):
             created_at=self.final.updated_at,
             fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]),
         )
-        observed = AggregateDiff.from_difference(self.final, self.initial)
+        observed = Event.from_difference(self.final, self.initial)
         self.assertEqual(expected, observed)
 
     def test_from_difference_raises(self):
         with self.assertRaises(ValueError):
-            AggregateDiff.from_difference(self.initial, self.another)
+            Event.from_difference(self.initial, self.another)
 
     def test_avro_serialization(self):
         serialized = self.diff.avro_bytes
         self.assertIsInstance(serialized, bytes)
 
-        deserialized = AggregateDiff.from_avro_bytes(serialized)
+        deserialized = Event.from_avro_bytes(serialized)
         self.assertEqual(self.diff, deserialized)
 
     def test_decompose(self):
-        aggr = AggregateDiff(
+        aggr = Event(
             uuid=self.uuid,
             name=Car.classname,
             version=3,
@@ -120,7 +120,7 @@ class TestAggregateDiff(MinosTestCase):
         )
 
         expected = [
-            AggregateDiff(
+            Event(
                 uuid=self.uuid,
                 name=Car.classname,
                 version=3,
@@ -128,7 +128,7 @@ class TestAggregateDiff(MinosTestCase):
                 created_at=aggr.created_at,
                 fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5)]),
             ),
-            AggregateDiff(
+            Event(
                 uuid=self.uuid,
                 name=Car.classname,
                 version=3,
@@ -144,7 +144,7 @@ class TestAggregateDiff(MinosTestCase):
 
 class TestAggregateDiffAccessors(unittest.TestCase):
     def setUp(self) -> None:
-        self.diff = AggregateDiff(
+        self.diff = Event(
             uuid=uuid4(),
             name="src.domain.Car",
             version=1,

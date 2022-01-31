@@ -10,7 +10,7 @@ from .collections import (
     IncrementalSetDiffEntry,
 )
 from .diffs import (
-    AggregateDiff,
+    Event,
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,

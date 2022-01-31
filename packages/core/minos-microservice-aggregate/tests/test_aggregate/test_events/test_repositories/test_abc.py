@@ -20,7 +20,7 @@ from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
     TRANSACTION_CONTEXT_VAR,
     Action,
-    AggregateDiff,
+    Event,
     EventEntry,
     EventRepository,
     EventRepositoryConflictException,
@@ -151,7 +151,7 @@ class TestEventRepository(MinosTestCase):
         self.event_repository._send_events = send_events_mock
 
         uuid = uuid4()
-        aggregate_diff = AggregateDiff(
+        aggregate_diff = Event(
             uuid=uuid,
             name="example.Car",
             version=2,
@@ -197,7 +197,7 @@ class TestEventRepository(MinosTestCase):
         self.event_repository._send_events = send_events_mock
 
         uuid = uuid4()
-        aggregate_diff = AggregateDiff(
+        aggregate_diff = Event(
             uuid=uuid,
             name="example.Car",
             version=2,
@@ -238,7 +238,7 @@ class TestEventRepository(MinosTestCase):
         self.event_repository._submit = submit_mock
 
         uuid = uuid4()
-        aggregate_diff = AggregateDiff(
+        aggregate_diff = Event(
             uuid=uuid,
             name="example.Car",
             version=2,
@@ -258,7 +258,7 @@ class TestEventRepository(MinosTestCase):
         self.assertIsInstance(observed[0], BrokerMessageV1)
         self.assertEqual("CarUpdated", observed[0].topic)
         self.assertEqual(
-            AggregateDiff(
+            Event(
                 uuid=uuid,
                 name="example.Car",
                 version=56,
@@ -271,7 +271,7 @@ class TestEventRepository(MinosTestCase):
         self.assertEqual("CarUpdated.colors.create", observed[1].topic)
         self.assertIsInstance(observed[1], BrokerMessageV1)
         self.assertEqual(
-            AggregateDiff(
+            Event(
                 uuid=uuid,
                 name="example.Car",
                 version=56,
@@ -298,7 +298,7 @@ class TestEventRepository(MinosTestCase):
 
         uuid = uuid4()
         aggregate_diff = EventEntry.from_aggregate_diff(
-            AggregateDiff(
+            Event(
                 uuid=uuid,
                 name="example.Car",
                 version=2,

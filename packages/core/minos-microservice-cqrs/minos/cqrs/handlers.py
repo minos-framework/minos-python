@@ -8,7 +8,7 @@ from typing import (
 )
 
 from minos.aggregate import (
-    AggregateDiff,
+    Event,
     RefResolver,
 )
 
@@ -27,7 +27,7 @@ class PreEventHandler:
         :param kwargs: Additional named arguments.
         :return: The original instance with the ``Ref`` references already resolved.
         """
-        if not isinstance(diff, AggregateDiff) or not resolve_references:
+        if not isinstance(diff, Event) or not resolve_references:
             return diff
 
         try:

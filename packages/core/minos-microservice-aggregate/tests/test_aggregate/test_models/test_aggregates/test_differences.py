@@ -5,7 +5,7 @@ from uuid import (
 
 from minos.aggregate import (
     Action,
-    AggregateDiff,
+    Event,
     FieldDiff,
     FieldDiffContainer,
 )
@@ -43,7 +43,7 @@ class TestAggregateDifferences(MinosTestCase):
         )
 
     def test_diff(self):
-        expected = AggregateDiff(
+        expected = Event(
             uuid=self.uuid,
             name=Car.classname,
             version=3,
@@ -55,7 +55,7 @@ class TestAggregateDifferences(MinosTestCase):
         self.assertEqual(expected, observed)
 
     def test_apply_diff(self):
-        diff = AggregateDiff(
+        diff = Event(
             uuid=self.uuid,
             name=Car.classname,
             version=3,
@@ -67,7 +67,7 @@ class TestAggregateDifferences(MinosTestCase):
         self.assertEqual(self.final, self.initial)
 
     def test_apply_diff_raises(self):
-        diff = AggregateDiff(
+        diff = Event(
             uuid=self.uuid_another,
             name=Car.classname,
             version=3,

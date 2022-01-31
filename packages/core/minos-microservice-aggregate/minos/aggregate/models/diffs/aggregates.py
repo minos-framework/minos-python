@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 
 @total_ordering
-class AggregateDiff(DeclarativeModel):
+class Event(DeclarativeModel):
     """Aggregate Diff class."""
 
     uuid: UUID
@@ -95,7 +95,7 @@ class AggregateDiff(DeclarativeModel):
         return self.fields_diff.get_all(return_diff)
 
     @classmethod
-    def from_difference(cls, a: RootEntity, b: RootEntity, action: Action = Action.UPDATE) -> AggregateDiff:
+    def from_difference(cls, a: RootEntity, b: RootEntity, action: Action = Action.UPDATE) -> Event:
         """Build an ``AggregateDiff`` instance from the difference of two aggregates.
 
         :param a: One ``Aggregate`` instance.
@@ -125,7 +125,7 @@ class AggregateDiff(DeclarativeModel):
         )
 
     @classmethod
-    def from_aggregate(cls, aggregate: RootEntity, action: Action = Action.CREATE) -> AggregateDiff:
+    def from_aggregate(cls, aggregate: RootEntity, action: Action = Action.CREATE) -> Event:
         """Build an ``AggregateDiff`` from an ``Aggregate`` (considering all fields as differences).
 
         :param aggregate: An ``Aggregate`` instance.
@@ -144,7 +144,7 @@ class AggregateDiff(DeclarativeModel):
         )
 
     @classmethod
-    def from_deleted_aggregate(cls, aggregate: RootEntity, action: Action = Action.DELETE) -> AggregateDiff:
+    def from_deleted_aggregate(cls, aggregate: RootEntity, action: Action = Action.DELETE) -> Event:
         """Build an ``AggregateDiff`` from an ``Aggregate`` (considering all fields as differences).
 
         :param aggregate: An ``Aggregate`` instance.
@@ -160,7 +160,7 @@ class AggregateDiff(DeclarativeModel):
             fields_diff=FieldDiffContainer.empty(),
         )
 
-    def decompose(self) -> list[AggregateDiff]:
+    def decompose(self) -> list[Event]:
         """Decompose AggregateDiff Fields into AggregateDiff with once Field.
 
         :return: An list of``AggregateDiff`` instances.

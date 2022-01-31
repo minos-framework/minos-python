@@ -5,7 +5,7 @@ from typing import (
 
 from minos.aggregate import (
     Action,
-    AggregateDiff,
+    Event,
     FieldDiff,
     FieldDiffContainer,
     Ref,
@@ -30,7 +30,7 @@ class TestAggregate(MinosTestCase):
         self.assertIsInstance(observed[0], BrokerMessageV1)
         self.assertEqual("CarCreated", observed[0].topic)
         self.assertEqual(
-            AggregateDiff(
+            Event(
                 uuid=car.uuid,
                 name=Car.classname,
                 version=1,
@@ -59,7 +59,7 @@ class TestAggregate(MinosTestCase):
         self.assertIsInstance(observed[0], BrokerMessageV1)
         self.assertEqual("CarUpdated", observed[0].topic)
         self.assertEqual(
-            AggregateDiff(
+            Event(
                 uuid=car.uuid,
                 name=Car.classname,
                 version=2,
@@ -72,7 +72,7 @@ class TestAggregate(MinosTestCase):
         self.assertIsInstance(observed[1], BrokerMessageV1)
         self.assertEqual("CarUpdated.color", observed[1].topic)
         self.assertEqual(
-            AggregateDiff(
+            Event(
                 uuid=car.uuid,
                 name=Car.classname,
                 version=2,
@@ -95,7 +95,7 @@ class TestAggregate(MinosTestCase):
         self.assertIsInstance(observed[0], BrokerMessageV1)
         self.assertEqual("CarDeleted", observed[0].topic)
         self.assertEqual(
-            AggregateDiff(
+            Event(
                 uuid=car.uuid,
                 name=Car.classname,
                 version=2,

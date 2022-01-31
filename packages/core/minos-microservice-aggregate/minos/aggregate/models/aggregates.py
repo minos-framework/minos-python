@@ -42,7 +42,7 @@ from ..snapshots import (
     SnapshotRepository,
 )
 from .diffs import (
-    AggregateDiff,
+    Event,
     IncrementalFieldDiff,
 )
 from .entities import (
@@ -155,7 +155,7 @@ class RootEntity(Entity):
 
         instance: T = cls(*args, **kwargs)
 
-        aggregate_diff = AggregateDiff.from_aggregate(instance)
+        aggregate_diff = Event.from_aggregate(instance)
         entry = await instance._repository.submit(aggregate_diff)
 
         instance._update_from_repository_entry(entry)
@@ -237,7 +237,7 @@ class RootEntity(Entity):
 
         :return: This method does not return anything.
         """
-        aggregate_diff = AggregateDiff.from_deleted_aggregate(self)
+        aggregate_diff = Event.from_deleted_aggregate(self)
         entry = await self._repository.submit(aggregate_diff)
 
         self._update_from_repository_entry(entry)
@@ -249,7 +249,7 @@ class RootEntity(Entity):
             self.created_at = entry.created_at
         self.updated_at = entry.created_at
 
-    def diff(self, another: RootEntity) -> AggregateDiff:
+    def diff(self, another: RootEntity) -> Event:
         """Compute the difference with another aggregate.
 
         Both ``Aggregate`` instances (``self`` and ``another``) must share the same ``uuid`` value.
@@ -257,9 +257,9 @@ class RootEntity(Entity):
         :param another: Another ``Aggregate`` instance.
         :return: An ``FieldDiffContainer`` instance.
         """
-        return AggregateDiff.from_difference(self, another)
+        return Event.from_difference(self, another)
 
-    def apply_diff(self, aggregate_diff: AggregateDiff) -> None:
+    def apply_diff(self, aggregate_diff: Event) -> None:
         """Apply the differences over the instance.
 
         :param aggregate_diff: The ``FieldDiffContainer`` containing the values to be set.
@@ -285,7 +285,7 @@ class RootEntity(Entity):
         self.updated_at = aggregate_diff.created_at
 
     @classmethod
-    def from_diff(cls: Type[T], aggregate_diff: AggregateDiff, *args, **kwargs) -> T:
+    def from_diff(cls: Type[T], aggregate_diff: Event, *args, **kwargs) -> T:
         """Build a new instance from an ``AggregateDiff``.
 
         :param aggregate_diff: The difference that contains the data.
