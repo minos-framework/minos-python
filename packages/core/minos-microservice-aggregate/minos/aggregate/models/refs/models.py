@@ -46,7 +46,7 @@ from ..entities import (
 MT = TypeVar("MT", bound=Model)
 
 
-class AggregateRef(Entity):
+class ExternalAggregate(Entity):
     """Aggregate Ref class."""
 
     version: int
@@ -55,7 +55,7 @@ class AggregateRef(Entity):
         super().__init__(uuid=uuid, *args, **kwargs)
 
 
-class ModelRef(DeclarativeModel, UUID, Generic[MT]):
+class Ref(DeclarativeModel, UUID, Generic[MT]):
     """Model Reference."""
 
     data: Union[MT, UUID]
@@ -131,7 +131,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         return encoder.build(target, **kwargs)
 
     @classmethod
-    def decode_data(cls, decoder: DataDecoder, target: Any, type_: ModelType, **kwargs) -> ModelRef:
+    def decode_data(cls, decoder: DataDecoder, target: Any, type_: ModelType, **kwargs) -> Ref:
         """Decode data with the given decoder.
 
         :param decoder: The decoder instance.

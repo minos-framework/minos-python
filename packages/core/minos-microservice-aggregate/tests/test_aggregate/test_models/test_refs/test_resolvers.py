@@ -5,8 +5,8 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    ModelRef,
-    ModelRefResolver,
+    Ref,
+    RefResolver,
 )
 from minos.common import (
     ModelType,
@@ -20,17 +20,17 @@ from tests.utils import (
 )
 
 Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-Foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": ModelRef[Bar]})
+Foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": Ref[Bar]})
 
 
-class TestModelRefResolver(MinosTestCase):
+class TestRefResolver(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.resolver = ModelRefResolver()
+        self.resolver = RefResolver()
 
         self.uuid = uuid4()
         self.another_uuid = uuid4()
-        self.value = Foo(self.uuid, 1, another=ModelRef(self.another_uuid))
+        self.value = Foo(self.uuid, 1, another=Ref(self.another_uuid))
 
     async def test_resolve(self):
         self.broker_subscriber_builder.with_messages(
@@ -46,7 +46,7 @@ class TestModelRefResolver(MinosTestCase):
         self.assertEqual("GetBars", observed[0].topic)
         self.assertEqual({"uuids": {self.another_uuid}}, observed[0].content)
 
-        self.assertEqual(Foo(self.uuid, 1, another=ModelRef(Bar(self.another_uuid, 1))), resolved)
+        self.assertEqual(Foo(self.uuid, 1, another=Ref(Bar(self.another_uuid, 1))), resolved)
 
     async def test_resolve_already(self):
         self.assertEqual(34, await self.resolver.resolve(34))

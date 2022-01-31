@@ -11,8 +11,8 @@ from uuid import (
 
 from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
-    AggregateRef,
-    ModelRef,
+    ExternalAggregate,
+    Ref,
 )
 from minos.common import (
     DeclarativeModel,
@@ -29,7 +29,7 @@ from tests.utils import (
 )
 
 
-class Product(AggregateRef):
+class Product(ExternalAggregate):
     """For testing purposes."""
 
     title: str
@@ -50,34 +50,34 @@ class TestSubAggregate(unittest.TestCase):
 FakeMessage = ModelType.build("FakeMessage", {"content": Any})
 
 Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-Foo = ModelType.build("Foo", {"another": ModelRef[Bar]})
+Foo = ModelType.build("Foo", {"another": Ref[Bar]})
 
 
-class TestModelRef(MinosTestCase):
+class TestRef(MinosTestCase):
     def test_subclass(self):
         # noinspection PyTypeHints
-        self.assertTrue(issubclass(ModelRef, (DeclarativeModel, UUID, Generic)))
+        self.assertTrue(issubclass(Ref, (DeclarativeModel, UUID, Generic)))
 
     def test_raises(self):
         with self.assertRaises(ValueError):
             # noinspection PyTypeChecker
-            ModelRef(56)
+            Ref(56)
 
     def test_uuid(self):
         uuid = uuid4()
-        value = ModelRef(uuid)
+        value = Ref(uuid)
 
         self.assertEqual(uuid, value)
 
     def test_uuid_int(self):
         uuid = uuid4()
-        value = ModelRef(uuid)
+        value = Ref(uuid)
 
         self.assertEqual(uuid.int, value.int)
 
     def test_uuid_is_safe(self):
         uuid = uuid4()
-        value = ModelRef(uuid)
+        value = Ref(uuid)
 
         self.assertEqual(uuid.is_safe, value.is_safe)
 
@@ -89,46 +89,46 @@ class TestModelRef(MinosTestCase):
 
     def test_model_uuid(self):
         uuid = uuid4()
-        value = ModelRef(Bar(uuid, 1))
+        value = Ref(Bar(uuid, 1))
 
         self.assertEqual(uuid, value.uuid)
 
     def test_model_attribute(self):
-        value = ModelRef(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1))
 
         self.assertEqual(1, value.age)
 
     def test_model_attribute_raises(self):
-        value = ModelRef(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1))
 
         with self.assertRaises(AttributeError):
             value.year
 
     def test_fields(self):
-        value = ModelRef(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1))
 
         self.assertEqual({"data": Field("data", Union[Bar, UUID], value)}, value.fields)
 
     def test_model_avro_data(self):
         value = Bar(uuid4(), 1)
 
-        self.assertEqual(value.avro_data, ModelRef(value).avro_data)
+        self.assertEqual(value.avro_data, Ref(value).avro_data)
 
     def test_uuid_avro_data(self):
         value = uuid4()
-        self.assertEqual(str(value), ModelRef(value).avro_data)
+        self.assertEqual(str(value), Ref(value).avro_data)
 
     async def test_model_avro_data_submitting(self):
         uuid = uuid4()
         value = Bar(uuid, 1)
 
         IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
-        self.assertEqual(str(uuid), ModelRef(value).avro_data)
+        self.assertEqual(str(uuid), Ref(value).avro_data)
 
     async def test_uuid_avro_data_submitting(self):
         value = uuid4()
         IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
-        self.assertEqual(str(value), ModelRef(value).avro_data)
+        self.assertEqual(str(value), Ref(value).avro_data)
 
     def test_model_avro_schema(self):
         another = Bar(uuid4(), 1)
@@ -143,13 +143,13 @@ class TestModelRef(MinosTestCase):
                     "name": "Bar",
                     "namespace": "",
                     "type": "record",
-                    "logicalType": "minos.aggregate.models.refs.models.ModelRef",
+                    "logicalType": "minos.aggregate.models.refs.models.Ref",
                 },
-                {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
+                {"logicalType": "minos.aggregate.models.refs.models.Ref", "type": "string"},
             ]
         ]
 
-        self.assertEqual(expected, ModelRef(another).avro_schema)
+        self.assertEqual(expected, Ref(another).avro_schema)
 
     def test_uuid_avro_schema(self):
         another = uuid4()
@@ -162,12 +162,12 @@ class TestModelRef(MinosTestCase):
                         {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
                         {"name": "age", "type": "int"},
                     ],
-                    "logicalType": "minos.aggregate.models.refs.models.ModelRef",
+                    "logicalType": "minos.aggregate.models.refs.models.Ref",
                     "name": "Bar",
                     "namespace": "",
                     "type": "record",
                 },
-                {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
+                {"logicalType": "minos.aggregate.models.refs.models.Ref", "type": "string"},
             ]
         ]
         self.assertEqual(expected, ref.avro_schema)
@@ -177,13 +177,13 @@ class TestModelRef(MinosTestCase):
         expected = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
         schema = [
-            {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
+            {"logicalType": "minos.aggregate.models.refs.models.Ref", "type": "string"},
             {
                 "fields": [
                     {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
                     {"name": "age", "type": "int"},
                 ],
-                "logicalType": "minos.aggregate.models.refs.models.ModelRef",
+                "logicalType": "minos.aggregate.models.refs.models.Ref",
                 "name": "Bar",
                 "namespace": "",
                 "type": "record",
@@ -204,12 +204,12 @@ class TestModelRef(MinosTestCase):
                     {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
                     {"name": "age", "type": "int"},
                 ],
-                "logicalType": "minos.aggregate.models.refs.models.ModelRef",
+                "logicalType": "minos.aggregate.models.refs.models.Ref",
                 "name": "Bar",
                 "namespace": "",
                 "type": "record",
             },
-            {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
+            {"logicalType": "minos.aggregate.models.refs.models.Ref", "type": "string"},
         ]
         data = str(another)
 
@@ -238,7 +238,7 @@ class TestModelRef(MinosTestCase):
     async def test_resolve_already(self):
         uuid = uuid4()
 
-        ref = ModelRef(Bar(uuid, 1))
+        ref = Ref(Bar(uuid, 1))
 
         await ref.resolve()
 
@@ -246,20 +246,20 @@ class TestModelRef(MinosTestCase):
         self.assertEqual(0, len(observed))
 
     async def test_resolved(self):
-        self.assertFalse(ModelRef(uuid4()).resolved)
-        self.assertTrue(ModelRef(Bar(uuid4(), 4)).resolved)
+        self.assertFalse(Ref(uuid4()).resolved)
+        self.assertTrue(Ref(Bar(uuid4(), 4)).resolved)
 
     def test_avro_model(self):
         another = Bar(uuid4(), 1)
         ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
-        self.assertEqual(ref, ModelRef.from_avro_bytes(ref.avro_bytes))
+        self.assertEqual(ref, Ref.from_avro_bytes(ref.avro_bytes))
 
     def test_avro_uuid(self):
         another = uuid4()
         ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
-        self.assertEqual(ref, ModelRef.from_avro_bytes(ref.avro_bytes))
+        self.assertEqual(ref, Ref.from_avro_bytes(ref.avro_bytes))
 
 
 if __name__ == "__main__":

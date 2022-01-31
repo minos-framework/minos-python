@@ -1,13 +1,13 @@
 from .extractors import (
-    ModelRefExtractor,
+    RefExtractor,
 )
 from .injectors import (
-    ModelRefInjector,
+    RefInjector,
 )
 from .models import (
-    AggregateRef,
-    ModelRef,
+    ExternalAggregate,
+    Ref,
 )
 from .resolvers import (
-    ModelRefResolver,
+    RefResolver,
 )

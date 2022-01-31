@@ -26,7 +26,7 @@ from minos.aggregate import (
     InMemoryEventRepository,
     InMemorySnapshotRepository,
     InMemoryTransactionRepository,
-    ModelRef,
+    Ref,
     ValueObject,
     ValueObjectSet,
 )
@@ -148,7 +148,7 @@ class Car(Aggregate):
 
     doors: int
     color: str
-    owner: Optional[ModelRef[Owner]]
+    owner: Optional[Ref[Owner]]
 
 
 class Order(Aggregate):

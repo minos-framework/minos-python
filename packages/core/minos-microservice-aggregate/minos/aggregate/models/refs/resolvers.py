@@ -30,15 +30,15 @@ from minos.networks import (
 )
 
 from .extractors import (
-    ModelRefExtractor,
+    RefExtractor,
 )
 from .injectors import (
-    ModelRefInjector,
+    RefInjector,
 )
 
 
-class ModelRefResolver:
-    """ModelRef Resolver class."""
+class RefResolver:
+    """Ref Resolver class."""
 
     # noinspection PyUnusedLocal
     @inject
@@ -47,20 +47,20 @@ class ModelRefResolver:
 
     # noinspection PyUnusedLocal
     async def resolve(self, data: Any, **kwargs) -> Any:
-        """Resolve ModelRef instances.
+        """Resolve Ref instances.
 
         :param data: The data to be resolved.
         :param kwargs: Additional named arguments.
         :return: The data instance with model references already resolved.
         """
-        missing = ModelRefExtractor(data).build()
+        missing = RefExtractor(data).build()
 
         if not len(missing):
             return data
 
         recovered = await self._query(missing)
 
-        return ModelRefInjector(data, recovered).build()
+        return RefInjector(data, recovered).build()
 
     async def _query(self, references: dict[str, set[UUID]]) -> dict[UUID, Model]:
         async with self.broker_pool.acquire() as broker:

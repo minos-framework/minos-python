@@ -8,7 +8,7 @@ from minos.aggregate import (
     AggregateDiff,
     FieldDiff,
     FieldDiffContainer,
-    ModelRef,
+    Ref,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -40,7 +40,7 @@ class TestAggregate(MinosTestCase):
                     [
                         FieldDiff("doors", int, 3),
                         FieldDiff("color", str, "blue"),
-                        FieldDiff("owner", Optional[ModelRef[Owner]], None),
+                        FieldDiff("owner", Optional[Ref[Owner]], None),
                     ]
                 ),
             ),

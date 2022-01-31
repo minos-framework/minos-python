@@ -12,7 +12,7 @@ from minos.aggregate import (
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
-    ModelRef,
+    Ref,
 )
 from minos.common import (
     current_datetime,
@@ -45,7 +45,7 @@ class TestAggregateDiff(MinosTestCase):
                 [
                     FieldDiff("doors", int, 3),
                     FieldDiff("color", str, "blue"),
-                    FieldDiff("owner", Optional[ModelRef[Owner]], None),
+                    FieldDiff("owner", Optional[Ref[Owner]], None),
                 ]
             ),
         )

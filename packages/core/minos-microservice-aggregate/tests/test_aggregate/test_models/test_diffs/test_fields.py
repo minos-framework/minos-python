@@ -17,7 +17,7 @@ from minos.aggregate import (
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
-    ModelRef,
+    Ref,
 )
 from minos.common import (
     NULL_DATETIME,
@@ -76,7 +76,7 @@ class TestFieldDiffContainer(MinosTestCase):
                 FieldDiff("updated_at", datetime, NULL_DATETIME),
                 FieldDiff("doors", int, 5),
                 FieldDiff("color", str, "red"),
-                FieldDiff("owner", Optional[ModelRef[Owner]], None),
+                FieldDiff("owner", Optional[Ref[Owner]], None),
             ]
         )
         observed = FieldDiffContainer.from_model(self.car_two)
@@ -87,7 +87,7 @@ class TestFieldDiffContainer(MinosTestCase):
             [
                 FieldDiff("doors", int, 5),
                 FieldDiff("color", str, "red"),
-                FieldDiff("owner", Optional[ModelRef[Owner]], None),
+                FieldDiff("owner", Optional[Ref[Owner]], None),
             ]
         )
         observed = FieldDiffContainer.from_model(self.car_two, ignore={"uuid", "version", "created_at", "updated_at"})

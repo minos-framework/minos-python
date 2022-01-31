@@ -20,11 +20,11 @@ from .entities import (
     EntitySet,
 )
 from .refs import (
-    AggregateRef,
-    ModelRef,
-    ModelRefExtractor,
-    ModelRefInjector,
-    ModelRefResolver,
+    ExternalAggregate,
+    Ref,
+    RefExtractor,
+    RefInjector,
+    RefResolver,
 )
 from .value_objects import (
     ValueObject,

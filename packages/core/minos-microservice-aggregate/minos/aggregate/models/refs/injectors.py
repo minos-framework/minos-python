@@ -11,7 +11,7 @@ from minos.common import (
 )
 
 
-class ModelRefInjector:
+class RefInjector:
     """Model Reference Injector class."""
 
     def __init__(self, value: Any, mapper: dict[UUID, Model]):

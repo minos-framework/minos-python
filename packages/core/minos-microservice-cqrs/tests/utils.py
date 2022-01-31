@@ -8,8 +8,8 @@ from pathlib import (
 
 from minos.aggregate import (
     Aggregate,
-    AggregateRef,
-    ModelRef,
+    ExternalAggregate,
+    Ref,
 )
 from minos.cqrs import (
     CommandService,
@@ -48,10 +48,10 @@ class FakeCommandService(CommandService):
 class Foo(Aggregate):
     """For testing purposes"""
 
-    bar: ModelRef[Bar]
+    bar: Ref[Bar]
 
 
-class Bar(AggregateRef):
+class Bar(ExternalAggregate):
     """For testing purposes"""
 
     name: str
