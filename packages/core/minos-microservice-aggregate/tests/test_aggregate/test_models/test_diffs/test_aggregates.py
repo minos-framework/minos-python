@@ -24,7 +24,7 @@ from tests.utils import (
 )
 
 
-class TestAggregateDiff(MinosTestCase):
+class TestEvent(MinosTestCase):
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
 
@@ -142,7 +142,7 @@ class TestAggregateDiff(MinosTestCase):
         self.assertEqual(expected, observed)
 
 
-class TestAggregateDiffAccessors(unittest.TestCase):
+class TestEventAccessors(unittest.TestCase):
     def setUp(self) -> None:
         self.diff = Event(
             uuid=uuid4(),

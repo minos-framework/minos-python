@@ -20,7 +20,7 @@ from tests.utils import (
 )
 
 
-class TestAggregate(MinosTestCase):
+class TestRootEntityBroker(MinosTestCase):
     async def test_create(self):
         car = await Car.create(doors=3, color="blue")
 

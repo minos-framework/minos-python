@@ -18,7 +18,7 @@ from tests.utils import (
 )
 
 
-class TestAggregateDifferences(MinosTestCase):
+class TestRootEntityDifferences(MinosTestCase):
     async def asyncSetUp(self) -> None:
         self.uuid = uuid4()
         self.uuid_another = uuid4()

@@ -15,7 +15,7 @@ from tests.utils import (
 )
 
 
-class TestAggregateNotProvided(MinosTestCase):
+class TestRootEntityNotProvided(MinosTestCase):
     async def test_create_raises(self):
         with self.assertRaises(NotProvidedException):
             await Car.create(doors=3, color="blue", _repository=None)

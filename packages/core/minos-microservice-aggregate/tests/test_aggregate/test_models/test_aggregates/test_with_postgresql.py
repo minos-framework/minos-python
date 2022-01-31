@@ -21,7 +21,7 @@ from tests.utils import (
 )
 
 
-class TestAggregateWithPostgreSql(MinosTestCase, PostgresAsyncTestCase):
+class TestExternalEntityWithPostgreSql(MinosTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self):

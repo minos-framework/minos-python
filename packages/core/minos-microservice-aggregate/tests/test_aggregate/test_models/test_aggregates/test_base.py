@@ -23,7 +23,7 @@ from tests.utils import (
 )
 
 
-class TestAggregate(MinosTestCase):
+class TestRootEntity(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.kwargs = {"_repository": self.event_repository, "_snapshot": self.snapshot_repository}

@@ -36,7 +36,7 @@ class Product(ExternalEntity):
     quantity: int
 
 
-class TestSubAggregate(unittest.TestCase):
+class TestExternalEntity(unittest.TestCase):
     def test_values(self):
         uuid = uuid4()
         product = Product(uuid, 3, "apple", 3028)
