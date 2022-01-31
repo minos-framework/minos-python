@@ -7,12 +7,12 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    NotFoundException,
-    Condition,
     AlreadyDeletedException,
+    Condition,
     EventEntry,
     FieldDiff,
     FieldDiffContainer,
+    NotFoundException,
     Ordering,
     PostgreSqlSnapshotReader,
     PostgreSqlSnapshotSetup,

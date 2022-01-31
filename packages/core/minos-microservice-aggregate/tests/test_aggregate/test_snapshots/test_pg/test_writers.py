@@ -12,8 +12,8 @@ from uuid import (
 
 from minos.aggregate import (
     Action,
-    Condition,
     AlreadyDeletedException,
+    Condition,
     EventEntry,
     FieldDiff,
     FieldDiffContainer,

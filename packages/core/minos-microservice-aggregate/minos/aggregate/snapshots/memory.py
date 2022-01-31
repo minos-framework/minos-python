@@ -29,8 +29,8 @@ from ..events import (
     EventRepository,
 )
 from ..exceptions import (
-    NotFoundException,
     AlreadyDeletedException,
+    NotFoundException,
 )
 from ..queries import (
     _Condition,

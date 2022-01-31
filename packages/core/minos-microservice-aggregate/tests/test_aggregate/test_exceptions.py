@@ -2,9 +2,9 @@ import unittest
 
 from minos.aggregate import (
     AggregateException,
-    NotFoundException,
     AlreadyDeletedException,
     EventRepositoryException,
+    NotFoundException,
     SnapshotRepositoryException,
 )
 from minos.common import (

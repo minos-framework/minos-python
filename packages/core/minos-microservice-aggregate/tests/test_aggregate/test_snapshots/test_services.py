@@ -9,6 +9,7 @@ from uuid import (
 )
 
 from minos.aggregate import (
+    RootEntity,
     SnapshotService,
 )
 from minos.common import (
@@ -52,14 +53,14 @@ class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
     async def test_get_aggregate(self):
         uuid = uuid4()
         expected = Agg(uuid)
-        with patch("minos.aggregate.Aggregate.get", return_value=expected):
+        with patch.object(RootEntity, "get", return_value=expected):
             response = await self.service.__get_one__(InMemoryRequest({"uuid": uuid}))
         self.assertEqual(expected, await response.content())
 
     async def test_get_aggregate_raises(self):
         with self.assertRaises(ResponseException):
             await self.service.__get_one__(InMemoryRequest())
-        with patch("minos.aggregate.Aggregate.get", side_effect=ValueError):
+        with patch.object(RootEntity, "get", side_effect=ValueError):
             with self.assertRaises(ResponseException):
                 await self.service.__get_one__(InMemoryRequest({"uuid": uuid4()}))
 
@@ -67,14 +68,14 @@ class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
         uuids = [uuid4(), uuid4()]
 
         expected = [Agg(u) for u in uuids]
-        with patch("minos.aggregate.Aggregate.get", side_effect=expected):
+        with patch.object(RootEntity, "get", side_effect=expected):
             response = await self.service.__get_many__(InMemoryRequest({"uuids": uuids}))
         self.assertEqual(expected, await response.content())
 
     async def test_get_aggregates_raises(self):
         with self.assertRaises(ResponseException):
             await self.service.__get_many__(InMemoryRequest())
-        with patch("minos.aggregate.Aggregate.get", side_effect=ValueError):
+        with patch.object(RootEntity, "get", side_effect=ValueError):
             with self.assertRaises(ResponseException):
                 await self.service.__get_many__(InMemoryRequest({"uuids": [uuid4()]}))
 

@@ -7,13 +7,13 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    NotFoundException,
-    Condition,
     AlreadyDeletedException,
+    Condition,
     EventEntry,
     FieldDiff,
     FieldDiffContainer,
     InMemorySnapshotRepository,
+    NotFoundException,
     Ordering,
     SnapshotEntry,
     SnapshotRepository,

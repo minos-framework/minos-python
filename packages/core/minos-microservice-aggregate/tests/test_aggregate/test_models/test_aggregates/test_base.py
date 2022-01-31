@@ -7,10 +7,10 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    NotFoundException,
-    Condition,
     AlreadyDeletedException,
+    Condition,
     EventRepositoryException,
+    NotFoundException,
     Ordering,
 )
 from minos.common import (

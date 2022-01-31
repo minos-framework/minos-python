@@ -13,10 +13,10 @@ from .events import (
 )
 from .exceptions import (
     AggregateException,
-    NotFoundException,
     AlreadyDeletedException,
     EventRepositoryConflictException,
     EventRepositoryException,
+    NotFoundException,
     SnapshotRepositoryConflictException,
     SnapshotRepositoryException,
     TransactionNotFoundException,
