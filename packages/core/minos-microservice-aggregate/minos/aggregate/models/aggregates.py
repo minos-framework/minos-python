@@ -130,11 +130,11 @@ class RootEntity(Entity):
 
     @classmethod
     async def create(cls: Type[T], *args, **kwargs) -> T:
-        """Create a new ``Aggregate`` instance.
+        """Create a new ``RootEntity`` instance.
 
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
-        :return: A new ``Aggregate`` instance.
+        :return: A new ``RootEntity`` instance.
         """
         if "uuid" in kwargs:
             raise EventRepositoryException(
@@ -164,10 +164,10 @@ class RootEntity(Entity):
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
     async def update(self: T, **kwargs) -> T:
-        """Update an existing ``Aggregate`` instance.
+        """Update an existing ``RootEntity`` instance.
 
         :param kwargs: Additional named arguments.
-        :return: An updated ``Aggregate``  instance.
+        :return: An updated ``RootEntity``  instance.
         """
 
         if "version" in kwargs:
@@ -252,9 +252,9 @@ class RootEntity(Entity):
     def diff(self, another: RootEntity) -> Event:
         """Compute the difference with another aggregate.
 
-        Both ``Aggregate`` instances (``self`` and ``another``) must share the same ``uuid`` value.
+        Both ``RootEntity`` instances (``self`` and ``another``) must share the same ``uuid`` value.
 
-        :param another: Another ``Aggregate`` instance.
+        :param another: Another ``RootEntity`` instance.
         :return: An ``FieldDiffContainer`` instance.
         """
         return Event.from_difference(self, another)
@@ -291,7 +291,7 @@ class RootEntity(Entity):
         :param aggregate_diff: The difference that contains the data.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
-        :return: A new ``Aggregate`` instance.
+        :return: A new ``RootEntity`` instance.
         """
         return cls(
             *args,

@@ -83,7 +83,7 @@ class EventEntry:
     def from_aggregate_diff(
         cls, aggregate_diff: Event, *, transaction: Optional[TransactionEntry] = None, **kwargs
     ) -> EventEntry:
-        """Build a new instance from an ``Aggregate``.
+        """Build a new instance from a ``RootEntity``.
 
         :param aggregate_diff: The aggregate difference.
         :param transaction: Optional transaction.
@@ -130,7 +130,7 @@ class EventEntry:
 
     @property
     def aggregate_cls(self) -> Type[RootEntity]:
-        """Load the concrete ``Aggregate`` class.
+        """Load the concrete ``RootEntity`` class.
 
         :return: A ``Type`` object.
         """

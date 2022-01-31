@@ -62,7 +62,7 @@ class TransactionRepository(ABC, MinosSetup):
     async def get(self, uuid: UUID, **kwargs) -> TransactionEntry:
         """Get a ``TransactionEntry`` from its identifier.
 
-        :param uuid: Identifier of the ``Aggregate``.
+        :param uuid: Identifier of the ``RootEntity``.
         :param kwargs: Additional named arguments.
         :return: The ``TransactionEntry`` instance.
         """

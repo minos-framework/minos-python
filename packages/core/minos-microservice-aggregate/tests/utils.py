@@ -137,7 +137,7 @@ class FakeLockPool(MinosPool):
 
 
 class Owner(RootEntity):
-    """Aggregate ``Owner`` class for testing purposes."""
+    """For testing purposes"""
 
     name: str
     surname: str
@@ -145,7 +145,7 @@ class Owner(RootEntity):
 
 
 class Car(RootEntity):
-    """Aggregate ``Car`` class for testing purposes."""
+    """For testing purposes"""
 
     doors: int
     color: str

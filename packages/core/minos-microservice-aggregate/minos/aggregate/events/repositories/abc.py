@@ -268,21 +268,21 @@ class EventRepository(ABC, MinosSetup):
     ) -> AsyncIterator[EventEntry]:
         """Perform a selection query of entries stored in to the repository.
 
-        :param aggregate_uuid: Aggregate identifier.
-        :param aggregate_name: Aggregate name.
-        :param version: Aggregate version.
-        :param version_lt: Aggregate version lower than the given value.
-        :param version_gt: Aggregate version greater than the given value.
-        :param version_le: Aggregate version lower or equal to the given value.
-        :param version_ge: Aggregate version greater or equal to the given value.
-        :param id: Entry identifier.
-        :param id_lt: Entry identifier lower than the given value.
-        :param id_gt: Entry identifier greater than the given value.
-        :param id_le: Entry identifier lower or equal to the given value.
-        :param id_ge: Entry identifier greater or equal to the given value.
-        :param transaction_uuid: Transaction identifier.
-        :param transaction_uuid_ne: Transaction identifier distinct of the given value.
-        :param transaction_uuid_in: Destination Transaction identifier equal to one of the given values.
+        :param aggregate_uuid: The identifier must be equal to the given value.
+        :param aggregate_name: The classname must be equal to the given value.
+        :param version: The version must be equal to the given value.
+        :param version_lt: The version must be lower than the given value.
+        :param version_gt: The version must be greater than the given value.
+        :param version_le: The version must be lower or equal to the given value.
+        :param version_ge: The version must be greater or equal to the given value.
+        :param id: The entry identifier must be equal to the given value.
+        :param id_lt: The entry identifier must be lower than the given value.
+        :param id_gt: The entry identifier must be greater than the given value.
+        :param id_le: The entry identifier must be lower or equal to the given value.
+        :param id_ge: The entry identifier must be greater or equal to the given value.
+        :param transaction_uuid: The transaction identifier must be equal to the given value.
+        :param transaction_uuid_ne: The transaction identifier must be distinct of the given value.
+        :param transaction_uuid_in: The destination transaction identifier must be equal to one of the given values.
         :return: A list of entries.
         """
         generator = self._select(

@@ -54,10 +54,10 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
     async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> RootEntity:
         """Get an aggregate instance from its identifier.
 
-        :param aggregate_name: Class name of the ``Aggregate``.
-        :param uuid: Identifier of the ``Aggregate``.
+        :param aggregate_name: Class name of the ``RootEntity``.
+        :param uuid: Identifier of the ``RootEntity``.
         :param kwargs: Additional named arguments.
-        :return: The ``Aggregate`` instance.
+        :return: The ``RootEntity`` instance.
         """
         snapshot_entry = await self.get_entry(aggregate_name, uuid, **kwargs)
         aggregate = snapshot_entry.build_aggregate(**kwargs)
@@ -67,8 +67,8 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
     async def get_entry(self, aggregate_name: str, uuid: UUID, **kwargs) -> SnapshotEntry:
         """Get a ``SnapshotEntry`` from its identifier.
 
-        :param aggregate_name: Class name of the ``Aggregate``.
-        :param uuid: Identifier of the ``Aggregate``.
+        :param aggregate_name: Class name of the ``RootEntity``.
+        :param uuid: Identifier of the ``RootEntity``.
         :param kwargs: Additional named arguments.
         :return: The ``SnapshotEntry`` instance.
         """
@@ -81,11 +81,11 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             raise NotFoundException(f"Some aggregates could not be found: {uuid!s}")
 
     async def find(self, *args, **kwargs) -> AsyncIterator[RootEntity]:
-        """Find a collection of ``Aggregate`` instances based on a ``Condition``.
+        """Find a collection of ``RootEntity`` instances based on a ``Condition``.
 
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that containing the ``Aggregate`` instances.
+        :return: An asynchronous iterator that containing the ``RootEntity`` instances.
         """
         async for snapshot_entry in self.find_entries(*args, **kwargs):
             yield snapshot_entry.build_aggregate(**kwargs)
@@ -103,8 +103,8 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
     ) -> AsyncIterator[SnapshotEntry]:
         """Find a collection of ``SnapshotEntry`` instances based on a ``Condition``.
 
-        :param aggregate_name: Class name of the ``Aggregate``.
-        :param condition: The condition that must be satisfied by the ``Aggregate`` instances.
+        :param aggregate_name: Class name of the ``RootEntity``.
+        :param condition: The condition that must be satisfied by the ``RootEntity`` instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
@@ -114,10 +114,10 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         :param transaction: The transaction within the operation is performed. If not any value is provided, then the
             transaction is extracted from the context var. If not any transaction is being scoped then the query is
             performed to the global snapshot.
-        :param exclude_deleted: If ``True``, deleted ``Aggregate`` entries are included, otherwise deleted ``Aggregate``
-            entries are filtered.
+        :param exclude_deleted: If ``True``, deleted ``RootEntity`` entries are included, otherwise deleted
+        ``RootEntity`` entries are filtered.
         :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that containing the ``Aggregate`` instances.
+        :return: An asynchronous iterator that containing the ``RootEntity`` instances.
         """
         if transaction is None:
             transaction_uuids = (NULL_UUID,)

@@ -75,9 +75,9 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         self._transaction_repository = transaction_repository
 
     async def is_synced(self, aggregate_name: str, **kwargs) -> bool:
-        """Check if the snapshot has the latest version of an ``Aggregate`` instance.
+        """Check if the snapshot has the latest version of a ``RootEntity`` instance.
 
-        :param aggregate_name: Class name of the ``Aggregate`` to be checked.
+        :param aggregate_name: Class name of the ``RootEntity`` to be checked.
         :return: ``True`` if it has the latest version for the identifier or ``False`` otherwise.
         """
         offset = await self._load_offset(**kwargs)

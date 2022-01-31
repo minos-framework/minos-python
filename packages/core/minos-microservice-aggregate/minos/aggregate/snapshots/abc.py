@@ -46,13 +46,13 @@ class SnapshotRepository(ABC, MinosSetup):
     ) -> RootEntity:
         """Get an aggregate instance from its identifier.
 
-        :param aggregate_name: Class name of the ``Aggregate``.
-        :param uuid: Identifier of the ``Aggregate``.
+        :param aggregate_name: Class name of the ``RootEntity``.
+        :param uuid: Identifier of the ``RootEntity``.
         :param transaction: The transaction within the operation is performed. If not any value is provided, then the
             transaction is extracted from the context var. If not any transaction is being scoped then the query is
             performed to the global snapshot.
         :param kwargs: Additional named arguments.
-        :return: The ``Aggregate`` instance.
+        :return: The ``RootEntity`` instance.
         """
         if transaction is None:
             transaction = TRANSACTION_CONTEXT_VAR.get()
@@ -75,10 +75,10 @@ class SnapshotRepository(ABC, MinosSetup):
         transaction: Optional[TransactionEntry] = None,
         **kwargs,
     ) -> AsyncIterator[RootEntity]:
-        """Find a collection of ``Aggregate`` instances based on a ``Condition``.
+        """Find a collection of ``RootEntity`` instances based on a ``Condition``.
 
-        :param aggregate_name: Class name of the ``Aggregate``.
-        :param condition: The condition that must be satisfied by the ``Aggregate`` instances.
+        :param aggregate_name: Class name of the ``RootEntity``.
+        :param condition: The condition that must be satisfied by the ``RootEntity`` instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
@@ -89,7 +89,7 @@ class SnapshotRepository(ABC, MinosSetup):
             transaction is extracted from the context var. If not any transaction is being scoped then the query is
             performed to the global snapshot.
         :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that containing the ``Aggregate`` instances.
+        :return: An asynchronous iterator that containing the ``RootEntity`` instances.
         """
         if transaction is None:
             transaction = TRANSACTION_CONTEXT_VAR.get()

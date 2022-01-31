@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 @total_ordering
 class Event(DeclarativeModel):
-    """Aggregate Diff class."""
+    """Event class."""
 
     uuid: UUID
     name: str
@@ -55,7 +55,7 @@ class Event(DeclarativeModel):
 
     @property
     def simplified_name(self) -> str:
-        """Get the Aggregate's simplified name.
+        """Get the RootEntity's simplified name.
 
         :return: An string value.
         """
@@ -98,8 +98,8 @@ class Event(DeclarativeModel):
     def from_difference(cls, a: RootEntity, b: RootEntity, action: Action = Action.UPDATE) -> Event:
         """Build an ``Event`` instance from the difference of two aggregates.
 
-        :param a: One ``Aggregate`` instance.
-        :param b: Another ``Aggregate`` instance.
+        :param a: One ``RootEntity`` instance.
+        :param b: Another ``RootEntity`` instance.
         :param action: The action to that generates the aggregate difference.
         :return: An ``Event`` instance.
         """
@@ -126,9 +126,9 @@ class Event(DeclarativeModel):
 
     @classmethod
     def from_aggregate(cls, aggregate: RootEntity, action: Action = Action.CREATE) -> Event:
-        """Build an ``Event`` from an ``Aggregate`` (considering all fields as differences).
+        """Build an ``Event`` from a ``RootEntity`` (considering all fields as differences).
 
-        :param aggregate: An ``Aggregate`` instance.
+        :param aggregate: A ``RootEntity`` instance.
         :param action: The action to that generates the aggregate difference.
         :return: An ``Event`` instance.
         """
@@ -145,9 +145,9 @@ class Event(DeclarativeModel):
 
     @classmethod
     def from_deleted_aggregate(cls, aggregate: RootEntity, action: Action = Action.DELETE) -> Event:
-        """Build an ``Event`` from an ``Aggregate`` (considering all fields as differences).
+        """Build an ``Event`` from a ``RootEntity`` (considering all fields as differences).
 
-        :param aggregate: An ``Aggregate`` instance.
+        :param aggregate: A ``RootEntity`` instance.
         :param action: The action to that generates the aggregate difference.
         :return: An ``Event`` instance.
         """

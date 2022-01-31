@@ -47,7 +47,7 @@ MT = TypeVar("MT", bound=Model)
 
 
 class ExternalEntity(Entity):
-    """Aggregate Ref class."""
+    """External Entity class."""
 
     version: int
 

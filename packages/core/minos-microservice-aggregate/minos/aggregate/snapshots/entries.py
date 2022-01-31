@@ -85,7 +85,7 @@ class SnapshotEntry:
 
     @classmethod
     def from_aggregate(cls, aggregate: RootEntity, **kwargs) -> SnapshotEntry:
-        """Build a new instance from an ``Aggregate``.
+        """Build a new instance from a ``RootEntity``.
 
         :param aggregate: The aggregate instance.
         :return: A new ``MinosSnapshotEntry`` instance.
@@ -161,10 +161,10 @@ class SnapshotEntry:
         return json.dumps(self.data)
 
     def build_aggregate(self, **kwargs) -> RootEntity:
-        """Rebuild the stored ``Aggregate`` object instance from the internal state.
+        """Rebuild the stored ``RootEntity`` object instance from the internal state.
 
         :param kwargs: Additional named arguments.
-        :return: A ``Aggregate`` instance.
+        :return: A ``RootEntity`` instance.
         """
         from ..models import (
             RootEntity,
@@ -185,7 +185,7 @@ class SnapshotEntry:
 
     @property
     def aggregate_cls(self) -> Type[RootEntity]:
-        """Load the concrete ``Aggregate`` class.
+        """Load the concrete ``RootEntity`` class.
 
         :return: A ``Type`` object.
         """
