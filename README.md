@@ -3,17 +3,21 @@
   <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
 </p>
 
+
+
 # minos-python: The framework which helps you create reactive microservices in Python
+
 [![PyPI Latest Release](https://img.shields.io/pypi/v/minos-microservice-aggregate.svg?label=minos-microservice-aggregate)](https://pypi.org/project/minos-microservice-aggregate/)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/minos-microservice-common.svg?label=minos-microservice-common)](https://pypi.org/project/minos-microservice-common/)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/minos-microservice-cqrs.svg?label=minos-microservice-cqrs)](https://pypi.org/project/minos-microservice-cqrs/)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/minos-microservice-networks.svg?label=minos-microservice-networks)](https://pypi.org/project/minos-microservice-networks/)
-[![PyPI Latest Release](https://img.shields.io/pypi/v/minos-microservice-saga.svg?label=minos-microservice-saga)](https://pypi.org/project/minos-microservice-saga/) 
+[![PyPI Latest Release](https://img.shields.io/pypi/v/minos-microservice-saga.svg?label=minos-microservice-saga)](https://pypi.org/project/minos-microservice-saga/)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/minos-framework/minos-python/pages%20build%20and%20deployment?label=docs)](https://minos-framework.github.io/minos-python)
 [![License](https://img.shields.io/github/license/minos-framework/minos-python.svg)](https://github.com/minos-framework/minos-python/blob/main/LICENSE)
 [![Coverage](https://codecov.io/github/minos-framework/minos-python/coverage.svg?branch=main)](https://codecov.io/gh/minos-framework/minos-python)
 [![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-Ask%20a%20question-green)](https://stackoverflow.com/questions/tagged/minos)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/minos-framework/community)
+[![](https://tokei.rs/b1/github/minos-framework/minos-python?category=code)](https://github.com/minos-framework/minos-python)
 
 ## Summary
 
