@@ -20,15 +20,16 @@ from dependency_injector import (
 )
 
 from minos.aggregate import (
-    RootEntity,
     Entity,
     EntitySet,
+    ExternalEntity,
     InMemoryEventRepository,
     InMemorySnapshotRepository,
     InMemoryTransactionRepository,
     Ref,
+    RootEntity,
     ValueObject,
-    ValueObjectSet, ExternalEntity,
+    ValueObjectSet,
 )
 from minos.common import (
     Lock,

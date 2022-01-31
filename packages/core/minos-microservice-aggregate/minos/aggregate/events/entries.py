@@ -25,9 +25,9 @@ from minos.common import (
 if TYPE_CHECKING:
     from ..models import (
         Action,
-        RootEntity,
         Event,
         FieldDiffContainer,
+        RootEntity,
     )
     from ..transactions import (
         TransactionEntry,

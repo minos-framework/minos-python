@@ -16,9 +16,9 @@ from uuid import (
 
 from minos.aggregate import (
     TRANSACTION_CONTEXT_VAR,
-    RootEntity,
     Condition,
     Ordering,
+    RootEntity,
     SnapshotRepository,
     TransactionEntry,
 )

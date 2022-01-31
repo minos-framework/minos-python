@@ -42,8 +42,8 @@ from .abc import (
 
 if TYPE_CHECKING:
     from ...models import (
-        RootEntity,
         Event,
+        RootEntity,
     )
     from .readers import (
         PostgreSqlSnapshotReader,

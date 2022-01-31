@@ -12,8 +12,8 @@ from minos.common import (
 
 if TYPE_CHECKING:
     from .models import (
-        RootEntity,
         Event,
+        RootEntity,
     )
 
 

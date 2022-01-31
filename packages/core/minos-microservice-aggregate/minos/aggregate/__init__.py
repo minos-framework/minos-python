@@ -26,10 +26,9 @@ from .exceptions import (
 )
 from .models import (
     Action,
-    RootEntity,
-    Event,
     Entity,
     EntitySet,
+    Event,
     ExternalEntity,
     FieldDiff,
     FieldDiffContainer,
@@ -41,6 +40,7 @@ from .models import (
     RefExtractor,
     RefInjector,
     RefResolver,
+    RootEntity,
     ValueObject,
     ValueObjectSet,
 )
