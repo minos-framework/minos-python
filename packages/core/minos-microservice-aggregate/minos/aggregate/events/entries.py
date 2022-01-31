@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 
 class EventEntry:
-    """Class that represents an entry (or row) on the events repository database which stores the aggregate changes."""
+    """Class that represents an entry (or row) on the event repository database which stores the aggregate changes."""
 
     __slots__ = (
         "aggregate_uuid",
