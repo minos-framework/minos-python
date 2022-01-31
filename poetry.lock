@@ -449,7 +449,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-aggregate"
-version = "0.2.4"
+version = "0.4.0"
 description = "Python Package for Minos Microservices containing all the Aggregate stuff"
 category = "main"
 optional = false
@@ -457,8 +457,8 @@ python-versions = "^3.9"
 develop = true
 
 [package.dependencies]
-minos-microservice-common = "^0.3.4"
-minos-microservice-networks = {path = "../minos-microservice-networks", develop = true}
+minos-microservice-common = "^0.4.0"
+minos-microservice-networks = "^0.4.0"
 
 [package.source]
 type = "directory"
@@ -466,7 +466,7 @@ url = "packages/core/minos-microservice-aggregate"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.3.4"
+version = "0.4.0"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 category = "main"
 optional = false
@@ -489,7 +489,7 @@ url = "packages/core/minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-cqrs"
-version = "0.2.1"
+version = "0.4.0"
 description = "Minos Microservice CQRS package"
 category = "main"
 optional = false
@@ -498,9 +498,9 @@ develop = true
 
 [package.dependencies]
 dependency-injector = "^4.34.0"
-minos-microservice-aggregate = "^0.2.2"
-minos-microservice-common = "^0.3.0"
-minos-microservice-networks = "^0.3.0"
+minos-microservice-aggregate = "^0.4.0"
+minos-microservice-common = "^0.4.0"
+minos-microservice-networks = "^0.4.0"
 
 [package.source]
 type = "directory"
@@ -508,7 +508,7 @@ url = "packages/core/minos-microservice-cqrs"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.3.2"
+version = "0.4.0"
 description = "Python Package with the common network classes and utilities used in Minos Microservice."
 category = "main"
 optional = false
@@ -522,7 +522,7 @@ aiomisc = "^14.0.3"
 aiopg = "^1.2.1"
 crontab = "^0.23.0"
 dependency-injector = "^4.32.2"
-minos-microservice-common = "^0.3.0"
+minos-microservice-common = "^0.4.0"
 orjson = "^3.6.5"
 
 [package.source]
@@ -531,7 +531,7 @@ url = "packages/core/minos-microservice-networks"
 
 [[package]]
 name = "minos-microservice-saga"
-version = "0.3.5"
+version = "0.4.0"
 description = "Saga Library for MinOS project."
 category = "main"
 optional = false
@@ -540,9 +540,9 @@ develop = true
 
 [package.dependencies]
 dependency-injector = "^4.32.2"
-minos-microservice-aggregate = {path = "../minos-microservice-aggregate", develop = true}
-minos-microservice-common = "^0.3.0"
-minos-microservice-networks = {path = "../minos-microservice-networks", develop = true}
+minos-microservice-aggregate = "^0.4.0"
+minos-microservice-common = "^0.4.0"
+minos-microservice-networks = "^0.4.0"
 
 [package.source]
 type = "directory"
