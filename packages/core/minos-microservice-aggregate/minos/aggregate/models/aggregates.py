@@ -286,7 +286,7 @@ class RootEntity(Entity):
 
     @classmethod
     def from_diff(cls: Type[T], aggregate_diff: Event, *args, **kwargs) -> T:
-        """Build a new instance from an ``AggregateDiff``.
+        """Build a new instance from an ``Event``.
 
         :param aggregate_diff: The difference that contains the data.
         :param args: Additional positional arguments.

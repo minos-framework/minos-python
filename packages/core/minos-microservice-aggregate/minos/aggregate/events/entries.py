@@ -139,9 +139,9 @@ class EventEntry:
 
     @property
     def aggregate_diff(self) -> Event:
-        """Get the stored ``AggregateDiff`` instance.
+        """Get the stored ``Event`` instance.
 
-        :return: An ``AggregateDiff`` instance.
+        :return: An ``Event`` instance.
         """
         from ..models import (
             Event,

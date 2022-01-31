@@ -96,12 +96,12 @@ class Event(DeclarativeModel):
 
     @classmethod
     def from_difference(cls, a: RootEntity, b: RootEntity, action: Action = Action.UPDATE) -> Event:
-        """Build an ``AggregateDiff`` instance from the difference of two aggregates.
+        """Build an ``Event`` instance from the difference of two aggregates.
 
         :param a: One ``Aggregate`` instance.
         :param b: Another ``Aggregate`` instance.
         :param action: The action to that generates the aggregate difference.
-        :return: An ``AggregateDiff`` instance.
+        :return: An ``Event`` instance.
         """
         logger.debug(f"Computing the {cls!r} between {a!r} and {b!r}...")
 
@@ -126,11 +126,11 @@ class Event(DeclarativeModel):
 
     @classmethod
     def from_aggregate(cls, aggregate: RootEntity, action: Action = Action.CREATE) -> Event:
-        """Build an ``AggregateDiff`` from an ``Aggregate`` (considering all fields as differences).
+        """Build an ``Event`` from an ``Aggregate`` (considering all fields as differences).
 
         :param aggregate: An ``Aggregate`` instance.
         :param action: The action to that generates the aggregate difference.
-        :return: An ``AggregateDiff`` instance.
+        :return: An ``Event`` instance.
         """
 
         fields_diff = FieldDiffContainer.from_model(aggregate, ignore={"uuid", "version", "created_at", "updated_at"})
@@ -145,11 +145,11 @@ class Event(DeclarativeModel):
 
     @classmethod
     def from_deleted_aggregate(cls, aggregate: RootEntity, action: Action = Action.DELETE) -> Event:
-        """Build an ``AggregateDiff`` from an ``Aggregate`` (considering all fields as differences).
+        """Build an ``Event`` from an ``Aggregate`` (considering all fields as differences).
 
         :param aggregate: An ``Aggregate`` instance.
         :param action: The action to that generates the aggregate difference.
-        :return: An ``AggregateDiff`` instance.
+        :return: An ``Event`` instance.
         """
         return cls(
             uuid=aggregate.uuid,
@@ -161,9 +161,9 @@ class Event(DeclarativeModel):
         )
 
     def decompose(self) -> list[Event]:
-        """Decompose AggregateDiff Fields into AggregateDiff with once Field.
+        """Decompose the ``Event`` fields into multiple ``Event`` instances with once Field.
 
-        :return: An list of``AggregateDiff`` instances.
+        :return: An list of``Event`` instances.
         """
         return [
             type(self)(
