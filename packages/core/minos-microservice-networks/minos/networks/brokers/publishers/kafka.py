@@ -5,6 +5,7 @@ from __future__ import (
 import logging
 from asyncio import (
     TimeoutError,
+    sleep,
     wait_for,
 )
 from contextlib import (
@@ -13,6 +14,12 @@ from contextlib import (
 
 from aiokafka import (
     AIOKafkaProducer,
+)
+from aiomisc import (
+    CircuitBreaker,
+)
+from kafka.errors import (
+    KafkaConnectionError,
 )
 
 from minos.common import (
@@ -39,6 +46,10 @@ class KafkaBrokerPublisher(BrokerPublisher):
 
         self._client = None
 
+        self._circuit_breaker = CircuitBreaker(
+            error_ratio=0.2, response_time=20, exceptions=[KafkaConnectionError], broken_time=5
+        )
+
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> KafkaBrokerPublisher:
         kwargs["broker_host"] = config.broker.host
@@ -48,15 +59,31 @@ class KafkaBrokerPublisher(BrokerPublisher):
 
     async def _setup(self) -> None:
         await super()._setup()
-        await self.client.start()
+        await self._start_client()
 
     async def _destroy(self) -> None:
-        with suppress(TimeoutError):
-            await wait_for(self.client.stop(), 0.5)
+        await self._stop_client()
         await super()._destroy()
 
+    async def _start_client(self) -> None:
+        while True:
+            with suppress(KafkaConnectionError):
+                with self._circuit_breaker.context():
+                    await self.client.start()
+                    return
+            await sleep(1)
+
+    async def _stop_client(self):
+        with suppress(TimeoutError):
+            await wait_for(self._client.stop(), 0.5)
+
     async def _send(self, message: BrokerMessage) -> None:
-        await self.client.send_and_wait(message.topic, message.avro_bytes)
+        while True:
+            with suppress(KafkaConnectionError):
+                with self._circuit_breaker.context():
+                    await self.client.send_and_wait(message.topic, message.avro_bytes)
+                    return
+            await sleep(1)
 
     @property
     def client(self) -> AIOKafkaProducer:
