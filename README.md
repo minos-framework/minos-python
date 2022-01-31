@@ -248,6 +248,8 @@ The core packages provide the base implementation of the framework.
 
 The plugin packages provide connectors to external technologies like brokers, discovery services, databases, serializers and so on.
 
+* Coming soon...
+
 ## Source Code
 
 The source code of this project is hosted at [GitHub](https://github.com/minos-framework/minos-python).
