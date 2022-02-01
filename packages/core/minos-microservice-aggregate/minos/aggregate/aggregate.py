@@ -32,7 +32,7 @@ from .transactions import (
     TransactionRepository,
 )
 
-RT = TypeVar("RT", bound=type[RootEntity])
+RT = TypeVar("RT", bound=RootEntity)
 
 
 class Aggregate(Generic[RT], MinosSetup):
@@ -107,5 +107,5 @@ class Aggregate(Generic[RT], MinosSetup):
         bases = self.__orig_bases__
         root = get_args(bases[0])[0]
         if not isinstance(root, type) or not issubclass(root, RootEntity):
-            raise TypeError(f"The {type(self)!r} class must set the {RootEntity!r} type.")
+            raise TypeError(f"{type(self)!r} must contain a {RootEntity!r} as generic value.")
         return root
