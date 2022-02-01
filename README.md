@@ -523,7 +523,7 @@ ADD_FOOBAR_SAGA = (
 ```
 <details>
   <summary>Click to show the full <code>foo.py</code></summary>
-
+  <a name="foo-source"></a>
 ```python
 # foo.py
 
@@ -728,6 +728,7 @@ saga:
 Here is the `foobar.py` config file:
 <details>
   <summary>Click to show the <code>foobar.py</code></summary>
+  <a name="foobar-source"></a>
 
 ```python
 from __future__ import annotations
