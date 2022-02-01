@@ -67,7 +67,7 @@ class TestExternalEntityWithPostgreSql(MinosTestCase, PostgresAsyncTestCase):
 
     async def test_entity_set_value_object_set(self):
         order = await Order.create(products=EntitySet(), reviews=ValueObjectSet())
-        item = OrderItem(24)
+        item = OrderItem("foo")
         order.products.add(item)
 
         await order.save()
@@ -75,7 +75,7 @@ class TestExternalEntityWithPostgreSql(MinosTestCase, PostgresAsyncTestCase):
         recovered = await Order.get(order.uuid)
         self.assertEqual(order, recovered)
 
-        item.amount = 36
+        item.name = "bar"
         order.products.add(item)
         await order.save()
 

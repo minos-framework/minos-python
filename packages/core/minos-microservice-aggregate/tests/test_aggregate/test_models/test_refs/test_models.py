@@ -11,7 +11,6 @@ from uuid import (
 
 from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
-    ExternalEntity,
     Ref,
 )
 from minos.common import (
@@ -27,25 +26,6 @@ from minos.networks import (
 from tests.utils import (
     MinosTestCase,
 )
-
-
-class Product(ExternalEntity):
-    """For testing purposes."""
-
-    title: str
-    quantity: int
-
-
-class TestExternalEntity(unittest.TestCase):
-    def test_values(self):
-        uuid = uuid4()
-        product = Product(uuid, 3, "apple", 3028)
-
-        self.assertEqual(uuid, product.uuid)
-        self.assertEqual(3, product.version)
-        self.assertEqual("apple", product.title)
-        self.assertEqual(3028, product.quantity)
-
 
 FakeMessage = ModelType.build("FakeMessage", {"content": Any})
 

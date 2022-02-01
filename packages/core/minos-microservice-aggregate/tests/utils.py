@@ -162,10 +162,17 @@ class Order(RootEntity):
 class OrderItem(Entity):
     """For testing purposes"""
 
-    amount: int
+    name: str
 
 
 class Review(ValueObject):
     """For testing purposes."""
 
     message: str
+
+
+class Product(ExternalEntity):
+    """For testing purposes."""
+
+    title: str
+    quantity: int

@@ -14,6 +14,7 @@ from typing import (
 )
 from uuid import (
     UUID,
+    uuid4,
 )
 
 from dependency_injector.wiring import (
@@ -24,32 +25,50 @@ from dependency_injector.wiring import (
 from minos.common import (
     NULL_DATETIME,
     NULL_UUID,
+    DeclarativeModel,
     NotProvidedException,
 )
 
-from ..events import (
+from ...events import (
     EventEntry,
     EventRepository,
 )
-from ..exceptions import (
+from ...exceptions import (
     EventRepositoryException,
 )
-from ..queries import (
+from ...queries import (
     _Condition,
     _Ordering,
 )
-from ..snapshots import (
+from ...snapshots import (
     SnapshotRepository,
 )
-from .diffs import (
+from ..events import (
     Event,
     IncrementalFieldDiff,
 )
-from .entities import (
-    Entity,
-)
 
 logger = logging.getLogger(__name__)
+
+
+class Entity(DeclarativeModel):
+    """Entity class."""
+
+    uuid: UUID
+
+    def __init__(self, *args, uuid: Optional[UUID] = None, **kwargs):
+        if uuid is None:
+            uuid = uuid4()
+        super().__init__(uuid, *args, **kwargs)
+
+
+class ExternalEntity(Entity):
+    """External Entity class."""
+
+    version: int
+
+    def __init__(self, uuid: UUID, *args, **kwargs):
+        super().__init__(uuid=uuid, *args, **kwargs)
 
 
 class RootEntity(Entity):

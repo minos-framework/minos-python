@@ -16,7 +16,6 @@ from typing import (
 )
 from uuid import (
     UUID,
-    uuid4,
 )
 
 from minos.common import (
@@ -28,22 +27,10 @@ from minos.common import (
     SchemaEncoder,
 )
 
-from .collections import (
+from ..collections import (
     IncrementalSet,
     IncrementalSetDiff,
 )
-
-
-class Entity(DeclarativeModel):
-    """Entity class ."""
-
-    uuid: UUID
-
-    def __init__(self, *args, uuid: Optional[UUID] = None, **kwargs):
-        if uuid is None:
-            uuid = uuid4()
-        super().__init__(uuid, *args, **kwargs)
-
 
 T = TypeVar("T", bound=Model)
 
