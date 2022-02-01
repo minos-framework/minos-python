@@ -32,7 +32,7 @@ from minos.common import (
 from ...actions import (
     Action,
 )
-from ..collections import (
+from ...collections import (
     IncrementalSet,
 )
 

@@ -5,6 +5,11 @@ __version__ = "0.4.1"
 from .actions import (
     Action,
 )
+from .collections import (
+    IncrementalSet,
+    IncrementalSetDiff,
+    IncrementalSetDiffEntry,
+)
 from .contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
@@ -35,9 +40,6 @@ from .models import (
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
-    IncrementalSet,
-    IncrementalSetDiff,
-    IncrementalSetDiffEntry,
     Ref,
     RefExtractor,
     RefInjector,

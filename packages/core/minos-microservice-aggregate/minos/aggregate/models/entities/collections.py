@@ -27,7 +27,7 @@ from minos.common import (
     SchemaEncoder,
 )
 
-from ..collections import (
+from ...collections import (
     IncrementalSet,
     IncrementalSetDiff,
 )

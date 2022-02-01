@@ -12,11 +12,11 @@ from minos.common import (
     Model,
 )
 
+from ..collections import (
+    IncrementalSet,
+)
 from ..exceptions import (
     ValueObjectException,
-)
-from .collections import (
-    IncrementalSet,
 )
 
 

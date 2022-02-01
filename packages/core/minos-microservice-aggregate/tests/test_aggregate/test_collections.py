@@ -82,18 +82,14 @@ class TestIncrementalSet(unittest.TestCase):
 
     def test_from_avro(self):
         expected = IncrementalSet([1, 2])
-        schema = [
-            {"items": "int", "logicalType": "minos.aggregate.models.collections.IncrementalSet", "type": "array"},
-        ]
+        schema = [{"items": "int", "logicalType": "minos.aggregate.collections.IncrementalSet", "type": "array"}]
         data = [1, 2]
 
         observed = Model.from_avro(schema, data)
         self.assertEqual(expected, observed)
 
     def test_avro_schema(self):
-        expected = [
-            {"items": "int", "logicalType": "minos.aggregate.models.collections.IncrementalSet", "type": "array"},
-        ]
+        expected = [{"items": "int", "logicalType": "minos.aggregate.collections.IncrementalSet", "type": "array"}]
         observed = IncrementalSet([1, 2]).avro_schema
         self.assertEqual(expected, observed)
 
