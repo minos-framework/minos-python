@@ -13,6 +13,9 @@ from pathlib import (
 from typing import (
     Optional,
 )
+from uuid import (
+    UUID,
+)
 
 from dependency_injector import (
     containers,
@@ -20,6 +23,7 @@ from dependency_injector import (
 )
 
 from minos.aggregate import (
+    Aggregate,
     Entity,
     EntitySet,
     ExternalEntity,
@@ -176,3 +180,14 @@ class Product(ExternalEntity):
 
     title: str
     quantity: int
+
+
+class OrderAggregate(Aggregate[Order]):
+    """For testing purposes."""
+
+    @staticmethod
+    async def create_order() -> UUID:
+        """For testing purposes."""
+
+        order = await Order.create(products=EntitySet(), reviews=ValueObjectSet())
+        return order.uuid

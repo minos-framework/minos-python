@@ -5,6 +5,9 @@ __version__ = "0.4.1"
 from .actions import (
     Action,
 )
+from .aggregate import (
+    Aggregate,
+)
 from .collections import (
     IncrementalSet,
     IncrementalSetDiff,
