@@ -18,6 +18,10 @@ from uuid import (
     UUID,
 )
 
+from minos.aggregate.collections import (
+    IncrementalSet,
+    IncrementalSetDiff,
+)
 from minos.common import (
     DataDecoder,
     DataEncoder,
@@ -25,11 +29,6 @@ from minos.common import (
     Model,
     ModelType,
     SchemaEncoder,
-)
-
-from ...collections import (
-    IncrementalSet,
-    IncrementalSetDiff,
 )
 
 T = TypeVar("T", bound=Model)

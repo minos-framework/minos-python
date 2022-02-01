@@ -106,7 +106,7 @@ class TestEntitySet(unittest.TestCase):
         expected = EntitySet(values)
         schema = [
             {
-                "logicalType": "minos.aggregate.models.entities.EntitySet",
+                "logicalType": "minos.aggregate.entities.EntitySet",
                 "type": "array",
                 "items": OrderItem.avro_schema[0],
             },
@@ -120,7 +120,7 @@ class TestEntitySet(unittest.TestCase):
         with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
             expected = [
                 {
-                    "logicalType": "minos.aggregate.models.entities.collections.EntitySet",
+                    "logicalType": "minos.aggregate.entities.collections.EntitySet",
                     "type": "array",
                     "items": OrderItem.avro_schema[0],
                 },

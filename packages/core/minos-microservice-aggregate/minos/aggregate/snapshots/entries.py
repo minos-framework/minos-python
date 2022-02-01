@@ -31,7 +31,7 @@ from ..exceptions import (
 )
 
 if TYPE_CHECKING:
-    from ..models import (
+    from ..entities import (
         RootEntity,
     )
 
@@ -163,7 +163,7 @@ class SnapshotEntry:
         :param kwargs: Additional named arguments.
         :return: A ``RootEntity`` instance.
         """
-        from ..models import (
+        from ..entities import (
             RootEntity,
         )
 

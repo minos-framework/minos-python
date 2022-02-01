@@ -13,6 +13,16 @@ from .collections import (
 from .contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
+from .entities import (
+    Entity,
+    EntitySet,
+    ExternalEntity,
+    Ref,
+    RefExtractor,
+    RefInjector,
+    RefResolver,
+    RootEntity,
+)
 from .events import (
     EventEntry,
     EventRepository,
@@ -33,18 +43,10 @@ from .exceptions import (
     ValueObjectException,
 )
 from .models import (
-    Entity,
-    EntitySet,
     Event,
-    ExternalEntity,
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
-    Ref,
-    RefExtractor,
-    RefInjector,
-    RefResolver,
-    RootEntity,
 )
 from .queries import (
     Condition,

@@ -34,7 +34,7 @@ from .fields import (
 )
 
 if TYPE_CHECKING:
-    from ..entities import (
+    from ...entities import (
         RootEntity,
     )
 

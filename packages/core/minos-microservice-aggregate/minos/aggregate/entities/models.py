@@ -22,30 +22,29 @@ from dependency_injector.wiring import (
     inject,
 )
 
+from minos.aggregate.events import (
+    EventEntry,
+    EventRepository,
+)
+from minos.aggregate.exceptions import (
+    EventRepositoryException,
+)
+from minos.aggregate.models.events import (
+    Event,
+    IncrementalFieldDiff,
+)
+from minos.aggregate.queries import (
+    _Condition,
+    _Ordering,
+)
+from minos.aggregate.snapshots import (
+    SnapshotRepository,
+)
 from minos.common import (
     NULL_DATETIME,
     NULL_UUID,
     DeclarativeModel,
     NotProvidedException,
-)
-
-from ...events import (
-    EventEntry,
-    EventRepository,
-)
-from ...exceptions import (
-    EventRepositoryException,
-)
-from ...queries import (
-    _Condition,
-    _Ordering,
-)
-from ...snapshots import (
-    SnapshotRepository,
-)
-from ..events import (
-    Event,
-    IncrementalFieldDiff,
 )
 
 logger = logging.getLogger(__name__)

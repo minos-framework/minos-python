@@ -38,7 +38,7 @@ from .queries import (
 )
 
 if TYPE_CHECKING:
-    from ...models import (
+    from ...entities import (
         RootEntity,
     )
 

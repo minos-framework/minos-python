@@ -26,10 +26,12 @@ from ..actions import (
 )
 
 if TYPE_CHECKING:
+    from ..entities import (
+        RootEntity,
+    )
     from ..models import (
         Event,
         FieldDiffContainer,
-        RootEntity,
     )
     from ..transactions import (
         TransactionEntry,

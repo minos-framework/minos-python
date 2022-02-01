@@ -123,9 +123,9 @@ class TestRef(MinosTestCase):
                     "name": "Bar",
                     "namespace": "",
                     "type": "record",
-                    "logicalType": "minos.aggregate.models.entities.refs.models.Ref",
+                    "logicalType": "minos.aggregate.entities.refs.models.Ref",
                 },
-                {"logicalType": "minos.aggregate.models.entities.refs.models.Ref", "type": "string"},
+                {"logicalType": "minos.aggregate.entities.refs.models.Ref", "type": "string"},
             ]
         ]
 
@@ -142,12 +142,12 @@ class TestRef(MinosTestCase):
                         {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
                         {"name": "age", "type": "int"},
                     ],
-                    "logicalType": "minos.aggregate.models.entities.refs.models.Ref",
+                    "logicalType": "minos.aggregate.entities.refs.models.Ref",
                     "name": "Bar",
                     "namespace": "",
                     "type": "record",
                 },
-                {"logicalType": "minos.aggregate.models.entities.refs.models.Ref", "type": "string"},
+                {"logicalType": "minos.aggregate.entities.refs.models.Ref", "type": "string"},
             ]
         ]
         self.assertEqual(expected, ref.avro_schema)
@@ -157,13 +157,13 @@ class TestRef(MinosTestCase):
         expected = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
         schema = [
-            {"logicalType": "minos.aggregate.models.entities.refs.models.Ref", "type": "string"},
+            {"logicalType": "minos.aggregate.entities.refs.models.Ref", "type": "string"},
             {
                 "fields": [
                     {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
                     {"name": "age", "type": "int"},
                 ],
-                "logicalType": "minos.aggregate.models.entities.refs.models.Ref",
+                "logicalType": "minos.aggregate.entities.refs.models.Ref",
                 "name": "Bar",
                 "namespace": "",
                 "type": "record",
@@ -184,12 +184,12 @@ class TestRef(MinosTestCase):
                     {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
                     {"name": "age", "type": "int"},
                 ],
-                "logicalType": "minos.aggregate.models.entities.refs.models.Ref",
+                "logicalType": "minos.aggregate.entities.refs.models.Ref",
                 "name": "Bar",
                 "namespace": "",
                 "type": "record",
             },
-            {"logicalType": "minos.aggregate.models.entities.refs.models.Ref", "type": "string"},
+            {"logicalType": "minos.aggregate.entities.refs.models.Ref", "type": "string"},
         ]
         data = str(another)
 
