@@ -18,7 +18,8 @@ Minos is a framework which helps you create [reactive](https://www.reactivemanif
 
 ## Foundational Patterns
 
-The `minos` framework is built strongly following the following set of patterns:
+The `minos` framework is built strongly inspired by the following set of patterns:
+
 * [Microservice architecture](https://microservices.io/patterns/microservices.html): Architect an application as a collection of loosely coupled services.
 * [Decompose by subdomain](https://microservices.io/patterns/decomposition/decompose-by-subdomain.html): Define services corresponding to Domain-Driven Design (DDD) subdomains
 * [Self-contained Service](https://microservices.io/patterns/decomposition/self-contained-service.html): Microservices can respond to a synchronous request without waiting for the response from any other service.
@@ -63,23 +64,34 @@ This section includes a set of minimal examples of how-to-work with `minos`, so 
 
 ### Create an Aggregate
 
+The way to model data in `minos` is highly inspired by the  [Event Sourcing](https://microservices.io/patterns/data/event-sourcing.html) ideas. For this reason, the classes to be used to model data are:
+* `minos.aggregate.Entity`: A model that has an identifier that gives it a unique identity, in the sense that some values from which it is composed could change, but its identity will continue being the same.
+* `minos.aggregate.ExternalEntity`: A model that belongs to another microservice (or aggregate boundary) but needs to be used for some reason inside this microservice (or aggregate boundary).
+* `minos.aggregate.RootEntity`: Is an `Entity` superset that provides global identity across the project compared to standard `Entity` models, that has only local identity (the `RootEntity` can be accessed from another microservices as `ExternalEntity` models, but standard `Entity` models can only be accessed within the microservice that define them). The `RootEntity` is also the one that interacts with the persistence layer (the `EventRepository` and `SnapshotRepository` instances).
+* `minos.aggregate.Ref`: A wrapper class that provides the functionality to store a reference of other `RootEntity` or `ExternalEntity` instances.
+* `minos.aggregate.EntitySet`: A container of `Entity` instances that takes advantage of the incremental behaviour of the `EventRepository`.
+* `minos.aggregate.ValueObject`: A model that is only identified by the values that compose it, so that if some of them changes, then the model becomes completely different (for that reason, these models are immutable).
+* `minos.aggregate.ValueObjectSet`: A container of `ValueObject` instances that takes advantage of the incremental behaviour of the `EventRepository.
+* `minos.aggregate.Aggregate`: A collection of `Entity` and/or `ValueObject` models that are related to each other through a `RootEntity`.
+* `minos.aggregate.Event`: A model that contains the difference between the a `RootEntity` instance and its previous version (if any).
+
 Here is an example of the creation the `Foo` aggregate. In this case, it has two attributes, a `bar` being a `str`, and a `foobar` being an optional reference to the external `FooBar` aggregate, which it is assumed that it has a `something` attribute.
 
 ```python
 from __future__ import annotations
 from typing import Optional
-from minos.aggregate import RootEntity, AggregateRef, ModelRef
+from minos.aggregate import RootEntity, ExternalEntity, Ref
 
 
 class Foo(RootEntity):
-    """Foo Aggregate class."""
+    """Foo Root Entity class."""
 
     bar: str
-    foobar: Optional[ModelRef[FooBar]]
+    foobar: Optional[Ref[FooBar]]
 
 
-class FooBar(AggregateRef):
-    """FooBar AggregateRef clas."""
+class FooBar(ExternalEntity):
+    """FooBar External Entity clas."""
 
     something: str
 ```
