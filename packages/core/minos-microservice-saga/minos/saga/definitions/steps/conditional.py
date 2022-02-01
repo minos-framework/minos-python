@@ -43,7 +43,7 @@ class ConditionalSagaStep(SagaStep):
         self,
         if_then: Optional[Union[IfThenAlternative, Iterable[IfThenAlternative]]] = None,
         else_then: Optional[ElseThenAlternative] = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
 

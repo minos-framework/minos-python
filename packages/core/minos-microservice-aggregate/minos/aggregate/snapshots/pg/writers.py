@@ -60,7 +60,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         reader: PostgreSqlSnapshotReader,
         event_repository: EventRepository = Provide["event_repository"],
         transaction_repository: TransactionRepository = Provide["transaction_repository"],
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
 

@@ -79,7 +79,7 @@ class EntrypointLauncher(MinosSetup):
         log_date_format: Union[str, DateFormat] = DateFormat["color"],
         external_modules: Optional[list[ModuleType]] = None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         if external_modules is None:
             external_modules = list()
