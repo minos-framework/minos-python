@@ -36,7 +36,7 @@ from minos.networks import (
     BrokerMessageV1Payload,
 )
 
-from ...contextvars import (
+from ....contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
 

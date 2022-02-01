@@ -10,6 +10,10 @@ from .entities import (
     Entity,
     EntitySet,
     ExternalEntity,
+    Ref,
+    RefExtractor,
+    RefInjector,
+    RefResolver,
     RootEntity,
 )
 from .events import (
@@ -17,12 +21,6 @@ from .events import (
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
-)
-from .refs import (
-    Ref,
-    RefExtractor,
-    RefInjector,
-    RefResolver,
 )
 from .value_objects import (
     ValueObject,

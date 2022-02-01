@@ -6,3 +6,9 @@ from .models import (
     ExternalEntity,
     RootEntity,
 )
+from .refs import (
+    Ref,
+    RefExtractor,
+    RefInjector,
+    RefResolver,
+)
