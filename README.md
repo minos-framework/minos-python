@@ -490,9 +490,6 @@ class FooCommandService(CommandService):
         )
 
 
-CreateFooBarDTO = ModelType.build("AnotherDTO", {"number": int, "text": str})
-
-
 def _create_foobar(context: SagaContext) -> SagaRequest:
     something = context["something"]
     content = CreateFooBarDTO(56, something)
@@ -512,6 +509,9 @@ async def _update_foo(context: SagaContext) -> None:
     foo = await Foo.get(context["uuid"])
     foo.foobar = context["foobar_uuid"]
     await foo.save()
+
+
+CreateFooBarDTO = ModelType.build("AnotherDTO", {"number": int, "text": str})
 
 
 ADD_FOOBAR_SAGA = (
@@ -584,9 +584,6 @@ class FooCommandService(CommandService):
         )
 
 
-CreateFooBarDTO = ModelType.build("AnotherDTO", {"number": int, "text": str})
-
-
 def _create_foobar(context: SagaContext) -> SagaRequest:
     something = context["something"]
     content = CreateFooBarDTO(56, something)
@@ -606,6 +603,9 @@ async def _update_foo(context: SagaContext) -> None:
     foo = await Foo.get(context["uuid"])
     foo.foobar = context["foobar_uuid"]
     await foo.save()
+
+
+CreateFooBarDTO = ModelType.build("AnotherDTO", {"number": int, "text": str})
 
 
 ADD_FOOBAR_SAGA = (
