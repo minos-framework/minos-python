@@ -1,4 +1,4 @@
-from .aggregates import (
+from .events import (
     Event,
 )
 from .fields import (
