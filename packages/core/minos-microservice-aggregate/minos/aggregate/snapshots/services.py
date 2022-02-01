@@ -63,10 +63,10 @@ class SnapshotService:
 
     @classmethod
     def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
-        name = config.service.aggregate.rsplit(".", 1)[-1]
+        simplified_name = config.service.aggregate.rsplit(".", 1)[-1]
         return {
-            cls.__get_one__.__name__: {enroute.broker.command(f"Get{name}")},
-            cls.__get_many__.__name__: {enroute.broker.command(f"Get{name}s")},
+            cls.__get_one__.__name__: {enroute.broker.command(f"Get{simplified_name}")},
+            cls.__get_many__.__name__: {enroute.broker.command(f"Get{simplified_name}s")},
             cls.__synchronize__.__name__: {enroute.periodic.event("* * * * *")},
         }
 
