@@ -48,11 +48,12 @@ logger = logging.getLogger(__name__)
 class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
     """PostgreSQL Snapshot class.
 
-    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
+    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
+    class.
     """
 
     async def get(self, name: str, uuid: UUID, **kwargs) -> RootEntity:
-        """Get an aggregate instance from its identifier.
+        """Get a ``RootEntity`` instance from its identifier.
 
         :param name: Class name of the ``RootEntity``.
         :param uuid: Identifier of the ``RootEntity``.
@@ -60,8 +61,8 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         :return: The ``RootEntity`` instance.
         """
         snapshot_entry = await self.get_entry(name, uuid, **kwargs)
-        aggregate = snapshot_entry.build(**kwargs)
-        return aggregate
+        instance = snapshot_entry.build(**kwargs)
+        return instance
 
     # noinspection PyUnusedLocal
     async def get_entry(self, name: str, uuid: UUID, **kwargs) -> SnapshotEntry:
@@ -78,7 +79,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
                 name, _EqualCondition("uuid", uuid), **kwargs | {"exclude_deleted": False}
             ).__anext__()
         except StopAsyncIteration:
-            raise NotFoundException(f"Some aggregates could not be found: {uuid!s}")
+            raise NotFoundException(f"The instance could not be found: {uuid!s}")
 
     async def find(self, *args, **kwargs) -> AsyncIterator[RootEntity]:
         """Find a collection of ``RootEntity`` instances based on a ``Condition``.

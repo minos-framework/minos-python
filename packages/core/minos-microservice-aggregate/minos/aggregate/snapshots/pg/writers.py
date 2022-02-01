@@ -131,13 +131,13 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         return snapshot_entry
 
     async def _submit_update_or_create(self, event_entry: EventEntry, **kwargs) -> SnapshotEntry:
-        aggregate = await self._build_aggregate(event_entry, **kwargs)
+        instance = await self._build_instance(event_entry, **kwargs)
 
-        snapshot_entry = SnapshotEntry.from_root_entity(aggregate, transaction_uuid=event_entry.transaction_uuid)
+        snapshot_entry = SnapshotEntry.from_root_entity(instance, transaction_uuid=event_entry.transaction_uuid)
         snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
         return snapshot_entry
 
-    async def _build_aggregate(self, event_entry: EventEntry, **kwargs) -> RootEntity:
+    async def _build_instance(self, event_entry: EventEntry, **kwargs) -> RootEntity:
         diff = event_entry.event
 
         try:
@@ -145,14 +145,14 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         except TransactionNotFoundException:
             transaction = None
 
-        aggregate = await self._update_if_exists(diff, transaction=transaction, **kwargs)
-        return aggregate
+        instance = await self._update_instance_if_exists(diff, transaction=transaction, **kwargs)
+        return instance
 
-    async def _update_if_exists(self, event: Event, **kwargs) -> RootEntity:
+    async def _update_instance_if_exists(self, event: Event, **kwargs) -> RootEntity:
         # noinspection PyBroadException
         try:
             # noinspection PyTypeChecker
-            previous = await self._select_one_aggregate(event.name, event.uuid, **kwargs)
+            previous = await self._select_one_instance(event.name, event.uuid, **kwargs)
         except NotFoundException:
             # noinspection PyTypeChecker
             cls: Type[RootEntity] = import_module(event.name)
@@ -164,7 +164,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         previous.apply_diff(event)
         return previous
 
-    async def _select_one_aggregate(self, name: str, uuid: UUID, **kwargs) -> RootEntity:
+    async def _select_one_instance(self, name: str, uuid: UUID, **kwargs) -> RootEntity:
         snapshot_entry = await self._reader.get_entry(name, uuid, **kwargs)
         return snapshot_entry.build(**kwargs)
 

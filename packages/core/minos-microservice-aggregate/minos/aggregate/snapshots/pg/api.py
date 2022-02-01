@@ -31,7 +31,8 @@ if TYPE_CHECKING:
 class PostgreSqlSnapshotRepository(SnapshotRepository):
     """PostgreSQL Snapshot class.
 
-    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
+    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
+    class.
     """
 
     reader: PostgreSqlSnapshotReader

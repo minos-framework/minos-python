@@ -83,25 +83,23 @@ class SnapshotEntry:
         self.transaction_uuid = transaction_uuid
 
     @classmethod
-    def from_root_entity(cls, root_entity: RootEntity, **kwargs) -> SnapshotEntry:
+    def from_root_entity(cls, instance: RootEntity, **kwargs) -> SnapshotEntry:
         """Build a new instance from a ``RootEntity``.
 
-        :param root_entity: The aggregate instance.
-        :return: A new ``MinosSnapshotEntry`` instance.
+        :param instance: The ``RootEntity`` instance.
+        :return: A new ``SnapshotEntry`` instance.
         """
-        data = {
-            k: v for k, v in root_entity.avro_data.items() if k not in {"uuid", "version", "created_at", "updated_at"}
-        }
+        data = {k: v for k, v in instance.avro_data.items() if k not in {"uuid", "version", "created_at", "updated_at"}}
 
         # noinspection PyTypeChecker
         return cls(
-            uuid=root_entity.uuid,
-            name=root_entity.classname,
-            version=root_entity.version,
-            schema=root_entity.avro_schema,
+            uuid=instance.uuid,
+            name=instance.classname,
+            version=instance.version,
+            schema=instance.avro_schema,
             data=data,
-            created_at=root_entity.created_at,
-            updated_at=root_entity.updated_at,
+            created_at=instance.created_at,
+            updated_at=instance.updated_at,
             **kwargs,
         )
 
@@ -170,7 +168,7 @@ class SnapshotEntry:
         )
 
         if self.data is None:
-            raise AlreadyDeletedException(f"The {self.uuid!r} id points to an already deleted aggregate.")
+            raise AlreadyDeletedException(f"The {self.uuid!r} identifier belongs to an already deleted instance.")
         data = dict(self.data)
         data |= {
             "uuid": self.uuid,

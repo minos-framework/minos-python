@@ -54,7 +54,8 @@ if TYPE_CHECKING:
 class InMemorySnapshotRepository(SnapshotRepository):
     """InMemory Snapshot class.
 
-    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
+    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
+    class.
     """
 
     @inject
@@ -86,24 +87,24 @@ class InMemorySnapshotRepository(SnapshotRepository):
     ) -> AsyncIterator[RootEntity]:
         uuids = {v.uuid async for v in self._event_repository.select(name=name)}
 
-        aggregates = list()
+        instances = list()
         for uuid in uuids:
             try:
-                aggregate = await self.get(name, uuid, **kwargs)
+                instance = await self.get(name, uuid, **kwargs)
             except AlreadyDeletedException:
                 continue
 
-            if condition.evaluate(aggregate):
-                aggregates.append(aggregate)
+            if condition.evaluate(instance):
+                instances.append(instance)
 
         if ordering is not None:
-            aggregates.sort(key=attrgetter(ordering.by), reverse=ordering.reverse)
+            instances.sort(key=attrgetter(ordering.by), reverse=ordering.reverse)
 
         if limit is not None:
-            aggregates = aggregates[:limit]
+            instances = instances[:limit]
 
-        for aggregate in aggregates:
-            yield aggregate
+        for instance in instances:
+            yield instance
 
     # noinspection PyMethodOverriding
     async def _get(self, name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs) -> RootEntity:
@@ -114,9 +115,9 @@ class InMemorySnapshotRepository(SnapshotRepository):
             raise NotFoundException(f"Not found any entries for the {uuid!r} id.")
 
         if entries[-1].action.is_delete:
-            raise AlreadyDeletedException(f"The {uuid!r} id points to an already deleted aggregate.")
+            raise AlreadyDeletedException(f"The {uuid!r} identifier belongs to an already deleted instance.")
 
-        return self._build_aggregate(entries, **kwargs)
+        return self._build_instance(entries, **kwargs)
 
     async def _get_transaction_uuids(self, transaction: Optional[TransactionEntry]) -> tuple[UUID, ...]:
         if transaction is None:
@@ -150,12 +151,12 @@ class InMemorySnapshotRepository(SnapshotRepository):
         return entries
 
     @staticmethod
-    def _build_aggregate(entries: list[EventEntry], **kwargs) -> RootEntity:
+    def _build_instance(entries: list[EventEntry], **kwargs) -> RootEntity:
         cls = entries[0].type_
-        aggregate = cls.from_diff(entries[0].event, **kwargs)
+        instance = cls.from_diff(entries[0].event, **kwargs)
         for entry in entries[1:]:
-            aggregate.apply_diff(entry.event)
-        return aggregate
+            instance.apply_diff(entry.event)
+        return instance
 
     async def _synchronize(self, **kwargs) -> None:
         pass

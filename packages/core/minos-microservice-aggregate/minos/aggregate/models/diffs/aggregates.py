@@ -96,19 +96,18 @@ class Event(DeclarativeModel):
 
     @classmethod
     def from_difference(cls, a: RootEntity, b: RootEntity, action: Action = Action.UPDATE) -> Event:
-        """Build an ``Event`` instance from the difference of two aggregates.
+        """Build an ``Event`` instance from the difference of two instances.
 
         :param a: One ``RootEntity`` instance.
         :param b: Another ``RootEntity`` instance.
-        :param action: The action to that generates the aggregate difference.
+        :param action: The action that generates the ``RootEntity`` difference.
         :return: An ``Event`` instance.
         """
         logger.debug(f"Computing the {cls!r} between {a!r} and {b!r}...")
 
         if a.uuid != b.uuid:
             raise ValueError(
-                f"To compute aggregate differences, both arguments must have same identifier. "
-                f"Obtained: {a.uuid!r} vs {b.uuid!r}"
+                f"To compute differences, both arguments must have same identifier. Obtained: {a.uuid!r} vs {b.uuid!r}"
             )
 
         old, new = sorted([a, b], key=attrgetter("version"))
@@ -125,38 +124,38 @@ class Event(DeclarativeModel):
         )
 
     @classmethod
-    def from_root_entity(cls, root_entity: RootEntity, action: Action = Action.CREATE) -> Event:
+    def from_root_entity(cls, instance: RootEntity, action: Action = Action.CREATE) -> Event:
         """Build an ``Event`` from a ``RootEntity`` (considering all fields as differences).
 
-        :param root_entity: A ``RootEntity`` instance.
-        :param action: The action to that generates the aggregate difference.
+        :param instance: A ``RootEntity`` instance.
+        :param action: The action that generates the event.
         :return: An ``Event`` instance.
         """
 
-        fields_diff = FieldDiffContainer.from_model(root_entity, ignore={"uuid", "version", "created_at", "updated_at"})
+        fields_diff = FieldDiffContainer.from_model(instance, ignore={"uuid", "version", "created_at", "updated_at"})
         return cls(
-            uuid=root_entity.uuid,
-            name=root_entity.classname,
-            version=root_entity.version,
+            uuid=instance.uuid,
+            name=instance.classname,
+            version=instance.version,
             action=action,
-            created_at=root_entity.updated_at,
+            created_at=instance.updated_at,
             fields_diff=fields_diff,
         )
 
     @classmethod
-    def from_deleted_root_entity(cls, root_entity: RootEntity, action: Action = Action.DELETE) -> Event:
+    def from_deleted_root_entity(cls, instance: RootEntity, action: Action = Action.DELETE) -> Event:
         """Build an ``Event`` from a ``RootEntity`` (considering all fields as differences).
 
-        :param root_entity: A ``RootEntity`` instance.
-        :param action: The action to that generates the aggregate difference.
+        :param instance: A ``RootEntity`` instance.
+        :param action: The action that generates the event.
         :return: An ``Event`` instance.
         """
         return cls(
-            uuid=root_entity.uuid,
-            name=root_entity.classname,
-            version=root_entity.version,
+            uuid=instance.uuid,
+            name=instance.classname,
+            version=instance.version,
             action=action,
-            created_at=root_entity.updated_at,
+            created_at=instance.updated_at,
             fields_diff=FieldDiffContainer.empty(),
         )
 

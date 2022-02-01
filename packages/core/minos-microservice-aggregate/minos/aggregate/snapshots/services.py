@@ -71,10 +71,10 @@ class SnapshotService:
         }
 
     async def __get_one__(self, request: Request) -> Response:
-        """Get aggregate.
+        """Get one ``RootEntity`` instance.
 
-        :param request: The ``Request`` instance that contains the aggregate identifier.
-        :return: A ``Response`` instance containing the requested aggregate.
+        :param request: The ``Request`` instance that contains the instance identifier.
+        :return: A ``Response`` instance containing the requested instances.
         """
         try:
             content = await request.content(model_type=ModelType.build("Query", {"uuid": UUID}))
@@ -82,17 +82,17 @@ class SnapshotService:
             raise ResponseException(f"There was a problem while parsing the given request: {exc!r}")
 
         try:
-            aggregate = await self.type_.get(content["uuid"])
+            instance = await self.type_.get(content["uuid"])
         except Exception as exc:
-            raise ResponseException(f"There was a problem while getting the aggregate: {exc!r}")
+            raise ResponseException(f"There was a problem while getting the instance: {exc!r}")
 
-        return Response(aggregate)
+        return Response(instance)
 
     async def __get_many__(self, request: Request) -> Response:
-        """Get aggregates.
+        """Get many ``RootEntity`` instances.
 
-        :param request: The ``Request`` instance that contains the product identifiers.
-        :return: A ``Response`` instance containing the requested aggregates.
+        :param request: The ``Request`` instance that contains the instance identifiers.
+        :return: A ``Response`` instance containing the requested instances.
         """
         try:
             content = await request.content(model_type=ModelType.build("Query", {"uuids": list[UUID]}))
@@ -100,11 +100,11 @@ class SnapshotService:
             raise ResponseException(f"There was a problem while parsing the given request: {exc!r}")
 
         try:
-            aggregates = await gather(*(self.type_.get(uuid) for uuid in content["uuids"]))
+            instances = await gather(*(self.type_.get(uuid) for uuid in content["uuids"]))
         except Exception as exc:
-            raise ResponseException(f"There was a problem while getting aggregates: {exc!r}")
+            raise ResponseException(f"There was a problem while getting the instances: {exc!r}")
 
-        return Response(aggregates)
+        return Response(instances)
 
     @cached_property
     def type_(self) -> type[RootEntity]:

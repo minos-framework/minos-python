@@ -91,7 +91,7 @@ class RootEntity(Entity):
 
         :param uuid: The identifier of the instance.
         :param _snapshot: Snapshot to be set to the root entity.
-        :return: A list of aggregate instances.
+        :return: A ``RootEntity`` instance.
         """
         if _snapshot is None or isinstance(_snapshot, Provide):
             raise NotProvidedException("A snapshot instance is required.")
@@ -116,17 +116,16 @@ class RootEntity(Entity):
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
             instances that meet the given condition.
-        :param _snapshot: Snapshot to be set to the aggregate.
-        :return: A list of aggregate instances.
-        :return: An aggregate instance.
+        :param _snapshot: Snapshot to be set to the instances.
+        :return: An asynchronous iterator of ``RootEntity`` instances.
         """
         if _snapshot is None or isinstance(_snapshot, Provide):
             raise NotProvidedException("A snapshot instance is required.")
         # noinspection PyTypeChecker
         iterable = _snapshot.find(cls.classname, condition, ordering, limit, _snapshot=_snapshot, **kwargs)
         # noinspection PyTypeChecker
-        async for aggregate in iterable:
-            yield aggregate
+        async for instance in iterable:
+            yield instance
 
     @classmethod
     async def create(cls: Type[T], *args, **kwargs) -> T:
@@ -250,7 +249,7 @@ class RootEntity(Entity):
         self.updated_at = entry.created_at
 
     def diff(self, another: RootEntity) -> Event:
-        """Compute the difference with another aggregate.
+        """Compute the difference with another instance.
 
         Both ``RootEntity`` instances (``self`` and ``another``) must share the same ``uuid`` value.
 

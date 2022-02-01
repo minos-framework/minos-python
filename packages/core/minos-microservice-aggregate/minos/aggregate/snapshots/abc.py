@@ -38,11 +38,12 @@ if TYPE_CHECKING:
 class SnapshotRepository(ABC, MinosSetup):
     """Base Snapshot class.
 
-    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
+    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
+    class.
     """
 
     async def get(self, name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs) -> RootEntity:
-        """Get an aggregate instance from its identifier.
+        """Get a ``RootEntity`` instance from its identifier.
 
         :param name: Class name of the ``RootEntity``.
         :param uuid: Identifier of the ``RootEntity``.
@@ -104,8 +105,8 @@ class SnapshotRepository(ABC, MinosSetup):
             **kwargs,
         )
 
-        async for aggregate in iterable:
-            yield aggregate
+        async for instance in iterable:
+            yield instance
 
     @abstractmethod
     def _find(self, *args, **kwargs) -> AsyncIterator[RootEntity]:
