@@ -513,7 +513,6 @@ async def _update_foo(context: SagaContext) -> None:
 
 CreateFooBarDTO = ModelType.build("AnotherDTO", {"number": int, "text": str})
 
-
 ADD_FOOBAR_SAGA = (
     Saga()
         .remote_step().on_execute(_create_foobar).on_success(_success_foobar).on_error(_error_foobar)
@@ -606,7 +605,6 @@ async def _update_foo(context: SagaContext) -> None:
 
 
 CreateFooBarDTO = ModelType.build("AnotherDTO", {"number": int, "text": str})
-
 
 ADD_FOOBAR_SAGA = (
     Saga()
