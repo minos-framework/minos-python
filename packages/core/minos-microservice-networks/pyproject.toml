@@ -42,7 +42,7 @@ orjson = "^3.6.5"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }
-black = "^21.12b0"
+black = "^22.1"
 isort = "^5.8.0"
 pytest = "^6.2.4"
 coverage = "^6.3"
