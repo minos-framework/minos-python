@@ -64,7 +64,7 @@ The required environment to run this quickstart is the following:
 
 * A `python>=3.9` interpreter with version equal or greater to .
 * A `kafka` instance available at `localhost:9092`
-* A `postgres` instance available at `localhost:5432` with a `foo_db` database accessible with `minos:min0s` credentials.
+* A `postgres` instance available at `localhost:5432` with `foo_db` and `foobar_db` databases accessible with the `minos:min0s` credentials.
 * A `socket` available to use at `localhost:4545`.
 
 Note that these parameters can be configured on the `foo.yml` file.
@@ -651,7 +651,15 @@ if __name__ == '__main__':
 
 </details>
 
-Note that in this case another microservice is needed to complete the saga.
+Execute the following command to start the `foo` microservice:
+
+```shell
+python foo.py
+```
+
+**Disclaimer**: Note that in this case another microservice is needed to complete the saga.
+
+#### The `foobar` Microservice
 
 Here is the `foobar.yml` config file:
 <details>
@@ -769,15 +777,6 @@ Execute the following command to start the `foobar` microservice:
 ```shell
 python foobar.py
 ```
-
-
-
-Execute the following command to start the `foo` microservice:
-
-```shell
-python foo.py
-```
-
 
 ## Packages
 
