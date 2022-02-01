@@ -45,8 +45,6 @@ from .models import (
     RefInjector,
     RefResolver,
     RootEntity,
-    ValueObject,
-    ValueObjectSet,
 )
 from .queries import (
     Condition,
@@ -71,4 +69,8 @@ from .transactions import (
     TransactionRepository,
     TransactionService,
     TransactionStatus,
+)
+from .value_objects import (
+    ValueObject,
+    ValueObjectSet,
 )

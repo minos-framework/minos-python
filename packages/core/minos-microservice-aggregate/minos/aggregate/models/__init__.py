@@ -14,7 +14,3 @@ from .events import (
     FieldDiffContainer,
     IncrementalFieldDiff,
 )
-from .value_objects import (
-    ValueObject,
-    ValueObjectSet,
-)
