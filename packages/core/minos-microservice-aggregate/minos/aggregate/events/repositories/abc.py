@@ -42,6 +42,9 @@ from minos.networks import (
     BrokerPublisher,
 )
 
+from ...actions import (
+    Action,
+)
 from ...contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
@@ -106,9 +109,6 @@ class EventRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: The repository entry containing the stored information.
         """
-        from ...models import (
-            Action,
-        )
 
         entry.action = Action.CREATE
         return await self.submit(entry)
@@ -119,9 +119,6 @@ class EventRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: The repository entry containing the stored information.
         """
-        from ...models import (
-            Action,
-        )
 
         entry.action = Action.UPDATE
         return await self.submit(entry)
@@ -132,9 +129,6 @@ class EventRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: The repository entry containing the stored information.
         """
-        from ...models import (
-            Action,
-        )
 
         entry.action = Action.DELETE
         return await self.submit(entry)
@@ -147,7 +141,6 @@ class EventRepository(ABC, MinosSetup):
         :return: The repository entry containing the stored information.
         """
         from ...models import (
-            Action,
             Event,
         )
 
@@ -207,10 +200,6 @@ class EventRepository(ABC, MinosSetup):
         raise NotImplementedError
 
     async def _send_events(self, event: Event):
-        from ...models import (
-            Action,
-        )
-
         suffix_mapper = {
             Action.CREATE: "Created",
             Action.UPDATE: "Updated",

@@ -25,7 +25,7 @@ from minos.common import (
     DeclarativeModel,
 )
 
-from ..actions import (
+from ...actions import (
     Action,
 )
 from .fields import (

@@ -29,7 +29,7 @@ from minos.common import (
     ModelType,
 )
 
-from ..actions import (
+from ...actions import (
     Action,
 )
 from ..collections import (

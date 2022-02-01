@@ -21,9 +21,12 @@ from minos.common import (
     import_module,
 )
 
+from ..actions import (
+    Action,
+)
+
 if TYPE_CHECKING:
     from ..models import (
-        Action,
         Event,
         FieldDiffContainer,
         RootEntity,
@@ -62,10 +65,6 @@ class EventEntry:
         if isinstance(data, memoryview):
             data = data.tobytes()
         if action is not None and isinstance(action, str):
-            from ..models import (
-                Action,
-            )
-
             action = Action.value_of(action)
 
         self.uuid = uuid

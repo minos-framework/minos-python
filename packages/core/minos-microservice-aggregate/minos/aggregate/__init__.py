@@ -2,6 +2,9 @@ __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
 __version__ = "0.4.1"
 
+from .actions import (
+    Action,
+)
 from .contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
@@ -25,7 +28,6 @@ from .exceptions import (
     ValueObjectException,
 )
 from .models import (
-    Action,
     Entity,
     EntitySet,
     Event,

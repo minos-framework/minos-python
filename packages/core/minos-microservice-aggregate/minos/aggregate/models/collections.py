@@ -25,7 +25,7 @@ from minos.common import (
     SchemaEncoder,
 )
 
-from .actions import (
+from ..actions import (
     Action,
 )
 

@@ -1,6 +1,3 @@
-from .actions import (
-    Action,
-)
 from .collections import (
     IncrementalSet,
     IncrementalSetDiff,
