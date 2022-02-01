@@ -19,6 +19,7 @@ Minos is a framework which helps you create [reactive](https://www.reactivemanif
 ## Foundational Patterns
 
 The `minos` framework is built strongly following the following set of patterns:
+
 * [Microservice architecture](https://microservices.io/patterns/microservices.html): Architect an application as a collection of loosely coupled services.
 * [Decompose by subdomain](https://microservices.io/patterns/decomposition/decompose-by-subdomain.html): Define services corresponding to Domain-Driven Design (DDD) subdomains
 * [Self-contained Service](https://microservices.io/patterns/decomposition/self-contained-service.html): Microservices can respond to a synchronous request without waiting for the response from any other service.
@@ -55,17 +56,129 @@ pip install \
 
 ## QuickStart
 
-This section includes a set of minimal examples of how-to-work with `minos`, so that anyone can get the gist of the framework.
+This section includes a quickstart guide to create your first `minos` microservice, so that anyone can get the gist of the framework.
 
-### Create a Project
+#### Setting up the environment
 
-[TODO]
+The required environment to run this quickstart is the following:
+
+* A `python>=3.9` interpreter with version equal or greater to .
+* A `kafka` instance available at `localhost:9092`
+* A `postgres` instance available at `localhost:5432` with a `foo_db` database accessible with `minos:min0s` credentials.
+* A `socket` available to use at `localhost:4545`.
+
+Note that these parameters can be configured on the `foo.yml` file.
+
+### Configure a Microservice
+
+To keep things simpler, this quickstart will create a microservice assuming all the source code is stored on a single `foo.py` file. In addition to the source file, a `foo.yml` will contain all the configuration stuff.
+
+Create a `foo.yml` file and add the following lines:
+<details>
+  <summary>Click to show the <code>foo.yml</code></summary>
+
+```yaml
+# foo.yml
+
+service:
+    name: foo
+    aggregate: foo.Foo
+    injections:
+        lock_pool: minos.common.PostgreSqlLockPool
+        postgresql_pool: minos.common.PostgreSqlPool
+        broker_publisher: minos.networks.PostgreSqlQueuedKafkaBrokerPublisher
+        broker_subscriber_builder: minos.networks.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
+        broker_pool: minos.networks.BrokerClientPool
+        transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
+        event_repository: minos.aggregate.PostgreSqlEventRepository
+        snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
+        saga_manager: minos.saga.SagaManager
+    services:
+        - minos.networks.BrokerHandlerService
+        - minos.networks.RestService
+        - minos.networks.PeriodicTaskSchedulerService
+middleware:
+    - minos.saga.transactional_command
+services:
+    - minos.aggregate.TransactionService
+    - minos.aggregate.SnapshotService
+    - minos.saga.SagaService
+    - foo.FooCommandService
+    - foo.FooQueryService
+rest:
+    host: 0.0.0.0
+    port: 4545
+broker:
+    host: localhost
+    port: 9092
+    queue:
+        database: foo_db
+        user: minos
+        password: min0s
+        host: localhost
+        port: 5432
+        records: 1000
+        retry: 2
+repository:
+    database: foo_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+snapshot:
+    database: foo_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+saga:
+    storage:
+        path: "./foo.lmdb"
+```
+
+</details>
+
+Create a `foo.py` file and add the following content:
+
+```python
+# foo.py
+
+from pathlib import Path
+from minos.aggregate import Aggregate
+from minos.common import EntrypointLauncher
+from minos.cqrs import CommandService, QueryService
+
+
+class Foo(Aggregate):
+    """Foo Aggregate class."""
+
+
+class FooCommandService(CommandService):
+    """Foo Command Service class."""
+
+
+class FooQueryService(QueryService):
+    """Foo Query Service class."""
+
+
+if __name__ == '__main__':
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo.yml")
+    launcher.launch()
+```
+
+Execute the following command to start the microservice:
+
+```shell
+python foo.py
+```
 
 ### Create an Aggregate
 
 Here is an example of the creation the `Foo` aggregate. In this case, it has two attributes, a `bar` being a `str`, and a `foobar` being an optional reference to the external `FooBar` aggregate, which it is assumed that it has a `something` attribute.
 
 ```python
+# foo.py
+
 from __future__ import annotations
 from typing import Optional
 from minos.aggregate import Aggregate, AggregateRef, ModelRef
@@ -83,12 +196,58 @@ class FooBar(AggregateRef):
 
     something: str
 ```
+<details>
+  <summary>Click to show the full <code>foo.py</code></summary>
+
+```python
+# foo.py
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Optional
+
+from minos.aggregate import Aggregate, AggregateRef, ModelRef
+from minos.common import EntrypointLauncher
+from minos.cqrs import CommandService, QueryService
+
+
+class Foo(Aggregate):
+    """Foo Aggregate class."""
+
+    bar: str
+    foobar: Optional[ModelRef[FooBar]]
+
+
+class FooBar(AggregateRef):
+    """FooBar AggregateRef clas."""
+
+    something: str
+
+
+class FooCommandService(CommandService):
+    """Foo Command Service class."""
+
+
+class FooQueryService(QueryService):
+    """Foo Query Service class."""
+
+
+if __name__ == '__main__':
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo.yml")
+    launcher.launch()
+
+```
+
+</details>
 
 ### Expose a Command
 
 Here is an example of the definition of a command to create `Foo` instances. To do that, it is necessary to define a `CommandService` that contains the handling function. It will handle both the broker messages sent to the `"CreateFoo"` topic and the rest calls to the `"/foos"` path with the `"POST"` method. In this case, the handling function unpacks the `Request`'s content and then calls the `create` method from the `Aggregate`, which stores the `Foo` instance following an event-driven strategy (it also publishes the `"FooCreated"` event). Finally, a `Response` is returned to be handled by the external caller (another microservice or the API-gateway).
 
 ```python
+# foo.py
+
 from minos.cqrs import CommandService
 from minos.networks import enroute, Request, Response
 
@@ -112,6 +271,73 @@ class FooCommandService(CommandService):
         return Response({"uuid": foo.uuid})
 ```
 
+<details>
+  <summary>Click to show the full <code>foo.py</code></summary>
+
+```python
+# foo.py
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Optional
+
+from minos.aggregate import Aggregate, AggregateRef, ModelRef
+from minos.common import EntrypointLauncher
+from minos.cqrs import CommandService, QueryService
+from minos.networks import Request, Response, enroute
+
+
+class Foo(Aggregate):
+    """Foo Aggregate class."""
+
+    bar: str
+    foobar: Optional[ModelRef[FooBar]]
+
+
+class FooBar(AggregateRef):
+    """FooBar AggregateRef clas."""
+
+    something: str
+
+
+class FooCommandService(CommandService):
+    """Foo Command Service class."""
+
+    @enroute.broker.command("CreateFoo")
+    @enroute.rest.command("/foos", "POST")
+    async def create_foo(self, request: Request) -> Response:
+        """Create a new Foo.
+
+        :param request: The ``Request`` that contains the ``bar`` attribute.
+        :return: A ``Response`` containing identifier of the already created instance.
+        """
+        content = await request.content()
+        bar = content["bar"]
+
+        foo = await Foo.create(bar)
+
+        return Response({"uuid": foo.uuid})
+
+
+class FooQueryService(QueryService):
+    """Foo Query Service class."""
+
+
+if __name__ == '__main__':
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo.yml")
+    launcher.launch()
+
+```
+
+</details>
+
+Execute the following command to start the microservice:
+
+```shell
+python foo.py
+```
+
 ### Subscribe to an Event and Expose a Query
 
 Here is an example of the event and query handling. In this case, it must be defined on a `QueryService` class. In this case a `"FooCreated"` event is handled (and only a `print` of the content is performed). The event contents typically contains instances of `AggregateDiff` type, which is referred to the difference respect to the previously stored instance. The exposed query is connected to the calls that come from the `"/foos/example"` path and `"GET"` method and a naive string is returned.
@@ -119,6 +345,8 @@ Here is an example of the event and query handling. In this case, it must be def
 *Disclaimer*: A real `QueryService` implementation must populate a query-oriented database based on the events to which is subscribed to, and expose queries performed over that query-oriented database.
 
 ```python
+# foo.py
+
 from minos.cqrs import QueryService
 from minos.networks import enroute, Request, Response
 
@@ -146,15 +374,121 @@ class FooQueryService(QueryService):
         return Response("This is an example response!")
 ```
 
+<details>
+  <summary>Click to show the full <code>foo.py</code></summary>
+
+```python
+# foo.py
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Optional
+
+from minos.aggregate import Aggregate, AggregateRef, ModelRef
+from minos.common import EntrypointLauncher
+from minos.cqrs import CommandService, QueryService
+from minos.networks import Request, Response, enroute
+
+
+class Foo(Aggregate):
+    """Foo Aggregate class."""
+
+    bar: str
+    foobar: Optional[ModelRef[FooBar]]
+
+
+class FooBar(AggregateRef):
+    """FooBar AggregateRef clas."""
+
+    something: str
+
+
+class FooCommandService(CommandService):
+    """Foo Command Service class."""
+
+    @enroute.broker.command("CreateFoo")
+    @enroute.rest.command("/foos", "POST")
+    async def create_foo(self, request: Request) -> Response:
+        """Create a new Foo.
+
+        :param request: The ``Request`` that contains the ``bar`` attribute.
+        :return: A ``Response`` containing identifier of the already created instance.
+        """
+        content = await request.content()
+        bar = content["bar"]
+
+        foo = await Foo.create(bar)
+
+        return Response({"uuid": foo.uuid})
+
+
+class FooQueryService(QueryService):
+    """Foo Query Service class."""
+
+    @enroute.broker.event("FooCreated")
+    async def foo_created(self, request: Request) -> None:
+        """Handle the "FooCreated" event.
+
+        :param request: The ``Request`` that contains the ``bar`` attribute.
+        :return: This method does not return anything.
+        """
+        diff = await request.content()
+        print(f"A Foo was created: {diff}")
+
+    @enroute.rest.query("/foos/example", "GET")
+    async def example(self, request: Request) -> Response:
+        """Handle the example query.
+
+        :param request: The ``Request`` that contains the necessary information.
+        :return: A ``Response`` instance.
+        """
+        return Response("This is an example response!")
+
+
+if __name__ == '__main__':
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo.yml")
+    launcher.launch()
+
+```
+
+</details>
+
+Execute the following command to start the microservice:
+
+```shell
+python foo.py
+```
+
 ### Interact with another Microservice
 
 Here is an example of the interaction between two microservices through a SAGA pattern. In this case, the interaction starts with a call to the `"/foo/add-foobar"` path and the `"POST"` method, which performs a `SagaManager` run over the `ADD_FOOBAR_SAGA` saga. This saga has two steps, one remote that executes the `"CreateFooBar"` command (possibly defined on the supposed `"foobar"` microservice), and a local step that is executed on this microservice. The `CreateFooBarDTO` defines the structure of the request to be sent when the `"CreateFooBar"` command is executed.
 
 ```python
+# foo.py
+
 from minos.common import ModelType
 from minos.cqrs import CommandService
 from minos.networks import enroute, Request
 from minos.saga import Saga, SagaContext, SagaRequest, SagaResponse
+
+
+class FooCommandService(CommandService):
+    """Foo Command Service class."""
+
+    @enroute.rest.command("/foo/add-foobar", "POST")
+    async def update_foo(self, request: Request) -> None:
+        """Run a saga example.
+
+        :param request: The ``Request`` that contains the initial saga's context.
+        :return: This method does not return anything.
+        """
+        content = await request.content()
+
+        await self.saga_manager.run(
+            ADD_FOOBAR_SAGA, SagaContext(uuid=content["uuid"], something=content["something"])
+        )
+
 
 CreateFooBarDTO = ModelType.build("AnotherDTO", {"number": int, "text": str})
 
@@ -186,10 +520,55 @@ ADD_FOOBAR_SAGA = (
         .local_step().on_execute(_update_foo)
         .commit()
 )
+```
+<details>
+  <summary>Click to show the full <code>foo.py</code></summary>
+
+```python
+# foo.py
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Optional
+
+from minos.aggregate import Aggregate, AggregateRef, ModelRef
+from minos.common import ModelType, EntrypointLauncher
+from minos.cqrs import CommandService, QueryService
+from minos.networks import Request, Response, enroute
+from minos.saga import Saga, SagaContext, SagaRequest, SagaResponse
+
+
+class Foo(Aggregate):
+    """Foo Aggregate class."""
+
+    bar: str
+    foobar: Optional[ModelRef[FooBar]]
+
+
+class FooBar(AggregateRef):
+    """FooBar AggregateRef clas."""
+
+    something: str
 
 
 class FooCommandService(CommandService):
     """Foo Command Service class."""
+
+    @enroute.broker.command("CreateFoo")
+    @enroute.rest.command("/foos", "POST")
+    async def create_foo(self, request: Request) -> Response:
+        """Create a new Foo.
+
+        :param request: The ``Request`` that contains the ``bar`` attribute.
+        :return: A ``Response`` containing identifier of the already created instance.
+        """
+        content = await request.content()
+        bar = content["bar"]
+
+        foo = await Foo.create(bar)
+
+        return Response({"uuid": foo.uuid})
 
     @enroute.rest.command("/foo/add-foobar", "POST")
     async def update_foo(self, request: Request) -> None:
@@ -201,10 +580,204 @@ class FooCommandService(CommandService):
         content = await request.content()
 
         await self.saga_manager.run(
-            ADD_FOOBAR_SAGA, {"uuid": content["uuid"], "something": content["something"]}
+            ADD_FOOBAR_SAGA, SagaContext(uuid=content["uuid"], something=content["something"])
         )
 
+
+CreateFooBarDTO = ModelType.build("AnotherDTO", {"number": int, "text": str})
+
+
+def _create_foobar(context: SagaContext) -> SagaRequest:
+    something = context["something"]
+    content = CreateFooBarDTO(56, something)
+    return SagaRequest("CreateFooBar", content)
+
+
+async def _success_foobar(context: SagaContext, response: SagaResponse) -> SagaContext:
+    context["foobar_uuid"] = await response.content()
+    return context
+
+
+async def _error_foobar(context: SagaContext, response: SagaResponse) -> SagaContext:
+    raise ValueError("The foobar could not be created!")
+
+
+async def _update_foo(context: SagaContext) -> None:
+    foo = await Foo.get(context["uuid"])
+    foo.foobar = context["foobar_uuid"]
+    await foo.save()
+
+
+ADD_FOOBAR_SAGA = (
+    Saga()
+        .remote_step()
+        .on_execute(_create_foobar)
+        .on_success(_success_foobar)
+        .on_error(_error_foobar)
+        .local_step()
+        .on_execute(_update_foo)
+        .commit()
+)
+
+
+class FooQueryService(QueryService):
+    """Foo Query Service class."""
+
+    @enroute.broker.event("FooCreated")
+    async def foo_created(self, request: Request) -> None:
+        """Handle the "FooCreated" event.
+
+        :param request: The ``Request`` that contains the ``bar`` attribute.
+        :return: This method does not return anything.
+        """
+        diff = await request.content()
+        print(f"A Foo was created: {diff}")
+
+    @enroute.rest.query("/foos/example", "GET")
+    async def example(self, request: Request) -> Response:
+        """Handle the example query.
+
+        :param request: The ``Request`` that contains the necessary information.
+        :return: A ``Response`` instance.
+        """
+        return Response("This is an example response!")
+
+
+if __name__ == '__main__':
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo.yml")
+    launcher.launch()
+
 ```
+
+</details>
+
+Note that in this case another microservice is needed to complete the saga.
+
+Here is the `foobar.yml` config file:
+<details>
+  <summary>Click to show the <code>foobar.yml</code></summary>
+
+```yaml
+# foobar.yml
+
+service:
+    name: foobar
+    aggregate: foobar.FooBar
+    injections:
+        lock_pool: minos.common.PostgreSqlLockPool
+        postgresql_pool: minos.common.PostgreSqlPool
+        broker_publisher: minos.networks.PostgreSqlQueuedKafkaBrokerPublisher
+        broker_subscriber_builder: minos.networks.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
+        broker_pool: minos.networks.BrokerClientPool
+        transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
+        event_repository: minos.aggregate.PostgreSqlEventRepository
+        snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
+        saga_manager: minos.saga.SagaManager
+    services:
+        - minos.networks.BrokerHandlerService
+        - minos.networks.RestService
+        - minos.networks.PeriodicTaskSchedulerService
+middleware:
+    - minos.saga.transactional_command
+services:
+    - minos.aggregate.TransactionService
+    - minos.aggregate.SnapshotService
+    - minos.saga.SagaService
+    - foobar.FooBarCommandService
+rest:
+    host: 0.0.0.0
+    port: 4546
+broker:
+    host: localhost
+    port: 9092
+    queue:
+        database: foobar_db
+        user: minos
+        password: min0s
+        host: localhost
+        port: 5432
+        records: 1000
+        retry: 2
+repository:
+    database: foobar_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+snapshot:
+    database: foobar_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+saga:
+    storage:
+        path: "./foobar.lmdb"
+```
+
+</details>
+
+Here is the `foobar.py` config file:
+<details>
+  <summary>Click to show the <code>foobar.py</code></summary>
+
+```python
+from __future__ import annotations
+
+from pathlib import Path
+
+from minos.aggregate import Aggregate
+from minos.common import EntrypointLauncher
+from minos.cqrs import CommandService
+from minos.networks import Request, Response, enroute
+
+
+class FooBar(Aggregate):
+    """FooBar AggregateRef clas."""
+
+    something: str
+
+
+class FooBarCommandService(CommandService):
+    """Foo Command Service class."""
+
+    @enroute.broker.command("CreateFooBar")
+    async def create_foobar(self, request: Request) -> Response:
+        """Create a new FooBar.
+
+        :param request: The ``Request`` that contains the ``something`` attribute.
+        :return: A ``Response`` containing identifier of the already created instance.
+        """
+        content = await request.content()
+        something = content["text"]
+
+        foobar = await FooBar.create(something)
+
+        return Response(foobar.uuid)
+
+
+if __name__ == '__main__':
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foobar.yml")
+    launcher.launch()
+
+```
+
+</details>
+
+Execute the following command to start the `foobar` microservice:
+
+```shell
+python foobar.py
+```
+
+
+
+Execute the following command to start the `foo` microservice:
+
+```shell
+python foo.py
+```
+
 
 ## Packages
 
