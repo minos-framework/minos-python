@@ -34,7 +34,7 @@ from .fields import (
 )
 
 if TYPE_CHECKING:
-    from ..aggregates import (
+    from ..entities import (
         RootEntity,
     )
 
