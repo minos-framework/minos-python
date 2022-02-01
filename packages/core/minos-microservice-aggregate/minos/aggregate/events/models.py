@@ -21,20 +21,20 @@ from uuid import (
     UUID,
 )
 
+from minos.aggregate.actions import (
+    Action,
+)
 from minos.common import (
     DeclarativeModel,
 )
 
-from ...actions import (
-    Action,
-)
 from .fields import (
     FieldDiff,
     FieldDiffContainer,
 )
 
 if TYPE_CHECKING:
-    from ...entities import (
+    from minos.aggregate.entities import (
         RootEntity,
     )
 

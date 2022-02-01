@@ -24,8 +24,12 @@ from .entities import (
     RootEntity,
 )
 from .events import (
+    Event,
     EventEntry,
     EventRepository,
+    FieldDiff,
+    FieldDiffContainer,
+    IncrementalFieldDiff,
     InMemoryEventRepository,
     PostgreSqlEventRepository,
 )
@@ -41,12 +45,6 @@ from .exceptions import (
     TransactionRepositoryConflictException,
     TransactionRepositoryException,
     ValueObjectException,
-)
-from .models import (
-    Event,
-    FieldDiff,
-    FieldDiffContainer,
-    IncrementalFieldDiff,
 )
 from .queries import (
     Condition,

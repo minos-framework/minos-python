@@ -24,14 +24,16 @@ from minos.common import (
 from ..actions import (
     Action,
 )
+from .fields import (
+    FieldDiffContainer,
+)
+from .models import (
+    Event,
+)
 
 if TYPE_CHECKING:
     from ..entities import (
         RootEntity,
-    )
-    from ..models import (
-        Event,
-        FieldDiffContainer,
     )
     from ..transactions import (
         TransactionEntry,
@@ -141,10 +143,6 @@ class EventEntry:
 
         :return: An ``Event`` instance.
         """
-        from ..models import (
-            Event,
-        )
-
         return Event(
             self.uuid,
             self.name,
@@ -160,10 +158,6 @@ class EventEntry:
 
         :return: A ``FieldDiffContainer`` instance.
         """
-        from ..models import (
-            FieldDiffContainer,
-        )
-
         if not self.data:
             return FieldDiffContainer.empty()
 

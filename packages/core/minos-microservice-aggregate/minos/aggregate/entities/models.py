@@ -23,15 +23,13 @@ from dependency_injector.wiring import (
 )
 
 from minos.aggregate.events import (
+    Event,
     EventEntry,
     EventRepository,
+    IncrementalFieldDiff,
 )
 from minos.aggregate.exceptions import (
     EventRepositoryException,
-)
-from minos.aggregate.models.events import (
-    Event,
-    IncrementalFieldDiff,
 )
 from minos.aggregate.queries import (
     _Condition,

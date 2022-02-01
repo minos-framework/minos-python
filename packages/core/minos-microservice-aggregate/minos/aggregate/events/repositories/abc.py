@@ -13,7 +13,6 @@ from contextlib import (
     suppress,
 )
 from typing import (
-    TYPE_CHECKING,
     AsyncIterator,
     Awaitable,
     Optional,
@@ -61,11 +60,12 @@ from ...transactions import (
 from ..entries import (
     EventEntry,
 )
-
-if TYPE_CHECKING:
-    from ...models import (
-        Event,
-    )
+from ..fields import (
+    IncrementalFieldDiff,
+)
+from ..models import (
+    Event,
+)
 
 
 class EventRepository(ABC, MinosSetup):
@@ -140,9 +140,6 @@ class EventRepository(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: The repository entry containing the stored information.
         """
-        from ...models import (
-            Event,
-        )
 
         token = IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
         try:
@@ -214,10 +211,6 @@ class EventRepository(ABC, MinosSetup):
         futures = [self._broker_publisher.send(message)]
 
         if event.action == Action.UPDATE:
-            from ...models import (
-                IncrementalFieldDiff,
-            )
-
             for decomposed_event in event.decompose():
                 diff = next(iter(decomposed_event.fields_diff.flatten_values()))
                 composed_topic = f"{topic}.{diff.name}"

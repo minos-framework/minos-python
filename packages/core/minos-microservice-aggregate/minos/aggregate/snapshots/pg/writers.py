@@ -21,6 +21,7 @@ from minos.common import (
 )
 
 from ...events import (
+    Event,
     EventEntry,
     EventRepository,
 )
@@ -43,9 +44,6 @@ from .abc import (
 if TYPE_CHECKING:
     from ...entities import (
         RootEntity,
-    )
-    from ...models import (
-        Event,
     )
     from .readers import (
         PostgreSqlSnapshotReader,
