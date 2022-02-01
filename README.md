@@ -65,7 +65,7 @@ The required environment to run this quickstart is the following:
 * A `python>=3.9` interpreter with version equal or greater to .
 * A `kafka` instance available at `localhost:9092`
 * A `postgres` instance available at `localhost:5432` with `foo_db` and `foobar_db` databases accessible with the `minos:min0s` credentials.
-* A `socket` available to use at `localhost:4545`.
+* A `socket` available to use at `localhost:4545` and `localhost:4546`.
 
 Note that these parameters can be configured on the `foo.yml` file.
 
