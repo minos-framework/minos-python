@@ -22,7 +22,9 @@ import sys
 
 sys.path.insert(0, os.path.abspath(".."))
 
-from minos.plugins import minos_discovery
+from minos.plugins import (
+    minos_discovery,
+)
 
 # -- General configuration ---------------------------------------------
 
