@@ -7,6 +7,7 @@ install:
 
 docs:
 	mkdir -p $(DOCS_TARGET)/core
+	mkdir -p $(DOCS_TARGET)/plugins
 
 	$(MAKE) --directory=packages/core/minos-microservice-aggregate install docs
 	cp -R packages/core/minos-microservice-aggregate/docs/_build/html $(DOCS_TARGET)/core/minos-microservice-aggregate
