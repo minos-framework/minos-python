@@ -64,7 +64,7 @@ The required environment to run this quickstart is the following:
 
 * A `python>=3.9` interpreter with version equal or greater to .
 * A `kafka` instance available at `localhost:9092`
-* A `postgres` instance available at `localhost:5432` with `foo_db` and `foobar_db` databases accessible with the `minos:min0s` credentials.
+* A `postgres` instance available at `localhost:5432` with the `foo_db` and `foobar_db` databases accessible with the `user:pass` credentials.
 * Two TCP sockets available to use at `localhost:4545` and `localhost:4546`.
 
 Note that these parameters can be configured on the `foo/config.yml` file.
@@ -122,22 +122,22 @@ broker:
   port: 9092
   queue:
     database: foo_db
-    user: minos
-    password: min0s
+    user: user
+    password: pass
     host: localhost
     port: 5432
     records: 1000
     retry: 2
 repository:
   database: foo_db
-  user: minos
-  password: min0s
+  user: user
+  password: pass
   host: localhost
   port: 5432
 snapshot:
   database: foo_db
-  user: minos
-  password: min0s
+  user: user
+  password: pass
   host: localhost
   port: 5432
 saga:
@@ -927,22 +927,22 @@ broker:
   port: 9092
   queue:
     database: foobar_db
-    user: minos
-    password: min0s
+    user: user
+    password: pass
     host: localhost
     port: 5432
     records: 1000
     retry: 2
 repository:
   database: foobar_db
-  user: minos
-  password: min0s
+  user: user
+  password: pass
   host: localhost
   port: 5432
 snapshot:
   database: foobar_db
-  user: minos
-  password: min0s
+  user: user
+  password: pass
   host: localhost
   port: 5432
 saga:
