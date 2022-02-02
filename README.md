@@ -44,15 +44,23 @@ The `minos` framework is built strongly inspired by the following set of pattern
 
 ### Guided installation
 
-The easiest way to use `minos` is with the help of the [`minos-cli`](https://github.com/minos-framework/minos-cli), which provides commands to setup both the project skeleton (configures containerization, databases, brokers, etc.) and the microservice skeleton (the base microservice structure, environment configuration, etc.)
+The easiest way to manage a project is with the `minos` command-line interface, which provides commands to setup both the project skeleton (configures containerization, databases, brokers, etc.) and the microservice skeleton (the base microservice structure, environment configuration, etc.).
+
+You can install it with:
+
+```shell
+pip install minos-cli
+```
 
 Here is a summary containing the most useful commands:
 
-* `minos new project NAME`: Create a new Project
-* `minos set RESOURCE BACKEND`: Configure an environment resource (broker, database, etc.).
+* `minos new project $NAME`: Create a new Project
+* `minos set $RESOURCE $BACKEND`: Configure an environment resource (broker, database, etc.).
 * `minos deploy project`: Deploy a project.
-* `minos new microservice NAME`: Create a new microservice.
+* `minos new microservice $NAME`: Create a new microservice.
 * `minos deploy microservice` deploy a microservice.
+
+For more information, visit the [`minos-cli`](https://github.com/minos-framework/minos-cli) repository.
 
 ### Manual installation
 
