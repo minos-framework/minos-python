@@ -192,13 +192,13 @@ class TransactionEntry:
 
         entries = dict()
         async for entry in self._event_repository.select(transaction_uuid=self.uuid):
-            if entry.aggregate_uuid in entries and entry.version < entries[entry.aggregate_uuid]:
+            if entry.uuid in entries and entry.version < entries[entry.uuid]:
                 continue
-            entries[entry.aggregate_uuid] = entry.version
+            entries[entry.uuid] = entry.version
 
         transaction_uuids = set()
-        for aggregate_uuid, version in entries.items():
-            async for entry in self._event_repository.select(aggregate_uuid=aggregate_uuid, version=version):
+        for uuid, version in entries.items():
+            async for entry in self._event_repository.select(uuid=uuid, version=version):
                 if entry.transaction_uuid == self.destination_uuid:
                     return False
                 if entry.transaction_uuid != self.uuid:

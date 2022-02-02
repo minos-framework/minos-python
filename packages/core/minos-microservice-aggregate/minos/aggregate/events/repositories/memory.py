@@ -43,8 +43,8 @@ class InMemoryEventRepository(EventRepository):
         self._next_versions = defaultdict(int)
 
     async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
-        if entry.aggregate_uuid == NULL_UUID:
-            entry.aggregate_uuid = uuid4()
+        if entry.uuid == NULL_UUID:
+            entry.uuid = uuid4()
 
         next_version = self._get_next_version_id(entry)
         if entry.version is None:
@@ -66,14 +66,14 @@ class InMemoryEventRepository(EventRepository):
         return next(self._id_generator) + 1
 
     def _get_next_version_id(self, entry: EventEntry) -> int:
-        key = (entry.aggregate_name, entry.aggregate_uuid, entry.transaction_uuid)
+        key = (entry.name, entry.uuid, entry.transaction_uuid)
         self._next_versions[key] += 1
         return self._next_versions[key]
 
     async def _select(
         self,
-        aggregate_uuid: Optional[int] = None,
-        aggregate_name: Optional[str] = None,
+        uuid: Optional[int] = None,
+        name: Optional[str] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
         version_gt: Optional[int] = None,
@@ -93,9 +93,9 @@ class InMemoryEventRepository(EventRepository):
 
         # noinspection DuplicatedCode
         def _fn_filter(entry: EventEntry) -> bool:
-            if aggregate_uuid is not None and aggregate_uuid != entry.aggregate_uuid:
+            if uuid is not None and uuid != entry.uuid:
                 return False
-            if aggregate_name is not None and aggregate_name != entry.aggregate_name:
+            if name is not None and name != entry.name:
                 return False
             if version is not None and version != entry.version:
                 return False
