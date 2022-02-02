@@ -8,8 +8,10 @@ from unittest.mock import (
 )
 
 from minos.networks import (
-    MinosDiscoveryClient,
     MinosDiscoveryConnectorException,
+)
+from minos.plugins.minos_discovery import (
+    MinosDiscoveryClient,
 )
 
 _Response = namedtuple("Response", ["ok"])

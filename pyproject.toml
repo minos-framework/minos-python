@@ -13,6 +13,7 @@ minos-microservice-aggregate = { path = "packages/core/minos-microservice-aggreg
 minos-microservice-saga = { path = "packages/core/minos-microservice-saga", develop = true }
 minos-microservice-cqrs = { path = "packages/core/minos-microservice-cqrs", develop = true }
 minos-broker-kafka = { path = "packages/plugins/minos-broker-kafka", develop = true }
+minos-discovery-minos = { path = "packages/plugins/minos-discovery-minos", develop = true }
 
 [tool.poetry.dev-dependencies]
 black = "^22.1"

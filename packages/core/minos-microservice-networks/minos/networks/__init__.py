@@ -69,7 +69,6 @@ from .discovery import (
     DiscoveryClient,
     DiscoveryConnector,
     KongDiscoveryClient,
-    MinosDiscoveryClient,
 )
 from .exceptions import (
     MinosActionNotFoundException,
