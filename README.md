@@ -174,7 +174,7 @@ class FooQueryService(QueryService):
 
 
 if __name__ == '__main__':
-    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo/config.yml")
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
     launcher.launch()
 ```
 
@@ -315,7 +315,7 @@ class FooQueryService(QueryService):
 
 
 if __name__ == '__main__':
-    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo/config.yml")
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
     launcher.launch()
 
 ```
@@ -434,7 +434,7 @@ class FooQueryService(QueryService):
 
 
 if __name__ == '__main__':
-    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo/config.yml")
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
     launcher.launch()
 
 ```
@@ -620,7 +620,8 @@ class FooQueryService(QueryService):
 
 
 if __name__ == '__main__':
-    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo/config.yml")
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "
+    config.yml")
     launcher.launch()
 
 ```
