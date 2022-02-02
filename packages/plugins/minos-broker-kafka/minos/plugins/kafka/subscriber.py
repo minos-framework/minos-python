@@ -36,15 +36,10 @@ from kafka.errors import (
 from minos.common import (
     MinosConfig,
 )
-
-from ..messages import (
+from minos.networks import (
     BrokerMessage,
-)
-from .abc import (
     BrokerSubscriber,
     BrokerSubscriberBuilder,
-)
-from .queued import (
     InMemoryBrokerSubscriberQueueBuilder,
     PostgreSqlBrokerSubscriberQueueBuilder,
     QueuedBrokerSubscriberBuilder,

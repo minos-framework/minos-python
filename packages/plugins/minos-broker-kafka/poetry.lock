@@ -444,41 +444,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "minos-broker-kafka"
-version = "0.4.1"
-description = "Minos Broker Kafka package"
-category = "main"
-optional = false
-python-versions = "^3.9"
-develop = true
-
-[package.dependencies]
-aiokafka = "^0.7.0"
-minos-microservice-common = "^0.4.0"
-minos-microservice-networks = "^0.4.0"
-
-[package.source]
-type = "directory"
-url = "packages/plugins/minos-broker-kafka"
-
-[[package]]
-name = "minos-microservice-aggregate"
-version = "0.4.1"
-description = "Python Package for Minos Microservices containing all the Aggregate stuff"
-category = "main"
-optional = false
-python-versions = "^3.9"
-develop = true
-
-[package.dependencies]
-minos-microservice-common = "^0.4.0"
-minos-microservice-networks = "^0.4.0"
-
-[package.source]
-type = "directory"
-url = "packages/core/minos-microservice-aggregate"
-
-[[package]]
 name = "minos-microservice-common"
 version = "0.4.1"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
@@ -499,26 +464,7 @@ PyYAML = ">=5.4.1,<7.0.0"
 
 [package.source]
 type = "directory"
-url = "packages/core/minos-microservice-common"
-
-[[package]]
-name = "minos-microservice-cqrs"
-version = "0.4.1"
-description = "Minos Microservice CQRS package"
-category = "main"
-optional = false
-python-versions = "^3.9"
-develop = true
-
-[package.dependencies]
-dependency-injector = "^4.34.0"
-minos-microservice-aggregate = "^0.4.0"
-minos-microservice-common = "^0.4.0"
-minos-microservice-networks = "^0.4.0"
-
-[package.source]
-type = "directory"
-url = "packages/core/minos-microservice-cqrs"
+url = "../../core/minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-networks"
@@ -531,6 +477,7 @@ develop = true
 
 [package.dependencies]
 aiohttp = "^3.7.4"
+aiokafka = "^0.7.0"
 aiomisc = "^14.0.3"
 aiopg = "^1.2.1"
 crontab = "^0.23.0"
@@ -540,26 +487,7 @@ orjson = "^3.6.5"
 
 [package.source]
 type = "directory"
-url = "packages/core/minos-microservice-networks"
-
-[[package]]
-name = "minos-microservice-saga"
-version = "0.4.1"
-description = "Saga Library for MinOS project."
-category = "main"
-optional = false
-python-versions = "^3.9"
-develop = true
-
-[package.dependencies]
-dependency-injector = "^4.32.2"
-minos-microservice-aggregate = "^0.4.0"
-minos-microservice-common = "^0.4.0"
-minos-microservice-networks = "^0.4.0"
-
-[package.source]
-type = "directory"
-url = "packages/core/minos-microservice-saga"
+url = "../../core/minos-microservice-networks"
 
 [[package]]
 name = "mistune"
@@ -1017,7 +945,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "791434a286b5460c30e700201c900312b2a941951430e346c51000033f1f65b9"
+content-hash = "eb405d50d73d2f9c30fcdb13ab2b1aeaa55dd25543c9ecbd93550484f437a0eb"
 
 [metadata.files]
 aiohttp = [
@@ -1521,12 +1449,8 @@ mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
-minos-broker-kafka = []
-minos-microservice-aggregate = []
 minos-microservice-common = []
-minos-microservice-cqrs = []
 minos-microservice-networks = []
-minos-microservice-saga = []
 mistune = [
     {file = "mistune-0.8.4-py2.py3-none-any.whl", hash = "sha256:88a1051873018da288eee8538d476dffe1262495144b33ecb586c4ab266bb8d4"},
     {file = "mistune-0.8.4.tar.gz", hash = "sha256:59a3429db53c50b5c6bcc8a07f8848cb00d7dc8bdb431a4ab41920d201d4756e"},

@@ -1,4 +1,4 @@
-name: "Test: minos-microservice-networks"
+name: "Test: minos-broker-kafka"
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
       - '*.*.x'
   pull_request:
     paths:
+      - 'packages/plugins/minos-broker-kafka/**'
       - 'packages/core/minos-microservice-networks/**'
       - 'packages/core/minos-microservice-common/**'
 
@@ -16,7 +17,7 @@ jobs:
     container: python:3.9-buster
     defaults:
       run:
-        working-directory: packages/core/minos-microservice-networks
+        working-directory: packages/plugins/minos-broker-kafka
 
     services:
       postgres:
@@ -29,6 +30,19 @@ jobs:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
+      zookeeper:
+        image: wurstmeister/zookeeper:latest
+        ports:
+          - 2181:2181
+
+      kafka:
+        image: wurstmeister/kafka:latest
+        ports:
+          - 9092:9092
+        env:
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_HOST_NAME: kafka
+          KAFKA_DELETE_TOPIC_ENABLE: "true"
     env:
       MINOS_BROKER_QUEUE_HOST: postgres
       MINOS_BROKER_HOST: kafka
@@ -55,7 +69,7 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./packages/core/minos-microservice-networks/coverage.xml
+          files: ./packages/plugins/minos-broker-kafka/coverage.xml
           fail_ci_if_error: true
 
       - name: Generate documentation

@@ -21,15 +21,35 @@ from cached_property import (
 from minos.common import (
     MinosConfig,
 )
-
-from ..messages import (
+from minos.networks import (
     BrokerMessage,
-)
-from .abc import (
     BrokerPublisher,
+    InMemoryBrokerPublisherQueue,
+    PostgreSqlBrokerPublisherQueue,
+    QueuedBrokerPublisher,
 )
 
 logger = logging.getLogger(__name__)
+
+
+class PostgreSqlQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
+    """PostgreSql Queued Kafka Broker Publisher class."""
+
+    @classmethod
+    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlQueuedKafkaBrokerPublisher:
+        impl = KafkaBrokerPublisher.from_config(config, **kwargs)
+        queue = PostgreSqlBrokerPublisherQueue.from_config(config, **kwargs)
+        return cls(impl, queue, **kwargs)
+
+
+class InMemoryQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
+    """In Memory Queued Kafka Broker Publisher class."""
+
+    @classmethod
+    def _from_config(cls, config: MinosConfig, **kwargs) -> InMemoryQueuedKafkaBrokerPublisher:
+        impl = KafkaBrokerPublisher.from_config(config, **kwargs)
+        queue = InMemoryBrokerPublisherQueue.from_config(config, **kwargs)
+        return cls(impl, queue, **kwargs)
 
 
 class KafkaBrokerPublisher(BrokerPublisher):
