@@ -36,8 +36,8 @@ class TestSnapshotEntry(MinosTestCase):
 
     def test_constructor(self):
         entry = SnapshotEntry(self.uuid, "example.Car", 0, self.schema, self.data)
-        self.assertEqual(self.uuid, entry.aggregate_uuid)
-        self.assertEqual("example.Car", entry.aggregate_name)
+        self.assertEqual(self.uuid, entry.uuid)
+        self.assertEqual("example.Car", entry.name)
         self.assertEqual(0, entry.version)
         self.assertEqual(self.schema, entry.schema)
         self.assertEqual(self.data, entry.data)
@@ -54,20 +54,20 @@ class TestSnapshotEntry(MinosTestCase):
             datetime(2020, 1, 10, 4, 23),
             datetime(2020, 1, 10, 4, 25),
         )
-        self.assertEqual(self.uuid, entry.aggregate_uuid)
-        self.assertEqual("example.Car", entry.aggregate_name)
+        self.assertEqual(self.uuid, entry.uuid)
+        self.assertEqual("example.Car", entry.name)
         self.assertEqual(0, entry.version)
         self.assertEqual(self.schema, entry.schema)
         self.assertEqual(self.data, entry.data)
         self.assertEqual(datetime(2020, 1, 10, 4, 23), entry.created_at)
         self.assertEqual(datetime(2020, 1, 10, 4, 25), entry.updated_at)
 
-    def test_from_aggregate(self):
+    def test_from_root_entity(self):
         car = Car(3, "blue", uuid=self.uuid, version=1)
         with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
-            entry = SnapshotEntry.from_aggregate(car)
-            self.assertEqual(car.uuid, entry.aggregate_uuid)
-            self.assertEqual(car.classname, entry.aggregate_name)
+            entry = SnapshotEntry.from_root_entity(car)
+            self.assertEqual(car.uuid, entry.uuid)
+            self.assertEqual(car.classname, entry.name)
             self.assertEqual(car.version, entry.version)
             self.assertEqual(car.avro_schema, entry.schema)
             self.assertEqual({"color": "blue", "doors": 3, "owner": None}, entry.data)
@@ -79,26 +79,26 @@ class TestSnapshotEntry(MinosTestCase):
         b = SnapshotEntry(self.uuid, "example.Car", 0, self.schema, self.data)
         self.assertEqual(a, b)
 
-    def test_aggregate_cls(self):
+    def test_type_(self):
         car = Car(3, "blue", uuid=self.uuid, version=1)
-        entry = SnapshotEntry.from_aggregate(car)
-        self.assertEqual(Car, entry.aggregate_cls)
+        entry = SnapshotEntry.from_root_entity(car)
+        self.assertEqual(Car, entry.type_)
 
-    def test_aggregate(self):
+    def test_build(self):
         car = Car(3, "blue", uuid=self.uuid, version=1)
-        entry = SnapshotEntry.from_aggregate(car)
-        self.assertEqual(car, entry.build_aggregate())
+        entry = SnapshotEntry.from_root_entity(car)
+        self.assertEqual(car, entry.build())
 
     def test_repr(self):
-        aggregate_name = "example.Car"
+        name = "example.Car"
         version = 0
         created_at = datetime(2020, 1, 10, 4, 23)
         updated_at = datetime(2020, 1, 10, 4, 25)
         transaction_uuid = uuid4()
 
         entry = SnapshotEntry(
-            aggregate_uuid=self.uuid,
-            aggregate_name=aggregate_name,
+            uuid=self.uuid,
+            name=name,
             version=version,
             schema=self.schema,
             data=self.data,
@@ -108,7 +108,7 @@ class TestSnapshotEntry(MinosTestCase):
         )
 
         expected = (
-            f"SnapshotEntry(aggregate_uuid={self.uuid!r}, aggregate_name={aggregate_name!r}, version={version!r}, "
+            f"SnapshotEntry(uuid={self.uuid!r}, name={name!r}, version={version!r}, "
             f"schema={self.schema!r}, data={self.data!r}, created_at={created_at!r}, updated_at={updated_at!r}, "
             f"transaction_uuid={transaction_uuid!r})"
         )

@@ -59,14 +59,14 @@ class PostgreSqlSnapshotQueryBuilder:
 
     def __init__(
         self,
-        aggregate_name: str,
+        name: str,
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         transaction_uuids: tuple[UUID, ...] = (NULL_UUID,),
         exclude_deleted: bool = False,
     ):
-        self.aggregate_name = aggregate_name
+        self.name = name
         self.condition = condition
         self.ordering = ordering
         self.limit = limit
@@ -93,7 +93,7 @@ class PostgreSqlSnapshotQueryBuilder:
         return query, parameters
 
     def _build(self) -> Composable:
-        self._parameters["aggregate_name"] = self.aggregate_name
+        self._parameters["name"] = self.name
 
         query = SQL(" WHERE ").join([self._build_select_from(), self._build_condition(self.condition)])
 
@@ -213,7 +213,7 @@ _SIMPLE_MAPPER = {
 }
 
 _FIXED_FIELDS_MAPPER = {
-    "uuid": Identifier("aggregate_uuid"),
+    "uuid": Identifier("uuid"),
     "version": Identifier("version"),
     "created_at": Identifier("created_at"),
     "updated_at": Identifier("updated_at"),
@@ -226,8 +226,8 @@ _ORDERING_MAPPER = {
 
 _SELECT_ENTRIES_QUERY = SQL(
     "SELECT "
-    "   t2.aggregate_uuid, "
-    "   t2.aggregate_name, "
+    "   t2.uuid, "
+    "   t2.name, "
     "   t2.version, "
     "   t2.schema, "
     "   t2.data, "
@@ -235,16 +235,16 @@ _SELECT_ENTRIES_QUERY = SQL(
     "   t2.updated_at, "
     "   t2.transaction_uuid "
     "FROM ("
-    "   SELECT DISTINCT ON (aggregate_uuid) t1.* "
+    "   SELECT DISTINCT ON (uuid) t1.* "
     "   FROM ( {from_parts} ) AS t1 "
-    "   ORDER BY aggregate_uuid, transaction_index DESC "
+    "   ORDER BY uuid, transaction_index DESC "
     ") AS t2"
 )
 
 _SELECT_TRANSACTION_CHUNK = SQL(
     "SELECT {index} AS transaction_index, * "
     "FROM snapshot "
-    "WHERE aggregate_name = %(aggregate_name)s AND transaction_uuid = {transaction_uuid} "
+    "WHERE name = %(name)s AND transaction_uuid = {transaction_uuid} "
 )
 
 _EXCLUDE_DELETED_CONDITION = SQL("(data IS NOT NULL)")

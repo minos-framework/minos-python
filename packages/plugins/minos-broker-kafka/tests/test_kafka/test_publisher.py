@@ -10,11 +10,6 @@ from aiokafka import (
 from minos.common import (
     MinosConfig,
 )
-from minos.kafka import (
-    InMemoryQueuedKafkaBrokerPublisher,
-    KafkaBrokerPublisher,
-    PostgreSqlQueuedKafkaBrokerPublisher,
-)
 from minos.networks import (
     BrokerMessage,
     BrokerMessageV1,
@@ -22,6 +17,11 @@ from minos.networks import (
     BrokerPublisher,
     InMemoryBrokerPublisherQueue,
     PostgreSqlBrokerPublisherQueue,
+)
+from minos.plugins.kafka import (
+    InMemoryQueuedKafkaBrokerPublisher,
+    KafkaBrokerPublisher,
+    PostgreSqlQueuedKafkaBrokerPublisher,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,

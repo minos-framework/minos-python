@@ -22,9 +22,9 @@ import sys
 
 sys.path.insert(0, os.path.abspath(".."))
 
-import sphinx_rtd_theme
+import sphinx_rtd_theme  # noqa
 
-from minos import (
+from minos.plugins import (
     kafka,
 )
 
@@ -88,7 +88,6 @@ pygments_style = "sphinx"
 
 todo_include_todos = False
 
-
 # -- Options for HTML output -------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -118,12 +117,10 @@ html_sidebars = {"**": ["about.html", "navigation.html", "searchbox.html"]}
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-
 # -- Options for HTMLHelp output ---------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = "minosdoc"
-
 
 # -- Options for LaTeX output ------------------------------------------
 
@@ -149,13 +146,11 @@ latex_documents = [
     (master_doc, "minos.tex", "Minos Broker Kafka Documentation", "Minos Framework Devs", "manual"),
 ]
 
-
 # -- Options for manual page output ------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [(master_doc, "minos", "Minos Broker Kafka Documentation", [author], 1)]
-
 
 # -- Options for Texinfo output ----------------------------------------
 

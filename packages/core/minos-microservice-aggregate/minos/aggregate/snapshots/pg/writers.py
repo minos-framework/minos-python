@@ -21,11 +21,12 @@ from minos.common import (
 )
 
 from ...events import (
+    Event,
     EventEntry,
     EventRepository,
 )
 from ...exceptions import (
-    AggregateNotFoundException,
+    NotFoundException,
     SnapshotRepositoryConflictException,
     TransactionNotFoundException,
 )
@@ -41,9 +42,8 @@ from .abc import (
 )
 
 if TYPE_CHECKING:
-    from ...models import (
-        Aggregate,
-        AggregateDiff,
+    from ...entities import (
+        RootEntity,
     )
     from .readers import (
         PostgreSqlSnapshotReader,
@@ -74,14 +74,14 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         self._event_repository = event_repository
         self._transaction_repository = transaction_repository
 
-    async def is_synced(self, aggregate_name: str, **kwargs) -> bool:
-        """Check if the snapshot has the latest version of an ``Aggregate`` instance.
+    async def is_synced(self, name: str, **kwargs) -> bool:
+        """Check if the snapshot has the latest version of a ``RootEntity`` instance.
 
-        :param aggregate_name: Class name of the ``Aggregate`` to be checked.
+        :param name: Class name of the ``RootEntity`` to be checked.
         :return: ``True`` if it has the latest version for the identifier or ``False`` otherwise.
         """
         offset = await self._load_offset(**kwargs)
-        iterable = self._event_repository.select(id_gt=offset, aggregate_name=aggregate_name, **kwargs)
+        iterable = self._event_repository.select(id_gt=offset, name=name, **kwargs)
         try:
             await iterable.__anext__()
             return False
@@ -131,42 +131,42 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         return snapshot_entry
 
     async def _submit_update_or_create(self, event_entry: EventEntry, **kwargs) -> SnapshotEntry:
-        aggregate = await self._build_aggregate(event_entry, **kwargs)
+        instance = await self._build_instance(event_entry, **kwargs)
 
-        snapshot_entry = SnapshotEntry.from_aggregate(aggregate, transaction_uuid=event_entry.transaction_uuid)
+        snapshot_entry = SnapshotEntry.from_root_entity(instance, transaction_uuid=event_entry.transaction_uuid)
         snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
         return snapshot_entry
 
-    async def _build_aggregate(self, event_entry: EventEntry, **kwargs) -> Aggregate:
-        diff = event_entry.aggregate_diff
+    async def _build_instance(self, event_entry: EventEntry, **kwargs) -> RootEntity:
+        diff = event_entry.event
 
         try:
             transaction = await self._transaction_repository.get(uuid=event_entry.transaction_uuid)
         except TransactionNotFoundException:
             transaction = None
 
-        aggregate = await self._update_if_exists(diff, transaction=transaction, **kwargs)
-        return aggregate
+        instance = await self._update_instance_if_exists(diff, transaction=transaction, **kwargs)
+        return instance
 
-    async def _update_if_exists(self, aggregate_diff: AggregateDiff, **kwargs) -> Aggregate:
+    async def _update_instance_if_exists(self, event: Event, **kwargs) -> RootEntity:
         # noinspection PyBroadException
         try:
             # noinspection PyTypeChecker
-            previous = await self._select_one_aggregate(aggregate_diff.uuid, aggregate_diff.name, **kwargs)
-        except AggregateNotFoundException:
+            previous = await self._select_one_instance(event.name, event.uuid, **kwargs)
+        except NotFoundException:
             # noinspection PyTypeChecker
-            aggregate_cls: Type[Aggregate] = import_module(aggregate_diff.name)
-            return aggregate_cls.from_diff(aggregate_diff, **kwargs)
+            cls: Type[RootEntity] = import_module(event.name)
+            return cls.from_diff(event, **kwargs)
 
-        if previous.version >= aggregate_diff.version:
-            raise SnapshotRepositoryConflictException(previous, aggregate_diff)
+        if previous.version >= event.version:
+            raise SnapshotRepositoryConflictException(previous, event)
 
-        previous.apply_diff(aggregate_diff)
+        previous.apply_diff(event)
         return previous
 
-    async def _select_one_aggregate(self, aggregate_uuid: UUID, aggregate_name: str, **kwargs) -> Aggregate:
-        snapshot_entry = await self._reader.get_entry(aggregate_name, aggregate_uuid, **kwargs)
-        return snapshot_entry.build_aggregate(**kwargs)
+    async def _select_one_instance(self, name: str, uuid: UUID, **kwargs) -> RootEntity:
+        snapshot_entry = await self._reader.get_entry(name, uuid, **kwargs)
+        return snapshot_entry.build(**kwargs)
 
     async def _submit_entry(self, snapshot_entry: SnapshotEntry, **kwargs) -> SnapshotEntry:
         params = snapshot_entry.as_raw()
@@ -186,10 +186,10 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
 
 
 _INSERT_ONE_SNAPSHOT_ENTRY_QUERY = """
-INSERT INTO snapshot (aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid)
+INSERT INTO snapshot (uuid, name, version, schema, data, created_at, updated_at, transaction_uuid)
 VALUES (
-    %(aggregate_uuid)s,
-    %(aggregate_name)s,
+    %(uuid)s,
+    %(name)s,
     %(version)s,
     %(schema)s,
     %(data)s,
@@ -197,7 +197,7 @@ VALUES (
     %(updated_at)s,
     %(transaction_uuid)s
 )
-ON CONFLICT (aggregate_uuid, transaction_uuid)
+ON CONFLICT (uuid, transaction_uuid)
 DO
    UPDATE SET version = %(version)s, schema = %(schema)s, data = %(data)s, updated_at = %(updated_at)s
 RETURNING created_at, updated_at;

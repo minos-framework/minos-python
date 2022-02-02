@@ -20,7 +20,7 @@ from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
     TRANSACTION_CONTEXT_VAR,
     Action,
-    AggregateDiff,
+    Event,
     EventEntry,
     EventRepository,
     EventRepositoryConflictException,
@@ -151,7 +151,7 @@ class TestEventRepository(MinosTestCase):
         self.event_repository._send_events = send_events_mock
 
         uuid = uuid4()
-        aggregate_diff = AggregateDiff(
+        event = Event(
             uuid=uuid,
             name="example.Car",
             version=2,
@@ -163,13 +163,13 @@ class TestEventRepository(MinosTestCase):
         validate_mock = AsyncMock(return_value=True)
         self.event_repository.validate = validate_mock
 
-        observed = await self.event_repository.submit(aggregate_diff)
+        observed = await self.event_repository.submit(event)
 
         self.assertEqual(1, send_events_mock.call_count)
 
         self.assertIsInstance(observed, EventEntry)
-        self.assertEqual(uuid, observed.aggregate_uuid)
-        self.assertEqual("example.Car", observed.aggregate_name)
+        self.assertEqual(uuid, observed.uuid)
+        self.assertEqual("example.Car", observed.name)
         self.assertEqual(56, observed.version)
         self.assertEqual(field_diff_container, FieldDiffContainer.from_avro_bytes(observed.data))
         self.assertEqual(12, observed.id)
@@ -197,7 +197,7 @@ class TestEventRepository(MinosTestCase):
         self.event_repository._send_events = send_events_mock
 
         uuid = uuid4()
-        aggregate_diff = AggregateDiff(
+        event = Event(
             uuid=uuid,
             name="example.Car",
             version=2,
@@ -209,13 +209,13 @@ class TestEventRepository(MinosTestCase):
         validate_mock = AsyncMock(return_value=True)
         self.event_repository.validate = validate_mock
 
-        observed = await self.event_repository.submit(aggregate_diff)
+        observed = await self.event_repository.submit(event)
 
         self.assertEqual(0, send_events_mock.call_count)
 
         self.assertIsInstance(observed, EventEntry)
-        self.assertEqual(uuid, observed.aggregate_uuid)
-        self.assertEqual("example.Car", observed.aggregate_name)
+        self.assertEqual(uuid, observed.uuid)
+        self.assertEqual("example.Car", observed.name)
         self.assertEqual(56, observed.version)
         self.assertEqual(field_diff_container, FieldDiffContainer.from_avro_bytes(observed.data))
         self.assertEqual(12, observed.id)
@@ -238,7 +238,7 @@ class TestEventRepository(MinosTestCase):
         self.event_repository._submit = submit_mock
 
         uuid = uuid4()
-        aggregate_diff = AggregateDiff(
+        event = Event(
             uuid=uuid,
             name="example.Car",
             version=2,
@@ -250,7 +250,7 @@ class TestEventRepository(MinosTestCase):
         validate_mock = AsyncMock(return_value=True)
         self.event_repository.validate = validate_mock
 
-        await self.event_repository.submit(aggregate_diff)
+        await self.event_repository.submit(event)
 
         observed = self.broker_publisher.messages
 
@@ -258,7 +258,7 @@ class TestEventRepository(MinosTestCase):
         self.assertIsInstance(observed[0], BrokerMessageV1)
         self.assertEqual("CarUpdated", observed[0].topic)
         self.assertEqual(
-            AggregateDiff(
+            Event(
                 uuid=uuid,
                 name="example.Car",
                 version=56,
@@ -271,7 +271,7 @@ class TestEventRepository(MinosTestCase):
         self.assertEqual("CarUpdated.colors.create", observed[1].topic)
         self.assertIsInstance(observed[1], BrokerMessageV1)
         self.assertEqual(
-            AggregateDiff(
+            Event(
                 uuid=uuid,
                 name="example.Car",
                 version=56,
@@ -297,8 +297,8 @@ class TestEventRepository(MinosTestCase):
         self.event_repository._submit = submit_mock
 
         uuid = uuid4()
-        aggregate_diff = EventEntry.from_aggregate_diff(
-            AggregateDiff(
+        event = EventEntry.from_event(
+            Event(
                 uuid=uuid,
                 name="example.Car",
                 version=2,
@@ -312,7 +312,7 @@ class TestEventRepository(MinosTestCase):
         validate_mock = AsyncMock(return_value=True)
         self.event_repository.validate = validate_mock
 
-        await self.event_repository.submit(aggregate_diff)
+        await self.event_repository.submit(event)
 
         observed = self.broker_publisher.messages
 
@@ -333,8 +333,8 @@ class TestEventRepository(MinosTestCase):
             await self.event_repository.submit(entry)
 
     async def test_submit_context_var(self):
-        mocked_aggregate_diff = AsyncMock()
-        mocked_aggregate_diff.action = Action.CREATE
+        mocked_event = AsyncMock()
+        mocked_event.action = Action.CREATE
 
         async def _fn(entry):
             self.assertEqual(True, IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get())
@@ -344,13 +344,13 @@ class TestEventRepository(MinosTestCase):
         self.event_repository._submit = mocked_submit
 
         self.assertEqual(False, IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get())
-        await self.event_repository.submit(mocked_aggregate_diff)
+        await self.event_repository.submit(mocked_event)
         self.assertEqual(False, IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get())
 
         self.assertEqual(1, mocked_submit.call_count)
 
     async def test_validate_true(self):
-        aggregate_uuid = uuid4()
+        uuid = uuid4()
         transaction_uuid = uuid4()
 
         events = []
@@ -362,12 +362,12 @@ class TestEventRepository(MinosTestCase):
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
-        entry = EventEntry(aggregate_uuid, "example.Car")
+        entry = EventEntry(uuid, "example.Car")
 
         self.assertTrue(await self.event_repository.validate(entry))
 
         self.assertEqual(
-            [call(aggregate_uuid=aggregate_uuid, transaction_uuid_in=(transaction_uuid,))],
+            [call(uuid=uuid, transaction_uuid_in=(transaction_uuid,))],
             select_event_mock.call_args_list,
         )
 
@@ -383,7 +383,7 @@ class TestEventRepository(MinosTestCase):
         )
 
     async def test_validate_with_skip(self):
-        aggregate_uuid = uuid4()
+        uuid = uuid4()
         transaction_uuid = uuid4()
         another_transaction_uuid = uuid4()
 
@@ -396,7 +396,7 @@ class TestEventRepository(MinosTestCase):
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
-        entry = EventEntry(aggregate_uuid, "example.Car")
+        entry = EventEntry(uuid, "example.Car")
         self.assertTrue(await self.event_repository.validate(entry, transaction_uuid_ne=transaction_uuid))
 
         self.assertEqual(
@@ -411,17 +411,17 @@ class TestEventRepository(MinosTestCase):
         )
 
         self.assertEqual(
-            [call(aggregate_uuid=aggregate_uuid, transaction_uuid_in=(another_transaction_uuid,))],
+            [call(uuid=uuid, transaction_uuid_in=(another_transaction_uuid,))],
             select_event_mock.call_args_list,
         )
 
     async def test_validate_false(self):
-        aggregate_uuid = uuid4()
+        uuid = uuid4()
         transaction_uuid = uuid4()
 
         events = [
-            EventEntry(aggregate_uuid, "example.Car", 1),
-            EventEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
+            EventEntry(uuid, "example.Car", 1),
+            EventEntry(uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
         ]
         transactions = [TransactionEntry(transaction_uuid, TransactionStatus.RESERVED)]
 
@@ -431,12 +431,12 @@ class TestEventRepository(MinosTestCase):
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
-        entry = EventEntry(aggregate_uuid, "example.Car")
+        entry = EventEntry(uuid, "example.Car")
 
         self.assertFalse(await self.event_repository.validate(entry))
 
         self.assertEqual(
-            [call(aggregate_uuid=aggregate_uuid, transaction_uuid_in=(transaction_uuid,))],
+            [call(uuid=uuid, transaction_uuid_in=(transaction_uuid,))],
             select_event_mock.call_args_list,
         )
 
@@ -464,20 +464,18 @@ class TestEventRepository(MinosTestCase):
         mock = MagicMock(return_value=FakeAsyncIterator(range(5)))
         self.event_repository._select = mock
 
-        aggregate_uuid = uuid4()
-        aggregate_name = "path.to.Aggregate"
+        uuid = uuid4()
+        name = "path.to.Product"
 
         transaction_uuid = uuid4()
-        iterable = self.event_repository.select(
-            aggregate_uuid=aggregate_uuid, aggregate_name=aggregate_name, id_gt=56, transaction_uuid=transaction_uuid
-        )
+        iterable = self.event_repository.select(uuid=uuid, name=name, id_gt=56, transaction_uuid=transaction_uuid)
         observed = [a async for a in iterable]
         self.assertEqual(list(range(5)), observed)
 
         self.assertEqual(1, mock.call_count)
         args = call(
-            aggregate_uuid=aggregate_uuid,
-            aggregate_name="path.to.Aggregate",
+            uuid=uuid,
+            name=name,
             version=None,
             version_lt=None,
             version_gt=None,
