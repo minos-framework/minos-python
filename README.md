@@ -67,22 +67,30 @@ The required environment to run this quickstart is the following:
 * A `postgres` instance available at `localhost:5432` with `foo_db` and `foobar_db` databases accessible with the `minos:min0s` credentials.
 * Two TCP sockets available to use at `localhost:4545` and `localhost:4546`.
 
-Note that these parameters can be configured on the `foo.yml` file.
+Note that these parameters can be configured on the `foo/config.yml` file.
 
 ### Configure a Microservice
 
-To keep things simpler, this quickstart will create a microservice assuming all the source code is stored on a single `foo.py` file. In addition to the source file, a `foo.yml` will contain all the configuration stuff.
+To keep things simpler, this quickstart will create a microservice assuming all the source code is stored on a single `foo/main.py` file. In addition to the source file, a `foo/config.yml` will contain all the configuration stuff.
 
-Create a `foo.yml` file and add the following lines:
+The directory structure will become:
+```shell
+.
+└── foo
+    ├── config.yml
+    └── main.py
+```
+
+Create a `foo/config.yml` file and add the following lines:
 <details>
-  <summary>Click to show the <code>foo.yml</code></summary>
+  <summary>Click to show the <code>foo/config.yml</code></summary>
 
 ```yaml
-# foo.yml
+# foo/config.yml
 
 service:
   name: foo
-  aggregate: foo.Foo
+  aggregate: main.Foo
   injections:
     lock_pool: minos.common.PostgreSqlLockPool
     postgresql_pool: minos.common.PostgreSqlPool
@@ -103,8 +111,8 @@ services:
   - minos.aggregate.TransactionService
   - minos.aggregate.SnapshotService
   - minos.saga.SagaService
-  - foo.FooCommandService
-  - foo.FooQueryService
+  - main.FooCommandService
+  - main.FooQueryService
 rest:
   host: 0.0.0.0
   port: 4545
@@ -138,10 +146,10 @@ saga:
 
 </details>
 
-Create a `foo.py` file and add the following content:
+Create a `foo/main.py` file and add the following content:
 
 ```python
-# foo.py
+# foo/main.py
 
 from pathlib import Path
 from minos.aggregate import Aggregate, RootEntity
@@ -166,14 +174,14 @@ class FooQueryService(QueryService):
 
 
 if __name__ == '__main__':
-    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo.yml")
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo/config.yml")
     launcher.launch()
 ```
 
 Execute the following command to start the microservice:
 
 ```shell
-python foo.py
+python foo/main.py
 ```
 
 ### Create an Aggregate
@@ -193,7 +201,7 @@ The way to model data in `minos` is highly inspired by the  [Event Sourcing](htt
 Here is an example of the creation the `Foo` aggregate. In this case, it has two attributes, a `bar` being a `str`, and a `foobar` being an optional reference to the external `FooBar` aggregate, which it is assumed that it has a `something` attribute.
 
 ```python
-# foo.py
+# foo/main.py
 
 from __future__ import annotations
 from typing import Optional
@@ -242,10 +250,10 @@ class FooAggregate(Aggregate[Foo]):
 ```
 
 <details>
-  <summary>Click to show the full <code>foo.py</code></summary>
+  <summary>Click to show the full <code>foo/main.py</code></summary>
 
 ```python
-# foo.py
+# foo/main.py
 
 from __future__ import annotations
 
@@ -307,7 +315,7 @@ class FooQueryService(QueryService):
 
 
 if __name__ == '__main__':
-    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo.yml")
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo/config.yml")
     launcher.launch()
 
 ```
@@ -319,7 +327,7 @@ if __name__ == '__main__':
 Here is an example of the definition of a command to create `Foo` instances. To do that, it is necessary to define a `CommandService` that contains the handling function. It will handle both the broker messages sent to the `"CreateFoo"` topic and the rest calls to the `"/foos"` path with the `"POST"` method. In this case, the handling function unpacks the `Request`'s content and then calls the `create` method from the `Aggregate`, which stores the `Foo` instance following an event-driven strategy (it also publishes the `"FooCreated"` event). Finally, a `Response` is returned to be handled by the external caller (another microservice or the API-gateway).
 
 ```python
-# foo.py
+# foo/main.py
 
 from minos.cqrs import CommandService
 from minos.networks import enroute, Request, Response
@@ -345,10 +353,10 @@ class FooCommandService(CommandService):
 ```
 
 <details>
-  <summary>Click to show the full <code>foo.py</code></summary>
+  <summary>Click to show the full <code>foo/main.py</code></summary>
 
 ```python
-# foo.py
+# foo/main.py
 
 from __future__ import annotations
 
@@ -426,7 +434,7 @@ class FooQueryService(QueryService):
 
 
 if __name__ == '__main__':
-    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo.yml")
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo/config.yml")
     launcher.launch()
 
 ```
@@ -436,7 +444,7 @@ if __name__ == '__main__':
 Execute the following command to start the microservice:
 
 ```shell
-python foo.py
+python foo/main.py
 ```
 
 To check that everything works fine, execute the following command:
@@ -462,7 +470,7 @@ Here is an example of the event and query handling. In this case, it must be def
 *Disclaimer*: A real `QueryService` implementation must populate a query-oriented database based on the events to which is subscribed to, and expose queries performed over that query-oriented database.
 
 ```python
-# foo.py
+# foo/main.py
 
 from minos.cqrs import QueryService
 from minos.networks import enroute, Request, Response
@@ -502,10 +510,10 @@ class FooQueryService(QueryService):
 ```
 
 <details>
-  <summary>Click to show the full <code>foo.py</code></summary>
+  <summary>Click to show the full <code>foo/main.py</code></summary>
 
 ```python
-# foo.py
+# foo/main.py
 
 from __future__ import annotations
 
@@ -612,7 +620,7 @@ class FooQueryService(QueryService):
 
 
 if __name__ == '__main__':
-    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo.yml")
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo/config.yml")
     launcher.launch()
 
 ```
@@ -622,7 +630,7 @@ if __name__ == '__main__':
 Execute the following command to start the microservice:
 
 ```shell
-python foo.py
+python foo/main.py
 ```
 
 Now, if a new instance is created (with a rest call, like in the [previous section](#Expose a Command)), the `FooCreated` event will be handled and the microservice's console will print something like:
@@ -635,7 +643,7 @@ A Foo was created: Event(...)
 Here is an example of the interaction between two microservices through a SAGA pattern. In this case, the interaction starts with a call to the `"/foos/add-foobar"` path and the `"POST"` method, which performs a `SagaManager` run over the `ADD_FOOBAR_SAGA` saga. This saga has two steps, one remote that executes the `"CreateFooBar"` command (possibly defined on the supposed `"foobar"` microservice), and a local step that is executed on this microservice. The `CreateFooBarDTO` defines the structure of the request to be sent when the `"CreateFooBar"` command is executed.
 
 ```python
-# foo.py
+# foo/main.py
 
 from minos.common import ModelType
 from minos.cqrs import CommandService
@@ -693,10 +701,10 @@ ADD_FOOBAR_SAGA = (
 ```
 
 <details>
-  <summary>Click to show the full <code>foo.py</code></summary>
+  <summary>Click to show the full <code>foo/main.py</code></summary>
 
 ```python
-# foo.py
+# foo/main.py
 
 from __future__ import annotations
 
@@ -849,7 +857,7 @@ class FooQueryService(QueryService):
 
 
 if __name__ == '__main__':
-    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foo.yml")
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
     launcher.launch()
 
 ```
@@ -859,23 +867,34 @@ if __name__ == '__main__':
 Execute the following command to start the `foo` microservice:
 
 ```shell
-python foo.py
+python foo/main.py
 ```
 
 **Disclaimer**: Note that in this case another microservice is needed to complete the saga.
 
 #### The `foobar` Microservice
 
-Here is the `foobar.yml` config file:
+The directory structure will become:
+```shell
+.
+├── foo
+│   ├── config.yml
+│   └── main.py
+└── foobar
+    ├── config.yml
+    └── main.py
+```
+
+Here is the `foobar/config.yml` config file:
 <details>
-  <summary>Click to show the <code>foobar.yml</code></summary>
+  <summary>Click to show the <code>foobar/config.yml</code></summary>
 
 ```yaml
-# foobar.yml
+# foobar/config.yml
 
 service:
   name: foobar
-  aggregate: foobar.FooBar
+  aggregate: main.FooBar
   injections:
     lock_pool: minos.common.PostgreSqlLockPool
     postgresql_pool: minos.common.PostgreSqlPool
@@ -896,7 +915,7 @@ services:
   - minos.aggregate.TransactionService
   - minos.aggregate.SnapshotService
   - minos.saga.SagaService
-  - foobar.FooBarCommandService
+  - main.FooBarCommandService
 rest:
   host: 0.0.0.0
   port: 4546
@@ -930,9 +949,9 @@ saga:
 
 </details>
 
-Here is the `foobar.py` config file:
+Here is the `foobar/main.py` config file:
 <details>
-  <summary>Click to show the <code>foobar.py</code></summary>
+  <summary>Click to show the <code>foobar/main.py</code></summary>
 
 ```python
 from __future__ import annotations
@@ -985,7 +1004,7 @@ class FooBarCommandService(CommandService):
 
 
 if __name__ == '__main__':
-    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "foobar.yml")
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
     launcher.launch()
 
 ```
@@ -995,7 +1014,7 @@ if __name__ == '__main__':
 Execute the following command to start the `foobar` microservice:
 
 ```shell
-python foobar.py
+python foobar/main.py
 ```
 
 
