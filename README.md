@@ -74,6 +74,7 @@ Note that these parameters can be configured on the `foo/config.yml` file.
 To keep things simpler, this quickstart will create a microservice assuming all the source code is stored on a single `foo/main.py` file. In addition to the source file, a `foo/config.yml` will contain all the configuration stuff.
 
 The directory structure will become:
+
 ```shell
 .
 └── foo
@@ -317,7 +318,6 @@ class FooQueryService(QueryService):
 if __name__ == '__main__':
     launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
     launcher.launch()
-
 ```
 
 </details>
@@ -436,7 +436,6 @@ class FooQueryService(QueryService):
 if __name__ == '__main__':
     launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
     launcher.launch()
-
 ```
 
 </details>
@@ -448,6 +447,7 @@ python foo/main.py
 ```
 
 To check that everything works fine, execute the following command:
+
 ```shell
 curl --location --request POST 'http://localhost:4545/foos' \
 --header 'Content-Type: application/json' \
@@ -457,9 +457,10 @@ curl --location --request POST 'http://localhost:4545/foos' \
 ```
 
 And the expected response will be similar to:
+
 ```json
 {
-    "uuid": "YOUR_UUID"
+  "uuid": "YOUR_UUID"
 }
 ```
 
@@ -620,10 +621,8 @@ class FooQueryService(QueryService):
 
 
 if __name__ == '__main__':
-    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "
-    config.yml")
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
     launcher.launch()
-
 ```
 
 </details>
@@ -635,6 +634,7 @@ python foo/main.py
 ```
 
 Now, if a new instance is created (with a rest call, like in the [previous section](#Expose a Command)), the `FooCreated` event will be handled and the microservice's console will print something like:
+
 ```
 A Foo was created: Event(...)
 ```
@@ -692,11 +692,11 @@ CreateFooBarDTO = ModelType.build("AnotherDTO", {"number": int, "text": str})
 ADD_FOOBAR_SAGA = (
     Saga()
         .remote_step()
-            .on_execute(_create_foobar)
-            .on_success(_success_foobar)
-            .on_error(_error_foobar)
+        .on_execute(_create_foobar)
+        .on_success(_success_foobar)
+        .on_error(_error_foobar)
         .local_step()
-            .on_execute(_update_foo)
+        .on_execute(_update_foo)
         .commit()
 )
 ```
@@ -815,11 +815,11 @@ CreateFooBarDTO = ModelType.build("AnotherDTO", {"number": int, "text": str})
 ADD_FOOBAR_SAGA = (
     Saga()
         .remote_step()
-            .on_execute(_create_foobar)
-            .on_success(_success_foobar)
-            .on_error(_error_foobar)
+        .on_execute(_create_foobar)
+        .on_success(_success_foobar)
+        .on_error(_error_foobar)
         .local_step()
-            .on_execute(_update_foo)
+        .on_execute(_update_foo)
         .commit()
 )
 
@@ -875,6 +875,7 @@ python foo/main.py
 #### The `foobar` Microservice
 
 The directory structure will become:
+
 ```shell
 .
 ├── foo
@@ -949,7 +950,7 @@ saga:
 
 </details>
 
-Here is the `foobar/main.py` config file:
+Here is the `foobar/main.py` source file:
 <details>
   <summary>Click to show the full file</summary>
 
@@ -973,7 +974,7 @@ class FooBar(RootEntity):
 
 class FooBarAggregate(Aggregate[FooBar]):
     """FooBar Aggregate class."""
-    
+
     @staticmethod
     async def create_foobar(something: str) -> UUID:
         """Create a new ``FooBar`` instance.
@@ -1017,8 +1018,8 @@ Execute the following command to start the `foobar` microservice:
 python foobar/main.py
 ```
 
-
 To check that everything works fine, execute the following command:
+
 ```shell
 curl --location --request POST 'http://localhost:4545/foos/add-foobar' \
 --header 'Content-Type: application/json' \
@@ -1029,6 +1030,7 @@ curl --location --request POST 'http://localhost:4545/foos/add-foobar' \
 ```
 
 This request will start a new Saga, that sends a command to the `foobar` microservice, retrieve the `FooBar` identifier and update the `Foo` instance. After that, the `FooQueryService` will handle the update event and print a message similar to this one on the console.
+
 ```
 The 'foobar' field of a Foo was updated: Event(...)
 ```
