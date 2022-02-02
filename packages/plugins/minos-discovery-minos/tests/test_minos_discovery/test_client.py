@@ -8,8 +8,10 @@ from unittest.mock import (
 )
 
 from minos.networks import (
-    MinosDiscoveryClient,
     MinosDiscoveryConnectorException,
+)
+from minos.plugins.minos_discovery import (
+    MinosDiscoveryClient,
 )
 
 _Response = namedtuple("Response", ["ok"])
@@ -52,16 +54,8 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, mock.call_args)
 
     @patch("aiohttp.ClientSession.post")
-    async def test_subscribe_raises_failure(self, mock):
+    async def test_subscribe_raises(self, mock):
         mock.return_value.__aenter__ = _fn_failure
-
-        with self.assertRaises(MinosDiscoveryConnectorException):
-            await self.client.subscribe("56.56.56.56", 56, "test", [{"url": "/foo", "method": "POST"}], retry_delay=0)
-        self.assertEqual(3, mock.call_count)
-
-    @patch("aiohttp.ClientSession.post")
-    async def test_subscribe_raises_exception(self, mock):
-        mock.return_value.__aenter__ = _fn_raises
 
         with self.assertRaises(MinosDiscoveryConnectorException):
             await self.client.subscribe("56.56.56.56", 56, "test", [{"url": "/foo", "method": "POST"}], retry_delay=0)
@@ -76,16 +70,8 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(call("http://123.456.123.1:1234/microservices/test"), mock.call_args)
 
     @patch("aiohttp.ClientSession.delete")
-    async def test_unsubscribe_raises_failure(self, mock):
+    async def test_unsubscribe_raises(self, mock):
         mock.return_value.__aenter__ = _fn_failure
-
-        with self.assertRaises(MinosDiscoveryConnectorException):
-            await self.client.unsubscribe("test", retry_delay=0)
-        self.assertEqual(3, mock.call_count)
-
-    @patch("aiohttp.ClientSession.delete")
-    async def test_unsubscribe_raises_exception(self, mock):
-        mock.return_value.__aenter__ = _fn_raises
 
         with self.assertRaises(MinosDiscoveryConnectorException):
             await self.client.unsubscribe("test", retry_delay=0)

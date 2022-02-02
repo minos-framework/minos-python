@@ -68,8 +68,8 @@ from .decorators import (
 from .discovery import (
     DiscoveryClient,
     DiscoveryConnector,
+    InMemoryDiscoveryClient,
     KongDiscoveryClient,
-    MinosDiscoveryClient,
 )
 from .exceptions import (
     MinosActionNotFoundException,

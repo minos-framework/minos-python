@@ -1,6 +1,6 @@
 import logging
 
-from .abc import (
+from minos.networks import (
     DiscoveryClient,
 )
 
@@ -19,7 +19,7 @@ class MinosDiscoveryClient(DiscoveryClient):
         retry_tries: int = 3,
         retry_delay: float = 5,
     ) -> None:
-        """Perform a subscription query.
+        """Perform the subscription query.
 
         :param host: The ip of the microservice to be subscribed.
         :param port: The port of the microservice to be subscribed.
@@ -39,7 +39,7 @@ class MinosDiscoveryClient(DiscoveryClient):
         await self._rest_subscribe(endpoint, service_metadata, host, port, name, endpoints, retry_tries, retry_delay)
 
     async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> None:
-        """Perform an unsubscribe query.
+        """Perform the unsubscription query.
 
         :param name: The name of the microservice to be unsubscribed.
         :param retry_tries: Number of attempts before raising a failure exception.

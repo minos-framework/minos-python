@@ -26,4 +26,7 @@ docs:
 	$(MAKE) --directory=packages/plugins/minos-broker-kafka install docs
 	cp -R packages/plugins/minos-broker-kafka/docs/_build/html $(DOCS_TARGET)/plugins/minos-broker-kafka
 
+	$(MAKE) --directory=packages/plugins/minos-discovery-minos install docs
+	cp -R packages/plugins/minos-discovery-minos/docs/_build/html $(DOCS_TARGET)/plugins/minos-discovery-minos
+
 	poetry run $(MAKE) --directory=docs html

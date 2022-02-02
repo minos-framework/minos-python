@@ -1,7 +1,7 @@
 from .clients import (
     DiscoveryClient,
+    InMemoryDiscoveryClient,
     KongDiscoveryClient,
-    MinosDiscoveryClient,
 )
 from .connectors import (
     DiscoveryConnector,
