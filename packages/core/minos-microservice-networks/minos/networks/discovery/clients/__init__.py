@@ -4,3 +4,6 @@ from .abc import (
 from .kong import (
     KongDiscoveryClient,
 )
+from .memory import (
+    InMemoryDiscoveryClient,
+)

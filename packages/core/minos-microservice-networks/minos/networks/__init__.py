@@ -68,6 +68,7 @@ from .decorators import (
 from .discovery import (
     DiscoveryClient,
     DiscoveryConnector,
+    InMemoryDiscoveryClient,
     KongDiscoveryClient,
 )
 from .exceptions import (
