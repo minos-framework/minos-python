@@ -1,0 +1,33 @@
+name: "Publish: minos-broker-kafka"
+
+on:
+  push:
+    branches:
+      - '*.*.x'
+    paths:
+      - 'packages/plugins/minos-broker-kafka/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container: python:3.9-buster
+    defaults:
+      run:
+        working-directory: packages/plugins/minos-broker-kafka
+
+    steps:
+
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.1.4
+
+      - name: Install dependencies
+        run: make install
+
+      - name: Publish package
+        run: make release
+        env:
+          POETRY_HTTP_BASIC_PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          POETRY_HTTP_BASIC_PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}

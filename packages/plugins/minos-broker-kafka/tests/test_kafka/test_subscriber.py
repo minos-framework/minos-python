@@ -17,16 +17,18 @@ from kafka import (
 from minos.common import (
     MinosConfig,
 )
+from minos.kafka import (
+    InMemoryQueuedKafkaBrokerSubscriberBuilder,
+    KafkaBrokerSubscriber,
+    KafkaBrokerSubscriberBuilder,
+    PostgreSqlQueuedKafkaBrokerSubscriberBuilder,
+)
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerSubscriber,
     InMemoryBrokerSubscriberQueue,
-    InMemoryQueuedKafkaBrokerSubscriberBuilder,
-    KafkaBrokerSubscriber,
-    KafkaBrokerSubscriberBuilder,
     PostgreSqlBrokerSubscriberQueue,
-    PostgreSqlQueuedKafkaBrokerSubscriberBuilder,
     QueuedBrokerSubscriber,
 )
 from tests.utils import (

@@ -23,4 +23,7 @@ docs:
 	$(MAKE) --directory=packages/core/minos-microservice-saga install docs
 	cp -R packages/core/minos-microservice-saga/docs/_build/html $(DOCS_TARGET)/core/minos-microservice-saga
 
+	$(MAKE) --directory=packages/plugins/minos-broker-kafka install docs
+	cp -R packages/plugins/minos-broker-kafka/docs/_build/html $(DOCS_TARGET)/plugins/minos-broker-kafka
+
 	poetry run $(MAKE) --directory=docs html
