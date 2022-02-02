@@ -451,7 +451,7 @@ curl --location --request POST 'http://localhost:4545/foos' \
 And the expected response will be similar to:
 ```json
 {
-    "uuid": "707278ab-2464-45de-8290-e22a50dee863"
+    "uuid": "ADD_YOUR_UUID"
 }
 ```
 
@@ -1004,7 +1004,7 @@ To check that everything works fine, execute the following command:
 curl --location --request POST 'http://localhost:4545/foos/add-foobar' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "uuid": "e92dd66d-5a46-4ad3-a3ae-7576456138ea",
+    "uuid": "ADD_YOUR_UUID",
     "something": "something"
 }'
 ```
