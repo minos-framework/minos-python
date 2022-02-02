@@ -874,6 +874,8 @@ python foo/main.py
 
 #### The `foobar` Microservice
 
+The `foobar` microservice will simply have a `CreateFooBar` command to create new instances of its `FooBar` root entity.
+
 The directory structure will become:
 
 ```shell
