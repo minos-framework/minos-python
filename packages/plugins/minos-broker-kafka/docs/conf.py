@@ -23,7 +23,10 @@ import sys
 sys.path.insert(0, os.path.abspath(".."))
 
 import sphinx_rtd_theme  # noqa
-from minos.plugins import kafka
+
+from minos.plugins import (
+    kafka,
+)
 
 # -- General configuration ---------------------------------------------
 
