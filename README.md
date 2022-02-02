@@ -16,6 +16,11 @@
 
 Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python. Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an asynchronous environment.
 
+### Roadmap
+
+#### 0.6.x
+* [TODO]
+
 ## Foundational Patterns
 
 The `minos` framework is built strongly inspired by the following set of patterns:
@@ -40,6 +45,14 @@ The `minos` framework is built strongly inspired by the following set of pattern
 ### Guided installation
 
 The easiest way to use `minos` is with the help of the [`minos-cli`](https://github.com/minos-framework/minos-cli), which provides commands to setup both the project skeleton (configures containerization, databases, brokers, etc.) and the microservice skeleton (the base microservice structure, environment configuration, etc.)
+
+Here is a summary containing the most useful commands:
+
+* `minos new project NAME`: Create a new Project
+* `minos set RESOURCE BACKEND`: Configure an environment resource (broker, database, etc.).
+* `minos deploy project`: Deploy a project.
+* `minos new microservice NAME`: Create a new microservice.
+* `minos deploy microservice` deploy a microservice.
 
 ### Manual installation
 
