@@ -30,55 +30,54 @@ from ..transactions import (
 )
 
 if TYPE_CHECKING:
-    from ..models import (
-        Aggregate,
+    from ..entities import (
+        RootEntity,
     )
 
 
 class SnapshotRepository(ABC, MinosSetup):
     """Base Snapshot class.
 
-    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
+    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
+    class.
     """
 
-    async def get(
-        self, aggregate_name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs
-    ) -> Aggregate:
-        """Get an aggregate instance from its identifier.
+    async def get(self, name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs) -> RootEntity:
+        """Get a ``RootEntity`` instance from its identifier.
 
-        :param aggregate_name: Class name of the ``Aggregate``.
-        :param uuid: Identifier of the ``Aggregate``.
+        :param name: Class name of the ``RootEntity``.
+        :param uuid: Identifier of the ``RootEntity``.
         :param transaction: The transaction within the operation is performed. If not any value is provided, then the
             transaction is extracted from the context var. If not any transaction is being scoped then the query is
             performed to the global snapshot.
         :param kwargs: Additional named arguments.
-        :return: The ``Aggregate`` instance.
+        :return: The ``RootEntity`` instance.
         """
         if transaction is None:
             transaction = TRANSACTION_CONTEXT_VAR.get()
 
         await self.synchronize(**kwargs)
 
-        return await self._get(aggregate_name=aggregate_name, uuid=uuid, transaction=transaction, **kwargs)
+        return await self._get(name=name, uuid=uuid, transaction=transaction, **kwargs)
 
     @abstractmethod
-    async def _get(self, *args, **kwargs) -> Aggregate:
+    async def _get(self, *args, **kwargs) -> RootEntity:
         raise NotImplementedError
 
     async def find(
         self,
-        aggregate_name: str,
+        name: str,
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
         transaction: Optional[TransactionEntry] = None,
         **kwargs,
-    ) -> AsyncIterator[Aggregate]:
-        """Find a collection of ``Aggregate`` instances based on a ``Condition``.
+    ) -> AsyncIterator[RootEntity]:
+        """Find a collection of ``RootEntity`` instances based on a ``Condition``.
 
-        :param aggregate_name: Class name of the ``Aggregate``.
-        :param condition: The condition that must be satisfied by the ``Aggregate`` instances.
+        :param name: Class name of the ``RootEntity``.
+        :param condition: The condition that must be satisfied by the ``RootEntity`` instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
@@ -89,7 +88,7 @@ class SnapshotRepository(ABC, MinosSetup):
             transaction is extracted from the context var. If not any transaction is being scoped then the query is
             performed to the global snapshot.
         :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that containing the ``Aggregate`` instances.
+        :return: An asynchronous iterator that containing the ``RootEntity`` instances.
         """
         if transaction is None:
             transaction = TRANSACTION_CONTEXT_VAR.get()
@@ -97,7 +96,7 @@ class SnapshotRepository(ABC, MinosSetup):
         await self.synchronize(**kwargs)
 
         iterable = self._find(
-            aggregate_name=aggregate_name,
+            name=name,
             condition=condition,
             ordering=ordering,
             limit=limit,
@@ -106,11 +105,11 @@ class SnapshotRepository(ABC, MinosSetup):
             **kwargs,
         )
 
-        async for aggregate in iterable:
-            yield aggregate
+        async for instance in iterable:
+            yield instance
 
     @abstractmethod
-    def _find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
+    def _find(self, *args, **kwargs) -> AsyncIterator[RootEntity]:
         raise NotImplementedError
 
     def synchronize(self, **kwargs) -> Awaitable[None]:

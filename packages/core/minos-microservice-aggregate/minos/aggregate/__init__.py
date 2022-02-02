@@ -2,47 +2,52 @@ __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
 __version__ = "0.4.1"
 
+from .actions import (
+    Action,
+)
+from .aggregate import (
+    Aggregate,
+)
+from .collections import (
+    IncrementalSet,
+    IncrementalSetDiff,
+    IncrementalSetDiffEntry,
+)
 from .contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
+from .entities import (
+    Entity,
+    EntitySet,
+    ExternalEntity,
+    Ref,
+    RefExtractor,
+    RefInjector,
+    RefResolver,
+    RootEntity,
+)
 from .events import (
+    Event,
     EventEntry,
     EventRepository,
+    FieldDiff,
+    FieldDiffContainer,
+    IncrementalFieldDiff,
     InMemoryEventRepository,
     PostgreSqlEventRepository,
 )
 from .exceptions import (
     AggregateException,
-    AggregateNotFoundException,
-    DeletedAggregateException,
+    AlreadyDeletedException,
     EventRepositoryConflictException,
     EventRepositoryException,
+    NotFoundException,
     SnapshotRepositoryConflictException,
     SnapshotRepositoryException,
     TransactionNotFoundException,
     TransactionRepositoryConflictException,
     TransactionRepositoryException,
     ValueObjectException,
-)
-from .models import (
-    Action,
-    Aggregate,
-    AggregateDiff,
-    AggregateRef,
-    Entity,
-    EntitySet,
-    FieldDiff,
-    FieldDiffContainer,
-    IncrementalFieldDiff,
-    IncrementalSet,
-    IncrementalSetDiff,
-    IncrementalSetDiffEntry,
-    ModelRef,
-    ModelRefExtractor,
-    ModelRefInjector,
-    ModelRefResolver,
-    ValueObject,
-    ValueObjectSet,
 )
 from .queries import (
     Condition,
@@ -67,4 +72,8 @@ from .transactions import (
     TransactionRepository,
     TransactionService,
     TransactionStatus,
+)
+from .value_objects import (
+    ValueObject,
+    ValueObjectSet,
 )
