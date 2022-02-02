@@ -1,4 +1,4 @@
-name: "Test: minos-microservice-saga"
+name: "Test: minos-broker-kafka"
 
 on:
   push:
@@ -39,7 +39,7 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./packages/core/minos-microservice-saga/coverage.xml
+          files: ./packages/plugins/minos-broker-kafka/coverage.xml
           fail_ci_if_error: true
 
       - name: Generate documentation
