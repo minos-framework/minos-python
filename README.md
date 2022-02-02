@@ -48,8 +48,6 @@ The `minos` framework is built strongly inspired by the following set of pattern
 
 ## Installation
 
-### Guided installation
-
 The easiest way to manage a project is with the `minos` command-line interface, which provides commands to setup both the project skeleton (configures containerization, databases, brokers, etc.) and the microservice skeleton (the base microservice structure, environment configuration, etc.).
 
 You can install it with:
@@ -68,7 +66,22 @@ Here is a summary containing the most useful commands:
 
 For more information, visit the [`minos-cli`](https://github.com/minos-framework/minos-cli) repository.
 
-### Manual installation
+## QuickStart
+
+This section includes a quickstart guide to create your first `minos` microservice, so that anyone can get the gist of the framework.
+
+### Set up the environment
+
+The required environment to run this quickstart is the following:
+
+* A `python>=3.9` interpreter with version equal or greater to .
+* A `kafka` instance available at `localhost:9092`
+* A `postgres` instance available at `localhost:5432` with the `foo_db` and `foobar_db` databases accessible with the `user:pass` credentials.
+* Two TCP sockets available to use at `localhost:4545` and `localhost:4546`.
+
+Note that these parameters can be customized on the configuration files.
+
+###  Install the dependencies
 
 If you want to directly use `minos` without the command-line utility, the following command will install the needed packages:
 
@@ -78,23 +91,10 @@ pip install \
   minos-microservice-common \
   minos-microservice-cqrs \
   minos-microservice-networks \
-  minos-microservice-saga
+  minos-microservice-saga \ 
+  minos-broker-kafka
 ```
 
-## QuickStart
-
-This section includes a quickstart guide to create your first `minos` microservice, so that anyone can get the gist of the framework.
-
-#### Setting up the environment
-
-The required environment to run this quickstart is the following:
-
-* A `python>=3.9` interpreter with version equal or greater to .
-* A `kafka` instance available at `localhost:9092`
-* A `postgres` instance available at `localhost:5432` with the `foo_db` and `foobar_db` databases accessible with the `user:pass` credentials.
-* Two TCP sockets available to use at `localhost:4545` and `localhost:4546`.
-
-Note that these parameters can be configured on the `foo/config.yml` file.
 
 ### Configure a Microservice
 
@@ -122,13 +122,14 @@ service:
   injections:
     lock_pool: minos.common.PostgreSqlLockPool
     postgresql_pool: minos.common.PostgreSqlPool
-    broker_publisher: minos.networks.PostgreSqlQueuedKafkaBrokerPublisher
-    broker_subscriber_builder: minos.networks.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
+    broker_publisher: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerPublisher
+    broker_subscriber_builder: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
     broker_pool: minos.networks.BrokerClientPool
     transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
     event_repository: minos.aggregate.PostgreSqlEventRepository
     snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
     saga_manager: minos.saga.SagaManager
+    discovery: minos.networks.DiscoveryConnector
   services:
     - minos.networks.BrokerHandlerService
     - minos.networks.RestService
@@ -170,6 +171,10 @@ snapshot:
 saga:
   storage:
     path: "./foo.lmdb"
+discovery:
+  client: minos.networks.InMemoryDiscoveryClient
+  host: localhost
+  port: 5567
 ```
 
 </details>
@@ -940,13 +945,14 @@ service:
   injections:
     lock_pool: minos.common.PostgreSqlLockPool
     postgresql_pool: minos.common.PostgreSqlPool
-    broker_publisher: minos.networks.PostgreSqlQueuedKafkaBrokerPublisher
-    broker_subscriber_builder: minos.networks.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
+    broker_publisher: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerPublisher
+    broker_subscriber_builder: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
     broker_pool: minos.networks.BrokerClientPool
     transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
     event_repository: minos.aggregate.PostgreSqlEventRepository
     snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
     saga_manager: minos.saga.SagaManager
+    discovery: minos.networks.DiscoveryConnector
   services:
     - minos.networks.BrokerHandlerService
     - minos.networks.RestService
@@ -987,6 +993,10 @@ snapshot:
 saga:
   storage:
     path: "./foobar.lmdb"
+discovery:
+  client: minos.networks.InMemoryDiscoveryClient
+  host: localhost
+  port: 5567
 ```
 
 </details>
@@ -1094,7 +1104,8 @@ The core packages provide the base implementation of the framework.
 
 The plugin packages provide connectors to external technologies like brokers, discovery services, databases, serializers and so on.
 
-* Coming soon...
+* [minos-broker-kafka](https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-kafka): The networks core.
+* [minos-discovery-minos](https://minos-framework.github.io/minos-python/packages/plugins/minos-discovery-minos): The SAGA pattern implementation.
 
 ## Documentation
 
