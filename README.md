@@ -466,7 +466,7 @@ And the expected response will be similar to:
 
 ### Subscribe to an Event and Expose a Query
 
-Here is an example of the event and query handling. In this case, it must be defined on a `QueryService` class. In this case a `"FooCreated"` event is handled (and only a `print` of the content is performed). The event contents typically contains instances of `AggregateDiff` type, which is referred to the difference respect to the previously stored instance. The exposed query is connected to the calls that come from the `"/foos/example"` path and `"GET"` method and a naive string is returned.
+Here is an example of the event and query handling. In this case, it must be defined on a `QueryService` class. In this case a `"FooCreated"` and `"FooUpdated.foobar"` events are handled (they will print the content on the microservice's logs). The event contents typically contains instances of `AggregateDiff` type, which is referred to the difference respect to the previously stored instance. The exposed query is connected to the calls that come from the `"/foos/example"` path and `"GET"` method and a naive string is returned.
 
 *Disclaimer*: A real `QueryService` implementation must populate a query-oriented database based on the events to which is subscribed to, and expose queries performed over that query-oriented database.
 
@@ -637,6 +637,18 @@ Now, if a new instance is created (with a rest call, like in the [previous secti
 
 ```
 A Foo was created: Event(...)
+```
+
+Also, to check that everything is fine the example query can be executed with:
+
+```shell
+curl --location --request GET 'http://localhost:4545/foos/example'
+```
+
+And the expected result should be something like:
+
+```
+"This is an example response!"
 ```
 
 ### Interact with another Microservice
