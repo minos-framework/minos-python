@@ -439,6 +439,22 @@ Execute the following command to start the microservice:
 python foo.py
 ```
 
+To check that everything works fine, execute the following command:
+```shell
+curl --location --request POST 'http://localhost:4545/foos' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "bar": "test"
+}'
+```
+
+And the expected response will be similar to:
+```json
+{
+    "uuid": "707278ab-2464-45de-8290-e22a50dee863"
+}
+```
+
 ### Subscribe to an Event and Expose a Query
 
 Here is an example of the event and query handling. In this case, it must be defined on a `QueryService` class. In this case a `"FooCreated"` event is handled (and only a `print` of the content is performed). The event contents typically contains instances of `AggregateDiff` type, which is referred to the difference respect to the previously stored instance. The exposed query is connected to the calls that come from the `"/foos/example"` path and `"GET"` method and a naive string is returned.
@@ -459,11 +475,21 @@ class FooQueryService(QueryService):
     async def foo_created(self, request: Request) -> None:
         """Handle the "FooCreated" event.
 
-        :param request: The ``Request`` that contains the ``bar`` attribute.
+        :param request: The ``Request`` that contains a ``Event``.
         :return: This method does not return anything.
         """
-        diff = await request.content()
-        print(f"A Foo was created: {diff}")
+        event = await request.content()
+        print(f"A Foo was created: {event}")
+
+    @enroute.broker.event("FooUpdated.foobar")
+    async def foo_foobar_updated(self, request: Request) -> None:
+        """Handle the "FooUpdated.foobar" event.
+
+        :param request: The ``Request`` that contains a ``Event``.
+        :return: This method does not return anything.
+        """
+        event = await request.content()
+        print(f"The 'foobar' field of a Foo was updated: {event}")
 
     @enroute.rest.query("/foos/example", "GET")
     async def example(self, request: Request) -> Response:
@@ -559,11 +585,21 @@ class FooQueryService(QueryService):
     async def foo_created(self, request: Request) -> None:
         """Handle the "FooCreated" event.
 
-        :param request: The ``Request`` that contains the ``bar`` attribute.
+        :param request: The ``Request`` that contains a ``Event``.
         :return: This method does not return anything.
         """
-        diff = await request.content()
-        print(f"A Foo was created: {diff}")
+        event = await request.content()
+        print(f"A Foo was created: {event}")
+
+    @enroute.broker.event("FooUpdated.foobar")
+    async def foo_foobar_updated(self, request: Request) -> None:
+        """Handle the "FooUpdated.foobar" event.
+
+        :param request: The ``Request`` that contains a ``Event``.
+        :return: This method does not return anything.
+        """
+        event = await request.content()
+        print(f"The 'foobar' field of a Foo was updated: {event}")
 
     @enroute.rest.query("/foos/example", "GET")
     async def example(self, request: Request) -> Response:
@@ -587,6 +623,11 @@ Execute the following command to start the microservice:
 
 ```shell
 python foo.py
+```
+
+Now, if a new instance is created (with a rest call, like in the [previous section](#Expose a Command)), the `FooCreated` event will be handled and the microservice's console will print something like:
+```
+A Foo was created: Event(...)
 ```
 
 ### Interact with another Microservice
@@ -781,11 +822,21 @@ class FooQueryService(QueryService):
     async def foo_created(self, request: Request) -> None:
         """Handle the "FooCreated" event.
 
-        :param request: The ``Request`` that contains the ``bar`` attribute.
+        :param request: The ``Request`` that contains a ``Event``.
         :return: This method does not return anything.
         """
-        diff = await request.content()
-        print(f"A Foo was created: {diff}")
+        event = await request.content()
+        print(f"A Foo was created: {event}")
+
+    @enroute.broker.event("FooUpdated.foobar")
+    async def foo_foobar_updated(self, request: Request) -> None:
+        """Handle the "FooUpdated.foobar" event.
+
+        :param request: The ``Request`` that contains a ``Event``.
+        :return: This method does not return anything.
+        """
+        event = await request.content()
+        print(f"The 'foobar' field of a Foo was updated: {event}")
 
     @enroute.rest.query("/foos/example", "GET")
     async def example(self, request: Request) -> Response:
@@ -946,6 +997,23 @@ Execute the following command to start the `foobar` microservice:
 ```shell
 python foobar.py
 ```
+
+
+To check that everything works fine, execute the following command:
+```shell
+curl --location --request POST 'http://localhost:4545/foos/add-foobar' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "uuid": "e92dd66d-5a46-4ad3-a3ae-7576456138ea",
+    "something": "something"
+}'
+```
+
+This request will start a new Saga, that sends a command to the `foobar` microservice, retrieve the `FooBar` identifier and update the `Foo` instance. After that, the `FooQueryService` will handle the update event and print a message similar to this one on the console.
+```
+The 'foobar' field of a Foo was updated: Event(...)
+```
+
 
 ## Packages
 
