@@ -83,7 +83,7 @@ The directory structure will become:
 
 Create a `foo/config.yml` file and add the following lines:
 <details>
-  <summary>Click to show the <code>foo/config.yml</code></summary>
+  <summary>Click to show the full file</summary>
 
 ```yaml
 # foo/config.yml
@@ -250,7 +250,7 @@ class FooAggregate(Aggregate[Foo]):
 ```
 
 <details>
-  <summary>Click to show the full <code>foo/main.py</code></summary>
+  <summary>Click to show the full file</summary>
 
 ```python
 # foo/main.py
@@ -353,7 +353,7 @@ class FooCommandService(CommandService):
 ```
 
 <details>
-  <summary>Click to show the full <code>foo/main.py</code></summary>
+  <summary>Click to show the full file</summary>
 
 ```python
 # foo/main.py
@@ -510,7 +510,7 @@ class FooQueryService(QueryService):
 ```
 
 <details>
-  <summary>Click to show the full <code>foo/main.py</code></summary>
+  <summary>Click to show the full file</summary>
 
 ```python
 # foo/main.py
@@ -702,7 +702,7 @@ ADD_FOOBAR_SAGA = (
 ```
 
 <details>
-  <summary>Click to show the full <code>foo/main.py</code></summary>
+  <summary>Click to show the full file</summary>
 
 ```python
 # foo/main.py
@@ -788,7 +788,7 @@ class FooCommandService(CommandService):
         content = await request.content()
 
         context = SagaContext(uuid=content["uuid"], something=content["something"])
-        await self.saga_manager.run(ADD_FOOBAR_SAGA, context, pause_on_disk=True)
+        await self.saga_manager.run(ADD_FOOBAR_SAGA, context)
 
 
 def _create_foobar(context: SagaContext) -> SagaRequest:
@@ -860,7 +860,6 @@ class FooQueryService(QueryService):
 if __name__ == '__main__':
     launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
     launcher.launch()
-
 ```
 
 </details>
@@ -888,7 +887,7 @@ The directory structure will become:
 
 Here is the `foobar/config.yml` config file:
 <details>
-  <summary>Click to show the <code>foobar/config.yml</code></summary>
+  <summary>Click to show the full file</summary>
 
 ```yaml
 # foobar/config.yml
@@ -952,7 +951,7 @@ saga:
 
 Here is the `foobar/main.py` config file:
 <details>
-  <summary>Click to show the <code>foobar/main.py</code></summary>
+  <summary>Click to show the full file</summary>
 
 ```python
 from __future__ import annotations
@@ -1033,7 +1032,6 @@ This request will start a new Saga, that sends a command to the `foobar` microse
 ```
 The 'foobar' field of a Foo was updated: Event(...)
 ```
-
 
 ## Packages
 
