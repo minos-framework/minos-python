@@ -19,7 +19,13 @@ Minos is a framework which helps you create [reactive](https://www.reactivemanif
 ### Roadmap
 
 #### 0.6.x
-* [TODO]
+* [#78](https://github.com/minos-framework/minos-python/issues/78) Implement a circuit breaker for `minos-broker-kafka`.
+* [#87](https://github.com/minos-framework/minos-python/issues/87) Implement idempotency for `BrokerSubscriber` message processing.
+* [#100](https://github.com/minos-framework/minos-python/issues/100) Create the `minos-serializers-avro` plugin.
+* [#148](https://github.com/minos-framework/minos-python/issues/148) Create the `minos-rest-aiohttp`.
+* [#149](https://github.com/minos-framework/minos-python/issues/149) Add `minos-graphql-aiohttp` plugin.
+* [#150](https://github.com/minos-framework/minos-python/issues/150) Refactor configuration file and `MinosConfig` accessor.
+* [#151](https://github.com/minos-framework/minos-python/issues/151) Expose `OpenAPI` and `AsyncAPI` specifications.
 
 ## Foundational Patterns
 
