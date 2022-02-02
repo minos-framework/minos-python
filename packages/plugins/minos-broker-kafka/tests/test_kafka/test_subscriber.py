@@ -17,12 +17,6 @@ from kafka import (
 from minos.common import (
     MinosConfig,
 )
-from minos.kafka import (
-    InMemoryQueuedKafkaBrokerSubscriberBuilder,
-    KafkaBrokerSubscriber,
-    KafkaBrokerSubscriberBuilder,
-    PostgreSqlQueuedKafkaBrokerSubscriberBuilder,
-)
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
@@ -30,6 +24,12 @@ from minos.networks import (
     InMemoryBrokerSubscriberQueue,
     PostgreSqlBrokerSubscriberQueue,
     QueuedBrokerSubscriber,
+)
+from minos.plugins.kafka import (
+    InMemoryQueuedKafkaBrokerSubscriberBuilder,
+    KafkaBrokerSubscriber,
+    KafkaBrokerSubscriberBuilder,
+    PostgreSqlQueuedKafkaBrokerSubscriberBuilder,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
