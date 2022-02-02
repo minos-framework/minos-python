@@ -19,6 +19,7 @@ Minos is a framework which helps you create [reactive](https://www.reactivemanif
 ## Foundational Patterns
 
 The `minos` framework is built strongly inspired by the following set of patterns:
+
 * [Microservice architecture](https://microservices.io/patterns/microservices.html): Architect an application as a collection of loosely coupled services.
 * [Decompose by subdomain](https://microservices.io/patterns/decomposition/decompose-by-subdomain.html): Define services corresponding to Domain-Driven Design (DDD) subdomains
 * [Self-contained Service](https://microservices.io/patterns/decomposition/self-contained-service.html): Microservices can respond to a synchronous request without waiting for the response from any other service.
@@ -80,59 +81,59 @@ Create a `foo.yml` file and add the following lines:
 # foo.yml
 
 service:
-    name: foo
-    aggregate: foo.Foo
-    injections:
-        lock_pool: minos.common.PostgreSqlLockPool
-        postgresql_pool: minos.common.PostgreSqlPool
-        broker_publisher: minos.networks.PostgreSqlQueuedKafkaBrokerPublisher
-        broker_subscriber_builder: minos.networks.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
-        broker_pool: minos.networks.BrokerClientPool
-        transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
-        event_repository: minos.aggregate.PostgreSqlEventRepository
-        snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
-        saga_manager: minos.saga.SagaManager
-    services:
-        - minos.networks.BrokerHandlerService
-        - minos.networks.RestService
-        - minos.networks.PeriodicTaskSchedulerService
+  name: foo
+  aggregate: foo.Foo
+  injections:
+    lock_pool: minos.common.PostgreSqlLockPool
+    postgresql_pool: minos.common.PostgreSqlPool
+    broker_publisher: minos.networks.PostgreSqlQueuedKafkaBrokerPublisher
+    broker_subscriber_builder: minos.networks.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
+    broker_pool: minos.networks.BrokerClientPool
+    transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
+    event_repository: minos.aggregate.PostgreSqlEventRepository
+    snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
+    saga_manager: minos.saga.SagaManager
+  services:
+    - minos.networks.BrokerHandlerService
+    - minos.networks.RestService
+    - minos.networks.PeriodicTaskSchedulerService
 middleware:
-    - minos.saga.transactional_command
+  - minos.saga.transactional_command
 services:
-    - minos.aggregate.TransactionService
-    - minos.aggregate.SnapshotService
-    - minos.saga.SagaService
-    - foo.FooCommandService
-    - foo.FooQueryService
+  - minos.aggregate.TransactionService
+  - minos.aggregate.SnapshotService
+  - minos.saga.SagaService
+  - foo.FooCommandService
+  - foo.FooQueryService
 rest:
-    host: 0.0.0.0
-    port: 4545
+  host: 0.0.0.0
+  port: 4545
 broker:
+  host: localhost
+  port: 9092
+  queue:
+    database: foo_db
+    user: minos
+    password: min0s
     host: localhost
-    port: 9092
-    queue:
-        database: foo_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 1000
-        retry: 2
+    port: 5432
+    records: 1000
+    retry: 2
 repository:
-    database: foo_db
-    user: minos
-    password: min0s
-    host: localhost
-    port: 5432
+  database: foo_db
+  user: minos
+  password: min0s
+  host: localhost
+  port: 5432
 snapshot:
-    database: foo_db
-    user: minos
-    password: min0s
-    host: localhost
-    port: 5432
+  database: foo_db
+  user: minos
+  password: min0s
+  host: localhost
+  port: 5432
 saga:
-    storage:
-        path: "./foo.lmdb"
+  storage:
+    path: "./foo.lmdb"
 ```
 
 </details>
@@ -143,12 +144,16 @@ Create a `foo.py` file and add the following content:
 # foo.py
 
 from pathlib import Path
-from minos.aggregate import Aggregate
+from minos.aggregate import Aggregate, RootEntity
 from minos.common import EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 
 
-class Foo(Aggregate):
+class Foo(RootEntity):
+    """Foo RootEntity class."""
+
+
+class FooAggregate(Aggregate[Foo]):
     """Foo Aggregate class."""
 
 
@@ -174,6 +179,7 @@ python foo.py
 ### Create an Aggregate
 
 The way to model data in `minos` is highly inspired by the  [Event Sourcing](https://microservices.io/patterns/data/event-sourcing.html) ideas. For this reason, the classes to be used to model data are:
+
 * `minos.aggregate.Entity`: A model that has an identifier that gives it a unique identity, in the sense that some values from which it is composed could change, but its identity will continue being the same.
 * `minos.aggregate.ExternalEntity`: A model that belongs to another microservice (or aggregate boundary) but needs to be used for some reason inside this microservice (or aggregate boundary).
 * `minos.aggregate.RootEntity`: Is an `Entity` superset that provides global identity across the project compared to standard `Entity` models, that has only local identity (the `RootEntity` can be accessed from another microservices as `ExternalEntity` models, but standard `Entity` models can only be accessed within the microservice that define them). The `RootEntity` is also the one that interacts with the persistence layer (the `EventRepository` and `SnapshotRepository` instances).
@@ -191,21 +197,50 @@ Here is an example of the creation the `Foo` aggregate. In this case, it has two
 
 from __future__ import annotations
 from typing import Optional
-from minos.aggregate import Aggregate, AggregateRef, ModelRef
+from uuid import UUID
+from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
 
 
-class Foo(Aggregate):
-    """Foo Aggregate class."""
+class Foo(RootEntity):
+    """Foo RootEntity class."""
 
     bar: str
-    foobar: Optional[ModelRef[FooBar]]
+    foobar: Optional[Ref[FooBar]]
 
 
-class FooBar(AggregateRef):
-    """FooBar AggregateRef clas."""
+class FooBar(ExternalEntity):
+    """FooBar ExternalEntity clas."""
 
     something: str
+
+
+class FooAggregate(Aggregate[Foo]):
+    """Foo Aggregate class."""
+
+    @staticmethod
+    async def create_foo(bar: str) -> UUID:
+        """Create a new Foo instance
+        
+        :param bar: The bar of the new instance.
+        :return: The identifier of the new instance.
+        """
+        foo = await Foo.create(bar)
+
+        return foo.uuid
+
+    @staticmethod
+    async def update_foobar(uuid: UUID, foobar: Optional[Ref[FooBar]]) -> None:
+        """Update the foobar attribute of the ``Foo`` instance.
+        
+        :param uuid: The identifier of the ``Foo`` instance.
+        :param foobar: The foobar value to be set.
+        :return: This method does not return anything.
+        """
+        foo = await Foo.get(uuid)
+        foo.foobar = foobar
+        await foo.save()
 ```
+
 <details>
   <summary>Click to show the full <code>foo.py</code></summary>
 
@@ -216,23 +251,51 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional
+from uuid import UUID
 
-from minos.aggregate import RootEntity, ExternalEntity, Ref
+from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
 from minos.common import EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 
 
 class Foo(RootEntity):
-    """Foo Root Entity class."""
+    """Foo RootEntity class."""
 
     bar: str
     foobar: Optional[Ref[FooBar]]
 
 
 class FooBar(ExternalEntity):
-    """FooBar External Entity clas."""
+    """FooBar ExternalEntity clas."""
 
     something: str
+
+
+class FooAggregate(Aggregate[Foo]):
+    """Foo Aggregate class."""
+
+    @staticmethod
+    async def create_foo(bar: str) -> UUID:
+        """Create a new Foo instance
+        
+        :param bar: The bar of the new instance.
+        :return: The identifier of the new instance.
+        """
+        foo = await Foo.create(bar)
+
+        return foo.uuid
+
+    @staticmethod
+    async def update_foobar(uuid: UUID, foobar: Optional[Ref[FooBar]]) -> None:
+        """Update the foobar attribute of the ``Foo`` instance.
+        
+        :param uuid: The identifier of the ``Foo`` instance.
+        :param foobar: The foobar value to be set.
+        :return: This method does not return anything.
+        """
+        foo = await Foo.get(uuid)
+        foo.foobar = foobar
+        await foo.save()
 
 
 class FooCommandService(CommandService):
@@ -276,9 +339,9 @@ class FooCommandService(CommandService):
         content = await request.content()
         bar = content["bar"]
 
-        foo = await Foo.create(bar)
+        uuid = await FooAggregate.create_foo(bar)
 
-        return Response({"uuid": foo.uuid})
+        return Response({"uuid": uuid})
 ```
 
 <details>
@@ -291,24 +354,52 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional
+from uuid import UUID
 
-from minos.aggregate import Aggregate, AggregateRef, ModelRef
+from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
 from minos.common import EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 from minos.networks import Request, Response, enroute
 
 
-class Foo(Aggregate):
-    """Foo Aggregate class."""
+class Foo(RootEntity):
+    """Foo RootEntity class."""
 
     bar: str
-    foobar: Optional[ModelRef[FooBar]]
+    foobar: Optional[Ref[FooBar]]
 
 
-class FooBar(AggregateRef):
-    """FooBar AggregateRef clas."""
+class FooBar(ExternalEntity):
+    """FooBar ExternalEntity clas."""
 
     something: str
+
+
+class FooAggregate(Aggregate[Foo]):
+    """Foo Aggregate class."""
+
+    @staticmethod
+    async def create_foo(bar: str) -> UUID:
+        """Create a new Foo instance
+        
+        :param bar: The bar of the new instance.
+        :return: The identifier of the new instance.
+        """
+        foo = await Foo.create(bar)
+
+        return foo.uuid
+
+    @staticmethod
+    async def update_foobar(uuid: UUID, foobar: Optional[Ref[FooBar]]) -> None:
+        """Update the foobar attribute of the ``Foo`` instance.
+        
+        :param uuid: The identifier of the ``Foo`` instance.
+        :param foobar: The foobar value to be set.
+        :return: This method does not return anything.
+        """
+        foo = await Foo.get(uuid)
+        foo.foobar = foobar
+        await foo.save()
 
 
 class FooCommandService(CommandService):
@@ -325,9 +416,9 @@ class FooCommandService(CommandService):
         content = await request.content()
         bar = content["bar"]
 
-        foo = await Foo.create(bar)
+        uuid = await FooAggregate.create_foo(bar)
 
-        return Response({"uuid": foo.uuid})
+        return Response({"uuid": uuid})
 
 
 class FooQueryService(QueryService):
@@ -394,24 +485,52 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional
+from uuid import UUID
 
-from minos.aggregate import Aggregate, AggregateRef, ModelRef
+from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
 from minos.common import EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 from minos.networks import Request, Response, enroute
 
 
-class Foo(Aggregate):
-    """Foo Aggregate class."""
+class Foo(RootEntity):
+    """Foo RootEntity class."""
 
     bar: str
-    foobar: Optional[ModelRef[FooBar]]
+    foobar: Optional[Ref[FooBar]]
 
 
-class FooBar(AggregateRef):
-    """FooBar AggregateRef clas."""
+class FooBar(ExternalEntity):
+    """FooBar ExternalEntity clas."""
 
     something: str
+
+
+class FooAggregate(Aggregate[Foo]):
+    """Foo Aggregate class."""
+
+    @staticmethod
+    async def create_foo(bar: str) -> UUID:
+        """Create a new Foo instance
+        
+        :param bar: The bar of the new instance.
+        :return: The identifier of the new instance.
+        """
+        foo = await Foo.create(bar)
+
+        return foo.uuid
+
+    @staticmethod
+    async def update_foobar(uuid: UUID, foobar: Optional[Ref[FooBar]]) -> None:
+        """Update the foobar attribute of the ``Foo`` instance.
+        
+        :param uuid: The identifier of the ``Foo`` instance.
+        :param foobar: The foobar value to be set.
+        :return: This method does not return anything.
+        """
+        foo = await Foo.get(uuid)
+        foo.foobar = foobar
+        await foo.save()
 
 
 class FooCommandService(CommandService):
@@ -428,9 +547,9 @@ class FooCommandService(CommandService):
         content = await request.content()
         bar = content["bar"]
 
-        foo = await Foo.create(bar)
+        uuid = await FooAggregate.create_foo(bar)
 
-        return Response({"uuid": foo.uuid})
+        return Response({"uuid": uuid})
 
 
 class FooQueryService(QueryService):
@@ -472,7 +591,7 @@ python foo.py
 
 ### Interact with another Microservice
 
-Here is an example of the interaction between two microservices through a SAGA pattern. In this case, the interaction starts with a call to the `"/foo/add-foobar"` path and the `"POST"` method, which performs a `SagaManager` run over the `ADD_FOOBAR_SAGA` saga. This saga has two steps, one remote that executes the `"CreateFooBar"` command (possibly defined on the supposed `"foobar"` microservice), and a local step that is executed on this microservice. The `CreateFooBarDTO` defines the structure of the request to be sent when the `"CreateFooBar"` command is executed.
+Here is an example of the interaction between two microservices through a SAGA pattern. In this case, the interaction starts with a call to the `"/foos/add-foobar"` path and the `"POST"` method, which performs a `SagaManager` run over the `ADD_FOOBAR_SAGA` saga. This saga has two steps, one remote that executes the `"CreateFooBar"` command (possibly defined on the supposed `"foobar"` microservice), and a local step that is executed on this microservice. The `CreateFooBarDTO` defines the structure of the request to be sent when the `"CreateFooBar"` command is executed.
 
 ```python
 # foo.py
@@ -486,7 +605,7 @@ from minos.saga import Saga, SagaContext, SagaRequest, SagaResponse
 class FooCommandService(CommandService):
     """Foo Command Service class."""
 
-    @enroute.rest.command("/foo/add-foobar", "POST")
+    @enroute.rest.command("/foos/add-foobar", "POST")
     async def update_foo(self, request: Request) -> None:
         """Run a saga example.
 
@@ -495,9 +614,8 @@ class FooCommandService(CommandService):
         """
         content = await request.content()
 
-        await self.saga_manager.run(
-            ADD_FOOBAR_SAGA, SagaContext(uuid=content["uuid"], something=content["something"])
-        )
+        context = SagaContext(uuid=content["uuid"], something=content["something"])
+        await self.saga_manager.run(ADD_FOOBAR_SAGA, context)
 
 
 def _create_foobar(context: SagaContext) -> SagaRequest:
@@ -516,9 +634,7 @@ async def _error_foobar(context: SagaContext, response: SagaResponse) -> SagaCon
 
 
 async def _update_foo(context: SagaContext) -> None:
-    foo = await Foo.get(context["uuid"])
-    foo.foobar = context["foobar_uuid"]
-    await foo.save()
+    await FooAggregate.update_foobar(context["uuid"], context["foobar_uuid"])
 
 
 CreateFooBarDTO = ModelType.build("AnotherDTO", {"number": int, "text": str})
@@ -534,6 +650,7 @@ ADD_FOOBAR_SAGA = (
         .commit()
 )
 ```
+
 <details>
   <summary>Click to show the full <code>foo.py</code></summary>
 
@@ -544,25 +661,53 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional
+from uuid import UUID
 
-from minos.aggregate import Aggregate, AggregateRef, ModelRef
+from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
 from minos.common import ModelType, EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 from minos.networks import Request, Response, enroute
 from minos.saga import Saga, SagaContext, SagaRequest, SagaResponse
 
 
-class Foo(Aggregate):
-    """Foo Aggregate class."""
+class Foo(RootEntity):
+    """Foo RootEntity class."""
 
     bar: str
-    foobar: Optional[ModelRef[FooBar]]
+    foobar: Optional[Ref[FooBar]]
 
 
-class FooBar(AggregateRef):
-    """FooBar AggregateRef clas."""
+class FooBar(ExternalEntity):
+    """FooBar ExternalEntity clas."""
 
     something: str
+
+
+class FooAggregate(Aggregate[Foo]):
+    """Foo Aggregate class."""
+
+    @staticmethod
+    async def create_foo(bar: str) -> UUID:
+        """Create a new Foo instance
+        
+        :param bar: The bar of the new instance.
+        :return: The identifier of the new instance.
+        """
+        foo = await Foo.create(bar)
+
+        return foo.uuid
+
+    @staticmethod
+    async def update_foobar(uuid: UUID, foobar: Optional[Ref[FooBar]]) -> None:
+        """Update the foobar attribute of the ``Foo`` instance.
+        
+        :param uuid: The identifier of the ``Foo`` instance.
+        :param foobar: The foobar value to be set.
+        :return: This method does not return anything.
+        """
+        foo = await Foo.get(uuid)
+        foo.foobar = foobar
+        await foo.save()
 
 
 class FooCommandService(CommandService):
@@ -579,11 +724,11 @@ class FooCommandService(CommandService):
         content = await request.content()
         bar = content["bar"]
 
-        foo = await Foo.create(bar)
+        uuid = await FooAggregate.create_foo(bar)
 
-        return Response({"uuid": foo.uuid})
+        return Response({"uuid": uuid})
 
-    @enroute.rest.command("/foo/add-foobar", "POST")
+    @enroute.rest.command("/foos/add-foobar", "POST")
     async def update_foo(self, request: Request) -> None:
         """Run a saga example.
 
@@ -592,9 +737,8 @@ class FooCommandService(CommandService):
         """
         content = await request.content()
 
-        await self.saga_manager.run(
-            ADD_FOOBAR_SAGA, SagaContext(uuid=content["uuid"], something=content["something"])
-        )
+        context = SagaContext(uuid=content["uuid"], something=content["something"])
+        await self.saga_manager.run(ADD_FOOBAR_SAGA, context, pause_on_disk=True)
 
 
 def _create_foobar(context: SagaContext) -> SagaRequest:
@@ -613,9 +757,7 @@ async def _error_foobar(context: SagaContext, response: SagaResponse) -> SagaCon
 
 
 async def _update_foo(context: SagaContext) -> None:
-    foo = await Foo.get(context["uuid"])
-    foo.foobar = context["foobar_uuid"]
-    await foo.save()
+    await FooAggregate.update_foobar(context["uuid"], context["foobar_uuid"])
 
 
 CreateFooBarDTO = ModelType.build("AnotherDTO", {"number": int, "text": str})
@@ -681,58 +823,58 @@ Here is the `foobar.yml` config file:
 # foobar.yml
 
 service:
-    name: foobar
-    aggregate: foobar.FooBar
-    injections:
-        lock_pool: minos.common.PostgreSqlLockPool
-        postgresql_pool: minos.common.PostgreSqlPool
-        broker_publisher: minos.networks.PostgreSqlQueuedKafkaBrokerPublisher
-        broker_subscriber_builder: minos.networks.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
-        broker_pool: minos.networks.BrokerClientPool
-        transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
-        event_repository: minos.aggregate.PostgreSqlEventRepository
-        snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
-        saga_manager: minos.saga.SagaManager
-    services:
-        - minos.networks.BrokerHandlerService
-        - minos.networks.RestService
-        - minos.networks.PeriodicTaskSchedulerService
+  name: foobar
+  aggregate: foobar.FooBar
+  injections:
+    lock_pool: minos.common.PostgreSqlLockPool
+    postgresql_pool: minos.common.PostgreSqlPool
+    broker_publisher: minos.networks.PostgreSqlQueuedKafkaBrokerPublisher
+    broker_subscriber_builder: minos.networks.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
+    broker_pool: minos.networks.BrokerClientPool
+    transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
+    event_repository: minos.aggregate.PostgreSqlEventRepository
+    snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
+    saga_manager: minos.saga.SagaManager
+  services:
+    - minos.networks.BrokerHandlerService
+    - minos.networks.RestService
+    - minos.networks.PeriodicTaskSchedulerService
 middleware:
-    - minos.saga.transactional_command
+  - minos.saga.transactional_command
 services:
-    - minos.aggregate.TransactionService
-    - minos.aggregate.SnapshotService
-    - minos.saga.SagaService
-    - foobar.FooBarCommandService
+  - minos.aggregate.TransactionService
+  - minos.aggregate.SnapshotService
+  - minos.saga.SagaService
+  - foobar.FooBarCommandService
 rest:
-    host: 0.0.0.0
-    port: 4546
+  host: 0.0.0.0
+  port: 4546
 broker:
+  host: localhost
+  port: 9092
+  queue:
+    database: foobar_db
+    user: minos
+    password: min0s
     host: localhost
-    port: 9092
-    queue:
-        database: foobar_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 1000
-        retry: 2
+    port: 5432
+    records: 1000
+    retry: 2
 repository:
-    database: foobar_db
-    user: minos
-    password: min0s
-    host: localhost
-    port: 5432
+  database: foobar_db
+  user: minos
+  password: min0s
+  host: localhost
+  port: 5432
 snapshot:
-    database: foobar_db
-    user: minos
-    password: min0s
-    host: localhost
-    port: 5432
+  database: foobar_db
+  user: minos
+  password: min0s
+  host: localhost
+  port: 5432
 saga:
-    storage:
-        path: "./foobar.lmdb"
+  storage:
+    path: "./foobar.lmdb"
 ```
 
 </details>
@@ -745,17 +887,32 @@ Here is the `foobar.py` config file:
 from __future__ import annotations
 
 from pathlib import Path
+from uuid import UUID
 
-from minos.aggregate import Aggregate
+from minos.aggregate import Aggregate, RootEntity
 from minos.common import EntrypointLauncher
 from minos.cqrs import CommandService
 from minos.networks import Request, Response, enroute
 
 
-class FooBar(Aggregate):
-    """FooBar AggregateRef clas."""
+class FooBar(RootEntity):
+    """FooBar Root Entity clas."""
 
     something: str
+
+
+class FooBarAggregate(Aggregate[FooBar]):
+    """FooBar Aggregate class."""
+    
+    @staticmethod
+    async def create_foobar(something: str) -> UUID:
+        """Create a new ``FooBar`` instance.
+        
+        :param something: The something attribute.
+        :return: The identifier of the new instance.
+        """
+        foobar = await FooBar.create(something)
+        return foobar.uuid
 
 
 class FooBarCommandService(CommandService):
@@ -771,9 +928,9 @@ class FooBarCommandService(CommandService):
         content = await request.content()
         something = content["text"]
 
-        foobar = await FooBar.create(something)
+        uuid = await FooBarAggregate.create_foobar(something)
 
-        return Response(foobar.uuid)
+        return Response(uuid)
 
 
 if __name__ == '__main__':
