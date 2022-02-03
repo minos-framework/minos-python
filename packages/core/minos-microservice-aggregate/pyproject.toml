@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-microservice-aggregate"
-version = "0.5.0"
+version = "0.5.1"
 description = "The Aggregate pattern of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
@@ -31,8 +31,8 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.4.0"
-minos-microservice-networks = "^0.4.0"
+minos-microservice-common = "^0.5.0"
+minos-microservice-networks = "^0.5.0"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }

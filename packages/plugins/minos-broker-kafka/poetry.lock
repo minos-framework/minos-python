@@ -445,8 +445,8 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.4.1"
-description = "Python Package with common Classes and Utilities used in Minos Microservices."
+version = "0.5.0"
+description = "The common core of the Minos Framework"
 category = "main"
 optional = false
 python-versions = "^3.9"
@@ -468,8 +468,8 @@ url = "../../core/minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.4.1"
-description = "Python Package with the common network classes and utilities used in Minos Microservice."
+version = "0.5.1"
+description = "The networks core of the Minos Framework"
 category = "main"
 optional = false
 python-versions = "^3.9"
@@ -477,12 +477,11 @@ develop = true
 
 [package.dependencies]
 aiohttp = "^3.7.4"
-aiokafka = "^0.7.0"
 aiomisc = "^14.0.3"
 aiopg = "^1.2.1"
 crontab = "^0.23.0"
 dependency-injector = "^4.32.2"
-minos-microservice-common = "^0.4.0"
+minos-microservice-common = "^0.5.0"
 orjson = "^3.6.5"
 
 [package.source]
@@ -945,7 +944,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "eb405d50d73d2f9c30fcdb13ab2b1aeaa55dd25543c9ecbd93550484f437a0eb"
+content-hash = "5ecc1b6527232af4e6da328c09f713fe74dbeca533eab3a66cdcbaa57c9c15b2"
 
 [metadata.files]
 aiohttp = [

@@ -420,8 +420,8 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.4.1"
-description = "Python Package with common Classes and Utilities used in Minos Microservices."
+version = "0.5.0"
+description = "The common core of the Minos Framework"
 category = "main"
 optional = false
 python-versions = "^3.9"
@@ -897,7 +897,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "fd4692e13c90173fcc79291142fe4cd1c377296740652d8c14165897b3839c47"
+content-hash = "263b20b4e960eb22dfae60b36d8525315898f2a0d9de2cd411fc9930a059eecb"
 
 [metadata.files]
 aiohttp = [
