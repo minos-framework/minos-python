@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "minos-microservice-saga"
-version = "0.4.1"
-description = "Saga Library for MinOS project."
+version = "0.5.0"
+description = "The SAGA pattern of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
 homepage = "http://www.minos.run/"

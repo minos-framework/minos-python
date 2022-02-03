@@ -196,3 +196,11 @@ History
 ------------------
 
 * Update `README.md`.
+
+
+0.5.0 (2022-02-03)
+------------------
+
+* Extract `kafka` related code to the `minos-broker-kafka` plugin.
+* Extract `minos-discovery` related code to the `minos-discovery-minos` plugin.
+* Minor changes.

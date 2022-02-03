@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "minos-microservice-networks"
-version = "0.4.1"
-description = "Python Package with the common network classes and utilities used in Minos Microservice."
+version = "0.5.0"
+description = "The networks core of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
 homepage = "http://www.minos.run/"

@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "minos-microservice-aggregate"
-version = "0.4.1"
-description = "Python Package for Minos Microservices containing all the Aggregate stuff"
+version = "0.5.0"
+description = "The Aggregate pattern of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
 homepage = "http://www.minos.run/"
