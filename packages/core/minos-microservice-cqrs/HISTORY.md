@@ -60,3 +60,11 @@
 # 0.4.1 (2022-01-31)
 
 * Update `README.md`.
+
+# 0.5.0 (2022-02-03)
+
+* Minor changes.
+
+## 0.5.1 (2022-02-03)
+
+* Fix bug related with dependency specification.

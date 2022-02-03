@@ -139,11 +139,15 @@ class RestHandler(MinosSetup):
                 if not isinstance(response, RestResponse):
                     response = RestResponse.from_response(response)
 
-                return web.Response(body=await response.content(), content_type=response.content_type)
+                content = await response.content()
+                content_type = response.content_type
+                status = response.status
+
+                return web.Response(body=content, content_type=content_type, status=status)
 
             except ResponseException as exc:
                 logger.warning(f"Raised an application exception: {exc!s}")
-                raise web.HTTPBadRequest(text=str(exc))
+                return web.Response(text=str(exc), status=exc.status)
             except Exception as exc:
                 logger.exception(f"Raised a system exception: {exc!r}")
                 raise web.HTTPInternalServerError()

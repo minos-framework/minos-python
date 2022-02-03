@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "minos-microservice-saga"
-version = "0.4.1"
-description = "Saga Library for MinOS project."
+version = "0.5.1"
+description = "The SAGA pattern of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
 homepage = "http://www.minos.run/"
@@ -31,16 +31,16 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-aggregate = "^0.4.0"
-minos-microservice-common = "^0.4.0"
-minos-microservice-networks = "^0.4.0"
+minos-microservice-aggregate = "^0.5.0"
+minos-microservice-common = "^0.5.0"
+minos-microservice-networks = "^0.5.0"
 dependency-injector = "^4.32.2"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }
 minos-microservice-networks = { path = "../minos-microservice-networks", develop = true }
 minos-microservice-aggregate = { path = "../minos-microservice-aggregate", develop = true }
-black = "^21.12b0"
+black = "^22.1"
 isort = "^5.8.0"
 pytest = "^6.2.4"
 coverage = "^6.3"

@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "minos-microservice-common"
-version = "0.4.1"
-description = "Python Package with common Classes and Utilities used in Minos Microservices."
+version = "0.5.0"
+description = "The common core of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
 homepage = "http://www.minos.run/"
@@ -41,7 +41,7 @@ dependency-injector = "^4.32.2"
 cached-property = "^1.5.2"
 
 [tool.poetry.dev-dependencies]
-black = "^21.12b0"
+black = "^22.1"
 isort = "^5.8.0"
 pytest = "^6.2.4"
 coverage = "^6.3"

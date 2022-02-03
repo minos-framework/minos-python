@@ -4,6 +4,6 @@ from .abc import (
 from .kong import (
     KongDiscoveryClient,
 )
-from .minos import (
-    MinosDiscoveryClient,
+from .memory import (
+    InMemoryDiscoveryClient,
 )

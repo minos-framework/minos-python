@@ -10,7 +10,6 @@ from aiohttp import (
     web,
 )
 from aiohttp.web_exceptions import (
-    HTTPBadRequest,
     HTTPInternalServerError,
 )
 from orjson import (
@@ -41,6 +40,10 @@ class _Cls:
     @staticmethod
     async def _fn(request: Request) -> Response:
         return RestResponse(await request.content())
+
+    @staticmethod
+    async def _fn_status(request: Request) -> Response:
+        return RestResponse(status=await request.content())
 
     @staticmethod
     async def _fn_none(request: Request):
@@ -80,6 +83,14 @@ class TestRestHandler(PostgresAsyncTestCase):
         self.assertEqual(orjson.dumps({"foo": "bar"}), response.body)
         self.assertEqual("application/json", response.content_type)
 
+    async def test_get_callback_status(self):
+        handler = self.handler.get_callback(_Cls._fn_status)
+        response = await handler(json_mocked_request(203))
+        self.assertIsInstance(response, web.Response)
+        self.assertEqual(None, response.body)
+        self.assertEqual("application/json", response.content_type)
+        self.assertEqual(203, response.status)
+
     async def test_get_callback_none(self):
         handler = self.handler.get_callback(_Cls._fn_none)
         response = await handler(mocked_request())
@@ -89,8 +100,8 @@ class TestRestHandler(PostgresAsyncTestCase):
 
     async def test_get_callback_raises_response(self):
         handler = self.handler.get_callback(_Cls._fn_raises_response)
-        with self.assertRaises(HTTPBadRequest):
-            await handler(json_mocked_request({"foo": "bar"}))
+        response = await handler(json_mocked_request({"foo": "bar"}))
+        self.assertEqual(400, response.status)
 
     async def test_get_callback_raises_exception(self):
         handler = self.handler.get_callback(_Cls._fn_raises_exception)

@@ -7,12 +7,12 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    AggregateNotFoundException,
+    AlreadyDeletedException,
     Condition,
-    DeletedAggregateException,
     EventEntry,
     FieldDiff,
     FieldDiffContainer,
+    NotFoundException,
     Ordering,
     PostgreSqlSnapshotReader,
     PostgreSqlSnapshotSetup,
@@ -59,26 +59,26 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
     async def _populate(self):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
-        aggregate_name: str = Car.classname
+        name: str = Car.classname
 
-        await self.event_repository.create(EventEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
-        await self.event_repository.update(EventEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
-        await self.event_repository.create(EventEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
-        await self.event_repository.update(EventEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes))
-        await self.event_repository.delete(EventEntry(self.uuid_1, aggregate_name, 4))
-        await self.event_repository.update(EventEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
+        await self.event_repository.create(EventEntry(self.uuid_1, name, 1, diff.avro_bytes))
+        await self.event_repository.update(EventEntry(self.uuid_1, name, 2, diff.avro_bytes))
+        await self.event_repository.create(EventEntry(self.uuid_2, name, 1, diff.avro_bytes))
+        await self.event_repository.update(EventEntry(self.uuid_1, name, 3, diff.avro_bytes))
+        await self.event_repository.delete(EventEntry(self.uuid_1, name, 4))
+        await self.event_repository.update(EventEntry(self.uuid_2, name, 2, diff.avro_bytes))
         await self.event_repository.update(
-            EventEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
+            EventEntry(self.uuid_2, name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
         await self.event_repository.delete(
-            EventEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_2)
+            EventEntry(self.uuid_2, name, 3, bytes(), transaction_uuid=self.transaction_2)
         )
         await self.event_repository.update(
-            EventEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
+            EventEntry(self.uuid_2, name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
-        await self.event_repository.create(EventEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
+        await self.event_repository.create(EventEntry(self.uuid_3, name, 1, diff.avro_bytes))
         await self.event_repository.delete(
-            EventEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_3)
+            EventEntry(self.uuid_2, name, 3, bytes(), transaction_uuid=self.transaction_3)
         )
         await self.transaction_repository.submit(
             TransactionEntry(self.transaction_1, TransactionStatus.PENDING, await self.event_repository.offset)
@@ -295,14 +295,14 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
 
     async def test_get_raises(self):
 
-        with self.assertRaises(DeletedAggregateException):
+        with self.assertRaises(AlreadyDeletedException):
             await self.reader.get("tests.utils.Car", self.uuid_1)
-        with self.assertRaises(AggregateNotFoundException):
+        with self.assertRaises(NotFoundException):
             await self.reader.get("tests.utils.Car", uuid4())
 
     async def test_get_with_transaction_raises(self):
 
-        with self.assertRaises(DeletedAggregateException):
+        with self.assertRaises(AlreadyDeletedException):
             await self.reader.get("tests.utils.Car", self.uuid_2, transaction=TransactionEntry(self.transaction_2))
 
     async def test_find(self):
@@ -360,11 +360,11 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
         self.assertEqual(len(expected), len(observed))
         for exp, obs in zip(expected, observed):
             if exp.data is None:
-                with self.assertRaises(DeletedAggregateException):
+                with self.assertRaises(AlreadyDeletedException):
                     # noinspection PyStatementEffect
-                    obs.build_aggregate()
+                    obs.build()
             else:
-                self.assertEqual(exp.build_aggregate(), obs.build_aggregate())
+                self.assertEqual(exp.build(), obs.build())
             self.assertIsInstance(obs.created_at, datetime)
             self.assertIsInstance(obs.updated_at, datetime)
 
