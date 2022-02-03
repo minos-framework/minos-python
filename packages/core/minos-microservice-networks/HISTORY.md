@@ -204,3 +204,8 @@ History
 * Extract `kafka` related code to the `minos-broker-kafka` plugin.
 * Extract `minos-discovery` related code to the `minos-discovery-minos` plugin.
 * Minor changes.
+
+0.5.1 (2022-02-03)
+------------------
+
+* Fix bug related with dependency specification.

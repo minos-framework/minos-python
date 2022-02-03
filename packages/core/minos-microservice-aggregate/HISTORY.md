@@ -65,3 +65,7 @@
 * Create the `Aggregate` base class, with the purpose to move the business logic from the `minos.cqrs.CommandService` to this brand-new class.
 * Refactor internal module hierarchy.
 * Minor changes.
+
+## 0.5.1 (2022-02-03)
+
+* Fix bug related with dependency specification.
