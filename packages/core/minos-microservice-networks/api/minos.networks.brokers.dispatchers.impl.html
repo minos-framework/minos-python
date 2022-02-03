@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.brokers.dispatchers.impl module &mdash; Minos Microservice Network 0.4.1 documentation</title>
+  <title>minos.networks.brokers.dispatchers.impl module &mdash; Minos Microservice Network 0.5.1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -220,7 +220,7 @@
 <dd class="field-odd"><p><strong>fn</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">collections.abc.Callable</span></code>[<a class="reference internal" href="minos.networks.brokers.dispatchers.requests.html#minos.networks.brokers.dispatchers.requests.BrokerRequest" title="minos.networks.brokers.dispatchers.requests.BrokerRequest"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.brokers.dispatchers.requests.BrokerRequest</span></code></a>, <code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<a class="reference internal" href="minos.networks.brokers.dispatchers.requests.html#minos.networks.brokers.dispatchers.requests.BrokerResponse" title="minos.networks.brokers.dispatchers.requests.BrokerResponse"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.brokers.dispatchers.requests.BrokerResponse</span></code></a>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.Awaitable</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<a class="reference internal" href="minos.networks.brokers.dispatchers.requests.html#minos.networks.brokers.dispatchers.requests.BrokerResponse" title="minos.networks.brokers.dispatchers.requests.BrokerResponse"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.brokers.dispatchers.requests.BrokerResponse</span></code></a>]]]]) – The action function.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">collections.abc.Callable</span></code>[<a class="reference internal" href="minos.networks.brokers.messages.models.abc.html#minos.networks.brokers.messages.models.abc.BrokerMessage" title="minos.networks.brokers.messages.models.abc.BrokerMessage"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.brokers.messages.models.abc.BrokerMessage</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.Awaitable</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]]]</p>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">collections.abc.Callable</span></code>[<a class="reference internal" href="minos.networks.brokers.messages.models.abc.html#minos.networks.brokers.messages.models.abc.BrokerMessage" title="minos.networks.brokers.messages.models.abc.BrokerMessage"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.brokers.messages.models.abc.BrokerMessage</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.Awaitable</span></code>[<a class="reference internal" href="minos.networks.brokers.messages.models.v1.html#minos.networks.brokers.messages.models.v1.BrokerMessageV1Payload" title="minos.networks.brokers.messages.models.v1.BrokerMessageV1Payload"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.brokers.messages.models.v1.BrokerMessageV1Payload</span></code></a>]]</p>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A wrapper function around the given one that is compatible with the Broker Handler API.</p>

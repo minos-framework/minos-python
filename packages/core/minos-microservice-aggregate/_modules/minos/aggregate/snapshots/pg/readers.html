@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.snapshots.pg.readers &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>minos.aggregate.snapshots.pg.readers &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -92,7 +92,7 @@
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">...exceptions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AggregateNotFoundException</span><span class="p">,</span>
+    <span class="n">NotFoundException</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">...queries</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">_Condition</span><span class="p">,</span>
@@ -113,8 +113,8 @@
 <span class="p">)</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">...models</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">Aggregate</span><span class="p">,</span>
+    <span class="kn">from</span> <span class="nn">...entities</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">RootEntity</span><span class="p">,</span>
     <span class="p">)</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -123,51 +123,52 @@
 <div class="viewcode-block" id="PostgreSqlSnapshotReader"><a class="viewcode-back" href="../../../../../api/minos.aggregate.snapshots.pg.readers.html#minos.aggregate.snapshots.pg.readers.PostgreSqlSnapshotReader">[docs]</a><span class="k">class</span> <span class="nc">PostgreSqlSnapshotReader</span><span class="p">(</span><span class="n">PostgreSqlSnapshotSetup</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;PostgreSQL Snapshot class.</span>
 
-<span class="sd">    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.</span>
+<span class="sd">    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository</span>
+<span class="sd">    class.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="PostgreSqlSnapshotReader.get"><a class="viewcode-back" href="../../../../../api/minos.aggregate.snapshots.pg.readers.html#minos.aggregate.snapshots.pg.readers.PostgreSqlSnapshotReader.get">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aggregate_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Aggregate</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Get an aggregate instance from its identifier.</span>
+<div class="viewcode-block" id="PostgreSqlSnapshotReader.get"><a class="viewcode-back" href="../../../../../api/minos.aggregate.snapshots.pg.readers.html#minos.aggregate.snapshots.pg.readers.PostgreSqlSnapshotReader.get">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RootEntity</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get a ``RootEntity`` instance from its identifier.</span>
 
-<span class="sd">        :param aggregate_name: Class name of the ``Aggregate``.</span>
-<span class="sd">        :param uuid: Identifier of the ``Aggregate``.</span>
+<span class="sd">        :param name: Class name of the ``RootEntity``.</span>
+<span class="sd">        :param uuid: Identifier of the ``RootEntity``.</span>
 <span class="sd">        :param kwargs: Additional named arguments.</span>
-<span class="sd">        :return: The ``Aggregate`` instance.</span>
+<span class="sd">        :return: The ``RootEntity`` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">snapshot_entry</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_entry</span><span class="p">(</span><span class="n">aggregate_name</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">aggregate</span> <span class="o">=</span> <span class="n">snapshot_entry</span><span class="o">.</span><span class="n">build_aggregate</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">aggregate</span></div>
+        <span class="n">snapshot_entry</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_entry</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="n">snapshot_entry</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instance</span></div>
 
     <span class="c1"># noinspection PyUnusedLocal</span>
-<div class="viewcode-block" id="PostgreSqlSnapshotReader.get_entry"><a class="viewcode-back" href="../../../../../api/minos.aggregate.snapshots.pg.readers.html#minos.aggregate.snapshots.pg.readers.PostgreSqlSnapshotReader.get_entry">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aggregate_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SnapshotEntry</span><span class="p">:</span>
+<div class="viewcode-block" id="PostgreSqlSnapshotReader.get_entry"><a class="viewcode-back" href="../../../../../api/minos.aggregate.snapshots.pg.readers.html#minos.aggregate.snapshots.pg.readers.PostgreSqlSnapshotReader.get_entry">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SnapshotEntry</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Get a ``SnapshotEntry`` from its identifier.</span>
 
-<span class="sd">        :param aggregate_name: Class name of the ``Aggregate``.</span>
-<span class="sd">        :param uuid: Identifier of the ``Aggregate``.</span>
+<span class="sd">        :param name: Class name of the ``RootEntity``.</span>
+<span class="sd">        :param uuid: Identifier of the ``RootEntity``.</span>
 <span class="sd">        :param kwargs: Additional named arguments.</span>
 <span class="sd">        :return: The ``SnapshotEntry`` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_entries</span><span class="p">(</span>
-                <span class="n">aggregate_name</span><span class="p">,</span> <span class="n">_EqualCondition</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="n">uuid</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span> <span class="o">|</span> <span class="p">{</span><span class="s2">&quot;exclude_deleted&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+                <span class="n">name</span><span class="p">,</span> <span class="n">_EqualCondition</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="n">uuid</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span> <span class="o">|</span> <span class="p">{</span><span class="s2">&quot;exclude_deleted&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
             <span class="p">)</span><span class="o">.</span><span class="fm">__anext__</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">StopAsyncIteration</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">AggregateNotFoundException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Some aggregates could not be found: </span><span class="si">{</span><span class="n">uuid</span><span class="si">!s}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="n">NotFoundException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The instance could not be found: </span><span class="si">{</span><span class="n">uuid</span><span class="si">!s}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PostgreSqlSnapshotReader.find"><a class="viewcode-back" href="../../../../../api/minos.aggregate.snapshots.pg.readers.html#minos.aggregate.snapshots.pg.readers.PostgreSqlSnapshotReader.find">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Aggregate</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Find a collection of ``Aggregate`` instances based on a ``Condition``.</span>
+<div class="viewcode-block" id="PostgreSqlSnapshotReader.find"><a class="viewcode-back" href="../../../../../api/minos.aggregate.snapshots.pg.readers.html#minos.aggregate.snapshots.pg.readers.PostgreSqlSnapshotReader.find">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">RootEntity</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Find a collection of ``RootEntity`` instances based on a ``Condition``.</span>
 
 <span class="sd">        :param args: Additional positional arguments.</span>
 <span class="sd">        :param kwargs: Additional named arguments.</span>
-<span class="sd">        :return: An asynchronous iterator that containing the ``Aggregate`` instances.</span>
+<span class="sd">        :return: An asynchronous iterator that containing the ``RootEntity`` instances.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">async</span> <span class="k">for</span> <span class="n">snapshot_entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_entries</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">snapshot_entry</span><span class="o">.</span><span class="n">build_aggregate</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+            <span class="k">yield</span> <span class="n">snapshot_entry</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="PostgreSqlSnapshotReader.find_entries"><a class="viewcode-back" href="../../../../../api/minos.aggregate.snapshots.pg.readers.html#minos.aggregate.snapshots.pg.readers.PostgreSqlSnapshotReader.find_entries">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">find_entries</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">aggregate_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">condition</span><span class="p">:</span> <span class="n">_Condition</span><span class="p">,</span>
         <span class="n">ordering</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_Ordering</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -178,8 +179,8 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">SnapshotEntry</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Find a collection of ``SnapshotEntry`` instances based on a ``Condition``.</span>
 
-<span class="sd">        :param aggregate_name: Class name of the ``Aggregate``.</span>
-<span class="sd">        :param condition: The condition that must be satisfied by the ``Aggregate`` instances.</span>
+<span class="sd">        :param name: Class name of the ``RootEntity``.</span>
+<span class="sd">        :param condition: The condition that must be satisfied by the ``RootEntity`` instances.</span>
 <span class="sd">        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour</span>
 <span class="sd">            is to retrieve them without any order pattern.</span>
 <span class="sd">        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the</span>
@@ -189,19 +190,17 @@
 <span class="sd">        :param transaction: The transaction within the operation is performed. If not any value is provided, then the</span>
 <span class="sd">            transaction is extracted from the context var. If not any transaction is being scoped then the query is</span>
 <span class="sd">            performed to the global snapshot.</span>
-<span class="sd">        :param exclude_deleted: If ``True``, deleted ``Aggregate`` entries are included, otherwise deleted ``Aggregate``</span>
-<span class="sd">            entries are filtered.</span>
+<span class="sd">        :param exclude_deleted: If ``True``, deleted ``RootEntity`` entries are included, otherwise deleted</span>
+<span class="sd">        ``RootEntity`` entries are filtered.</span>
 <span class="sd">        :param kwargs: Additional named arguments.</span>
-<span class="sd">        :return: An asynchronous iterator that containing the ``Aggregate`` instances.</span>
+<span class="sd">        :return: An asynchronous iterator that containing the ``RootEntity`` instances.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">transaction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">transaction_uuids</span> <span class="o">=</span> <span class="p">(</span><span class="n">NULL_UUID</span><span class="p">,)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">transaction_uuids</span> <span class="o">=</span> <span class="k">await</span> <span class="n">transaction</span><span class="o">.</span><span class="n">uuids</span>
 
-        <span class="n">qb</span> <span class="o">=</span> <span class="n">PostgreSqlSnapshotQueryBuilder</span><span class="p">(</span>
-            <span class="n">aggregate_name</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">ordering</span><span class="p">,</span> <span class="n">limit</span><span class="p">,</span> <span class="n">transaction_uuids</span><span class="p">,</span> <span class="n">exclude_deleted</span>
-        <span class="p">)</span>
+        <span class="n">qb</span> <span class="o">=</span> <span class="n">PostgreSqlSnapshotQueryBuilder</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">ordering</span><span class="p">,</span> <span class="n">limit</span><span class="p">,</span> <span class="n">transaction_uuids</span><span class="p">,</span> <span class="n">exclude_deleted</span><span class="p">)</span>
         <span class="n">query</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">qb</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 
         <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>

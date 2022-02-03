@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>History &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>History &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <a href="index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -57,6 +57,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#id7">0.2.4 (2022-01-11)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id8">0.4.0 (2022-01-27)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id9">0.4.1 (2022-01-31)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id10">0.5.0 (2022-02-03)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id11">0.5.1 (2022-02-03)</a></li>
 </ul>
 </li>
 </ul>
@@ -158,6 +160,24 @@
 <h2>0.4.1 (2022-01-31)<a class="headerlink" href="#id9" title="Permalink to this headline"></a></h2>
 <ul class="simple">
 <li><p>Update <code class="docutils literal notranslate"><span class="pre">README.md</span></code>.</p></li>
+</ul>
+</section>
+<section id="id10">
+<h2>0.5.0 (2022-02-03)<a class="headerlink" href="#id10" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Rename <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> as <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code>.</p></li>
+<li><p>Rename <code class="docutils literal notranslate"><span class="pre">AggregateRef</span></code> as <code class="docutils literal notranslate"><span class="pre">ExternalEntity</span></code>.</p></li>
+<li><p>Rename <code class="docutils literal notranslate"><span class="pre">ModelRef</span></code> as <code class="docutils literal notranslate"><span class="pre">Ref</span></code>.</p></li>
+<li><p>Rename <code class="docutils literal notranslate"><span class="pre">AggregateDiff</span></code> as <code class="docutils literal notranslate"><span class="pre">Event</span></code>.</p></li>
+<li><p>Create the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> base class, with the purpose to move the business logic from the <code class="docutils literal notranslate"><span class="pre">minos.cqrs.CommandService</span></code> to this brand-new class.</p></li>
+<li><p>Refactor internal module hierarchy.</p></li>
+<li><p>Minor changes.</p></li>
+</ul>
+</section>
+<section id="id11">
+<h2>0.5.1 (2022-02-03)<a class="headerlink" href="#id11" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Fix bug related with dependency specification.</p></li>
 </ul>
 </section>
 </section>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.events.repositories.pg &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>minos.aggregate.events.repositories.pg &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -133,8 +133,8 @@
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_submit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="n">EventEntry</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventEntry</span><span class="p">:</span>
         <span class="n">lock</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">aggregate_uuid</span> <span class="o">!=</span> <span class="n">NULL_UUID</span><span class="p">:</span>
-            <span class="n">lock</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">aggregate_uuid</span><span class="o">.</span><span class="n">int</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">32</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">uuid</span> <span class="o">!=</span> <span class="n">NULL_UUID</span><span class="p">:</span>
+            <span class="n">lock</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">uuid</span><span class="o">.</span><span class="n">int</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">32</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
 
         <span class="n">query</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_query</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
 
@@ -146,7 +146,7 @@
                 <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span>
             <span class="p">)</span>
 
-        <span class="n">entry</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">aggregate_uuid</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">created_at</span> <span class="o">=</span> <span class="n">response</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">created_at</span> <span class="o">=</span> <span class="n">response</span>
         <span class="k">return</span> <span class="n">entry</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_build_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="n">EventEntry</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Composable</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">UUID</span><span class="p">]]:</span>
@@ -180,8 +180,8 @@
     <span class="c1"># noinspection PyUnusedLocal</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_build_select_query</span><span class="p">(</span>
-        <span class="n">aggregate_uuid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">aggregate_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">uuid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">version_lt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">version_gt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -199,10 +199,10 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">conditions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">aggregate_uuid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;aggregate_uuid = </span><span class="si">%(aggregate_uuid)s</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">aggregate_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;aggregate_name = </span><span class="si">%(aggregate_name)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">uuid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;uuid = </span><span class="si">%(uuid)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;name = </span><span class="si">%(name)s</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;version = </span><span class="si">%(version)s</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">version_lt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -261,51 +261,51 @@
 <span class="s2">CREATE TABLE IF NOT EXISTS aggregate_event (</span>
 <span class="s2">    id BIGSERIAL PRIMARY KEY,</span>
 <span class="s2">    action ACTION_TYPE NOT NULL,</span>
-<span class="s2">    aggregate_uuid UUID NOT NULL,</span>
-<span class="s2">    aggregate_name TEXT NOT NULL,</span>
+<span class="s2">    uuid UUID NOT NULL,</span>
+<span class="s2">    name TEXT NOT NULL,</span>
 <span class="s2">    version INT NOT NULL,</span>
 <span class="s2">    data BYTEA NOT NULL,</span>
 <span class="s2">    created_at TIMESTAMPTZ NOT NULL,</span>
 <span class="s2">    transaction_uuid UUID NOT NULL DEFAULT uuid_nil(),</span>
-<span class="s2">    UNIQUE (aggregate_uuid, version, transaction_uuid)</span>
+<span class="s2">    UNIQUE (uuid, version, transaction_uuid)</span>
 <span class="s2">);</span>
 <span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
 <span class="n">_INSERT_VALUES_QUERY</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">INSERT INTO aggregate_event (id, action, aggregate_uuid, aggregate_name, version, data, created_at, transaction_uuid)</span>
+<span class="sd">INSERT INTO aggregate_event (id, action, uuid, name, version, data, created_at, transaction_uuid)</span>
 <span class="sd">VALUES (</span>
 <span class="sd">    default,</span>
 <span class="sd">    %(action)s,</span>
-<span class="sd">    CASE %(aggregate_uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(aggregate_uuid)s END,</span>
-<span class="sd">    %(aggregate_name)s,</span>
+<span class="sd">    CASE %(uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(uuid)s END,</span>
+<span class="sd">    %(name)s,</span>
 <span class="sd">    (</span>
 <span class="sd">        SELECT (CASE WHEN %(version)s IS NULL THEN 1 + COALESCE(MAX(t2.version), 0) ELSE %(version)s END)</span>
 <span class="sd">        FROM (</span>
-<span class="sd">                 SELECT DISTINCT ON (t1.aggregate_uuid) t1.version</span>
+<span class="sd">                 SELECT DISTINCT ON (t1.uuid) t1.version</span>
 <span class="sd">                 FROM ( {from_parts} ) AS t1</span>
-<span class="sd">                 ORDER BY t1.aggregate_uuid, t1.transaction_index DESC</span>
+<span class="sd">                 ORDER BY t1.uuid, t1.transaction_index DESC</span>
 <span class="sd">        ) AS t2</span>
 <span class="sd">    ),</span>
 <span class="sd">    %(data)s,</span>
 <span class="sd">    (CASE WHEN %(created_at)s IS NULL THEN NOW() ELSE %(created_at)s END),</span>
 <span class="sd">    %(transaction_uuid)s</span>
 <span class="sd">)</span>
-<span class="sd">RETURNING id, aggregate_uuid, version, created_at;</span>
+<span class="sd">RETURNING id, uuid, version, created_at;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <span class="p">)</span>
 
 <span class="n">_SELECT_TRANSACTION_CHUNK</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">SELECT {index} AS transaction_index, aggregate_uuid, MAX(version) AS version</span>
+<span class="sd">SELECT {index} AS transaction_index, uuid, MAX(version) AS version</span>
 <span class="sd">FROM aggregate_event</span>
-<span class="sd">WHERE aggregate_uuid = %(aggregate_uuid)s AND transaction_uuid = {transaction_uuid}</span>
-<span class="sd">GROUP BY aggregate_uuid</span>
+<span class="sd">WHERE uuid = %(uuid)s AND transaction_uuid = {transaction_uuid}</span>
+<span class="sd">GROUP BY uuid</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <span class="p">)</span>
 
 <span class="n">_SELECT_ALL_ENTRIES_QUERY</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">SELECT aggregate_uuid, aggregate_name, version, data, id, action, created_at, transaction_uuid</span>
+<span class="s2">SELECT uuid, name, version, data, id, action, created_at, transaction_uuid</span>
 <span class="s2">FROM aggregate_event</span>
 <span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 

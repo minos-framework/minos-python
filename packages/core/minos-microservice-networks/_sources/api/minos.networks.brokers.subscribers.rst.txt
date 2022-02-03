@@ -21,5 +21,4 @@ Submodules
    :maxdepth: 4
 
    minos.networks.brokers.subscribers.abc
-   minos.networks.brokers.subscribers.kafka
    minos.networks.brokers.subscribers.memory

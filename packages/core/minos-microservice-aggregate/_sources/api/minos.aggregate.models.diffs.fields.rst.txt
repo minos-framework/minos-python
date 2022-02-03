@@ -1,7 +1,0 @@
-minos.aggregate.models.diffs.fields module
-==========================================
-
-.. automodule:: minos.aggregate.models.diffs.fields
-   :members:
-   :undoc-members:
-   :show-inheritance:

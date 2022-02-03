@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.events.repositories.memory &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>minos.aggregate.events.repositories.memory &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -118,8 +118,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_next_versions</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span></div>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_submit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="n">EventEntry</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventEntry</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">aggregate_uuid</span> <span class="o">==</span> <span class="n">NULL_UUID</span><span class="p">:</span>
-            <span class="n">entry</span><span class="o">.</span><span class="n">aggregate_uuid</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">uuid</span> <span class="o">==</span> <span class="n">NULL_UUID</span><span class="p">:</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span>
 
         <span class="n">next_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_next_version_id</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -141,14 +141,14 @@
         <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id_generator</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
     <span class="k">def</span> <span class="nf">_get_next_version_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="n">EventEntry</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">aggregate_name</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">aggregate_uuid</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">transaction_uuid</span><span class="p">)</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">transaction_uuid</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_next_versions</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_versions</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_select</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">aggregate_uuid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">aggregate_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">uuid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">version_lt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">version_gt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -168,9 +168,9 @@
 
         <span class="c1"># noinspection DuplicatedCode</span>
         <span class="k">def</span> <span class="nf">_fn_filter</span><span class="p">(</span><span class="n">entry</span><span class="p">:</span> <span class="n">EventEntry</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">aggregate_uuid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">aggregate_uuid</span> <span class="o">!=</span> <span class="n">entry</span><span class="o">.</span><span class="n">aggregate_uuid</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">uuid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">uuid</span> <span class="o">!=</span> <span class="n">entry</span><span class="o">.</span><span class="n">uuid</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
-            <span class="k">if</span> <span class="n">aggregate_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">aggregate_name</span> <span class="o">!=</span> <span class="n">entry</span><span class="o">.</span><span class="n">aggregate_name</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">name</span> <span class="o">!=</span> <span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
             <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">version</span> <span class="o">!=</span> <span class="n">entry</span><span class="o">.</span><span class="n">version</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>

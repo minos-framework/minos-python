@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.snapshots.pg.queries &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>minos.aggregate.snapshots.pg.queries &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -134,14 +134,14 @@
 
 <div class="viewcode-block" id="PostgreSqlSnapshotQueryBuilder.__init__"><a class="viewcode-back" href="../../../../../api/minos.aggregate.snapshots.pg.queries.html#minos.aggregate.snapshots.pg.queries.PostgreSqlSnapshotQueryBuilder.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">aggregate_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">condition</span><span class="p">:</span> <span class="n">_Condition</span><span class="p">,</span>
         <span class="n">ordering</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_Ordering</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">transaction_uuids</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">UUID</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">NULL_UUID</span><span class="p">,),</span>
         <span class="n">exclude_deleted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_name</span> <span class="o">=</span> <span class="n">aggregate_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">condition</span> <span class="o">=</span> <span class="n">condition</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span> <span class="o">=</span> <span class="n">ordering</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">limit</span> <span class="o">=</span> <span class="n">limit</span>
@@ -168,7 +168,7 @@
         <span class="k">return</span> <span class="n">query</span><span class="p">,</span> <span class="n">parameters</span></div>
 
     <span class="k">def</span> <span class="nf">_build</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Composable</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;aggregate_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
 
         <span class="n">query</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot; WHERE &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_select_from</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_condition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">condition</span><span class="p">)])</span>
 
@@ -288,7 +288,7 @@
 <span class="p">}</span>
 
 <span class="n">_FIXED_FIELDS_MAPPER</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">Identifier</span><span class="p">(</span><span class="s2">&quot;aggregate_uuid&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">Identifier</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">),</span>
     <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">Identifier</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">),</span>
     <span class="s2">&quot;created_at&quot;</span><span class="p">:</span> <span class="n">Identifier</span><span class="p">(</span><span class="s2">&quot;created_at&quot;</span><span class="p">),</span>
     <span class="s2">&quot;updated_at&quot;</span><span class="p">:</span> <span class="n">Identifier</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">),</span>
@@ -301,8 +301,8 @@
 
 <span class="n">_SELECT_ENTRIES_QUERY</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span>
     <span class="s2">&quot;SELECT &quot;</span>
-    <span class="s2">&quot;   t2.aggregate_uuid, &quot;</span>
-    <span class="s2">&quot;   t2.aggregate_name, &quot;</span>
+    <span class="s2">&quot;   t2.uuid, &quot;</span>
+    <span class="s2">&quot;   t2.name, &quot;</span>
     <span class="s2">&quot;   t2.version, &quot;</span>
     <span class="s2">&quot;   t2.schema, &quot;</span>
     <span class="s2">&quot;   t2.data, &quot;</span>
@@ -310,16 +310,16 @@
     <span class="s2">&quot;   t2.updated_at, &quot;</span>
     <span class="s2">&quot;   t2.transaction_uuid &quot;</span>
     <span class="s2">&quot;FROM (&quot;</span>
-    <span class="s2">&quot;   SELECT DISTINCT ON (aggregate_uuid) t1.* &quot;</span>
+    <span class="s2">&quot;   SELECT DISTINCT ON (uuid) t1.* &quot;</span>
     <span class="s2">&quot;   FROM ( </span><span class="si">{from_parts}</span><span class="s2"> ) AS t1 &quot;</span>
-    <span class="s2">&quot;   ORDER BY aggregate_uuid, transaction_index DESC &quot;</span>
+    <span class="s2">&quot;   ORDER BY uuid, transaction_index DESC &quot;</span>
     <span class="s2">&quot;) AS t2&quot;</span>
 <span class="p">)</span>
 
 <span class="n">_SELECT_TRANSACTION_CHUNK</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span>
     <span class="s2">&quot;SELECT </span><span class="si">{index}</span><span class="s2"> AS transaction_index, * &quot;</span>
     <span class="s2">&quot;FROM snapshot &quot;</span>
-    <span class="s2">&quot;WHERE aggregate_name = </span><span class="si">%(aggregate_name)s</span><span class="s2"> AND transaction_uuid = </span><span class="si">{transaction_uuid}</span><span class="s2"> &quot;</span>
+    <span class="s2">&quot;WHERE name = </span><span class="si">%(name)s</span><span class="s2"> AND transaction_uuid = </span><span class="si">{transaction_uuid}</span><span class="s2"> &quot;</span>
 <span class="p">)</span>
 
 <span class="n">_EXCLUDE_DELETED_CONDITION</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;(data IS NOT NULL)&quot;</span><span class="p">)</span>

@@ -40,36 +40,34 @@
               <!-- Local TOC -->
               <div class="local-toc"><ul>
 <li><a class="reference internal" href="#">minos-python: The framework which helps you create reactive microservices in Python</a><ul>
-<li><a class="reference internal" href="#summary">Summary</a></li>
-<li><a class="reference internal" href="#foundational-patterns">Foundational Patterns</a><ul>
-<li><a class="reference internal" href="#application-architecture">Application architecture</a></li>
-<li><a class="reference internal" href="#decomposition">Decomposition</a></li>
-<li><a class="reference internal" href="#data-management">Data management</a></li>
-<li><a class="reference internal" href="#communication-style">Communication style</a></li>
-<li><a class="reference internal" href="#external-apis">External APIs</a></li>
-<li><a class="reference internal" href="#service-discovery">Service discovery</a></li>
-<li><a class="reference internal" href="#security">Security</a></li>
-<li><a class="reference internal" href="#observability">Observability</a></li>
+<li><a class="reference internal" href="#summary">Summary</a><ul>
+<li><a class="reference internal" href="#roadmap">Roadmap</a><ul>
+<li><a class="reference internal" href="#x">0.6.x</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#installation">Installation</a><ul>
-<li><a class="reference internal" href="#guided-installation">Guided installation</a></li>
-<li><a class="reference internal" href="#manual-installation">Manual installation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#usage">Usage</a><ul>
+<li><a class="reference internal" href="#foundational-patterns">Foundational Patterns</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#quickstart">QuickStart</a><ul>
+<li><a class="reference internal" href="#set-up-the-environment">Set up the environment</a></li>
+<li><a class="reference internal" href="#install-the-dependencies">Install the dependencies</a></li>
+<li><a class="reference internal" href="#configure-a-microservice">Configure a Microservice</a></li>
 <li><a class="reference internal" href="#create-an-aggregate">Create an Aggregate</a></li>
 <li><a class="reference internal" href="#expose-a-command">Expose a Command</a></li>
 <li><a class="reference internal" href="#subscribe-to-an-event-and-expose-a-query">Subscribe to an Event and Expose a Query</a></li>
-<li><a class="reference internal" href="#interact-with-another-microservice">Interact with another Microservice</a></li>
+<li><a class="reference internal" href="#interact-with-another-microservice">Interact with another Microservice</a><ul>
+<li><a class="reference internal" href="#the-foobar-microservice">The <code class="docutils literal notranslate"><span class="pre">foobar</span></code> Microservice</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#documentation">Documentation</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#packages">Packages</a><ul>
 <li><a class="reference internal" href="#core">Core</a></li>
 <li><a class="reference internal" href="#plugins">Plugins</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
 <li><a class="reference internal" href="#source-code">Source Code</a></li>
 <li><a class="reference internal" href="#getting-help">Getting Help</a></li>
 <li><a class="reference internal" href="#discussion-and-development">Discussion and Development</a></li>
@@ -121,73 +119,76 @@
 <section id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline"></a></h2>
 <p>Minos is a framework which helps you create <a class="reference external" href="https://www.reactivemanifesto.org/">reactive</a> microservices in Python. Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an asynchronous environment.</p>
+<section id="roadmap">
+<h3>Roadmap<a class="headerlink" href="#roadmap" title="Permalink to this headline"></a></h3>
+<section id="x">
+<h4>0.6.x<a class="headerlink" href="#x" title="Permalink to this headline"></a></h4>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/78">#78</a> Implement a circuit breaker for <code class="docutils literal notranslate"><span class="pre">minos-broker-kafka</span></code>.</p></li>
+<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/87">#87</a> Implement idempotency for <code class="docutils literal notranslate"><span class="pre">BrokerSubscriber</span></code> message processing.</p></li>
+<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/100">#100</a> Create the <code class="docutils literal notranslate"><span class="pre">minos-serializers-avro</span></code> plugin.</p></li>
+<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/148">#148</a> Create the <code class="docutils literal notranslate"><span class="pre">minos-rest-aiohttp</span></code>.</p></li>
+<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/149">#149</a> Add <code class="docutils literal notranslate"><span class="pre">minos-graphql-aiohttp</span></code> plugin.</p></li>
+<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/150">#150</a> Refactor configuration file and <code class="docutils literal notranslate"><span class="pre">MinosConfig</span></code> accessor.</p></li>
+<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/151">#151</a> Expose <code class="docutils literal notranslate"><span class="pre">OpenAPI</span></code> and <code class="docutils literal notranslate"><span class="pre">AsyncAPI</span></code> specifications.</p></li>
+<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/152">#152</a> Provide a testing suite to test the microservice.</p></li>
+</ul>
+</section>
+</section>
 </section>
 <section id="foundational-patterns">
 <h2>Foundational Patterns<a class="headerlink" href="#foundational-patterns" title="Permalink to this headline"></a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework is built strongly following the following set of patterns:</p>
-<section id="application-architecture">
-<h3>Application architecture<a class="headerlink" href="#application-architecture" title="Permalink to this headline"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework is built strongly inspired by the following set of patterns:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://microservices.io/patterns/microservices.html">Microservice architecture</a>: Architect an application as a collection of loosely coupled services.</p></li>
-</ul>
-</section>
-<section id="decomposition">
-<h3>Decomposition<a class="headerlink" href="#decomposition" title="Permalink to this headline"></a></h3>
-<ul class="simple">
 <li><p><a class="reference external" href="https://microservices.io/patterns/decomposition/decompose-by-subdomain.html">Decompose by subdomain</a>: Define services corresponding to Domain-Driven Design (DDD) subdomains</p></li>
 <li><p><a class="reference external" href="https://microservices.io/patterns/decomposition/self-contained-service.html">Self-contained Service</a>: Microservices can respond to a synchronous request without waiting for the response from any other service.</p></li>
-</ul>
-</section>
-<section id="data-management">
-<h3>Data management<a class="headerlink" href="#data-management" title="Permalink to this headline"></a></h3>
-<ul class="simple">
 <li><p><a class="reference external" href="https://microservices.io/patterns/data/database-per-service.html">Database per service</a>: Keep each microservice’s persistent data private to that service and accessible only via its API. A service’s transactions only involve its database.</p></li>
 <li><p><a class="reference external" href="https://microservices.io/patterns/data/saga.html">Saga</a>: Transaction that spans multiple services.</p></li>
 <li><p><a class="reference external" href="https://microservices.io/patterns/data/cqrs.html">CQRS</a>: view database, which is a read-only replica that is designed to support queries that retrieves data from microservice. The application keeps the replica up to date by subscribing to Domain events published by the service that own the data.</p></li>
 <li><p><a class="reference external" href="https://microservices.io/patterns/data/domain-event.html">Domain event</a>: A service often needs to publish events when it updates its data. These events might be needed, for example, to update a CQRS view.</p></li>
 <li><p><a class="reference external" href="https://microservices.io/patterns/data/event-sourcing.html">Event Sourcing</a>: Event sourcing persists the state of a business entity such an Order or a Customer as a sequence of state-changing events. Whenever the state of a business entity changes, a new event is appended to the list of events. Since saving an event is a single operation, it is inherently atomic. The application reconstructs an entity’s current state by replaying the events.</p></li>
-</ul>
-</section>
-<section id="communication-style">
-<h3>Communication style<a class="headerlink" href="#communication-style" title="Permalink to this headline"></a></h3>
-<ul class="simple">
 <li><p><a class="reference external" href="https://microservices.io/patterns/communication-style/messaging.html">Messaging</a>: Services communicating by exchanging messages over messaging channels. (Apache Kafka is used in this case)</p></li>
-</ul>
-</section>
-<section id="external-apis">
-<h3>External APIs<a class="headerlink" href="#external-apis" title="Permalink to this headline"></a></h3>
-<ul class="simple">
 <li><p><a class="reference external" href="https://microservices.io/patterns/apigateway.html">API gateway</a>: Single entry point for all clients. The API gateway proxy/route to the appropriate service.</p></li>
-</ul>
-</section>
-<section id="service-discovery">
-<h3>Service discovery<a class="headerlink" href="#service-discovery" title="Permalink to this headline"></a></h3>
-<ul class="simple">
 <li><p><a class="reference external" href="https://microservices.io/patterns/service-registry.html">Service registry</a>: Database of services. A service registry might invoke a service instance’s health check API to verify that it is able to handle requests</p></li>
 <li><p><a class="reference external" href="https://microservices.io/patterns/self-registration.html">Self Registration</a>: Each service instance register on startup and unregister on stop.</p></li>
-</ul>
-</section>
-<section id="security">
-<h3>Security<a class="headerlink" href="#security" title="Permalink to this headline"></a></h3>
-<ul class="simple">
 <li><p><a class="reference external" href="https://microservices.io/patterns/security/access-token.html">Access token</a>: The API Gateway authenticates the request and passes an access token (e.g. JSON Web Token) that securely identifies the requestor in each request to the services. A service can include the access token in requests it makes to other services.</p></li>
-</ul>
-</section>
-<section id="observability">
-<h3>Observability<a class="headerlink" href="#observability" title="Permalink to this headline"></a></h3>
-<ul class="simple">
 <li><p><a class="reference external" href="https://microservices.io/patterns/observability/health-check-api.html">Health Check API</a>: A service has a health check API endpoint (e.g. HTTP <code class="docutils literal notranslate"><span class="pre">/health</span></code>) that returns the health of the service.</p></li>
 </ul>
 </section>
-</section>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h2>
-<section id="guided-installation">
-<h3>Guided installation<a class="headerlink" href="#guided-installation" title="Permalink to this headline"></a></h3>
-<p>The easiest way to use <code class="docutils literal notranslate"><span class="pre">minos</span></code> is with the help of the <cite>``minos-cli`</cite> &lt;<a class="reference external" href="https://github.com/minos-framework/minos-cli">https://github.com/minos-framework/minos-cli</a>&gt;`_, which provides commands to setup both the project skeleton (configures containerization, databases, brokers, etc.) and the microservice skeleton (the base microservice structure, environment configuration, etc.)</p>
+<p>The easiest way to manage a project is with the <code class="docutils literal notranslate"><span class="pre">minos</span></code> command-line interface, which provides commands to setup both the project skeleton (configures containerization, databases, brokers, etc.) and the microservice skeleton (the base microservice structure, environment configuration, etc.).</p>
+<p>You can install it with:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip install minos-cli
+</pre></div>
+</div>
+<p>Here is a summary containing the most useful commands:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">minos</span> <span class="pre">new</span> <span class="pre">project</span> <span class="pre">$NAME</span></code>: Create a new Project</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minos</span> <span class="pre">set</span> <span class="pre">$RESOURCE</span> <span class="pre">$BACKEND</span></code>: Configure an environment resource (broker, database, etc.).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minos</span> <span class="pre">deploy</span> <span class="pre">project</span></code>: Deploy a project.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minos</span> <span class="pre">new</span> <span class="pre">microservice</span> <span class="pre">$NAME</span></code>: Create a new microservice.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minos</span> <span class="pre">deploy</span> <span class="pre">microservice</span></code> deploy a microservice.</p></li>
+</ul>
+<p>For more information, visit the <cite>``minos-cli`</cite> &lt;<a class="reference external" href="https://github.com/minos-framework/minos-cli">https://github.com/minos-framework/minos-cli</a>&gt;`_ repository.</p>
 </section>
-<section id="manual-installation">
-<h3>Manual installation<a class="headerlink" href="#manual-installation" title="Permalink to this headline"></a></h3>
+<section id="quickstart">
+<h2>QuickStart<a class="headerlink" href="#quickstart" title="Permalink to this headline"></a></h2>
+<p>This section includes a quickstart guide to create your first <code class="docutils literal notranslate"><span class="pre">minos</span></code> microservice, so that anyone can get the gist of the framework.</p>
+<section id="set-up-the-environment">
+<h3>Set up the environment<a class="headerlink" href="#set-up-the-environment" title="Permalink to this headline"></a></h3>
+<p>The required environment to run this quickstart is the following:</p>
+<ul class="simple">
+<li><p>A <code class="docutils literal notranslate"><span class="pre">python&gt;=3.9</span></code> interpreter with version equal or greater to .</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">kafka</span></code> instance available at <code class="docutils literal notranslate"><span class="pre">localhost:9092</span></code></p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">postgres</span></code> instance available at <code class="docutils literal notranslate"><span class="pre">localhost:5432</span></code> with the <code class="docutils literal notranslate"><span class="pre">foo_db</span></code> and <code class="docutils literal notranslate"><span class="pre">foobar_db</span></code> databases accessible with the <code class="docutils literal notranslate"><span class="pre">user:pass</span></code> credentials.</p></li>
+<li><p>Two TCP sockets available to use at <code class="docutils literal notranslate"><span class="pre">localhost:4545</span></code> and <code class="docutils literal notranslate"><span class="pre">localhost:4546</span></code>.</p></li>
+</ul>
+<p>Note that these parameters can be customized on the configuration files.</p>
+</section>
+<section id="install-the-dependencies">
+<h3>Install the dependencies<a class="headerlink" href="#install-the-dependencies" title="Permalink to this headline"></a></h3>
 <p>If you want to directly use <code class="docutils literal notranslate"><span class="pre">minos</span></code> without the command-line utility, the following command will install the needed packages:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip install <span class="se">\</span>
   minos-microservice-aggregate <span class="se">\</span>
@@ -195,39 +196,263 @@
   minos-microservice-cqrs <span class="se">\</span>
   minos-microservice-networks <span class="se">\</span>
   minos-microservice-saga
+  minos-broker-kafka
 </pre></div>
 </div>
 </section>
-</section>
-<section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline"></a></h2>
-<p>This section includes a set of minimal examples of how-to-work with <code class="docutils literal notranslate"><span class="pre">minos</span></code>, so that anyone can get the gist of the framework.</p>
-<section id="create-an-aggregate">
-<h3>Create an Aggregate<a class="headerlink" href="#create-an-aggregate" title="Permalink to this headline"></a></h3>
-<p>Here is an example of the creation the <code class="docutils literal notranslate"><span class="pre">Foo</span></code> aggregate. In this case, it has two attributes, a <code class="docutils literal notranslate"><span class="pre">bar</span></code> being a <code class="docutils literal notranslate"><span class="pre">str</span></code>, and a <code class="docutils literal notranslate"><span class="pre">foobar</span></code> being an optional reference to the external <code class="docutils literal notranslate"><span class="pre">FooBar</span></code> aggregate, which it is assumed that it has a <code class="docutils literal notranslate"><span class="pre">something</span></code> attribute.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
-<span class="kn">from</span> <span class="nn">minos.aggregate</span> <span class="kn">import</span> <span class="n">Aggregate</span><span class="p">,</span> <span class="n">AggregateRef</span><span class="p">,</span> <span class="n">ModelRef</span>
+<section id="configure-a-microservice">
+<h3>Configure a Microservice<a class="headerlink" href="#configure-a-microservice" title="Permalink to this headline"></a></h3>
+<p>To keep things simpler, this quickstart will create a microservice assuming all the source code is stored on a single <code class="docutils literal notranslate"><span class="pre">foo/main.py</span></code> file. In addition to the source file, a <code class="docutils literal notranslate"><span class="pre">foo/config.yml</span></code> will contain all the configuration stuff.</p>
+<p>The directory structure will become:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>.
+└── foo
+    ├── config.yml
+    └── main.py
+</pre></div>
+</div>
+<p>Create a <code class="docutils literal notranslate"><span class="pre">foo/config.yml</span></code> file and add the following lines:</p>
+<details>
+  <summary>Click to show the full file</summary>
+
+```yaml
+# foo/config.yml
+
+service:
+  name: foo
+  aggregate: main.Foo
+  injections:
+    lock_pool: minos.common.PostgreSqlLockPool
+    postgresql_pool: minos.common.PostgreSqlPool
+    broker_publisher: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerPublisher
+    broker_subscriber_builder: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
+    broker_pool: minos.networks.BrokerClientPool
+    transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
+    event_repository: minos.aggregate.PostgreSqlEventRepository
+    snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
+    saga_manager: minos.saga.SagaManager
+    discovery: minos.networks.DiscoveryConnector
+  services:
+    - minos.networks.BrokerHandlerService
+    - minos.networks.RestService
+    - minos.networks.PeriodicTaskSchedulerService
+middleware:
+  - minos.saga.transactional_command
+services:
+  - minos.aggregate.TransactionService
+  - minos.aggregate.SnapshotService
+  - minos.saga.SagaService
+  - main.FooCommandService
+  - main.FooQueryService
+rest:
+  host: 0.0.0.0
+  port: 4545
+broker:
+  host: localhost
+  port: 9092
+  queue:
+    database: foo_db
+    user: user
+    password: pass
+    host: localhost
+    port: 5432
+    records: 1000
+    retry: 2
+repository:
+  database: foo_db
+  user: user
+  password: pass
+  host: localhost
+  port: 5432
+snapshot:
+  database: foo_db
+  user: user
+  password: pass
+  host: localhost
+  port: 5432
+saga:
+  storage:
+    path: "./foo.lmdb"
+discovery:
+  client: minos.networks.InMemoryDiscoveryClient
+  host: localhost
+  port: 5567
+```
+
+</details><p>Create a <code class="docutils literal notranslate"><span class="pre">foo/main.py</span></code> file and add the following content:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># foo/main.py</span>
+
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">minos.aggregate</span> <span class="kn">import</span> <span class="n">Aggregate</span><span class="p">,</span> <span class="n">RootEntity</span>
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="n">EntrypointLauncher</span>
+<span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="n">CommandService</span><span class="p">,</span> <span class="n">QueryService</span>
 
 
-<span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">RootEntity</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Foo RootEntity class.&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">FooAggregate</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">[</span><span class="n">Foo</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;Foo Aggregate class.&quot;&quot;&quot;</span>
 
-    <span class="n">bar</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">foobar</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModelRef</span><span class="p">[</span><span class="n">FooBar</span><span class="p">]]</span>
+
+<span class="k">class</span> <span class="nc">FooCommandService</span><span class="p">(</span><span class="n">CommandService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Foo Command Service class.&quot;&quot;&quot;</span>
 
 
-<span class="k">class</span> <span class="nc">FooBar</span><span class="p">(</span><span class="n">AggregateRef</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;FooBar AggregateRef clas.&quot;&quot;&quot;</span>
+<span class="k">class</span> <span class="nc">FooQueryService</span><span class="p">(</span><span class="n">QueryService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Foo Query Service class.&quot;&quot;&quot;</span>
 
-    <span class="n">something</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">launcher</span> <span class="o">=</span> <span class="n">EntrypointLauncher</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;config.yml&quot;</span><span class="p">)</span>
+    <span class="n">launcher</span><span class="o">.</span><span class="n">launch</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Execute the following command to start the microservice:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python foo/main.py
 </pre></div>
 </div>
 </section>
+<section id="create-an-aggregate">
+<h3>Create an Aggregate<a class="headerlink" href="#create-an-aggregate" title="Permalink to this headline"></a></h3>
+<p>The way to model data in <code class="docutils literal notranslate"><span class="pre">minos</span></code> is highly inspired by the  <a class="reference external" href="https://microservices.io/patterns/data/event-sourcing.html">Event Sourcing</a> ideas. For this reason, the classes to be used to model data are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.Entity</span></code>: A model that has an identifier that gives it a unique identity, in the sense that some values from which it is composed could change, but its identity will continue being the same.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.ExternalEntity</span></code>: A model that belongs to another microservice (or aggregate boundary) but needs to be used for some reason inside this microservice (or aggregate boundary).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.RootEntity</span></code>: Is an <code class="docutils literal notranslate"><span class="pre">Entity</span></code> superset that provides global identity across the project compared to standard <code class="docutils literal notranslate"><span class="pre">Entity</span></code> models, that has only local identity (the <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> can be accessed from another microservices as <code class="docutils literal notranslate"><span class="pre">ExternalEntity</span></code> models, but standard <code class="docutils literal notranslate"><span class="pre">Entity</span></code> models can only be accessed within the microservice that define them). The <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> is also the one that interacts with the persistence layer (the <code class="docutils literal notranslate"><span class="pre">EventRepository</span></code> and <code class="docutils literal notranslate"><span class="pre">SnapshotRepository</span></code> instances).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.Ref</span></code>: A wrapper class that provides the functionality to store a reference of other <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> or <code class="docutils literal notranslate"><span class="pre">ExternalEntity</span></code> instances.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.EntitySet</span></code>: A container of <code class="docutils literal notranslate"><span class="pre">Entity</span></code> instances that takes advantage of the incremental behaviour of the <code class="docutils literal notranslate"><span class="pre">EventRepository</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.ValueObject</span></code>: A model that is only identified by the values that compose it, so that if some of them changes, then the model becomes completely different (for that reason, these models are immutable).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.ValueObjectSet</span></code>: A container of <code class="docutils literal notranslate"><span class="pre">ValueObject</span></code> instances that takes advantage of the incremental behaviour of the <a href="#id10"><span class="problematic" id="id11">`</span></a>EventRepository.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.Aggregate</span></code>: A collection of <code class="docutils literal notranslate"><span class="pre">Entity</span></code> and/or <code class="docutils literal notranslate"><span class="pre">ValueObject</span></code> models that are related to each other through a <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.Event</span></code>: A model that contains the difference between the a <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> instance and its previous version (if any).</p></li>
+</ul>
+<p>Here is an example of the creation the <code class="docutils literal notranslate"><span class="pre">Foo</span></code> aggregate. In this case, it has two attributes, a <code class="docutils literal notranslate"><span class="pre">bar</span></code> being a <code class="docutils literal notranslate"><span class="pre">str</span></code>, and a <code class="docutils literal notranslate"><span class="pre">foobar</span></code> being an optional reference to the external <code class="docutils literal notranslate"><span class="pre">FooBar</span></code> aggregate, which it is assumed that it has a <code class="docutils literal notranslate"><span class="pre">something</span></code> attribute.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># foo/main.py</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">UUID</span>
+<span class="kn">from</span> <span class="nn">minos.aggregate</span> <span class="kn">import</span> <span class="n">Aggregate</span><span class="p">,</span> <span class="n">RootEntity</span><span class="p">,</span> <span class="n">ExternalEntity</span><span class="p">,</span> <span class="n">Ref</span>
+
+
+<span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">RootEntity</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Foo RootEntity class.&quot;&quot;&quot;</span>
+
+    <span class="n">bar</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">foobar</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Ref</span><span class="p">[</span><span class="n">FooBar</span><span class="p">]]</span>
+
+
+<span class="k">class</span> <span class="nc">FooBar</span><span class="p">(</span><span class="n">ExternalEntity</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;FooBar ExternalEntity clas.&quot;&quot;&quot;</span>
+
+    <span class="n">something</span><span class="p">:</span> <span class="nb">str</span>
+
+
+<span class="k">class</span> <span class="nc">FooAggregate</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">[</span><span class="n">Foo</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Foo Aggregate class.&quot;&quot;&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">create_foo</span><span class="p">(</span><span class="n">bar</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UUID</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Create a new Foo instance</span>
+
+<span class="sd">        :param bar: The bar of the new instance.</span>
+<span class="sd">        :return: The identifier of the new instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">foo</span> <span class="o">=</span> <span class="k">await</span> <span class="n">Foo</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">foo</span><span class="o">.</span><span class="n">uuid</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">update_foobar</span><span class="p">(</span><span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">foobar</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Ref</span><span class="p">[</span><span class="n">FooBar</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Update the foobar attribute of the ``Foo`` instance.</span>
+
+<span class="sd">        :param uuid: The identifier of the ``Foo`` instance.</span>
+<span class="sd">        :param foobar: The foobar value to be set.</span>
+<span class="sd">        :return: This method does not return anything.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">foo</span> <span class="o">=</span> <span class="k">await</span> <span class="n">Foo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="n">foo</span><span class="o">.</span><span class="n">foobar</span> <span class="o">=</span> <span class="n">foobar</span>
+        <span class="k">await</span> <span class="n">foo</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+<details>
+  <summary>Click to show the full file</summary>
+
+```python
+# foo/main.py
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Optional
+from uuid import UUID
+
+from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
+from minos.common import EntrypointLauncher
+from minos.cqrs import CommandService, QueryService
+
+
+class Foo(RootEntity):
+    """Foo RootEntity class."""
+
+    bar: str
+    foobar: Optional[Ref[FooBar]]
+
+
+class FooBar(ExternalEntity):
+    """FooBar ExternalEntity clas."""
+
+    something: str
+
+
+class FooAggregate(Aggregate[Foo]):
+    """Foo Aggregate class."""
+
+    @staticmethod
+    async def create_foo(bar: str) -> UUID:
+        """Create a new Foo instance
+
+        :param bar: The bar of the new instance.
+        :return: The identifier of the new instance.
+        """
+        foo = await Foo.create(bar)
+
+        return foo.uuid
+
+    @staticmethod
+    async def update_foobar(uuid: UUID, foobar: Optional[Ref[FooBar]]) -> None:
+        """Update the foobar attribute of the ``Foo`` instance.
+
+        :param uuid: The identifier of the ``Foo`` instance.
+        :param foobar: The foobar value to be set.
+        :return: This method does not return anything.
+        """
+        foo = await Foo.get(uuid)
+        foo.foobar = foobar
+        await foo.save()
+
+
+class FooCommandService(CommandService):
+    """Foo Command Service class."""
+
+
+class FooQueryService(QueryService):
+    """Foo Query Service class."""
+
+
+if __name__ == '__main__':
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
+    launcher.launch()
+```
+
+</details></section>
 <section id="expose-a-command">
 <h3>Expose a Command<a class="headerlink" href="#expose-a-command" title="Permalink to this headline"></a></h3>
 <p>Here is an example of the definition of a command to create <code class="docutils literal notranslate"><span class="pre">Foo</span></code> instances. To do that, it is necessary to define a <code class="docutils literal notranslate"><span class="pre">CommandService</span></code> that contains the handling function. It will handle both the broker messages sent to the <code class="docutils literal notranslate"><span class="pre">&quot;CreateFoo&quot;</span></code> topic and the rest calls to the <code class="docutils literal notranslate"><span class="pre">&quot;/foos&quot;</span></code> path with the <code class="docutils literal notranslate"><span class="pre">&quot;POST&quot;</span></code> method. In this case, the handling function unpacks the <code class="docutils literal notranslate"><span class="pre">Request</span></code>‘s content and then calls the <code class="docutils literal notranslate"><span class="pre">create</span></code> method from the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code>, which stores the <code class="docutils literal notranslate"><span class="pre">Foo</span></code> instance following an event-driven strategy (it also publishes the <code class="docutils literal notranslate"><span class="pre">&quot;FooCreated&quot;</span></code> event). Finally, a <code class="docutils literal notranslate"><span class="pre">Response</span></code> is returned to be handled by the external caller (another microservice or the API-gateway).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="n">CommandService</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># foo/main.py</span>
+
+<span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="n">CommandService</span>
 <span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="n">enroute</span><span class="p">,</span> <span class="n">Request</span><span class="p">,</span> <span class="n">Response</span>
 
 
@@ -245,17 +470,123 @@
         <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
         <span class="n">bar</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;bar&quot;</span><span class="p">]</span>
 
-        <span class="n">foo</span> <span class="o">=</span> <span class="k">await</span> <span class="n">Foo</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
+        <span class="n">uuid</span> <span class="o">=</span> <span class="k">await</span> <span class="n">FooAggregate</span><span class="o">.</span><span class="n">create_foo</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">foo</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">uuid</span><span class="p">})</span>
+</pre></div>
+</div>
+<details>
+  <summary>Click to show the full file</summary>
+
+```python
+# foo/main.py
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Optional
+from uuid import UUID
+
+from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
+from minos.common import EntrypointLauncher
+from minos.cqrs import CommandService, QueryService
+from minos.networks import Request, Response, enroute
+
+
+class Foo(RootEntity):
+    """Foo RootEntity class."""
+
+    bar: str
+    foobar: Optional[Ref[FooBar]]
+
+
+class FooBar(ExternalEntity):
+    """FooBar ExternalEntity clas."""
+
+    something: str
+
+
+class FooAggregate(Aggregate[Foo]):
+    """Foo Aggregate class."""
+
+    @staticmethod
+    async def create_foo(bar: str) -> UUID:
+        """Create a new Foo instance
+
+        :param bar: The bar of the new instance.
+        :return: The identifier of the new instance.
+        """
+        foo = await Foo.create(bar)
+
+        return foo.uuid
+
+    @staticmethod
+    async def update_foobar(uuid: UUID, foobar: Optional[Ref[FooBar]]) -> None:
+        """Update the foobar attribute of the ``Foo`` instance.
+
+        :param uuid: The identifier of the ``Foo`` instance.
+        :param foobar: The foobar value to be set.
+        :return: This method does not return anything.
+        """
+        foo = await Foo.get(uuid)
+        foo.foobar = foobar
+        await foo.save()
+
+
+class FooCommandService(CommandService):
+    """Foo Command Service class."""
+
+    @enroute.broker.command("CreateFoo")
+    @enroute.rest.command("/foos", "POST")
+    async def create_foo(self, request: Request) -> Response:
+        """Create a new Foo.
+
+        :param request: The ``Request`` that contains the ``bar`` attribute.
+        :return: A ``Response`` containing identifier of the already created instance.
+        """
+        content = await request.content()
+        bar = content["bar"]
+
+        uuid = await FooAggregate.create_foo(bar)
+
+        return Response({"uuid": uuid})
+
+
+class FooQueryService(QueryService):
+    """Foo Query Service class."""
+
+
+if __name__ == '__main__':
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
+    launcher.launch()
+```
+
+</details><p>Execute the following command to start the microservice:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python foo/main.py
+</pre></div>
+</div>
+<p>To check that everything works fine, execute the following command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>curl --location --request POST <span class="s1">&#39;http://localhost:4545/foos&#39;</span> <span class="se">\</span>
+--header <span class="s1">&#39;Content-Type: application/json&#39;</span> <span class="se">\</span>
+--data-raw <span class="s1">&#39;{</span>
+<span class="s1">    &quot;bar&quot;: &quot;test&quot;</span>
+<span class="s1">}&#39;</span>
+</pre></div>
+</div>
+<p>And the expected response will be similar to:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;uuid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;YOUR_UUID&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
 </section>
 <section id="subscribe-to-an-event-and-expose-a-query">
 <h3>Subscribe to an Event and Expose a Query<a class="headerlink" href="#subscribe-to-an-event-and-expose-a-query" title="Permalink to this headline"></a></h3>
-<p>Here is an example of the event and query handling. In this case, it must be defined on a <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> class. In this case a <code class="docutils literal notranslate"><span class="pre">&quot;FooCreated&quot;</span></code> event is handled (and only a <code class="docutils literal notranslate"><span class="pre">print</span></code> of the content is performed). The event contents typically contains instances of <code class="docutils literal notranslate"><span class="pre">AggregateDiff</span></code> type, which is referred to the difference respect to the previously stored instance. The exposed query is connected to the calls that come from the <code class="docutils literal notranslate"><span class="pre">&quot;/foos/example&quot;</span></code> path and <code class="docutils literal notranslate"><span class="pre">&quot;GET&quot;</span></code> method and a naive string is returned.</p>
+<p>Here is an example of the event and query handling. In this case, it must be defined on a <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> class. In this case a <code class="docutils literal notranslate"><span class="pre">&quot;FooCreated&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;FooUpdated.foobar&quot;</span></code> events are handled (they will print the content on the microservice’s logs). The event contents typically contains instances of <code class="docutils literal notranslate"><span class="pre">AggregateDiff</span></code> type, which is referred to the difference respect to the previously stored instance. The exposed query is connected to the calls that come from the <code class="docutils literal notranslate"><span class="pre">&quot;/foos/example&quot;</span></code> path and <code class="docutils literal notranslate"><span class="pre">&quot;GET&quot;</span></code> method and a naive string is returned.</p>
 <p><em>Disclaimer</em>: A real <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> implementation must populate a query-oriented database based on the events to which is subscribed to, and expose queries performed over that query-oriented database.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="n">QueryService</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># foo/main.py</span>
+
+<span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="n">QueryService</span>
 <span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="n">enroute</span><span class="p">,</span> <span class="n">Request</span><span class="p">,</span> <span class="n">Response</span>
 
 
@@ -266,11 +597,21 @@
     <span class="k">async</span> <span class="k">def</span> <span class="nf">foo_created</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Handle the &quot;FooCreated&quot; event.</span>
 
-<span class="sd">        :param request: The ``Request`` that contains the ``bar`` attribute.</span>
+<span class="sd">        :param request: The ``Request`` that contains a ``Event``.</span>
 <span class="sd">        :return: This method does not return anything.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">diff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A Foo was created: </span><span class="si">{</span><span class="n">diff</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A Foo was created: </span><span class="si">{</span><span class="n">event</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;FooUpdated.foobar&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">foo_foobar_updated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Handle the &quot;FooUpdated.foobar&quot; event.</span>
+
+<span class="sd">        :param request: The ``Request`` that contains a ``Event``.</span>
+<span class="sd">        :return: This method does not return anything.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The &#39;foobar&#39; field of a Foo was updated: </span><span class="si">{</span><span class="n">event</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;/foos/example&quot;</span><span class="p">,</span> <span class="s2">&quot;GET&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">example</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
@@ -282,16 +623,163 @@
         <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="s2">&quot;This is an example response!&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+<details>
+  <summary>Click to show the full file</summary>
+
+```python
+# foo/main.py
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Optional
+from uuid import UUID
+
+from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
+from minos.common import EntrypointLauncher
+from minos.cqrs import CommandService, QueryService
+from minos.networks import Request, Response, enroute
+
+
+class Foo(RootEntity):
+    """Foo RootEntity class."""
+
+    bar: str
+    foobar: Optional[Ref[FooBar]]
+
+
+class FooBar(ExternalEntity):
+    """FooBar ExternalEntity clas."""
+
+    something: str
+
+
+class FooAggregate(Aggregate[Foo]):
+    """Foo Aggregate class."""
+
+    @staticmethod
+    async def create_foo(bar: str) -> UUID:
+        """Create a new Foo instance
+
+        :param bar: The bar of the new instance.
+        :return: The identifier of the new instance.
+        """
+        foo = await Foo.create(bar)
+
+        return foo.uuid
+
+    @staticmethod
+    async def update_foobar(uuid: UUID, foobar: Optional[Ref[FooBar]]) -> None:
+        """Update the foobar attribute of the ``Foo`` instance.
+
+        :param uuid: The identifier of the ``Foo`` instance.
+        :param foobar: The foobar value to be set.
+        :return: This method does not return anything.
+        """
+        foo = await Foo.get(uuid)
+        foo.foobar = foobar
+        await foo.save()
+
+
+class FooCommandService(CommandService):
+    """Foo Command Service class."""
+
+    @enroute.broker.command("CreateFoo")
+    @enroute.rest.command("/foos", "POST")
+    async def create_foo(self, request: Request) -> Response:
+        """Create a new Foo.
+
+        :param request: The ``Request`` that contains the ``bar`` attribute.
+        :return: A ``Response`` containing identifier of the already created instance.
+        """
+        content = await request.content()
+        bar = content["bar"]
+
+        uuid = await FooAggregate.create_foo(bar)
+
+        return Response({"uuid": uuid})
+
+
+class FooQueryService(QueryService):
+    """Foo Query Service class."""
+
+    @enroute.broker.event("FooCreated")
+    async def foo_created(self, request: Request) -> None:
+        """Handle the "FooCreated" event.
+
+        :param request: The ``Request`` that contains a ``Event``.
+        :return: This method does not return anything.
+        """
+        event = await request.content()
+        print(f"A Foo was created: {event}")
+
+    @enroute.broker.event("FooUpdated.foobar")
+    async def foo_foobar_updated(self, request: Request) -> None:
+        """Handle the "FooUpdated.foobar" event.
+
+        :param request: The ``Request`` that contains a ``Event``.
+        :return: This method does not return anything.
+        """
+        event = await request.content()
+        print(f"The 'foobar' field of a Foo was updated: {event}")
+
+    @enroute.rest.query("/foos/example", "GET")
+    async def example(self, request: Request) -> Response:
+        """Handle the example query.
+
+        :param request: The ``Request`` that contains the necessary information.
+        :return: A ``Response`` instance.
+        """
+        return Response("This is an example response!")
+
+
+if __name__ == '__main__':
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
+    launcher.launch()
+```
+
+</details><p>Execute the following command to start the microservice:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python foo/main.py
+</pre></div>
+</div>
+<p>Now, if a new instance is created (with a rest call, like in the <a class="reference external" href="#ExposeaCommand">previous section</a>), the <code class="docutils literal notranslate"><span class="pre">FooCreated</span></code> event will be handled and the microservice’s console will print something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="n">Foo</span> <span class="n">was</span> <span class="n">created</span><span class="p">:</span> <span class="n">Event</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Also, to check that everything is fine the example query can be executed with:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>curl --location --request GET <span class="s1">&#39;http://localhost:4545/foos/example&#39;</span>
+</pre></div>
+</div>
+<p>And the expected result should be something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;This is an example response!&quot;</span>
+</pre></div>
+</div>
 </section>
 <section id="interact-with-another-microservice">
 <h3>Interact with another Microservice<a class="headerlink" href="#interact-with-another-microservice" title="Permalink to this headline"></a></h3>
-<p>Here is an example of the interaction between two microservices through a SAGA pattern. In this case, the interaction starts with a call to the <code class="docutils literal notranslate"><span class="pre">&quot;/foo/add-foobar&quot;</span></code> path and the <code class="docutils literal notranslate"><span class="pre">&quot;POST&quot;</span></code> method, which performs a <code class="docutils literal notranslate"><span class="pre">SagaManager</span></code> run over the <code class="docutils literal notranslate"><span class="pre">ADD_FOOBAR_SAGA</span></code> saga. This saga has two steps, one remote that executes the <code class="docutils literal notranslate"><span class="pre">&quot;CreateFooBar&quot;</span></code> command (possibly defined on the supposed <code class="docutils literal notranslate"><span class="pre">&quot;foobar&quot;</span></code> microservice), and a local step that is executed on this microservice. The <code class="docutils literal notranslate"><span class="pre">CreateFooBarDTO</span></code> defines the structure of the request to be sent when the <code class="docutils literal notranslate"><span class="pre">&quot;CreateFooBar&quot;</span></code> command is executed.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="n">ModelType</span>
+<p>Here is an example of the interaction between two microservices through a SAGA pattern. In this case, the interaction starts with a call to the <code class="docutils literal notranslate"><span class="pre">&quot;/foos/add-foobar&quot;</span></code> path and the <code class="docutils literal notranslate"><span class="pre">&quot;POST&quot;</span></code> method, which performs a <code class="docutils literal notranslate"><span class="pre">SagaManager</span></code> run over the <code class="docutils literal notranslate"><span class="pre">ADD_FOOBAR_SAGA</span></code> saga. This saga has two steps, one remote that executes the <code class="docutils literal notranslate"><span class="pre">&quot;CreateFooBar&quot;</span></code> command (possibly defined on the supposed <code class="docutils literal notranslate"><span class="pre">&quot;foobar&quot;</span></code> microservice), and a local step that is executed on this microservice. The <code class="docutils literal notranslate"><span class="pre">CreateFooBarDTO</span></code> defines the structure of the request to be sent when the <code class="docutils literal notranslate"><span class="pre">&quot;CreateFooBar&quot;</span></code> command is executed.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># foo/main.py</span>
+
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="n">ModelType</span>
 <span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="n">CommandService</span>
 <span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="n">enroute</span><span class="p">,</span> <span class="n">Request</span>
 <span class="kn">from</span> <span class="nn">minos.saga</span> <span class="kn">import</span> <span class="n">Saga</span><span class="p">,</span> <span class="n">SagaContext</span><span class="p">,</span> <span class="n">SagaRequest</span><span class="p">,</span> <span class="n">SagaResponse</span>
 
-<span class="n">CreateFooBarDTO</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;AnotherDTO&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">})</span>
+
+<span class="k">class</span> <span class="nc">FooCommandService</span><span class="p">(</span><span class="n">CommandService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Foo Command Service class.&quot;&quot;&quot;</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;/foos/add-foobar&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">update_foo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Run a saga example.</span>
+
+<span class="sd">        :param request: The ``Request`` that contains the initial saga&#39;s context.</span>
+<span class="sd">        :return: This method does not return anything.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+
+        <span class="n">context</span> <span class="o">=</span> <span class="n">SagaContext</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">],</span> <span class="n">something</span><span class="o">=</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;something&quot;</span><span class="p">])</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">saga_manager</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">ADD_FOOBAR_SAGA</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_create_foobar</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">SagaContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SagaRequest</span><span class="p">:</span>
@@ -310,41 +798,348 @@
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">_update_foo</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">SagaContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="n">foo</span> <span class="o">=</span> <span class="k">await</span> <span class="n">Foo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">])</span>
-    <span class="n">foo</span><span class="o">.</span><span class="n">foobar</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s2">&quot;foobar_uuid&quot;</span><span class="p">]</span>
-    <span class="k">await</span> <span class="n">foo</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+    <span class="k">await</span> <span class="n">FooAggregate</span><span class="o">.</span><span class="n">update_foobar</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">],</span> <span class="n">context</span><span class="p">[</span><span class="s2">&quot;foobar_uuid&quot;</span><span class="p">])</span>
 
+
+<span class="n">CreateFooBarDTO</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;AnotherDTO&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">})</span>
 
 <span class="n">ADD_FOOBAR_SAGA</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">Saga</span><span class="p">()</span>
-        <span class="o">.</span><span class="n">remote_step</span><span class="p">()</span><span class="o">.</span><span class="n">on_execute</span><span class="p">(</span><span class="n">_create_foobar</span><span class="p">)</span><span class="o">.</span><span class="n">on_success</span><span class="p">(</span><span class="n">_success_foobar</span><span class="p">)</span><span class="o">.</span><span class="n">on_error</span><span class="p">(</span><span class="n">_error_foobar</span><span class="p">)</span>
-        <span class="o">.</span><span class="n">local_step</span><span class="p">()</span><span class="o">.</span><span class="n">on_execute</span><span class="p">(</span><span class="n">_update_foo</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">remote_step</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">on_execute</span><span class="p">(</span><span class="n">_create_foobar</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">on_success</span><span class="p">(</span><span class="n">_success_foobar</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">on_error</span><span class="p">(</span><span class="n">_error_foobar</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">local_step</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">on_execute</span><span class="p">(</span><span class="n">_update_foo</span><span class="p">)</span>
         <span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 <span class="p">)</span>
+</pre></div>
+</div>
+<details>
+  <summary>Click to show the full file</summary>
+
+```python
+# foo/main.py
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Optional
+from uuid import UUID
+
+from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
+from minos.common import ModelType, EntrypointLauncher
+from minos.cqrs import CommandService, QueryService
+from minos.networks import Request, Response, enroute
+from minos.saga import Saga, SagaContext, SagaRequest, SagaResponse
 
 
-<span class="k">class</span> <span class="nc">FooCommandService</span><span class="p">(</span><span class="n">CommandService</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Foo Command Service class.&quot;&quot;&quot;</span>
+class Foo(RootEntity):
+    """Foo RootEntity class."""
 
-    <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;/foo/add-foobar&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">)</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">update_foo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Run a saga example.</span>
+    bar: str
+    foobar: Optional[Ref[FooBar]]
 
-<span class="sd">        :param request: The ``Request`` that contains the initial saga&#39;s context.</span>
-<span class="sd">        :return: This method does not return anything.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
 
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">saga_manager</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-            <span class="n">ADD_FOOBAR_SAGA</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">],</span> <span class="s2">&quot;something&quot;</span><span class="p">:</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;something&quot;</span><span class="p">]}</span>
-        <span class="p">)</span>
+class FooBar(ExternalEntity):
+    """FooBar ExternalEntity clas."""
+
+    something: str
+
+
+class FooAggregate(Aggregate[Foo]):
+    """Foo Aggregate class."""
+
+    @staticmethod
+    async def create_foo(bar: str) -> UUID:
+        """Create a new Foo instance
+
+        :param bar: The bar of the new instance.
+        :return: The identifier of the new instance.
+        """
+        foo = await Foo.create(bar)
+
+        return foo.uuid
+
+    @staticmethod
+    async def update_foobar(uuid: UUID, foobar: Optional[Ref[FooBar]]) -> None:
+        """Update the foobar attribute of the ``Foo`` instance.
+
+        :param uuid: The identifier of the ``Foo`` instance.
+        :param foobar: The foobar value to be set.
+        :return: This method does not return anything.
+        """
+        foo = await Foo.get(uuid)
+        foo.foobar = foobar
+        await foo.save()
+
+
+class FooCommandService(CommandService):
+    """Foo Command Service class."""
+
+    @enroute.broker.command("CreateFoo")
+    @enroute.rest.command("/foos", "POST")
+    async def create_foo(self, request: Request) -> Response:
+        """Create a new Foo.
+
+        :param request: The ``Request`` that contains the ``bar`` attribute.
+        :return: A ``Response`` containing identifier of the already created instance.
+        """
+        content = await request.content()
+        bar = content["bar"]
+
+        uuid = await FooAggregate.create_foo(bar)
+
+        return Response({"uuid": uuid})
+
+    @enroute.rest.command("/foos/add-foobar", "POST")
+    async def update_foo(self, request: Request) -> None:
+        """Run a saga example.
+
+        :param request: The ``Request`` that contains the initial saga's context.
+        :return: This method does not return anything.
+        """
+        content = await request.content()
+
+        context = SagaContext(uuid=content["uuid"], something=content["something"])
+        await self.saga_manager.run(ADD_FOOBAR_SAGA, context)
+
+
+def _create_foobar(context: SagaContext) -> SagaRequest:
+    something = context["something"]
+    content = CreateFooBarDTO(56, something)
+    return SagaRequest("CreateFooBar", content)
+
+
+async def _success_foobar(context: SagaContext, response: SagaResponse) -> SagaContext:
+    context["foobar_uuid"] = await response.content()
+    return context
+
+
+async def _error_foobar(context: SagaContext, response: SagaResponse) -> SagaContext:
+    raise ValueError("The foobar could not be created!")
+
+
+async def _update_foo(context: SagaContext) -> None:
+    await FooAggregate.update_foobar(context["uuid"], context["foobar_uuid"])
+
+
+CreateFooBarDTO = ModelType.build("AnotherDTO", {"number": int, "text": str})
+
+ADD_FOOBAR_SAGA = (
+    Saga()
+        .remote_step()
+        .on_execute(_create_foobar)
+        .on_success(_success_foobar)
+        .on_error(_error_foobar)
+        .local_step()
+        .on_execute(_update_foo)
+        .commit()
+)
+
+
+class FooQueryService(QueryService):
+    """Foo Query Service class."""
+
+    @enroute.broker.event("FooCreated")
+    async def foo_created(self, request: Request) -> None:
+        """Handle the "FooCreated" event.
+
+        :param request: The ``Request`` that contains a ``Event``.
+        :return: This method does not return anything.
+        """
+        event = await request.content()
+        print(f"A Foo was created: {event}")
+
+    @enroute.broker.event("FooUpdated.foobar")
+    async def foo_foobar_updated(self, request: Request) -> None:
+        """Handle the "FooUpdated.foobar" event.
+
+        :param request: The ``Request`` that contains a ``Event``.
+        :return: This method does not return anything.
+        """
+        event = await request.content()
+        print(f"The 'foobar' field of a Foo was updated: {event}")
+
+    @enroute.rest.query("/foos/example", "GET")
+    async def example(self, request: Request) -> Response:
+        """Handle the example query.
+
+        :param request: The ``Request`` that contains the necessary information.
+        :return: A ``Response`` instance.
+        """
+        return Response("This is an example response!")
+
+
+if __name__ == '__main__':
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
+    launcher.launch()
+```
+
+</details><p>Execute the following command to start the <code class="docutils literal notranslate"><span class="pre">foo</span></code> microservice:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python foo/main.py
+</pre></div>
+</div>
+<p><strong>Disclaimer</strong>: Note that in this case another microservice is needed to complete the saga.</p>
+<section id="the-foobar-microservice">
+<h4>The <code class="docutils literal notranslate"><span class="pre">foobar</span></code> Microservice<a class="headerlink" href="#the-foobar-microservice" title="Permalink to this headline"></a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">foobar</span></code> microservice will simply have a <code class="docutils literal notranslate"><span class="pre">CreateFooBar</span></code> command to create new instances of its <code class="docutils literal notranslate"><span class="pre">FooBar</span></code> root entity.</p>
+<p>The directory structure will become:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>.
+├── foo
+│   ├── config.yml
+│   └── main.py
+└── foobar
+    ├── config.yml
+    └── main.py
+</pre></div>
+</div>
+<p>Here is the <code class="docutils literal notranslate"><span class="pre">foobar/config.yml</span></code> config file:</p>
+<details>
+  <summary>Click to show the full file</summary>
+
+```yaml
+# foobar/config.yml
+
+service:
+  name: foobar
+  aggregate: main.FooBar
+  injections:
+    lock_pool: minos.common.PostgreSqlLockPool
+    postgresql_pool: minos.common.PostgreSqlPool
+    broker_publisher: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerPublisher
+    broker_subscriber_builder: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
+    broker_pool: minos.networks.BrokerClientPool
+    transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
+    event_repository: minos.aggregate.PostgreSqlEventRepository
+    snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
+    saga_manager: minos.saga.SagaManager
+    discovery: minos.networks.DiscoveryConnector
+  services:
+    - minos.networks.BrokerHandlerService
+    - minos.networks.RestService
+    - minos.networks.PeriodicTaskSchedulerService
+middleware:
+  - minos.saga.transactional_command
+services:
+  - minos.aggregate.TransactionService
+  - minos.aggregate.SnapshotService
+  - minos.saga.SagaService
+  - main.FooBarCommandService
+rest:
+  host: 0.0.0.0
+  port: 4546
+broker:
+  host: localhost
+  port: 9092
+  queue:
+    database: foobar_db
+    user: user
+    password: pass
+    host: localhost
+    port: 5432
+    records: 1000
+    retry: 2
+repository:
+  database: foobar_db
+  user: user
+  password: pass
+  host: localhost
+  port: 5432
+snapshot:
+  database: foobar_db
+  user: user
+  password: pass
+  host: localhost
+  port: 5432
+saga:
+  storage:
+    path: "./foobar.lmdb"
+discovery:
+  client: minos.networks.InMemoryDiscoveryClient
+  host: localhost
+  port: 5567
+```
+
+</details><p>Here is the <code class="docutils literal notranslate"><span class="pre">foobar/main.py</span></code> source file:</p>
+<details>
+  <summary>Click to show the full file</summary>
+
+```python
+from __future__ import annotations
+
+from pathlib import Path
+from uuid import UUID
+
+from minos.aggregate import Aggregate, RootEntity
+from minos.common import EntrypointLauncher
+from minos.cqrs import CommandService
+from minos.networks import Request, Response, enroute
+
+
+class FooBar(RootEntity):
+    """FooBar Root Entity clas."""
+
+    something: str
+
+
+class FooBarAggregate(Aggregate[FooBar]):
+    """FooBar Aggregate class."""
+
+    @staticmethod
+    async def create_foobar(something: str) -> UUID:
+        """Create a new ``FooBar`` instance.
+
+        :param something: The something attribute.
+        :return: The identifier of the new instance.
+        """
+        foobar = await FooBar.create(something)
+        return foobar.uuid
+
+
+class FooBarCommandService(CommandService):
+    """Foo Command Service class."""
+
+    @enroute.broker.command("CreateFooBar")
+    async def create_foobar(self, request: Request) -> Response:
+        """Create a new FooBar.
+
+        :param request: The ``Request`` that contains the ``something`` attribute.
+        :return: A ``Response`` containing identifier of the already created instance.
+        """
+        content = await request.content()
+        something = content["text"]
+
+        uuid = await FooBarAggregate.create_foobar(something)
+
+        return Response(uuid)
+
+
+if __name__ == '__main__':
+    launcher = EntrypointLauncher.from_config(Path(__file__).parent / "config.yml")
+    launcher.launch()
+
+```
+
+</details><p>Execute the following command to start the <code class="docutils literal notranslate"><span class="pre">foobar</span></code> microservice:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python foobar/main.py
+</pre></div>
+</div>
+<p>To check that everything works fine, execute the following command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>curl --location --request POST <span class="s1">&#39;http://localhost:4545/foos/add-foobar&#39;</span> <span class="se">\</span>
+--header <span class="s1">&#39;Content-Type: application/json&#39;</span> <span class="se">\</span>
+--data-raw <span class="s1">&#39;{</span>
+<span class="s1">    &quot;uuid&quot;: &quot;YOUR_UUID&quot;,</span>
+<span class="s1">    &quot;something&quot;: &quot;something&quot;</span>
+<span class="s1">}&#39;</span>
+</pre></div>
+</div>
+<p>This request will start a new Saga, that sends a command to the <code class="docutils literal notranslate"><span class="pre">foobar</span></code> microservice, retrieve the <code class="docutils literal notranslate"><span class="pre">FooBar</span></code> identifier and update the <code class="docutils literal notranslate"><span class="pre">Foo</span></code> instance. After that, the <code class="docutils literal notranslate"><span class="pre">FooQueryService</span></code> will handle the update event and print a message similar to this one on the console.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">The</span> <span class="s1">&#39;foobar&#39;</span> <span class="n">field</span> <span class="n">of</span> <span class="n">a</span> <span class="n">Foo</span> <span class="n">was</span> <span class="n">updated</span><span class="p">:</span> <span class="n">Event</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 </section>
-<section id="documentation">
-<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline"></a></h2>
-<p>The official API Reference is publicly available at <a class="reference external" href="https://minos-framework.github.io/minos-python">GiHub Pages</a>.</p>
 </section>
 <section id="packages">
 <h2>Packages<a class="headerlink" href="#packages" title="Permalink to this headline"></a></h2>
@@ -354,9 +1149,9 @@
 <p>The core packages provide the base implementation of the framework.</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/core/minos-microservice-aggregate">minos-microservice-aggregate</a>: The Aggregate pattern implementation.</p></li>
-<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/core/minos-microservice-common">minos-microservice-common</a>: The common core.</p></li>
+<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/core/minos-microservice-common">minos-microservice-common</a>: The common core package.</p></li>
 <li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/core/minos-microservice-cqrs">minos-microservice-cqrs</a>: The CQRS pattern implementation.</p></li>
-<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/core/minos-microservice-networks">minos-microservice-networks</a>: The networks core.</p></li>
+<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/core/minos-microservice-networks">minos-microservice-networks</a>: The networks core package.</p></li>
 <li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/core/minos-microservice-saga">minos-microservice-saga</a>: The SAGA pattern implementation.</p></li>
 </ul>
 </section>
@@ -364,13 +1159,18 @@
 <h3>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline"></a></h3>
 <p>The plugin packages provide connectors to external technologies like brokers, discovery services, databases, serializers and so on.</p>
 <ul class="simple">
-<li><p>Coming soon…</p></li>
+<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-kafka">minos-broker-kafka</a>: The <code class="docutils literal notranslate"><span class="pre">kafka</span></code> plugin package.</p></li>
+<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/plugins/minos-discovery-minos">minos-discovery-minos</a>: The <code class="docutils literal notranslate"><span class="pre">minos-discovery</span></code> plugin package.</p></li>
 </ul>
 </section>
 </section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline"></a></h2>
+<p>The official API Reference is publicly available at the <a class="reference external" href="https://minos-framework.github.io/minos-python">GitHub Pages</a>.</p>
+</section>
 <section id="source-code">
 <h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this headline"></a></h2>
-<p>The source code of this project is hosted at <a class="reference external" href="https://github.com/minos-framework/minos-python">GitHub</a>.</p>
+<p>The source code of this project is hosted at the <a class="reference external" href="https://github.com/minos-framework/minos-python">GitHub Repository</a>.</p>
 </section>
 <section id="getting-help">
 <h2>Getting Help<a class="headerlink" href="#getting-help" title="Permalink to this headline"></a></h2>

@@ -1,7 +1,0 @@
-minos.aggregate.models.refs.injectors module
-============================================
-
-.. automodule:: minos.aggregate.models.refs.injectors
-   :members:
-   :undoc-members:
-   :show-inheritance:

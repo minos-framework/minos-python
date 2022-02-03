@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.exceptions &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>minos.aggregate.exceptions &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -86,9 +86,11 @@
 <span class="p">)</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">.entities</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">RootEntity</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">Aggregate</span><span class="p">,</span>
-        <span class="n">AggregateDiff</span><span class="p">,</span>
+        <span class="n">Event</span><span class="p">,</span>
     <span class="p">)</span>
 
 
@@ -127,21 +129,21 @@
 <div class="viewcode-block" id="SnapshotRepositoryConflictException"><a class="viewcode-back" href="../../../api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.SnapshotRepositoryConflictException">[docs]</a><span class="k">class</span> <span class="nc">SnapshotRepositoryConflictException</span><span class="p">(</span><span class="n">SnapshotRepositoryException</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Exception to be raised when current version is newer than the one to be processed.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SnapshotRepositoryConflictException.__init__"><a class="viewcode-back" href="../../../api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.SnapshotRepositoryConflictException.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">previous</span><span class="p">:</span> <span class="n">Aggregate</span><span class="p">,</span> <span class="n">aggregate_diff</span><span class="p">:</span> <span class="n">AggregateDiff</span><span class="p">):</span>
+<div class="viewcode-block" id="SnapshotRepositoryConflictException.__init__"><a class="viewcode-back" href="../../../api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.SnapshotRepositoryConflictException.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">previous</span><span class="p">:</span> <span class="n">RootEntity</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">previous</span> <span class="o">=</span> <span class="n">previous</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_diff</span> <span class="o">=</span> <span class="n">aggregate_diff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">event</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Version for </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">previous</span><span class="o">.</span><span class="n">classname</span><span class="p">)</span><span class="si">}</span><span class="s2"> aggregate must be &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;greater than </span><span class="si">{</span><span class="n">previous</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">. Obtained: </span><span class="si">{</span><span class="n">aggregate_diff</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Version for </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">previous</span><span class="o">.</span><span class="n">classname</span><span class="p">)</span><span class="si">}</span><span class="s2"> root entity must be &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;greater than </span><span class="si">{</span><span class="n">previous</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">. Obtained: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="AggregateNotFoundException"><a class="viewcode-back" href="../../../api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.AggregateNotFoundException">[docs]</a><span class="k">class</span> <span class="nc">AggregateNotFoundException</span><span class="p">(</span><span class="n">SnapshotRepositoryException</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Exception to be raised when some aggregate is not found on the repository.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="NotFoundException"><a class="viewcode-back" href="../../../api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.NotFoundException">[docs]</a><span class="k">class</span> <span class="nc">NotFoundException</span><span class="p">(</span><span class="n">SnapshotRepositoryException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when a ``RootEntity`` is not found on the repository.&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="DeletedAggregateException"><a class="viewcode-back" href="../../../api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.DeletedAggregateException">[docs]</a><span class="k">class</span> <span class="nc">DeletedAggregateException</span><span class="p">(</span><span class="n">SnapshotRepositoryException</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Exception to be raised when some aggregate is already deleted from the repository.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="AlreadyDeletedException"><a class="viewcode-back" href="../../../api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.AlreadyDeletedException">[docs]</a><span class="k">class</span> <span class="nc">AlreadyDeletedException</span><span class="p">(</span><span class="n">SnapshotRepositoryException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to be raised when a ``RootEntity`` is already deleted from the repository.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="ValueObjectException"><a class="viewcode-back" href="../../../api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.ValueObjectException">[docs]</a><span class="k">class</span> <span class="nc">ValueObjectException</span><span class="p">(</span><span class="n">AggregateException</span><span class="p">):</span>

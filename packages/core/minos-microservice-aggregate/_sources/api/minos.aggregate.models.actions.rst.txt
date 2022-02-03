@@ -1,7 +1,0 @@
-minos.aggregate.models.actions module
-=====================================
-
-.. automodule:: minos.aggregate.models.actions
-   :members:
-   :undoc-members:
-   :show-inheritance:

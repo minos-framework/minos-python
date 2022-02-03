@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.snapshots.abc &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>minos.aggregate.snapshots.abc &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -105,55 +105,54 @@
 <span class="p">)</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">..models</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">Aggregate</span><span class="p">,</span>
+    <span class="kn">from</span> <span class="nn">..entities</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">RootEntity</span><span class="p">,</span>
     <span class="p">)</span>
 
 
 <div class="viewcode-block" id="SnapshotRepository"><a class="viewcode-back" href="../../../../api/minos.aggregate.snapshots.abc.html#minos.aggregate.snapshots.abc.SnapshotRepository">[docs]</a><span class="k">class</span> <span class="nc">SnapshotRepository</span><span class="p">(</span><span class="n">ABC</span><span class="p">,</span> <span class="n">MinosSetup</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Base Snapshot class.</span>
 
-<span class="sd">    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.</span>
+<span class="sd">    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository</span>
+<span class="sd">    class.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SnapshotRepository.get"><a class="viewcode-back" href="../../../../api/minos.aggregate.snapshots.abc.html#minos.aggregate.snapshots.abc.SnapshotRepository.get">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">aggregate_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">transaction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TransactionEntry</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Aggregate</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Get an aggregate instance from its identifier.</span>
+<div class="viewcode-block" id="SnapshotRepository.get"><a class="viewcode-back" href="../../../../api/minos.aggregate.snapshots.abc.html#minos.aggregate.snapshots.abc.SnapshotRepository.get">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">transaction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TransactionEntry</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RootEntity</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get a ``RootEntity`` instance from its identifier.</span>
 
-<span class="sd">        :param aggregate_name: Class name of the ``Aggregate``.</span>
-<span class="sd">        :param uuid: Identifier of the ``Aggregate``.</span>
+<span class="sd">        :param name: Class name of the ``RootEntity``.</span>
+<span class="sd">        :param uuid: Identifier of the ``RootEntity``.</span>
 <span class="sd">        :param transaction: The transaction within the operation is performed. If not any value is provided, then the</span>
 <span class="sd">            transaction is extracted from the context var. If not any transaction is being scoped then the query is</span>
 <span class="sd">            performed to the global snapshot.</span>
 <span class="sd">        :param kwargs: Additional named arguments.</span>
-<span class="sd">        :return: The ``Aggregate`` instance.</span>
+<span class="sd">        :return: The ``RootEntity`` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">transaction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">transaction</span> <span class="o">=</span> <span class="n">TRANSACTION_CONTEXT_VAR</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
 
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">synchronize</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">aggregate_name</span><span class="o">=</span><span class="n">aggregate_name</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="n">uuid</span><span class="p">,</span> <span class="n">transaction</span><span class="o">=</span><span class="n">transaction</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="n">uuid</span><span class="p">,</span> <span class="n">transaction</span><span class="o">=</span><span class="n">transaction</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Aggregate</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RootEntity</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
 <div class="viewcode-block" id="SnapshotRepository.find"><a class="viewcode-back" href="../../../../api/minos.aggregate.snapshots.abc.html#minos.aggregate.snapshots.abc.SnapshotRepository.find">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">find</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">aggregate_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">condition</span><span class="p">:</span> <span class="n">_Condition</span><span class="p">,</span>
         <span class="n">ordering</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_Ordering</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">streaming_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">transaction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TransactionEntry</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Aggregate</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Find a collection of ``Aggregate`` instances based on a ``Condition``.</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">RootEntity</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Find a collection of ``RootEntity`` instances based on a ``Condition``.</span>
 
-<span class="sd">        :param aggregate_name: Class name of the ``Aggregate``.</span>
-<span class="sd">        :param condition: The condition that must be satisfied by the ``Aggregate`` instances.</span>
+<span class="sd">        :param name: Class name of the ``RootEntity``.</span>
+<span class="sd">        :param condition: The condition that must be satisfied by the ``RootEntity`` instances.</span>
 <span class="sd">        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour</span>
 <span class="sd">            is to retrieve them without any order pattern.</span>
 <span class="sd">        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the</span>
@@ -164,7 +163,7 @@
 <span class="sd">            transaction is extracted from the context var. If not any transaction is being scoped then the query is</span>
 <span class="sd">            performed to the global snapshot.</span>
 <span class="sd">        :param kwargs: Additional named arguments.</span>
-<span class="sd">        :return: An asynchronous iterator that containing the ``Aggregate`` instances.</span>
+<span class="sd">        :return: An asynchronous iterator that containing the ``RootEntity`` instances.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">transaction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">transaction</span> <span class="o">=</span> <span class="n">TRANSACTION_CONTEXT_VAR</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
@@ -172,7 +171,7 @@
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">synchronize</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find</span><span class="p">(</span>
-            <span class="n">aggregate_name</span><span class="o">=</span><span class="n">aggregate_name</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
             <span class="n">condition</span><span class="o">=</span><span class="n">condition</span><span class="p">,</span>
             <span class="n">ordering</span><span class="o">=</span><span class="n">ordering</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
@@ -181,11 +180,11 @@
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="k">async</span> <span class="k">for</span> <span class="n">aggregate</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">aggregate</span></div>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">instance</span></div>
 
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">_find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Aggregate</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">_find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">RootEntity</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
 <div class="viewcode-block" id="SnapshotRepository.synchronize"><a class="viewcode-back" href="../../../../api/minos.aggregate.snapshots.abc.html#minos.aggregate.snapshots.abc.SnapshotRepository.synchronize">[docs]</a>    <span class="k">def</span> <span class="nf">synchronize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>

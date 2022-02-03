@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate package &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>minos.aggregate package &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -18,7 +18,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="minos.aggregate.events package" href="minos.aggregate.events.html" />
+    <link rel="next" title="minos.aggregate.entities package" href="minos.aggregate.entities.html" />
     <link rel="prev" title="minos namespace" href="minos.html" />
     <link href="../_static/style.css" rel="stylesheet" type="text/css">
 
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -92,6 +92,21 @@
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.entities.html">minos.aggregate.entities package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.entities.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.entities.refs.html">minos.aggregate.entities.refs package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="minos.aggregate.entities.refs.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.entities.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.entities.collections.html">minos.aggregate.entities.collections module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.entities.models.html">minos.aggregate.entities.models module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="minos.aggregate.events.html">minos.aggregate.events package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="minos.aggregate.events.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="minos.aggregate.events.repositories.html">minos.aggregate.events.repositories package</a><ul>
@@ -102,28 +117,8 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="minos.aggregate.events.html#submodules">Submodules</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="minos.aggregate.events.entries.html">minos.aggregate.events.entries module</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.models.html">minos.aggregate.models package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.models.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.models.diffs.html">minos.aggregate.models.diffs package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="minos.aggregate.models.diffs.html#submodules">Submodules</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.models.refs.html">minos.aggregate.models.refs package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="minos.aggregate.models.refs.html#submodules">Submodules</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.models.html#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.models.actions.html">minos.aggregate.models.actions module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.models.aggregates.html">minos.aggregate.models.aggregates module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.models.collections.html">minos.aggregate.models.collections module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.models.entities.html">minos.aggregate.models.entities module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.models.value_objects.html">minos.aggregate.models.value_objects module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.events.fields.html">minos.aggregate.events.fields module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.events.models.html">minos.aggregate.events.models module</a></li>
 </ul>
 </li>
 </ul>
@@ -168,9 +163,13 @@
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.actions.html">minos.aggregate.actions module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.aggregate.html">minos.aggregate.aggregate module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.collections.html">minos.aggregate.collections module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="minos.aggregate.contextvars.html">minos.aggregate.contextvars module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="minos.aggregate.exceptions.html">minos.aggregate.exceptions module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="minos.aggregate.queries.html">minos.aggregate.queries module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.value_objects.html">minos.aggregate.value_objects module</a></li>
 </ul>
 </div>
 </section>
@@ -181,7 +180,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="minos.html" class="btn btn-neutral float-left" title="minos namespace" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="minos.aggregate.events.html" class="btn btn-neutral float-right" title="minos.aggregate.events package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="minos.aggregate.entities.html" class="btn btn-neutral float-right" title="minos.aggregate.entities package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

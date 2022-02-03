@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.transactions.entries &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>minos.aggregate.transactions.entries &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -267,13 +267,13 @@
 
         <span class="n">entries</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">async</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_repository</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">transaction_uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">aggregate_uuid</span> <span class="ow">in</span> <span class="n">entries</span> <span class="ow">and</span> <span class="n">entry</span><span class="o">.</span><span class="n">version</span> <span class="o">&lt;</span> <span class="n">entries</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">aggregate_uuid</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">uuid</span> <span class="ow">in</span> <span class="n">entries</span> <span class="ow">and</span> <span class="n">entry</span><span class="o">.</span><span class="n">version</span> <span class="o">&lt;</span> <span class="n">entries</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">uuid</span><span class="p">]:</span>
                 <span class="k">continue</span>
-            <span class="n">entries</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">aggregate_uuid</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">version</span>
+            <span class="n">entries</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">uuid</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">version</span>
 
         <span class="n">transaction_uuids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">aggregate_uuid</span><span class="p">,</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">entries</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">async</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_repository</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">aggregate_uuid</span><span class="o">=</span><span class="n">aggregate_uuid</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">entries</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_repository</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">uuid</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">transaction_uuid</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">destination_uuid</span><span class="p">:</span>
                     <span class="k">return</span> <span class="kc">False</span>
                 <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">transaction_uuid</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">:</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.events.entries &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>minos.aggregate.events.entries &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -85,7 +85,6 @@
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">Iterable</span><span class="p">,</span>
     <span class="n">Optional</span><span class="p">,</span>
-    <span class="n">Type</span><span class="p">,</span>
     <span class="n">Union</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
@@ -97,12 +96,19 @@
     <span class="n">import_module</span><span class="p">,</span>
 <span class="p">)</span>
 
+<span class="kn">from</span> <span class="nn">..actions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Action</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.fields</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">FieldDiffContainer</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Event</span><span class="p">,</span>
+<span class="p">)</span>
+
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">..models</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">Action</span><span class="p">,</span>
-        <span class="n">Aggregate</span><span class="p">,</span>
-        <span class="n">AggregateDiff</span><span class="p">,</span>
-        <span class="n">FieldDiffContainer</span><span class="p">,</span>
+    <span class="kn">from</span> <span class="nn">..entities</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">RootEntity</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="kn">from</span> <span class="nn">..transactions</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">TransactionEntry</span><span class="p">,</span>
@@ -110,11 +116,11 @@
 
 
 <div class="viewcode-block" id="EventEntry"><a class="viewcode-back" href="../../../../api/minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry">[docs]</a><span class="k">class</span> <span class="nc">EventEntry</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Class that represents an entry (or row) on the events repository database which stores the aggregate changes.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Class that represents an entry (or row) on the event repository database which stores the root entity changes.&quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;aggregate_uuid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;aggregate_name&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">,</span>
         <span class="s2">&quot;version&quot;</span><span class="p">,</span>
         <span class="s2">&quot;data&quot;</span><span class="p">,</span>
         <span class="s2">&quot;id&quot;</span><span class="p">,</span>
@@ -126,8 +132,8 @@
     <span class="c1"># noinspection PyShadowingBuiltins</span>
 <div class="viewcode-block" id="EventEntry.__init__"><a class="viewcode-back" href="../../../../api/minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">aggregate_uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span>
-        <span class="n">aggregate_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">memoryview</span><span class="p">]</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(),</span>
         <span class="nb">id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -138,14 +144,10 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">memoryview</span><span class="p">):</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">action</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="kn">from</span> <span class="nn">..models</span> <span class="kn">import</span> <span class="p">(</span>
-                <span class="n">Action</span><span class="p">,</span>
-            <span class="p">)</span>
-
             <span class="n">action</span> <span class="o">=</span> <span class="n">Action</span><span class="o">.</span><span class="n">value_of</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_uuid</span> <span class="o">=</span> <span class="n">aggregate_uuid</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_name</span> <span class="o">=</span> <span class="n">aggregate_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">uuid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">version</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
 
@@ -154,13 +156,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">created_at</span> <span class="o">=</span> <span class="n">created_at</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transaction_uuid</span> <span class="o">=</span> <span class="n">transaction_uuid</span></div>
 
-<div class="viewcode-block" id="EventEntry.from_aggregate_diff"><a class="viewcode-back" href="../../../../api/minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry.from_aggregate_diff">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_aggregate_diff</span><span class="p">(</span>
-        <span class="bp">cls</span><span class="p">,</span> <span class="n">aggregate_diff</span><span class="p">:</span> <span class="n">AggregateDiff</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">transaction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TransactionEntry</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventEntry</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Build a new instance from an ``Aggregate``.</span>
+<div class="viewcode-block" id="EventEntry.from_event"><a class="viewcode-back" href="../../../../api/minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry.from_event">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_event</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">transaction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TransactionEntry</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventEntry</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build a new instance from a ``RootEntity``.</span>
 
-<span class="sd">        :param aggregate_diff: The aggregate difference.</span>
+<span class="sd">        :param event: The event.</span>
 <span class="sd">        :param transaction: Optional transaction.</span>
 <span class="sd">        :param kwargs: Additional named arguments.</span>
 <span class="sd">        :return: A new ``EventEntry`` instance.</span>
@@ -170,10 +170,10 @@
 
         <span class="c1"># noinspection PyTypeChecker</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-            <span class="n">aggregate_uuid</span><span class="o">=</span><span class="n">aggregate_diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
-            <span class="n">aggregate_name</span><span class="o">=</span><span class="n">aggregate_diff</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="n">data</span><span class="o">=</span><span class="n">aggregate_diff</span><span class="o">.</span><span class="n">fields_diff</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">,</span>
-            <span class="n">action</span><span class="o">=</span><span class="n">aggregate_diff</span><span class="o">.</span><span class="n">action</span><span class="p">,</span>
+            <span class="n">uuid</span><span class="o">=</span><span class="n">event</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">event</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">event</span><span class="o">.</span><span class="n">fields_diff</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="n">event</span><span class="o">.</span><span class="n">action</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
 
@@ -193,8 +193,8 @@
 <span class="sd">        :return: A dictionary in which the keys are attribute names and values the attribute contents.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;aggregate_uuid&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_uuid</span><span class="p">,</span>
-            <span class="s2">&quot;aggregate_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_name</span><span class="p">,</span>
+            <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
             <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
             <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
@@ -204,27 +204,23 @@
         <span class="p">}</span></div>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">aggregate_cls</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">[</span><span class="n">Aggregate</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Load the concrete ``Aggregate`` class.</span>
+    <span class="k">def</span> <span class="nf">type_</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">RootEntity</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Load the concrete ``RootEntity`` class.</span>
 
 <span class="sd">        :return: A ``Type`` object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># noinspection PyTypeChecker</span>
-        <span class="k">return</span> <span class="n">import_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aggregate_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">import_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">aggregate_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AggregateDiff</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Get the stored ``AggregateDiff`` instance.</span>
+    <span class="k">def</span> <span class="nf">event</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Event</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the stored ``Event`` instance.</span>
 
-<span class="sd">        :return: An ``AggregateDiff`` instance.</span>
+<span class="sd">        :return: An ``Event`` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">..models</span> <span class="kn">import</span> <span class="p">(</span>
-            <span class="n">AggregateDiff</span><span class="p">,</span>
-        <span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">AggregateDiff</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_uuid</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_name</span><span class="p">,</span>
+        <span class="k">return</span> <span class="n">Event</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
@@ -237,10 +233,6 @@
 
 <span class="sd">        :return: A ``FieldDiffContainer`` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">..models</span> <span class="kn">import</span> <span class="p">(</span>
-            <span class="n">FieldDiffContainer</span><span class="p">,</span>
-        <span class="p">)</span>
-
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">FieldDiffContainer</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span>
 
@@ -254,8 +246,8 @@
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">:</span>
         <span class="k">yield from</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_uuid</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_name</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
@@ -267,7 +259,7 @@
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;aggregate_uuid=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">aggregate_uuid</span><span class="si">!r}</span><span class="s2">, aggregate_name=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">aggregate_name</span><span class="si">!r}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;uuid=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="si">!r}</span><span class="s2">, name=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2">, &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;version=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="si">!r}</span><span class="s2">, len(data)=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="si">!r}</span><span class="s2">, &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">!r}</span><span class="s2">, action=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="si">!r}</span><span class="s2">, created_at=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">created_at</span><span class="si">!r}</span><span class="s2">, &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;transaction_uuid=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_uuid</span><span class="si">!r}</span><span class="s2">)&quot;</span>

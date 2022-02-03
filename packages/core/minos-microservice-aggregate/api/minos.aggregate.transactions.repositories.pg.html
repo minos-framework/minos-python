@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.transactions.repositories.pg module &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>minos.aggregate.transactions.repositories.pg module &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -190,7 +190,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>uuid</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">uuid.UUID</span></code>) – Identifier of the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code>.</p></li>
+<li><p><strong>uuid</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">uuid.UUID</span></code>) – Identifier of the <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code>.</p></li>
 <li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
 </ul>
 </dd>
@@ -378,7 +378,7 @@ fetched and keep in memory before yielding it.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.aggregate.transactions.repositories.pg.PostgreSqlTransactionRepository.write_lock">
 <span class="sig-name descname"><span class="pre">write_lock</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.transactions.repositories.pg.PostgreSqlTransactionRepository.write_lock" title="Permalink to this definition"></a></dt>
-<dd><p>Get a write lock.</p>
+<dd><p>Get write lock.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.locks.Lock</span></code></p>

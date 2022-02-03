@@ -1,0 +1,7 @@
+minos.aggregate.entities.refs.resolvers module
+==============================================
+
+.. automodule:: minos.aggregate.entities.refs.resolvers
+   :members:
+   :undoc-members:
+   :show-inheritance:

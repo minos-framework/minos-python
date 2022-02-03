@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.exceptions module &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>minos.aggregate.exceptions module &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -114,47 +114,23 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt class="sig sig-object py" id="minos.aggregate.exceptions.AggregateNotFoundException">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.aggregate.exceptions.</span></span><span class="sig-name descname"><span class="pre">AggregateNotFoundException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/exceptions.html#AggregateNotFoundException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.exceptions.AggregateNotFoundException" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="minos.aggregate.exceptions.AlreadyDeletedException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.aggregate.exceptions.</span></span><span class="sig-name descname"><span class="pre">AlreadyDeletedException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/exceptions.html#AlreadyDeletedException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.exceptions.AlreadyDeletedException" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#minos.aggregate.exceptions.SnapshotRepositoryException" title="minos.aggregate.exceptions.SnapshotRepositoryException"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.exceptions.SnapshotRepositoryException</span></code></a></p>
-<p>Exception to be raised when some aggregate is not found on the repository.</p>
+<p>Exception to be raised when a <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> is already deleted from the repository.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="minos.aggregate.exceptions.AggregateNotFoundException.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.exceptions.AggregateNotFoundException.__init__" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="minos.aggregate.exceptions.AlreadyDeletedException.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.exceptions.AlreadyDeletedException.__init__" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="minos.aggregate.exceptions.AggregateNotFoundException.args">
-<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#minos.aggregate.exceptions.AggregateNotFoundException.args" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="minos.aggregate.exceptions.AlreadyDeletedException.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#minos.aggregate.exceptions.AlreadyDeletedException.args" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="minos.aggregate.exceptions.AggregateNotFoundException.with_traceback">
-<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.exceptions.AggregateNotFoundException.with_traceback" title="Permalink to this definition"></a></dt>
-<dd><p>Exception.with_traceback(tb) –
-set self.__traceback__ to tb and return self.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py exception">
-<dt class="sig sig-object py" id="minos.aggregate.exceptions.DeletedAggregateException">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.aggregate.exceptions.</span></span><span class="sig-name descname"><span class="pre">DeletedAggregateException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/exceptions.html#DeletedAggregateException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.exceptions.DeletedAggregateException" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#minos.aggregate.exceptions.SnapshotRepositoryException" title="minos.aggregate.exceptions.SnapshotRepositoryException"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.exceptions.SnapshotRepositoryException</span></code></a></p>
-<p>Exception to be raised when some aggregate is already deleted from the repository.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="minos.aggregate.exceptions.DeletedAggregateException.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.exceptions.DeletedAggregateException.__init__" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="minos.aggregate.exceptions.DeletedAggregateException.args">
-<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#minos.aggregate.exceptions.DeletedAggregateException.args" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="minos.aggregate.exceptions.DeletedAggregateException.with_traceback">
-<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.exceptions.DeletedAggregateException.with_traceback" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="minos.aggregate.exceptions.AlreadyDeletedException.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.exceptions.AlreadyDeletedException.with_traceback" title="Permalink to this definition"></a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -210,13 +186,37 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
+<dt class="sig sig-object py" id="minos.aggregate.exceptions.NotFoundException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.aggregate.exceptions.</span></span><span class="sig-name descname"><span class="pre">NotFoundException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/exceptions.html#NotFoundException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.exceptions.NotFoundException" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#minos.aggregate.exceptions.SnapshotRepositoryException" title="minos.aggregate.exceptions.SnapshotRepositoryException"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.exceptions.SnapshotRepositoryException</span></code></a></p>
+<p>Exception to be raised when a <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> is not found on the repository.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.exceptions.NotFoundException.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.exceptions.NotFoundException.__init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.aggregate.exceptions.NotFoundException.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#minos.aggregate.exceptions.NotFoundException.args" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.exceptions.NotFoundException.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.exceptions.NotFoundException.with_traceback" title="Permalink to this definition"></a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
 <dt class="sig sig-object py" id="minos.aggregate.exceptions.SnapshotRepositoryConflictException">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.aggregate.exceptions.</span></span><span class="sig-name descname"><span class="pre">SnapshotRepositoryConflictException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">previous</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregate_diff</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/exceptions.html#SnapshotRepositoryConflictException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.exceptions.SnapshotRepositoryConflictException" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.aggregate.exceptions.</span></span><span class="sig-name descname"><span class="pre">SnapshotRepositoryConflictException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">previous</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/exceptions.html#SnapshotRepositoryConflictException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.exceptions.SnapshotRepositoryConflictException" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#minos.aggregate.exceptions.SnapshotRepositoryException" title="minos.aggregate.exceptions.SnapshotRepositoryException"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.exceptions.SnapshotRepositoryException</span></code></a></p>
 <p>Exception to be raised when current version is newer than the one to be processed.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.aggregate.exceptions.SnapshotRepositoryConflictException.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">previous</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregate_diff</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/exceptions.html#SnapshotRepositoryConflictException.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.exceptions.SnapshotRepositoryConflictException.__init__" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">previous</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/exceptions.html#SnapshotRepositoryConflictException.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.exceptions.SnapshotRepositoryConflictException.__init__" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">

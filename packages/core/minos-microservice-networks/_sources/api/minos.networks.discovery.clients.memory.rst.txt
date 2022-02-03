@@ -1,0 +1,7 @@
+minos.networks.discovery.clients.memory module
+==============================================
+
+.. automodule:: minos.networks.discovery.clients.memory
+   :members:
+   :undoc-members:
+   :show-inheritance:

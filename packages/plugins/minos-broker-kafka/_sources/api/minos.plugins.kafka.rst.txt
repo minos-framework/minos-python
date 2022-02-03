@@ -1,0 +1,16 @@
+minos.plugins.kafka package
+===========================
+
+.. automodule:: minos.plugins.kafka
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.plugins.kafka.publisher
+   minos.plugins.kafka.subscriber

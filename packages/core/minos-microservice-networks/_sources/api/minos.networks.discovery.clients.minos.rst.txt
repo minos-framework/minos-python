@@ -1,7 +1,0 @@
-minos.networks.discovery.clients.minos module
-=============================================
-
-.. automodule:: minos.networks.discovery.clients.minos
-   :members:
-   :undoc-members:
-   :show-inheritance:

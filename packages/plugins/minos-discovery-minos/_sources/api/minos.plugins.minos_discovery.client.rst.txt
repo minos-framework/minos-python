@@ -1,0 +1,7 @@
+minos.plugins.minos\_discovery.client module
+============================================
+
+.. automodule:: minos.plugins.minos_discovery.client
+   :members:
+   :undoc-members:
+   :show-inheritance:

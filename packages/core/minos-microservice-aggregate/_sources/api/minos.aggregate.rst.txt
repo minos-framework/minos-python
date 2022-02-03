@@ -12,8 +12,8 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   minos.aggregate.entities
    minos.aggregate.events
-   minos.aggregate.models
    minos.aggregate.snapshots
    minos.aggregate.transactions
 
@@ -23,6 +23,10 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
+   minos.aggregate.actions
+   minos.aggregate.aggregate
+   minos.aggregate.collections
    minos.aggregate.contextvars
    minos.aggregate.exceptions
    minos.aggregate.queries
+   minos.aggregate.value_objects

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.transactions.repositories.abc &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>minos.aggregate.transactions.repositories.abc &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -137,7 +137,7 @@
 <div class="viewcode-block" id="TransactionRepository.get"><a class="viewcode-back" href="../../../../../api/minos.aggregate.transactions.repositories.abc.html#minos.aggregate.transactions.repositories.abc.TransactionRepository.get">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionEntry</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Get a ``TransactionEntry`` from its identifier.</span>
 
-<span class="sd">        :param uuid: Identifier of the ``Aggregate``.</span>
+<span class="sd">        :param uuid: Identifier of the ``RootEntity``.</span>
 <span class="sd">        :param kwargs: Additional named arguments.</span>
 <span class="sd">        :return: The ``TransactionEntry`` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -215,7 +215,7 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
 <div class="viewcode-block" id="TransactionRepository.write_lock"><a class="viewcode-back" href="../../../../../api/minos.aggregate.transactions.repositories.abc.html#minos.aggregate.transactions.repositories.abc.TransactionRepository.write_lock">[docs]</a>    <span class="k">def</span> <span class="nf">write_lock</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Lock</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Get a write lock.</span>
+        <span class="sd">&quot;&quot;&quot;Get write lock.</span>
 
 <span class="sd">        :return: An asynchronous context manager.</span>
 <span class="sd">        &quot;&quot;&quot;</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.brokers.collections.queues.abc &mdash; Minos Microservice Network 0.4.1 documentation</title>
+  <title>minos.networks.brokers.collections.queues.abc &mdash; Minos Microservice Network 0.5.1 documentation</title>
       <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
@@ -102,7 +102,7 @@
 
 <div class="viewcode-block" id="BrokerQueue.enqueue"><a class="viewcode-back" href="../../../../../../api/minos.networks.brokers.collections.queues.abc.html#minos.networks.brokers.collections.queues.abc.BrokerQueue.enqueue">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">enqueue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">BrokerMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Enqueue method.&quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Enqueuing </span><span class="si">{</span><span class="n">message</span><span class="si">!r}</span><span class="s2"> message...&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Enqueuing </span><span class="si">{</span><span class="n">message</span><span class="si">!r}</span><span class="s2"> message...&quot;</span><span class="p">)</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_enqueue</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
     <span class="nd">@abstractmethod</span>
@@ -120,7 +120,7 @@
 <div class="viewcode-block" id="BrokerQueue.dequeue"><a class="viewcode-back" href="../../../../../../api/minos.networks.brokers.collections.queues.abc.html#minos.networks.brokers.collections.queues.abc.BrokerQueue.dequeue">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">dequeue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BrokerMessage</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Dequeue method.&quot;&quot;&quot;</span>
         <span class="n">message</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dequeue</span><span class="p">()</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dequeuing </span><span class="si">{</span><span class="n">message</span><span class="si">!r}</span><span class="s2"> message...&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dequeuing </span><span class="si">{</span><span class="n">message</span><span class="si">!r}</span><span class="s2"> message...&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">message</span></div>
 
     <span class="nd">@abstractmethod</span>

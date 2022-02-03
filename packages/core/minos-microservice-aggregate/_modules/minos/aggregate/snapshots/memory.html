@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.snapshots.memory &mdash; Minos Microservice Aggregate 0.4.1 documentation</title>
+  <title>minos.aggregate.snapshots.memory &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -104,8 +104,8 @@
     <span class="n">EventRepository</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">..exceptions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AggregateNotFoundException</span><span class="p">,</span>
-    <span class="n">DeletedAggregateException</span><span class="p">,</span>
+    <span class="n">AlreadyDeletedException</span><span class="p">,</span>
+    <span class="n">NotFoundException</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">..queries</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">_Condition</span><span class="p">,</span>
@@ -121,15 +121,16 @@
 <span class="p">)</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">..models</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">Aggregate</span><span class="p">,</span>
+    <span class="kn">from</span> <span class="nn">..entities</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">RootEntity</span><span class="p">,</span>
     <span class="p">)</span>
 
 
 <div class="viewcode-block" id="InMemorySnapshotRepository"><a class="viewcode-back" href="../../../../api/minos.aggregate.snapshots.memory.html#minos.aggregate.snapshots.memory.InMemorySnapshotRepository">[docs]</a><span class="k">class</span> <span class="nc">InMemorySnapshotRepository</span><span class="p">(</span><span class="n">SnapshotRepository</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;InMemory Snapshot class.</span>
 
-<span class="sd">    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.</span>
+<span class="sd">    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository</span>
+<span class="sd">    class.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="InMemorySnapshotRepository.__init__"><a class="viewcode-back" href="../../../../api/minos.aggregate.snapshots.memory.html#minos.aggregate.snapshots.memory.InMemorySnapshotRepository.__init__">[docs]</a>    <span class="nd">@inject</span>
@@ -153,47 +154,45 @@
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_find</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">aggregate_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">condition</span><span class="p">:</span> <span class="n">_Condition</span><span class="p">,</span>
         <span class="n">ordering</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_Ordering</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Aggregate</span><span class="p">]:</span>
-        <span class="n">uuids</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="o">.</span><span class="n">aggregate_uuid</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_repository</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">aggregate_name</span><span class="o">=</span><span class="n">aggregate_name</span><span class="p">)}</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">RootEntity</span><span class="p">]:</span>
+        <span class="n">uuids</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="o">.</span><span class="n">uuid</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_repository</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)}</span>
 
-        <span class="n">aggregates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">instances</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">uuid</span> <span class="ow">in</span> <span class="n">uuids</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">aggregate</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">aggregate_name</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="k">except</span> <span class="n">DeletedAggregateException</span><span class="p">:</span>
+                <span class="n">instance</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">AlreadyDeletedException</span><span class="p">:</span>
                 <span class="k">continue</span>
 
-            <span class="k">if</span> <span class="n">condition</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">aggregate</span><span class="p">):</span>
-                <span class="n">aggregates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aggregate</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">condition</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">instance</span><span class="p">):</span>
+                <span class="n">instances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">ordering</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">aggregates</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">attrgetter</span><span class="p">(</span><span class="n">ordering</span><span class="o">.</span><span class="n">by</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="n">ordering</span><span class="o">.</span><span class="n">reverse</span><span class="p">)</span>
+            <span class="n">instances</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">attrgetter</span><span class="p">(</span><span class="n">ordering</span><span class="o">.</span><span class="n">by</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="n">ordering</span><span class="o">.</span><span class="n">reverse</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">aggregates</span> <span class="o">=</span> <span class="n">aggregates</span><span class="p">[:</span><span class="n">limit</span><span class="p">]</span>
+            <span class="n">instances</span> <span class="o">=</span> <span class="n">instances</span><span class="p">[:</span><span class="n">limit</span><span class="p">]</span>
 
-        <span class="k">for</span> <span class="n">aggregate</span> <span class="ow">in</span> <span class="n">aggregates</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">aggregate</span>
+        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">instances</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">instance</span>
 
     <span class="c1"># noinspection PyMethodOverriding</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_get</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">aggregate_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">transaction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TransactionEntry</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Aggregate</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">transaction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TransactionEntry</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RootEntity</span><span class="p">:</span>
         <span class="n">transaction_uuids</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_transaction_uuids</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span>
-        <span class="n">entries</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_event_entries</span><span class="p">(</span><span class="n">aggregate_name</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">transaction_uuids</span><span class="p">)</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_event_entries</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">transaction_uuids</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">entries</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">AggregateNotFoundException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not found any entries for the </span><span class="si">{</span><span class="n">uuid</span><span class="si">!r}</span><span class="s2"> id.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">NotFoundException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not found any entries for the </span><span class="si">{</span><span class="n">uuid</span><span class="si">!r}</span><span class="s2"> id.&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">entries</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">is_delete</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">DeletedAggregateException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The </span><span class="si">{</span><span class="n">uuid</span><span class="si">!r}</span><span class="s2"> id points to an already deleted aggregate.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">AlreadyDeletedException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The </span><span class="si">{</span><span class="n">uuid</span><span class="si">!r}</span><span class="s2"> identifier belongs to an already deleted instance.&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_aggregate</span><span class="p">(</span><span class="n">entries</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_instance</span><span class="p">(</span><span class="n">entries</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_get_transaction_uuids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transaction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TransactionEntry</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">UUID</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">transaction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -209,12 +208,10 @@
 
         <span class="k">return</span> <span class="n">transaction_uuids</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_get_event_entries</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">aggregate_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">transaction_uuids</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">UUID</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">EventEntry</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_get_event_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">transaction_uuids</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">UUID</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">EventEntry</span><span class="p">]:</span>
         <span class="n">entries</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">v</span>
-            <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_repository</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">aggregate_name</span><span class="o">=</span><span class="n">aggregate_name</span><span class="p">,</span> <span class="n">aggregate_uuid</span><span class="o">=</span><span class="n">uuid</span><span class="p">)</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_repository</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="n">uuid</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">transaction_uuid</span> <span class="ow">in</span> <span class="n">transaction_uuids</span>
         <span class="p">]</span>
 
@@ -229,12 +226,12 @@
         <span class="k">return</span> <span class="n">entries</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_build_aggregate</span><span class="p">(</span><span class="n">entries</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">EventEntry</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Aggregate</span><span class="p">:</span>
-        <span class="bp">cls</span> <span class="o">=</span> <span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">aggregate_cls</span>
-        <span class="n">aggregate</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_diff</span><span class="p">(</span><span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">aggregate_diff</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_build_instance</span><span class="p">(</span><span class="n">entries</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">EventEntry</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RootEntity</span><span class="p">:</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">type_</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_diff</span><span class="p">(</span><span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-            <span class="n">aggregate</span><span class="o">.</span><span class="n">apply_diff</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">aggregate_diff</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">aggregate</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">apply_diff</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">event</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instance</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_synchronize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">pass</span></div>

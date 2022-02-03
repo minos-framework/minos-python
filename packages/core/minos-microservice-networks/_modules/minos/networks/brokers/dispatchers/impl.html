@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.brokers.dispatchers.impl &mdash; Minos Microservice Network 0.4.1 documentation</title>
+  <title>minos.networks.brokers.dispatchers.impl &mdash; Minos Microservice Network 0.5.1 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.4.1
+                0.5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -89,7 +89,6 @@
     <span class="n">isawaitable</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Any</span><span class="p">,</span>
     <span class="n">Optional</span><span class="p">,</span>
     <span class="n">Union</span><span class="p">,</span>
 <span class="p">)</span>
@@ -199,20 +198,16 @@
         <span class="n">action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_action</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">topic</span><span class="p">)</span>
         <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_callback</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
 
-        <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="k">await</span> <span class="n">fn</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="k">await</span> <span class="n">fn</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">should_reply</span><span class="p">:</span>
-            <span class="n">reply</span> <span class="o">=</span> <span class="n">BrokerMessageV1</span><span class="p">(</span>
-                <span class="n">topic</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">reply_topic</span><span class="p">,</span>
-                <span class="n">payload</span><span class="o">=</span><span class="n">BrokerMessageV1Payload</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">),</span>
-                <span class="n">identifier</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="n">reply</span> <span class="o">=</span> <span class="n">BrokerMessageV1</span><span class="p">(</span><span class="n">topic</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">reply_topic</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">identifier</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BrokerDispatcher.get_callback"><a class="viewcode-back" href="../../../../../api/minos.networks.brokers.dispatchers.impl.html#minos.networks.brokers.dispatchers.impl.BrokerDispatcher.get_callback">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_callback</span><span class="p">(</span>
         <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">BrokerRequest</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">BrokerResponse</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">BrokerResponse</span><span class="p">]]]]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">BrokerMessage</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">BrokerMessage</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">BrokerMessageV1Payload</span><span class="p">]]:</span>
         <span class="sd">&quot;&quot;&quot;Get the handler function to be used by the Broker Handler.</span>
 
 <span class="sd">        :param fn: The action function.</span>
@@ -220,7 +215,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="nd">@wraps</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
-        <span class="k">async</span> <span class="k">def</span> <span class="nf">_wrapper</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="n">BrokerMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">_wrapper</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="n">BrokerMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BrokerMessageV1Payload</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dispatching &#39;</span><span class="si">{</span><span class="n">raw</span><span class="si">!s}</span><span class="s2">&#39;...&quot;</span><span class="p">)</span>
 
             <span class="n">request</span> <span class="o">=</span> <span class="n">BrokerRequest</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
@@ -232,17 +227,21 @@
                 <span class="k">if</span> <span class="n">isawaitable</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
                     <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">response</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">Response</span><span class="p">):</span>
-                    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
-                <span class="k">return</span> <span class="n">response</span><span class="p">,</span> <span class="n">BrokerMessageV1Status</span><span class="o">.</span><span class="n">SUCCESS</span><span class="p">,</span> <span class="n">REQUEST_HEADERS_CONTEXT_VAR</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                    <span class="n">content</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">(),</span> <span class="n">response</span><span class="o">.</span><span class="n">status</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">content</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">BrokerMessageV1Status</span><span class="o">.</span><span class="n">SUCCESS</span>
             <span class="k">except</span> <span class="n">ResponseException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Raised an application exception: </span><span class="si">{</span><span class="n">exc</span><span class="si">!s}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span> <span class="n">BrokerMessageV1Status</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">REQUEST_HEADERS_CONTEXT_VAR</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                <span class="n">content</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span> <span class="n">exc</span><span class="o">.</span><span class="n">status</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Raised a system exception: </span><span class="si">{</span><span class="n">exc</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span> <span class="n">BrokerMessageV1Status</span><span class="o">.</span><span class="n">SYSTEM_ERROR</span><span class="p">,</span> <span class="n">REQUEST_HEADERS_CONTEXT_VAR</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                <span class="n">content</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span> <span class="n">BrokerMessageV1Status</span><span class="o">.</span><span class="n">SYSTEM_ERROR</span>
             <span class="k">finally</span><span class="p">:</span>
+                <span class="n">headers</span> <span class="o">=</span> <span class="n">REQUEST_HEADERS_CONTEXT_VAR</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
                 <span class="n">REQUEST_USER_CONTEXT_VAR</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">user_token</span><span class="p">)</span>
                 <span class="n">REQUEST_HEADERS_CONTEXT_VAR</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">headers_token</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">BrokerMessageV1Payload</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">_wrapper</span></div>
 
