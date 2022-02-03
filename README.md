@@ -26,6 +26,7 @@ Minos is a framework which helps you create [reactive](https://www.reactivemanif
 * [#149](https://github.com/minos-framework/minos-python/issues/149) Add `minos-graphql-aiohttp` plugin.
 * [#150](https://github.com/minos-framework/minos-python/issues/150) Refactor configuration file and `MinosConfig` accessor.
 * [#151](https://github.com/minos-framework/minos-python/issues/151) Expose `OpenAPI` and `AsyncAPI` specifications.
+* [#152](https://github.com/minos-framework/minos-python/issues/152) Provide a testing suite to test the microservice.
 
 ## Foundational Patterns
 
