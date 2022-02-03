@@ -50,3 +50,18 @@
 
 * Be compatible with `minos-microservice-common~=0.4.0`.
 * Be compatible with `minos-microservice-networks~=0.4.0`.
+
+## 0.4.1 (2022-01-31)
+
+* Update `README.md`.
+
+
+## 0.5.0 (2022-02-03)
+
+* Rename `Aggregate` as `RootEntity`.
+* Rename `AggregateRef` as `ExternalEntity`.
+* Rename `ModelRef` as `Ref`.
+* Rename `AggregateDiff` as `Event`.
+* Create the `Aggregate` base class, with the purpose to move the business logic from the `minos.cqrs.CommandService` to this brand-new class.
+* Refactor internal module hierarchy.
+* Minor changes.

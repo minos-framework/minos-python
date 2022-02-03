@@ -13,6 +13,9 @@ from pathlib import (
 from typing import (
     Optional,
 )
+from uuid import (
+    UUID,
+)
 
 from dependency_injector import (
     containers,
@@ -23,10 +26,12 @@ from minos.aggregate import (
     Aggregate,
     Entity,
     EntitySet,
+    ExternalEntity,
     InMemoryEventRepository,
     InMemorySnapshotRepository,
     InMemoryTransactionRepository,
-    ModelRef,
+    Ref,
+    RootEntity,
     ValueObject,
     ValueObjectSet,
 )
@@ -135,23 +140,23 @@ class FakeLockPool(MinosPool):
         """For testing purposes."""
 
 
-class Owner(Aggregate):
-    """Aggregate ``Owner`` class for testing purposes."""
+class Owner(RootEntity):
+    """For testing purposes"""
 
     name: str
     surname: str
     age: Optional[int]
 
 
-class Car(Aggregate):
-    """Aggregate ``Car`` class for testing purposes."""
+class Car(RootEntity):
+    """For testing purposes"""
 
     doors: int
     color: str
-    owner: Optional[ModelRef[Owner]]
+    owner: Optional[Ref[Owner]]
 
 
-class Order(Aggregate):
+class Order(RootEntity):
     """For testing purposes"""
 
     products: EntitySet[OrderItem]
@@ -161,10 +166,28 @@ class Order(Aggregate):
 class OrderItem(Entity):
     """For testing purposes"""
 
-    amount: int
+    name: str
 
 
 class Review(ValueObject):
     """For testing purposes."""
 
     message: str
+
+
+class Product(ExternalEntity):
+    """For testing purposes."""
+
+    title: str
+    quantity: int
+
+
+class OrderAggregate(Aggregate[Order]):
+    """For testing purposes."""
+
+    @staticmethod
+    async def create_order() -> UUID:
+        """For testing purposes."""
+
+        order = await Order.create(products=EntitySet(), reviews=ValueObjectSet())
+        return order.uuid

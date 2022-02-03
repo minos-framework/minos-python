@@ -186,7 +186,7 @@ class TestTransactionEntry(MinosTestCase):
         self.assertTrue(await transaction.validate())
 
         self.assertEqual(
-            [call(transaction_uuid=uuid), call(aggregate_uuid=agg_uuid, version=3)], select_event_mock.call_args_list
+            [call(transaction_uuid=uuid), call(uuid=agg_uuid, version=3)], select_event_mock.call_args_list
         )
         self.assertEqual(
             [
@@ -295,7 +295,7 @@ class TestTransactionEntry(MinosTestCase):
         self.assertFalse(await transaction.validate())
 
         self.assertEqual(
-            [call(transaction_uuid=uuid), call(aggregate_uuid=agg_uuid, version=3)], select_event_mock.call_args_list
+            [call(transaction_uuid=uuid), call(uuid=agg_uuid, version=3)], select_event_mock.call_args_list
         )
         self.assertEqual(
             [
@@ -347,7 +347,7 @@ class TestTransactionEntry(MinosTestCase):
         self.assertFalse(await transaction.validate())
 
         self.assertEqual(
-            [call(transaction_uuid=uuid), call(aggregate_uuid=agg_uuid, version=3)], select_event_mock.call_args_list
+            [call(transaction_uuid=uuid), call(uuid=agg_uuid, version=3)], select_event_mock.call_args_list
         )
         self.assertEqual(
             [

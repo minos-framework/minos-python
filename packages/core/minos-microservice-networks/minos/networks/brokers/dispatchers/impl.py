@@ -14,7 +14,6 @@ from inspect import (
     isawaitable,
 )
 from typing import (
-    Any,
     Optional,
     Union,
 )
@@ -124,20 +123,16 @@ class BrokerDispatcher(MinosSetup):
         action = self.get_action(message.topic)
         fn = self.get_callback(action)
 
-        data, status, headers = await fn(message)
+        payload = await fn(message)
 
         if message.should_reply:
-            reply = BrokerMessageV1(
-                topic=message.reply_topic,
-                payload=BrokerMessageV1Payload(content=data, status=status, headers=headers),
-                identifier=message.identifier,
-            )
+            reply = BrokerMessageV1(topic=message.reply_topic, payload=payload, identifier=message.identifier)
             await self.publisher.send(reply)
 
     @staticmethod
     def get_callback(
         fn: Callable[[BrokerRequest], Union[Optional[BrokerResponse], Awaitable[Optional[BrokerResponse]]]]
-    ) -> Callable[[BrokerMessage], Awaitable[tuple[Any, int, dict[str, str]]]]:
+    ) -> Callable[[BrokerMessage], Awaitable[BrokerMessageV1Payload]]:
         """Get the handler function to be used by the Broker Handler.
 
         :param fn: The action function.
@@ -145,7 +140,7 @@ class BrokerDispatcher(MinosSetup):
         """
 
         @wraps(fn)
-        async def _wrapper(raw: BrokerMessage) -> tuple[Any, int, dict[str, str]]:
+        async def _wrapper(raw: BrokerMessage) -> BrokerMessageV1Payload:
             logger.info(f"Dispatching '{raw!s}'...")
 
             request = BrokerRequest(raw)
@@ -157,17 +152,21 @@ class BrokerDispatcher(MinosSetup):
                 if isawaitable(response):
                     response = await response
                 if isinstance(response, Response):
-                    response = await response.content()
-                return response, BrokerMessageV1Status.SUCCESS, REQUEST_HEADERS_CONTEXT_VAR.get()
+                    content, status = await response.content(), response.status
+                else:
+                    content, status = None, BrokerMessageV1Status.SUCCESS
             except ResponseException as exc:
                 logger.warning(f"Raised an application exception: {exc!s}")
-                return repr(exc), BrokerMessageV1Status.ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
+                content, status = repr(exc), exc.status
             except Exception as exc:
                 logger.exception(f"Raised a system exception: {exc!r}")
-                return repr(exc), BrokerMessageV1Status.SYSTEM_ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
+                content, status = repr(exc), BrokerMessageV1Status.SYSTEM_ERROR
             finally:
+                headers = REQUEST_HEADERS_CONTEXT_VAR.get()
                 REQUEST_USER_CONTEXT_VAR.reset(user_token)
                 REQUEST_HEADERS_CONTEXT_VAR.reset(headers_token)
+
+            return BrokerMessageV1Payload(content=content, status=status, headers=headers)
 
         return _wrapper
 

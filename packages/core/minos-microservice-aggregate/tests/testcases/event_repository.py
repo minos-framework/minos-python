@@ -60,8 +60,8 @@ class EventRepositoryTestCase(MinosTestCase):
 
         for e, o in zip(expected, observed):
             self.assertEqual(type(e), type(o))
-            self.assertEqual(e.aggregate_uuid, o.aggregate_uuid)
-            self.assertEqual(e.aggregate_name, o.aggregate_name)
+            self.assertEqual(e.uuid, o.uuid)
+            self.assertEqual(e.name, o.name)
             self.assertEqual(e.version, o.version)
             self.assertEqual(e.data, o.data)
             self.assertEqual(e.id, o.id)
@@ -76,8 +76,8 @@ class EventRepositorySubmitTestCase(EventRepositoryTestCase, ABC):
         await self.event_repository.create(EventEntry(NULL_UUID, "example.Car", 1, bytes("foo", "utf-8")))
         observed = [v async for v in self.event_repository.select()]
         self.assertEqual(1, len(observed))
-        self.assertIsInstance(observed[0].aggregate_uuid, UUID)
-        self.assertNotEqual(NULL_UUID, observed[0].aggregate_uuid)
+        self.assertIsInstance(observed[0].uuid, UUID)
+        self.assertNotEqual(NULL_UUID, observed[0].uuid)
 
     async def test_submit(self):
         await self.event_repository.submit(EventEntry(self.uuid, "example.Car", action=Action.CREATE))
@@ -223,14 +223,14 @@ class EventRepositorySelectTestCase(EventRepositoryTestCase, ABC):
         observed = [v async for v in self.event_repository.select(id_ge=5)]
         self.assert_equal_repository_entries(expected, observed)
 
-    async def test_select_aggregate_uuid(self):
+    async def test_select_uuid(self):
         expected = [self.entries[2], self.entries[5], self.entries[7], self.entries[8], self.entries[9]]
-        observed = [v async for v in self.event_repository.select(aggregate_uuid=self.uuid_2)]
+        observed = [v async for v in self.event_repository.select(uuid=self.uuid_2)]
         self.assert_equal_repository_entries(expected, observed)
 
-    async def test_select_aggregate_name(self):
+    async def test_select_name(self):
         expected = [self.entries[6]]
-        observed = [v async for v in self.event_repository.select(aggregate_name="example.MotorCycle")]
+        observed = [v async for v in self.event_repository.select(name="example.MotorCycle")]
         self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_version(self):
@@ -301,7 +301,5 @@ class EventRepositorySelectTestCase(EventRepositoryTestCase, ABC):
 
     async def test_select_combined(self):
         expected = [self.entries[2], self.entries[5], self.entries[7], self.entries[8], self.entries[9]]
-        observed = [
-            v async for v in self.event_repository.select(aggregate_name="example.Car", aggregate_uuid=self.uuid_2)
-        ]
+        observed = [v async for v in self.event_repository.select(name="example.Car", uuid=self.uuid_2)]
         self.assert_equal_repository_entries(expected, observed)

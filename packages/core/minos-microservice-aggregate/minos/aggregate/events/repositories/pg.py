@@ -58,8 +58,8 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
 
     async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
         lock = None
-        if entry.aggregate_uuid != NULL_UUID:
-            lock = entry.aggregate_uuid.int & (1 << 32) - 1
+        if entry.uuid != NULL_UUID:
+            lock = entry.uuid.int & (1 << 32) - 1
 
         query, params = await self._build_query(entry)
 
@@ -71,7 +71,7 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
                 await self.offset,
             )
 
-        entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
+        entry.id, entry.uuid, entry.version, entry.created_at = response
         return entry
 
     async def _build_query(self, entry: EventEntry) -> tuple[Composable, dict[str, UUID]]:
@@ -105,8 +105,8 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
     # noinspection PyUnusedLocal
     @staticmethod
     def _build_select_query(
-        aggregate_uuid: Optional[UUID] = None,
-        aggregate_name: Optional[str] = None,
+        uuid: Optional[UUID] = None,
+        name: Optional[str] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
         version_gt: Optional[int] = None,
@@ -124,10 +124,10 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
     ) -> str:
         conditions = list()
 
-        if aggregate_uuid is not None:
-            conditions.append("aggregate_uuid = %(aggregate_uuid)s")
-        if aggregate_name is not None:
-            conditions.append("aggregate_name = %(aggregate_name)s")
+        if uuid is not None:
+            conditions.append("uuid = %(uuid)s")
+        if name is not None:
+            conditions.append("name = %(name)s")
         if version is not None:
             conditions.append("version = %(version)s")
         if version_lt is not None:
@@ -186,51 +186,51 @@ _CREATE_TABLE_QUERY = """
 CREATE TABLE IF NOT EXISTS aggregate_event (
     id BIGSERIAL PRIMARY KEY,
     action ACTION_TYPE NOT NULL,
-    aggregate_uuid UUID NOT NULL,
-    aggregate_name TEXT NOT NULL,
+    uuid UUID NOT NULL,
+    name TEXT NOT NULL,
     version INT NOT NULL,
     data BYTEA NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     transaction_uuid UUID NOT NULL DEFAULT uuid_nil(),
-    UNIQUE (aggregate_uuid, version, transaction_uuid)
+    UNIQUE (uuid, version, transaction_uuid)
 );
 """.strip()
 
 _INSERT_VALUES_QUERY = SQL(
     """
-INSERT INTO aggregate_event (id, action, aggregate_uuid, aggregate_name, version, data, created_at, transaction_uuid)
+INSERT INTO aggregate_event (id, action, uuid, name, version, data, created_at, transaction_uuid)
 VALUES (
     default,
     %(action)s,
-    CASE %(aggregate_uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(aggregate_uuid)s END,
-    %(aggregate_name)s,
+    CASE %(uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(uuid)s END,
+    %(name)s,
     (
         SELECT (CASE WHEN %(version)s IS NULL THEN 1 + COALESCE(MAX(t2.version), 0) ELSE %(version)s END)
         FROM (
-                 SELECT DISTINCT ON (t1.aggregate_uuid) t1.version
+                 SELECT DISTINCT ON (t1.uuid) t1.version
                  FROM ( {from_parts} ) AS t1
-                 ORDER BY t1.aggregate_uuid, t1.transaction_index DESC
+                 ORDER BY t1.uuid, t1.transaction_index DESC
         ) AS t2
     ),
     %(data)s,
     (CASE WHEN %(created_at)s IS NULL THEN NOW() ELSE %(created_at)s END),
     %(transaction_uuid)s
 )
-RETURNING id, aggregate_uuid, version, created_at;
+RETURNING id, uuid, version, created_at;
     """
 )
 
 _SELECT_TRANSACTION_CHUNK = SQL(
     """
-SELECT {index} AS transaction_index, aggregate_uuid, MAX(version) AS version
+SELECT {index} AS transaction_index, uuid, MAX(version) AS version
 FROM aggregate_event
-WHERE aggregate_uuid = %(aggregate_uuid)s AND transaction_uuid = {transaction_uuid}
-GROUP BY aggregate_uuid
+WHERE uuid = %(uuid)s AND transaction_uuid = {transaction_uuid}
+GROUP BY uuid
     """
 )
 
 _SELECT_ALL_ENTRIES_QUERY = """
-SELECT aggregate_uuid, aggregate_name, version, data, id, action, created_at, transaction_uuid
+SELECT uuid, name, version, data, id, action, created_at, transaction_uuid
 FROM aggregate_event
 """.strip()
 

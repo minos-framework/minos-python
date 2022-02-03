@@ -58,7 +58,7 @@ class BrokerSubscriber(ABC, MinosSetup):
         :return: A ``BrokerMessage`` instance.
         """
         message = await self._receive()
-        logger.info(f"Receiving {message!r} message...")
+        logger.debug(f"Receiving {message!r} message...")
         return message
 
     @abstractmethod

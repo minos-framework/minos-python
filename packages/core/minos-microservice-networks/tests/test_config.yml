@@ -34,6 +34,6 @@ saga:
     storage:
         path: "./order.lmdb"
 discovery:
-    client: minos.networks.MinosDiscoveryClient
+    client: minos.networks.InMemoryDiscoveryClient
     host: discovery-service
     port: 8080

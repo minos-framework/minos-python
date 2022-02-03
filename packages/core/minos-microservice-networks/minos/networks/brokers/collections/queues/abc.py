@@ -27,7 +27,7 @@ class BrokerQueue(ABC, MinosSetup):
 
     async def enqueue(self, message: BrokerMessage) -> None:
         """Enqueue method."""
-        logger.info(f"Enqueuing {message!r} message...")
+        logger.debug(f"Enqueuing {message!r} message...")
         await self._enqueue(message)
 
     @abstractmethod
@@ -45,7 +45,7 @@ class BrokerQueue(ABC, MinosSetup):
     async def dequeue(self) -> BrokerMessage:
         """Dequeue method."""
         message = await self._dequeue()
-        logger.info(f"Dequeuing {message!r} message...")
+        logger.debug(f"Dequeuing {message!r} message...")
         return message
 
     @abstractmethod

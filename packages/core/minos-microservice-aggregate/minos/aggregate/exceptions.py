@@ -11,9 +11,11 @@ from minos.common import (
 )
 
 if TYPE_CHECKING:
+    from .entities import (
+        RootEntity,
+    )
     from .models import (
-        Aggregate,
-        AggregateDiff,
+        Event,
     )
 
 
@@ -52,21 +54,21 @@ class SnapshotRepositoryException(AggregateException):
 class SnapshotRepositoryConflictException(SnapshotRepositoryException):
     """Exception to be raised when current version is newer than the one to be processed."""
 
-    def __init__(self, previous: Aggregate, aggregate_diff: AggregateDiff):
+    def __init__(self, previous: RootEntity, event: Event):
         self.previous = previous
-        self.aggregate_diff = aggregate_diff
+        self.event = event
         super().__init__(
-            f"Version for {repr(previous.classname)} aggregate must be "
-            f"greater than {previous.version}. Obtained: {aggregate_diff.version}"
+            f"Version for {repr(previous.classname)} root entity must be "
+            f"greater than {previous.version}. Obtained: {event.version}"
         )
 
 
-class AggregateNotFoundException(SnapshotRepositoryException):
-    """Exception to be raised when some aggregate is not found on the repository."""
+class NotFoundException(SnapshotRepositoryException):
+    """Exception to be raised when a ``RootEntity`` is not found on the repository."""
 
 
-class DeletedAggregateException(SnapshotRepositoryException):
-    """Exception to be raised when some aggregate is already deleted from the repository."""
+class AlreadyDeletedException(SnapshotRepositoryException):
+    """Exception to be raised when a ``RootEntity`` is already deleted from the repository."""
 
 
 class ValueObjectException(AggregateException):

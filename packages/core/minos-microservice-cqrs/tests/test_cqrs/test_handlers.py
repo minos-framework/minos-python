@@ -8,10 +8,10 @@ from uuid import (
 
 from minos.aggregate import (
     Action,
-    AggregateDiff,
+    Event,
     FieldDiff,
     FieldDiffContainer,
-    ModelRef,
+    Ref,
 )
 from minos.common import (
     current_datetime,
@@ -29,35 +29,35 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         self.uuid = uuid4()
         self.bars = [Bar(uuid4(), 1, "hello"), Bar(uuid4(), 1, "world")]
         self.now = current_datetime()
-        self.diff = AggregateDiff(
+        self.diff = Event(
             self.uuid,
             "Foo",
             1,
             Action.CREATE,
             self.now,
-            FieldDiffContainer([FieldDiff("bars", list[ModelRef[Bar]], [b.uuid for b in self.bars])]),
+            FieldDiffContainer([FieldDiff("bars", list[Ref[Bar]], [b.uuid for b in self.bars])]),
         )
 
     async def test_handle(self):
-        value = AggregateDiff(
+        value = Event(
             self.uuid,
             "Foo",
             1,
             Action.CREATE,
             self.now,
-            FieldDiffContainer([FieldDiff("bars", list[ModelRef[Bar]], self.bars)]),
+            FieldDiffContainer([FieldDiff("bars", list[Ref[Bar]], self.bars)]),
         )
 
-        with patch("minos.aggregate.ModelRefResolver.resolve", return_value=value):
+        with patch("minos.aggregate.RefResolver.resolve", return_value=value):
             observed = await PreEventHandler.handle(self.diff)
 
-        expected = AggregateDiff(
+        expected = Event(
             self.uuid,
             "Foo",
             1,
             Action.CREATE,
             self.now,
-            FieldDiffContainer([FieldDiff("bars", list[ModelRef[Bar]], self.bars)]),
+            FieldDiffContainer([FieldDiff("bars", list[Ref[Bar]], self.bars)]),
         )
         self.assertEqual(expected, observed)
 
@@ -70,16 +70,16 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.diff, observed)
 
     async def test_handle_raises(self):
-        with patch("minos.aggregate.ModelRefResolver.resolve", side_effect=ValueError):
+        with patch("minos.aggregate.RefResolver.resolve", side_effect=ValueError):
             observed = await PreEventHandler.handle(self.diff)
 
-        expected = AggregateDiff(
+        expected = Event(
             self.uuid,
             "Foo",
             1,
             Action.CREATE,
             self.now,
-            FieldDiffContainer([FieldDiff("bars", list[ModelRef[Bar]], [b.uuid for b in self.bars])]),
+            FieldDiffContainer([FieldDiff("bars", list[Ref[Bar]], [b.uuid for b in self.bars])]),
         )
         self.assertEqual(expected, observed)
 

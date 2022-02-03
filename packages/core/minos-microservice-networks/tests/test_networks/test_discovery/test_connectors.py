@@ -9,7 +9,7 @@ from minos.common import (
 )
 from minos.networks import (
     DiscoveryConnector,
-    MinosDiscoveryClient,
+    InMemoryDiscoveryClient,
     MinosInvalidDiscoveryClient,
     get_host_ip,
 )
@@ -18,7 +18,7 @@ from tests.utils import (
 )
 
 
-class TestDiscovery(unittest.IsolatedAsyncioTestCase):
+class TestDiscoveryConnector(unittest.IsolatedAsyncioTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -37,7 +37,7 @@ class TestDiscovery(unittest.IsolatedAsyncioTestCase):
             DiscoveryConnector.from_config(config)
 
     def test_client(self):
-        self.assertIsInstance(self.discovery.client, MinosDiscoveryClient)
+        self.assertIsInstance(self.discovery.client, InMemoryDiscoveryClient)
 
     async def test_subscription(self):
         mock = AsyncMock()
