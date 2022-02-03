@@ -1096,17 +1096,17 @@ This project follows a modular structure based on python packages.
 The core packages provide the base implementation of the framework.
 
 * [minos-microservice-aggregate](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-aggregate): The Aggregate pattern implementation.
-* [minos-microservice-common](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-common): The common core.
+* [minos-microservice-common](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-common): The common core package.
 * [minos-microservice-cqrs](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-cqrs): The CQRS pattern implementation.
-* [minos-microservice-networks](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-networks): The networks core.
+* [minos-microservice-networks](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-networks): The networks core package.
 * [minos-microservice-saga](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-saga): The SAGA pattern implementation.
 
 ### Plugins
 
 The plugin packages provide connectors to external technologies like brokers, discovery services, databases, serializers and so on.
 
-* [minos-broker-kafka](https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-kafka): The networks core.
-* [minos-discovery-minos](https://minos-framework.github.io/minos-python/packages/plugins/minos-discovery-minos): The SAGA pattern implementation.
+* [minos-broker-kafka](https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-kafka): The `kafka` plugin package.
+* [minos-discovery-minos](https://minos-framework.github.io/minos-python/packages/plugins/minos-discovery-minos): The `minos-discovery` plugin package.
 
 ## Documentation
 
