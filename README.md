@@ -67,6 +67,10 @@ Here is a summary containing the most useful commands:
 
 For more information, visit the [`minos-cli`](https://github.com/minos-framework/minos-cli) repository.
 
+## Documentation
+
+The best place to start learning how to use the Minos Framework is at [Minos Learn](http://www.minos.run/learn/). The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).
+
 ## QuickStart
 
 This section includes a quickstart guide to create your first `minos` microservice, so that anyone can get the gist of the framework.
@@ -1107,10 +1111,6 @@ The plugin packages provide connectors to external technologies like brokers, di
 
 * [minos-broker-kafka](https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-kafka): The `kafka` plugin package.
 * [minos-discovery-minos](https://minos-framework.github.io/minos-python/packages/plugins/minos-discovery-minos): The `minos-discovery` plugin package.
-
-## Documentation
-
-The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).
 
 ## Source Code
 
