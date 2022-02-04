@@ -1,6 +1,6 @@
 __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
-__version__ = "0.4.0"
+__version__ = "0.5.1"
 
 from .brokers import (
     REQUEST_HEADERS_CONTEXT_VAR,
@@ -32,19 +32,12 @@ from .brokers import (
     InMemoryBrokerSubscriberBuilder,
     InMemoryBrokerSubscriberQueue,
     InMemoryBrokerSubscriberQueueBuilder,
-    InMemoryQueuedKafkaBrokerPublisher,
-    InMemoryQueuedKafkaBrokerSubscriberBuilder,
-    KafkaBrokerPublisher,
-    KafkaBrokerSubscriber,
-    KafkaBrokerSubscriberBuilder,
     PostgreSqlBrokerPublisherQueue,
     PostgreSqlBrokerPublisherQueueQueryFactory,
     PostgreSqlBrokerQueue,
     PostgreSqlBrokerSubscriberQueue,
     PostgreSqlBrokerSubscriberQueueBuilder,
     PostgreSqlBrokerSubscriberQueueQueryFactory,
-    PostgreSqlQueuedKafkaBrokerPublisher,
-    PostgreSqlQueuedKafkaBrokerSubscriberBuilder,
     QueuedBrokerPublisher,
     QueuedBrokerSubscriber,
     QueuedBrokerSubscriberBuilder,
@@ -75,8 +68,8 @@ from .decorators import (
 from .discovery import (
     DiscoveryClient,
     DiscoveryConnector,
+    InMemoryDiscoveryClient,
     KongDiscoveryClient,
-    MinosDiscoveryClient,
 )
 from .exceptions import (
     MinosActionNotFoundException,

@@ -23,15 +23,16 @@ from .writers import (
 )
 
 if TYPE_CHECKING:
-    from ...models import (
-        Aggregate,
+    from ...entities import (
+        RootEntity,
     )
 
 
 class PostgreSqlSnapshotRepository(SnapshotRepository):
     """PostgreSQL Snapshot class.
 
-    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
+    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
+    class.
     """
 
     reader: PostgreSqlSnapshotReader
@@ -62,10 +63,10 @@ class PostgreSqlSnapshotRepository(SnapshotRepository):
         await self.reader.destroy()
         await self.writer.destroy()
 
-    def _get(self, *args, **kwargs) -> Awaitable[Aggregate]:
+    def _get(self, *args, **kwargs) -> Awaitable[RootEntity]:
         return self.reader.get(*args, **kwargs)
 
-    def _find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
+    def _find(self, *args, **kwargs) -> AsyncIterator[RootEntity]:
         return self.reader.find(*args, **kwargs)
 
     def _synchronize(self, *args, **kwargs) -> Awaitable[None]:

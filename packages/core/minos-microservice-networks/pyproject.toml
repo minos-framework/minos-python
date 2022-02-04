@@ -1,14 +1,14 @@
 [tool.poetry]
 name = "minos-microservice-networks"
-version = "0.4.0"
-description = "Python Package with the common network classes and utilities used in Minos Microservice."
+version = "0.5.1"
+description = "The networks core of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
 homepage = "http://www.minos.run/"
 authors = ["Minos Framework Devs <hey@minos.run>"]
 license = "MIT"
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
@@ -31,8 +31,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.4.0"
-aiokafka = "^0.7.0"
+minos-microservice-common = "^0.5.0"
 aiomisc = "^14.0.3"
 aiopg = "^1.2.1"
 aiohttp = "^3.7.4"
@@ -42,7 +41,7 @@ orjson = "^3.6.5"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }
-black = "^21.12b0"
+black = "^22.1"
 isort = "^5.8.0"
 pytest = "^6.2.4"
 coverage = "^6.3"

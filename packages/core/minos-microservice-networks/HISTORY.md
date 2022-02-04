@@ -191,3 +191,21 @@ History
 * Refactor `DynamicBroker` and `DynamicBrokerPool` as `BrokerClient` and `BrokerClientPool`. The new `BrokerClient` has a `send(message: BrokerMessage) -> Awaitable[None]` method for sending messages and a `receive() -> Awaitable[BrokerMessage]` to receive them.
 * Implement a builder pattern on `BrokerPublisher`
 * Be compatible with `minos-microservice-common~=0.4.0`.
+
+0.4.1 (2022-01-31)
+------------------
+
+* Update `README.md`.
+
+
+0.5.0 (2022-02-03)
+------------------
+
+* Extract `kafka` related code to the `minos-broker-kafka` plugin.
+* Extract `minos-discovery` related code to the `minos-discovery-minos` plugin.
+* Minor changes.
+
+0.5.1 (2022-02-03)
+------------------
+
+* Fix bug related with dependency specification.

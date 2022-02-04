@@ -10,7 +10,6 @@ from typing import (
     Any,
     Iterable,
     Optional,
-    Type,
     Union,
 )
 from uuid import (
@@ -22,12 +21,19 @@ from minos.common import (
     import_module,
 )
 
+from ..actions import (
+    Action,
+)
+from .fields import (
+    FieldDiffContainer,
+)
+from .models import (
+    Event,
+)
+
 if TYPE_CHECKING:
-    from ..models import (
-        Action,
-        Aggregate,
-        AggregateDiff,
-        FieldDiffContainer,
+    from ..entities import (
+        RootEntity,
     )
     from ..transactions import (
         TransactionEntry,
@@ -35,11 +41,11 @@ if TYPE_CHECKING:
 
 
 class EventEntry:
-    """Class that represents an entry (or row) on the events repository database which stores the aggregate changes."""
+    """Class that represents an entry (or row) on the event repository database which stores the root entity changes."""
 
     __slots__ = (
-        "aggregate_uuid",
-        "aggregate_name",
+        "uuid",
+        "name",
         "version",
         "data",
         "id",
@@ -51,8 +57,8 @@ class EventEntry:
     # noinspection PyShadowingBuiltins
     def __init__(
         self,
-        aggregate_uuid: UUID,
-        aggregate_name: str,
+        uuid: UUID,
+        name: str,
         version: Optional[int] = None,
         data: Union[bytes, memoryview] = bytes(),
         id: Optional[int] = None,
@@ -63,14 +69,10 @@ class EventEntry:
         if isinstance(data, memoryview):
             data = data.tobytes()
         if action is not None and isinstance(action, str):
-            from ..models import (
-                Action,
-            )
-
             action = Action.value_of(action)
 
-        self.aggregate_uuid = aggregate_uuid
-        self.aggregate_name = aggregate_name
+        self.uuid = uuid
+        self.name = name
         self.version = version
         self.data = data
 
@@ -80,12 +82,10 @@ class EventEntry:
         self.transaction_uuid = transaction_uuid
 
     @classmethod
-    def from_aggregate_diff(
-        cls, aggregate_diff: AggregateDiff, *, transaction: Optional[TransactionEntry] = None, **kwargs
-    ) -> EventEntry:
-        """Build a new instance from an ``Aggregate``.
+    def from_event(cls, event: Event, *, transaction: Optional[TransactionEntry] = None, **kwargs) -> EventEntry:
+        """Build a new instance from a ``RootEntity``.
 
-        :param aggregate_diff: The aggregate difference.
+        :param event: The event.
         :param transaction: Optional transaction.
         :param kwargs: Additional named arguments.
         :return: A new ``EventEntry`` instance.
@@ -95,10 +95,10 @@ class EventEntry:
 
         # noinspection PyTypeChecker
         return cls(
-            aggregate_uuid=aggregate_diff.uuid,
-            aggregate_name=aggregate_diff.name,
-            data=aggregate_diff.fields_diff.avro_bytes,
-            action=aggregate_diff.action,
+            uuid=event.uuid,
+            name=event.name,
+            data=event.fields_diff.avro_bytes,
+            action=event.action,
             **kwargs,
         )
 
@@ -118,8 +118,8 @@ class EventEntry:
         :return: A dictionary in which the keys are attribute names and values the attribute contents.
         """
         return {
-            "aggregate_uuid": self.aggregate_uuid,
-            "aggregate_name": self.aggregate_name,
+            "uuid": self.uuid,
+            "name": self.name,
             "version": self.version,
             "data": self.data,
             "id": self.id,
@@ -129,27 +129,23 @@ class EventEntry:
         }
 
     @property
-    def aggregate_cls(self) -> Type[Aggregate]:
-        """Load the concrete ``Aggregate`` class.
+    def type_(self) -> type[RootEntity]:
+        """Load the concrete ``RootEntity`` class.
 
         :return: A ``Type`` object.
         """
         # noinspection PyTypeChecker
-        return import_module(self.aggregate_name)
+        return import_module(self.name)
 
     @property
-    def aggregate_diff(self) -> AggregateDiff:
-        """Get the stored ``AggregateDiff`` instance.
+    def event(self) -> Event:
+        """Get the stored ``Event`` instance.
 
-        :return: An ``AggregateDiff`` instance.
+        :return: An ``Event`` instance.
         """
-        from ..models import (
-            AggregateDiff,
-        )
-
-        return AggregateDiff(
-            self.aggregate_uuid,
-            self.aggregate_name,
+        return Event(
+            self.uuid,
+            self.name,
             self.version,
             self.action,
             self.created_at,
@@ -162,10 +158,6 @@ class EventEntry:
 
         :return: A ``FieldDiffContainer`` instance.
         """
-        from ..models import (
-            FieldDiffContainer,
-        )
-
         if not self.data:
             return FieldDiffContainer.empty()
 
@@ -179,8 +171,8 @@ class EventEntry:
 
     def __iter__(self) -> Iterable:
         yield from (
-            self.aggregate_uuid,
-            self.aggregate_name,
+            self.uuid,
+            self.name,
             self.version,
             self.data,
             self.id,
@@ -192,7 +184,7 @@ class EventEntry:
     def __repr__(self):
         return (
             f"{type(self).__name__}("
-            f"aggregate_uuid={self.aggregate_uuid!r}, aggregate_name={self.aggregate_name!r}, "
+            f"uuid={self.uuid!r}, name={self.name!r}, "
             f"version={self.version!r}, len(data)={len(self.data)!r}, "
             f"id={self.id!r}, action={self.action!r}, created_at={self.created_at!r}, "
             f"transaction_uuid={self.transaction_uuid!r})"

@@ -7,6 +7,7 @@ install:
 
 docs:
 	mkdir -p $(DOCS_TARGET)/core
+	mkdir -p $(DOCS_TARGET)/plugins
 
 	$(MAKE) --directory=packages/core/minos-microservice-aggregate install docs
 	cp -R packages/core/minos-microservice-aggregate/docs/_build/html $(DOCS_TARGET)/core/minos-microservice-aggregate
@@ -22,5 +23,11 @@ docs:
 
 	$(MAKE) --directory=packages/core/minos-microservice-saga install docs
 	cp -R packages/core/minos-microservice-saga/docs/_build/html $(DOCS_TARGET)/core/minos-microservice-saga
+
+	$(MAKE) --directory=packages/plugins/minos-broker-kafka install docs
+	cp -R packages/plugins/minos-broker-kafka/docs/_build/html $(DOCS_TARGET)/plugins/minos-broker-kafka
+
+	$(MAKE) --directory=packages/plugins/minos-discovery-minos install docs
+	cp -R packages/plugins/minos-discovery-minos/docs/_build/html $(DOCS_TARGET)/plugins/minos-discovery-minos
 
 	poetry run $(MAKE) --directory=docs html

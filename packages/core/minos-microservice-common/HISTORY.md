@@ -269,3 +269,13 @@ History
 ------------------
 
 * Add waiting time before destroying the `minos.common.MinosPool` acquired instances.
+
+0.4.1 (2022-01-31)
+------------------
+
+* Update `README.md`.
+
+0.5.0 (2022-02-03)
+------------------
+
+* Minor changes.

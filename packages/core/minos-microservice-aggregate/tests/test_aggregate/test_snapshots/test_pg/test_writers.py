@@ -12,8 +12,8 @@ from uuid import (
 
 from minos.aggregate import (
     Action,
+    AlreadyDeletedException,
     Condition,
-    DeletedAggregateException,
     EventEntry,
     FieldDiff,
     FieldDiffContainer,
@@ -69,26 +69,26 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
     async def _populate(self):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
-        aggregate_name: str = Car.classname
+        name: str = Car.classname
 
-        await self.event_repository.create(EventEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
-        await self.event_repository.update(EventEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
-        await self.event_repository.create(EventEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
-        await self.event_repository.update(EventEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes))
-        await self.event_repository.delete(EventEntry(self.uuid_1, aggregate_name, 4))
-        await self.event_repository.update(EventEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
+        await self.event_repository.create(EventEntry(self.uuid_1, name, 1, diff.avro_bytes))
+        await self.event_repository.update(EventEntry(self.uuid_1, name, 2, diff.avro_bytes))
+        await self.event_repository.create(EventEntry(self.uuid_2, name, 1, diff.avro_bytes))
+        await self.event_repository.update(EventEntry(self.uuid_1, name, 3, diff.avro_bytes))
+        await self.event_repository.delete(EventEntry(self.uuid_1, name, 4))
+        await self.event_repository.update(EventEntry(self.uuid_2, name, 2, diff.avro_bytes))
         await self.event_repository.update(
-            EventEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
+            EventEntry(self.uuid_2, name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
         await self.event_repository.delete(
-            EventEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_2)
+            EventEntry(self.uuid_2, name, 3, bytes(), transaction_uuid=self.transaction_2)
         )
         await self.event_repository.update(
-            EventEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
+            EventEntry(self.uuid_2, name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
-        await self.event_repository.create(EventEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
+        await self.event_repository.create(EventEntry(self.uuid_3, name, 1, diff.avro_bytes))
         await self.event_repository.delete(
-            EventEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_3)
+            EventEntry(self.uuid_2, name, 3, bytes(), transaction_uuid=self.transaction_3)
         )
         await self.transaction_repository.submit(
             TransactionEntry(self.transaction_1, TransactionStatus.PENDING, await self.event_repository.offset)
@@ -129,7 +129,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(self.uuid_1, Car.classname, 4),
-            SnapshotEntry.from_aggregate(
+            SnapshotEntry.from_root_entity(
                 Car(
                     3,
                     "blue",
@@ -139,7 +139,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
                     updated_at=observed[1].updated_at,
                 )
             ),
-            SnapshotEntry.from_aggregate(
+            SnapshotEntry.from_root_entity(
                 Car(
                     3,
                     "blue",
@@ -168,7 +168,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(self.uuid_1, Car.classname, 4),
-            SnapshotEntry.from_aggregate(
+            SnapshotEntry.from_root_entity(
                 Car(
                     3,
                     "blue",
@@ -178,7 +178,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
                     updated_at=observed[1].updated_at,
                 )
             ),
-            SnapshotEntry.from_aggregate(
+            SnapshotEntry.from_root_entity(
                 Car(
                     3,
                     "blue",
@@ -208,7 +208,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         expected = [
             SnapshotEntry(self.uuid_1, Car.classname, 4),
             SnapshotEntry(self.uuid_2, Car.classname, 4),
-            SnapshotEntry.from_aggregate(
+            SnapshotEntry.from_root_entity(
                 Car(
                     3,
                     "blue",
@@ -237,7 +237,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(self.uuid_1, Car.classname, 4),
-            SnapshotEntry.from_aggregate(
+            SnapshotEntry.from_root_entity(
                 Car(
                     3,
                     "blue",
@@ -247,7 +247,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
                     updated_at=observed[1].updated_at,
                 )
             ),
-            SnapshotEntry.from_aggregate(
+            SnapshotEntry.from_root_entity(
                 Car(
                     3,
                     "blue",
@@ -268,24 +268,24 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
     async def test_dispatch_ignore_previous_version(self):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
-        aggregate_name: str = Car.classname
+        name: str = Car.classname
         condition = Condition.EQUAL("uuid", self.uuid_1)
 
         async def _fn(*args, **kwargs):
-            yield EventEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())
-            yield EventEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
-            yield EventEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
+            yield EventEntry(self.uuid_1, name, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())
+            yield EventEntry(self.uuid_1, name, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
+            yield EventEntry(self.uuid_1, name, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
 
         self.event_repository.select = MagicMock(side_effect=_fn)
         await self.writer.dispatch()
 
-        observed = [v async for v in self.reader.find_entries(aggregate_name, condition)]
+        observed = [v async for v in self.reader.find_entries(name, condition)]
 
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(
-                aggregate_uuid=self.uuid_1,
-                aggregate_name=aggregate_name,
+                uuid=self.uuid_1,
+                name=name,
                 version=3,
                 schema=Car.avro_schema,
                 data=Car(3, "blue", uuid=self.uuid_1, version=1).avro_data,
@@ -299,11 +299,11 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         self.assertEqual(len(expected), len(observed))
         for exp, obs in zip(expected, observed):
             if exp.data is None:
-                with self.assertRaises(DeletedAggregateException):
+                with self.assertRaises(AlreadyDeletedException):
                     # noinspection PyStatementEffect
-                    obs.build_aggregate()
+                    obs.build()
             else:
-                self.assertEqual(exp.build_aggregate(), obs.build_aggregate())
+                self.assertEqual(exp.build(), obs.build())
             self.assertIsInstance(obs.created_at, datetime)
             self.assertIsInstance(obs.updated_at, datetime)
 
@@ -318,8 +318,8 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
 
         # noinspection PyTypeChecker
         entry = EventEntry(
-            aggregate_uuid=self.uuid_3,
-            aggregate_name=Car.classname,
+            uuid=self.uuid_3,
+            name=Car.classname,
             data=FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")]).avro_bytes,
         )
         await self.event_repository.create(entry)
