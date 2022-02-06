@@ -82,7 +82,13 @@ The required environment to run this quickstart is the following:
 * A `python>=3.9` interpreter with version equal or greater to .
 * A `kafka` instance available at `localhost:9092`
 * A `postgres` instance available at `localhost:5432` with the `foo_db` and `foobar_db` databases accessible with the `user:pass` credentials.
-* Two TCP sockets available to use at `localhost:4545` and `localhost:4546`.
+* Two TCP sockets available to use at `localhost:4545` and `localhost:4546`.  
+```bash
+docker run -d --name some-postgresdb -p 5432:5432 -e POSTGRES_USER=user -e POSTGRES_PASSWORD=pass postgres
+docker exec -it some-postgresdb psql -U user
+CREATE database foo_db;
+CREATE database foobar_db;
+```
 
 Note that these parameters can be customized on the configuration files.
 
