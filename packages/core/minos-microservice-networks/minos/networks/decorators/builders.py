@@ -4,6 +4,11 @@ from asyncio import (
 from collections import (
     defaultdict,
 )
+from collections.abc import (
+    Awaitable,
+    Callable,
+    Collection,
+)
 from functools import (
     partial,
     wraps,
@@ -12,8 +17,6 @@ from inspect import (
     isawaitable,
 )
 from typing import (
-    Awaitable,
-    Callable,
     Optional,
     Type,
     Union,
@@ -115,10 +118,25 @@ class EnrouteBuilder:
 
             return _wrapper
 
-        return {
+        decorators = {
             decorator: _flatten(decorator, fns)
             for decorator, fns in self._build_all_classes(method_name, **kwargs).items()
         }
+
+        self._validate_not_redefined(decorators)
+
+        return decorators
+
+    # noinspection PyMethodMayBeStatic
+    def _validate_not_redefined(self, decorators: Collection[EnrouteDecorator]) -> None:
+        raw = set(map(lambda obj: (type(obj).__bases__[0], *obj), decorators))
+
+        if len(raw) == len(decorators):
+            return
+
+        duplicated = next(iter(raw))
+        decorator = duplicated[0](*duplicated[1:])
+        raise MinosRedefinedEnrouteDecoratorException(f"{decorator} can be used only once.")
 
     def _build_all_classes(self, method_name: str, **kwargs) -> dict[EnrouteDecorator, set[Handler]]:
         decomposed_handlers = defaultdict(set)
