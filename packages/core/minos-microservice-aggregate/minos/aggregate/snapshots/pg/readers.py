@@ -107,7 +107,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         :param name: Class name of the ``RootEntity``.
         :param condition: The condition that must be satisfied by the ``RootEntity`` instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
-            is to retrieve them without any order pattern.
+            is to retrieve them without any order _pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
