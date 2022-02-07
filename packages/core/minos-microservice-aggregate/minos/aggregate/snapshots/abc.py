@@ -21,7 +21,7 @@ from minos.common import (
 )
 
 from ..queries import (
-    Condition,
+    _TRUE_CONDITION,
     _Condition,
     _Ordering,
 )
@@ -91,7 +91,7 @@ class SnapshotRepository(ABC, MinosSetup):
         """
         return self.find(
             name,
-            Condition.TRUE,
+            _TRUE_CONDITION,
             ordering=ordering,
             limit=limit,
             streaming_mode=streaming_mode,
