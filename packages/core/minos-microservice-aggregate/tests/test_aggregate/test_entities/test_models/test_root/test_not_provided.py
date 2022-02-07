@@ -27,6 +27,11 @@ class TestRootEntityNotProvided(MinosTestCase):
             # noinspection PyTypeChecker
             await Car.get(uuid4(), _snapshot=None)
 
+    async def test_get_all_raises(self):
+        with self.assertRaises(NotProvidedException):
+            # noinspection PyTypeChecker
+            [c async for c in Car.get_all(_snapshot=None)]
+
     async def test_find_raises(self):
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
