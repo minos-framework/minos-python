@@ -29,6 +29,7 @@ STORAGE = namedtuple("Storage", "path")
 SAGA = namedtuple("Saga", "storage")
 REST = namedtuple("Rest", "host port")
 REPOSITORY = namedtuple("Repository", "database user password host port")
+QUERY_REPOSITORY = namedtuple("QueryRepository", "database user password host port")
 SNAPSHOT = namedtuple("Snapshot", "database user password host port")
 DISCOVERY = namedtuple("Discovery", "client host port")
 
@@ -269,6 +270,20 @@ class MinosConfig(MinosConfigAbstract):
             password=self._get("repository.password"),
             host=self._get("repository.host"),
             port=int(self._get("repository.port")),
+        )
+
+    @property
+    def query_repository(self) -> QUERY_REPOSITORY:
+        """Get the query_repository config.
+
+        :return: A ``QUERY_REPOSITORY`` NamedTuple instance.
+        """
+        return REPOSITORY(
+            database=self._get("query_repository.database"),
+            user=self._get("query_repository.user"),
+            password=self._get("query_repository.password"),
+            host=self._get("query_repository.host"),
+            port=int(self._get("query_repository.port")),
         )
 
     @property
