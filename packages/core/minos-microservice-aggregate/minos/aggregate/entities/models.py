@@ -101,7 +101,7 @@ class RootEntity(Entity):
     @classmethod
     @inject
     async def get(
-        cls: Type[T], uuid: UUID, _snapshot: SnapshotRepository = Provide["snapshot_repository"], **kwargs
+        cls: Type[T], uuid: UUID, *, _snapshot: SnapshotRepository = Provide["snapshot_repository"], **kwargs
     ) -> T:
         """Get one instance from the database based on its identifier.
 
@@ -117,11 +117,37 @@ class RootEntity(Entity):
 
     @classmethod
     @inject
-    async def find(
+    def get_all(
+        cls: Type[T],
+        ordering: Optional[_Ordering] = None,
+        limit: Optional[int] = None,
+        *,
+        _snapshot: SnapshotRepository = Provide["snapshot_repository"],
+        **kwargs,
+    ) -> AsyncIterator[T]:
+        """Get all instance from the database.
+
+        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
+            is to retrieve them without any order pattern.
+        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
+            instances that meet the given condition.
+        :param _snapshot: Snapshot to be set to the root entity.
+        :return: A ``RootEntity`` instance.
+        """
+        if _snapshot is None or isinstance(_snapshot, Provide):
+            raise NotProvidedException("A snapshot instance is required.")
+
+        # noinspection PyTypeChecker
+        return _snapshot.get_all(cls.classname, ordering, limit, _snapshot=_snapshot, **kwargs)
+
+    @classmethod
+    @inject
+    def find(
         cls: Type[T],
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
+        *,
         _snapshot: SnapshotRepository = Provide["snapshot_repository"],
         **kwargs,
     ) -> AsyncIterator[T]:
@@ -138,10 +164,7 @@ class RootEntity(Entity):
         if _snapshot is None or isinstance(_snapshot, Provide):
             raise NotProvidedException("A snapshot instance is required.")
         # noinspection PyTypeChecker
-        iterable = _snapshot.find(cls.classname, condition, ordering, limit, _snapshot=_snapshot, **kwargs)
-        # noinspection PyTypeChecker
-        async for instance in iterable:
-            yield instance
+        return _snapshot.find(cls.classname, condition, ordering, limit, _snapshot=_snapshot, **kwargs)
 
     @classmethod
     async def create(cls: Type[T], *args, **kwargs) -> T:

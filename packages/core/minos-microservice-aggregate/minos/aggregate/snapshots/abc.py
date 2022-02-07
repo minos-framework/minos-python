@@ -21,6 +21,7 @@ from minos.common import (
 )
 
 from ..queries import (
+    Condition,
     _Condition,
     _Ordering,
 )
@@ -63,6 +64,40 @@ class SnapshotRepository(ABC, MinosSetup):
     @abstractmethod
     async def _get(self, *args, **kwargs) -> RootEntity:
         raise NotImplementedError
+
+    def get_all(
+        self,
+        name: str,
+        ordering: Optional[_Ordering] = None,
+        limit: Optional[int] = None,
+        streaming_mode: bool = False,
+        transaction: Optional[TransactionEntry] = None,
+        **kwargs,
+    ) -> AsyncIterator[RootEntity]:
+        """Get all ``RootEntity`` instances.
+
+        :param name: Class name of the ``RootEntity``.
+        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
+            is to retrieve them without any order pattern.
+        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
+            instances that meet the given condition.
+        :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
+            database connection), otherwise preloads the full set of values on memory and then retrieves them.
+        :param transaction: The transaction within the operation is performed. If not any value is provided, then the
+            transaction is extracted from the context var. If not any transaction is being scoped then the query is
+            performed to the global snapshot.
+        :param kwargs: Additional named arguments.
+        :return: An asynchronous iterator that containing the ``RootEntity`` instances.
+        """
+        return self.find(
+            name,
+            Condition.TRUE,
+            ordering=ordering,
+            limit=limit,
+            streaming_mode=streaming_mode,
+            transaction=transaction,
+            **kwargs,
+        )
 
     async def find(
         self,

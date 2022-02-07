@@ -54,6 +54,21 @@ class TestRootEntity(MinosTestCase):
     async def test_classname(self):
         self.assertEqual("tests.utils.Car", Car.classname)
 
+    async def test_get_all(self):
+        instances = list(
+            await gather(
+                Car.create(doors=5, color="blue", **self.kwargs),
+                Car.create(doors=3, color="red", **self.kwargs),
+                Car.create(doors=1, color="blue", **self.kwargs),
+            )
+        )
+        ordering = Ordering.ASC("doors")
+        iterable = Car.get_all(ordering)
+        observed = [v async for v in iterable]
+
+        expected = sorted(instances, key=lambda car: car.doors)
+        self.assertEqual(expected, observed)
+
     async def test_find(self):
         originals = set(
             await gather(
