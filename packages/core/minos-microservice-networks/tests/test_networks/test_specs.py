@@ -1,11 +1,17 @@
 import unittest
-from itertools import chain
-from operator import itemgetter
+from itertools import (
+    chain,
+)
+from operator import (
+    itemgetter,
+)
 
 from minos.common import (
     MinosConfig,
 )
-from minos.networks import EnrouteAnalyzer
+from minos.networks import (
+    EnrouteAnalyzer,
+)
 from tests.utils import (
     BASE_PATH,
 )
