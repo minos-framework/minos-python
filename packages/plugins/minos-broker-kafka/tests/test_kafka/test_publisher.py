@@ -52,8 +52,8 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(publisher.client, AIOKafkaProducer)
 
     async def test_start_without_connection(self):
-        stop_mock = AsyncMock()
         publisher = KafkaBrokerPublisher.from_config(CONFIG_FILE_PATH, circuit_breaker_time=0.1)
+        stop_mock = AsyncMock(side_effect=publisher.client.stop)
 
         async def _fn():
             if publisher.circuit_breaker.state == CircuitBreakerStates.RECOVERING:
