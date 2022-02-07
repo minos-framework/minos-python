@@ -34,46 +34,26 @@ class TestAPISpecs(unittest.TestCase):
                 "version": "1.0.0",
                 "title": "Minos OpenAPI Spec",
                 "description": "An example API",
-                "contact": {
-                    "name": "Minos framework"
-                },
-                "license": {
-                    "name": "MIT"
-                }
+                "contact": {"name": "Minos framework"},
+                "license": {"name": "MIT"},
             },
             "host": "TODO",
             "basePath": "/api/specs/openapi",
-            "schemes": [
-                "http"
-            ],
-            "consumes": [
-                "application/json"
-            ],
-            "produces": [
-                "application/json"
-            ],
+            "schemes": ["http"],
+            "consumes": ["application/json"],
+            "produces": ["application/json"],
             "paths": {},
             "definitions": {
                 "Pet": {
                     "type": "object",
-                    "required": [
-                        "id",
-                        "name"
-                    ],
+                    "required": ["id", "name"],
                     "properties": {
-                        "id": {
-                            "type": "integer",
-                            "format": "int64"
-                        },
-                        "name": {
-                            "type": "string"
-                        },
-                        "tag": {
-                            "type": "string"
-                        }
-                    }
+                        "id": {"type": "integer", "format": "int64"},
+                        "name": {"type": "string"},
+                        "tag": {"type": "string"},
+                    },
                 }
-            }
+            },
         }
 
         for endpoint in endpoints:
@@ -84,10 +64,7 @@ class TestAPISpecs(unittest.TestCase):
                 "description": None,
                 "produces": [None],
                 "parameters": [None],
-                "responses": {
-                    "200": {},
-                    "default": {}
-                }
+                "responses": {"200": {}, "default": {}},
             }
 
             if url in base_spec["paths"]:
@@ -103,37 +80,25 @@ class TestAPISpecs(unittest.TestCase):
         events = list()
         for name in config.services:
             decorators = EnrouteAnalyzer(name, config).get_broker_event()
-            events += [
-                {"topic": decorator.topic} for decorator in set(chain(*decorators.values()))
-            ]
+            events += [{"topic": decorator.topic} for decorator in set(chain(*decorators.values()))]
 
         base_spec = {
             "asyncapi": "2.0.0",
-            "info": {
-                "title": None,
-                "version": None
-            },
+            "info": {"title": None, "version": None},
             "description": None,
             "license": "MIT",
-            "servers": {
-                "url": f'{config.broker.host}:{config.broker.port}'
-            },
-            "channels": {}
+            "servers": {"url": f"{config.broker.host}:{config.broker.port}"},
+            "channels": {},
         }
 
         for event in events:
             topic: str = event["topic"]
-            event_spec = {
-                "publish": {
-                    "operationId": None,
-                    "message": None
-                }
-            }
+            event_spec = {"publish": {"operationId": None, "message": None}}
 
             base_spec["channels"][topic] = event_spec
 
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
