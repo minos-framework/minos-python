@@ -67,6 +67,10 @@ Here is a summary containing the most useful commands:
 
 For more information, visit the [`minos-cli`](https://github.com/minos-framework/minos-cli) repository.
 
+## Documentation
+
+The best place to start learning how to use the Minos Framework is at [Minos Learn](http://www.minos.run/learn/). The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).
+
 ## QuickStart
 
 This section includes a quickstart guide to create your first `minos` microservice, so that anyone can get the gist of the framework.
@@ -78,7 +82,13 @@ The required environment to run this quickstart is the following:
 * A `python>=3.9` interpreter with version equal or greater to .
 * A `kafka` instance available at `localhost:9092`
 * A `postgres` instance available at `localhost:5432` with the `foo_db` and `foobar_db` databases accessible with the `user:pass` credentials.
-* Two TCP sockets available to use at `localhost:4545` and `localhost:4546`.
+* Two TCP sockets available to use at `localhost:4545` and `localhost:4546`.  
+```bash
+docker run -d --name some-postgresdb -p 5432:5432 -e POSTGRES_USER=user -e POSTGRES_PASSWORD=pass postgres
+docker exec -it some-postgresdb psql -U user
+CREATE database foo_db;
+CREATE database foobar_db;
+```
 
 Note that these parameters can be customized on the configuration files.
 
@@ -1107,10 +1117,6 @@ The plugin packages provide connectors to external technologies like brokers, di
 
 * [minos-broker-kafka](https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-kafka): The `kafka` plugin package.
 * [minos-discovery-minos](https://minos-framework.github.io/minos-python/packages/plugins/minos-discovery-minos): The `minos-discovery` plugin package.
-
-## Documentation
-
-The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).
 
 ## Source Code
 
