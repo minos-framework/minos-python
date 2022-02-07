@@ -8,8 +8,18 @@ from asyncio import (
     sleep,
     wait_for,
 )
+from collections.abc import (
+    Awaitable,
+    Callable,
+)
 from contextlib import (
     suppress,
+)
+from functools import (
+    partial,
+)
+from typing import (
+    Union,
 )
 
 from aiokafka import (
@@ -17,6 +27,9 @@ from aiokafka import (
 )
 from aiomisc import (
     CircuitBreaker,
+)
+from aiomisc.circuit_breaker import (
+    CircuitBroken,
 )
 from kafka.errors import (
     KafkaConnectionError,
@@ -59,7 +72,9 @@ class InMemoryQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
 class KafkaBrokerPublisher(BrokerPublisher):
     """Kafka Broker Publisher class."""
 
-    def __init__(self, *args, broker_host: str, broker_port: int, **kwargs):
+    def __init__(
+        self, *args, broker_host: str, broker_port: int, circuit_breaker_time: Union[int, float] = 1, **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self.broker_host = broker_host
         self.broker_port = broker_port
@@ -67,7 +82,7 @@ class KafkaBrokerPublisher(BrokerPublisher):
         self._client = None
 
         self._circuit_breaker = CircuitBreaker(
-            error_ratio=0.2, response_time=20, exceptions=[KafkaConnectionError], broken_time=5
+            error_ratio=0.2, response_time=circuit_breaker_time, exceptions=[KafkaConnectionError]
         )
 
     @classmethod
@@ -86,24 +101,41 @@ class KafkaBrokerPublisher(BrokerPublisher):
         await super()._destroy()
 
     async def _start_client(self) -> None:
-        while True:
-            with suppress(KafkaConnectionError):
-                with self._circuit_breaker.context():
-                    await self.client.start()
-                    return
-            await sleep(1)
+        # noinspection PyBroadException
+        await self._with_circuit_breaker(self.client.start, stop_client=True)
 
     async def _stop_client(self):
         with suppress(TimeoutError):
             await wait_for(self._client.stop(), 0.5)
 
     async def _send(self, message: BrokerMessage) -> None:
-        while True:
-            with suppress(KafkaConnectionError):
-                with self._circuit_breaker.context():
-                    await self.client.send_and_wait(message.topic, message.avro_bytes)
-                    return
-            await sleep(1)
+        func = partial(self.client.send_and_wait, message.topic, message.avro_bytes)
+        await self._with_circuit_breaker(func)
+
+    async def _with_circuit_breaker(
+        self, future_func: Callable[[], Awaitable[None]], stop_client: bool = False
+    ) -> None:
+        try:
+            while True:
+                try:
+                    with self._circuit_breaker.context():
+                        return await future_func()
+                except CircuitBroken:
+                    await sleep(self._circuit_breaker.response_time / 2)
+                except KafkaConnectionError:
+                    logger.warning(f"Failed to connect to the kafka broker located at {self._bootstrap_servers!r}")
+        except Exception as exc:
+            if stop_client:
+                await self._stop_client()
+            raise exc
+
+    @property
+    def circuit_breaker(self) -> CircuitBreaker:
+        """Get the circuit breaker.
+
+        :return: A ``CircuitBreaker`` instance.
+        """
+        return self._circuit_breaker
 
     @property
     def client(self) -> AIOKafkaProducer:
@@ -116,4 +148,8 @@ class KafkaBrokerPublisher(BrokerPublisher):
         return self._client
 
     def _build_client(self) -> AIOKafkaProducer:
-        return AIOKafkaProducer(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
+        return AIOKafkaProducer(bootstrap_servers=self._bootstrap_servers)
+
+    @property
+    def _bootstrap_servers(self):
+        return f"{self.broker_host}:{self.broker_port}"
