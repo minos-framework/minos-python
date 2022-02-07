@@ -43,8 +43,8 @@ class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
 
     def test_get_enroute(self):
         expected = {
-            "__get_one__": {BrokerCommandEnrouteDecorator("GetOrder")},
-            "__get_many__": {BrokerCommandEnrouteDecorator("GetOrders")},
+            "__get_one__": {BrokerCommandEnrouteDecorator("GetOrderSnapshot")},
+            "__get_many__": {BrokerCommandEnrouteDecorator("GetOrderSnapshots")},
             "__synchronize__": {PeriodicEventEnrouteDecorator("* * * * *")},
         }
         observed = SnapshotService.__get_enroute__(self.config)
