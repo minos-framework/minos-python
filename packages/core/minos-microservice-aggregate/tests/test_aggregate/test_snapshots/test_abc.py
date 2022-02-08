@@ -93,6 +93,27 @@ class TestSnapshotRepository(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(1, self.get_mock.call_count)
         self.assertEqual(transaction, self.get_mock.call_args.kwargs["transaction"])
 
+    async def test_get_all(self):
+        transaction = TransactionEntry()
+
+        iterable = self.snapshot_repository.get_all(self.classname, Ordering.ASC("name"), 10, True, transaction)
+        observed = [a async for a in iterable]
+        self.assertEqual(list(range(5)), observed)
+
+        self.assertEqual(
+            [
+                call(
+                    name=self.classname,
+                    condition=Condition.TRUE,
+                    ordering=Ordering.ASC("name"),
+                    limit=10,
+                    streaming_mode=True,
+                    transaction=transaction,
+                )
+            ],
+            self.find_mock.call_args_list,
+        )
+
     async def test_find(self):
         transaction = TransactionEntry()
         iterable = self.snapshot_repository.find(
