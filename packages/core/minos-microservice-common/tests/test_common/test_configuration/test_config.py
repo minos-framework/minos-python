@@ -79,6 +79,15 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("localhost", repository.host)
         self.assertEqual(5432, repository.port)
 
+    def test_config_query_repository(self):
+        config = MinosConfig(path=self.config_file_path, with_environment=False)
+        query_repository = config.query_repository
+        self.assertEqual("order_query_db", query_repository.database)
+        self.assertEqual("minos", query_repository.user)
+        self.assertEqual("min0s", query_repository.password)
+        self.assertEqual("localhost", query_repository.host)
+        self.assertEqual(5432, query_repository.port)
+
     def test_config_snapshot(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
         snapshot = config.snapshot

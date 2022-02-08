@@ -15,6 +15,12 @@ class _Number(DeclarativeModel):
     value: int
 
 
+class _Text(DeclarativeModel):
+    """For testing purposes"""
+
+    value: str
+
+
 class TestCondition(unittest.TestCase):
     def test_hash(self):
         self.assertIsInstance(hash(Condition.EQUAL("value", 3)), int)
@@ -119,6 +125,15 @@ class TestCondition(unittest.TestCase):
 
         self.assertFalse(condition.evaluate(_Number(42)))
         self.assertTrue(condition.evaluate(_Number(56)))
+
+    def test_condition_like(self):
+        condition = Condition.LIKE("value", "a%[^ou]")
+        self.assertEqual("_LikeCondition('value', 'a%[^ou]')", repr(condition))
+
+        self.assertFalse(condition.evaluate(_Text("f")))
+        self.assertFalse(condition.evaluate(_Text("aeio")))
+        self.assertTrue(condition.evaluate(_Text("af")))
+        self.assertTrue(condition.evaluate(_Text("aei")))
 
 
 class TestOrdering(unittest.TestCase):
