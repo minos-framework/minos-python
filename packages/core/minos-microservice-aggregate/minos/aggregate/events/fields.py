@@ -22,17 +22,18 @@ from uuid import (
     uuid4,
 )
 
-from minos.aggregate.actions import (
-    Action,
-)
-from minos.aggregate.collections import (
-    IncrementalSet,
-)
 from minos.common import (
     BucketModel,
     Field,
     Model,
     ModelType,
+)
+
+from ..actions import (
+    Action,
+)
+from ..collections import (
+    IncrementalSet,
 )
 
 logger = logging.getLogger(__name__)
