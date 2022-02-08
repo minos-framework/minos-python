@@ -40,6 +40,7 @@ from ...queries import (
     _GreaterCondition,
     _GreaterEqualCondition,
     _InCondition,
+    _LikeCondition,
     _LowerCondition,
     _LowerEqualCondition,
     _NotCondition,
@@ -128,12 +129,14 @@ class PostgreSqlSnapshotQueryBuilder:
             return self._build_condition_not(condition)
         if isinstance(condition, _ComposedCondition):
             return self._build_condition_composed(condition)
-        if isinstance(condition, _SimpleCondition):
-            return self._build_condition_simple(condition)
         if isinstance(condition, _TrueCondition):
             return SQL("TRUE")
         if isinstance(condition, _FalseCondition):
             return SQL("FALSE")
+        if isinstance(condition, _LikeCondition):
+            return self._build_condition_like(condition)
+        if isinstance(condition, _SimpleCondition):
+            return self._build_condition_simple(condition)
 
         raise ValueError(f"Given condition is not supported. Obtained: {condition}")
 
@@ -171,6 +174,26 @@ class PostgreSqlSnapshotQueryBuilder:
             field = Literal("{{{}}}".format(field.replace(".", ",")))
             name = Placeholder(name)
             return SQL("(data#>{field} {operator} {name}::jsonb)").format(field=field, operator=operator, name=name)
+
+    def _build_condition_like(self, condition: _SimpleCondition) -> Composable:
+        field = condition.field
+
+        parameter = AvroDataEncoder(condition.parameter).build()
+
+        if field in _FIXED_FIELDS_MAPPER:
+            name = self.generate_random_str()
+            self._parameters[name] = parameter
+
+            field = _FIXED_FIELDS_MAPPER[field]
+            name = Placeholder(name)
+            return SQL("({field}::text LIKE {name})").format(field=field, name=name)
+        else:
+            name = self.generate_random_str()
+            self._parameters[name] = parameter
+
+            field = Literal("{{{}}}".format(field.replace(".", ",")))
+            name = Placeholder(name)
+            return SQL("(data#>>{field} LIKE {name})").format(field=field, name=name)
 
     @staticmethod
     def _build_ordering(ordering: _Ordering) -> Composable:
