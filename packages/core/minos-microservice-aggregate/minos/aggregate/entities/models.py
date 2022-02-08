@@ -38,12 +38,6 @@ from minos.aggregate.queries import (
 from minos.aggregate.snapshots import (
     SnapshotRepository,
 )
-from minos.common import (
-    NULL_DATETIME,
-    NULL_UUID,
-    DeclarativeModel,
-    NotProvidedException,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -91,9 +85,9 @@ class RootEntity(Entity):
         super().__init__(version, created_at, updated_at, *args, uuid=uuid, **kwargs)
 
         if _event_repository is None or isinstance(_event_repository, Provide):
-            raise NotProvidedException("An event repository instance is required.")
+            raise NotProvidedException(f"A {EventRepository!r} instance is required.")
         if _snapshot_repository is None or isinstance(_snapshot_repository, Provide):
-            raise NotProvidedException("A snapshot instance is required.")
+            raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
 
         self._event_repository = _event_repository
         self._snapshot_repository = _snapshot_repository
@@ -110,7 +104,7 @@ class RootEntity(Entity):
         :return: A ``RootEntity`` instance.
         """
         if _snapshot_repository is None or isinstance(_snapshot_repository, Provide):
-            raise NotProvidedException("A snapshot instance is required.")
+            raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
 
         # noinspection PyTypeChecker
         return await _snapshot_repository.get(cls.classname, uuid, _snapshot_repository=_snapshot_repository, **kwargs)
@@ -135,7 +129,7 @@ class RootEntity(Entity):
         :return: A ``RootEntity`` instance.
         """
         if _snapshot_repository is None or isinstance(_snapshot_repository, Provide):
-            raise NotProvidedException("A snapshot instance is required.")
+            raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
 
         # noinspection PyTypeChecker
         return _snapshot_repository.get_all(
@@ -164,7 +158,7 @@ class RootEntity(Entity):
         :return: An asynchronous iterator of ``RootEntity`` instances.
         """
         if _snapshot_repository is None or isinstance(_snapshot_repository, Provide):
-            raise NotProvidedException("A snapshot instance is required.")
+            raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
         # noinspection PyTypeChecker
         return _snapshot_repository.find(
             cls.classname, condition, ordering, limit, _snapshot_repository=_snapshot_repository, **kwargs
