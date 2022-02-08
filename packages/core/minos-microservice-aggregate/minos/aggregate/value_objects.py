@@ -7,15 +7,16 @@ from typing import (
     TypeVar,
 )
 
-from minos.aggregate.collections import (
-    IncrementalSet,
-)
-from minos.aggregate.exceptions import (
-    ValueObjectException,
-)
 from minos.common import (
     DeclarativeModel,
     Model,
+)
+
+from .collections import (
+    IncrementalSet,
+)
+from .exceptions import (
+    ValueObjectException,
 )
 
 
