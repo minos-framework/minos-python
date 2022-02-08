@@ -35,7 +35,11 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         import tests
 
         self.launcher = EntrypointLauncher(
-            config=self.config, injections=self.injections, services=self.services, external_modules=[tests]
+            config=self.config,
+            injections=self.injections,
+            services=self.services,
+            external_modules=[tests],
+            external_packages=["tests"],
         )
 
     def test_from_config(self):
@@ -85,11 +89,13 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         )
 
         self.assertEqual(0, len(mock.call_args.args))
-        self.assertEqual(1, len(mock.call_args.kwargs))
+        self.assertEqual(2, len(mock.call_args.kwargs))
         observed = mock.call_args.kwargs["modules"]
 
         self.assertIn(tests, observed)
         self.assertIn(common, observed)
+
+        self.assertEqual(["tests"], mock.call_args.kwargs["packages"])
 
         await self.launcher.destroy()
 
