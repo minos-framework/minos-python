@@ -279,3 +279,9 @@ History
 ------------------
 
 * Minor changes.
+
+0.5.2 (2022-02-08)
+------------------
+
+* Add `query_repository` section to `MinosConfig`.
+* Minor changes.
