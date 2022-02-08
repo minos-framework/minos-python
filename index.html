@@ -189,7 +189,49 @@
 <li><p>A <code class="docutils literal notranslate"><span class="pre">postgres</span></code> instance available at <code class="docutils literal notranslate"><span class="pre">localhost:5432</span></code> with the <code class="docutils literal notranslate"><span class="pre">foo_db</span></code> and <code class="docutils literal notranslate"><span class="pre">foobar_db</span></code> databases accessible with the <code class="docutils literal notranslate"><span class="pre">user:pass</span></code> credentials.</p></li>
 <li><p>Two TCP sockets available to use at <code class="docutils literal notranslate"><span class="pre">localhost:4545</span></code> and <code class="docutils literal notranslate"><span class="pre">localhost:4546</span></code>.</p></li>
 </ul>
-<p>Note that these parameters can be customized on the configuration files.</p>
+<details>
+  <summary>Click to show a <code>docker-compose.yml</code> that provides the <code>kafka</code> and <code>postgres</code> instances ready to be used!</summary>
+
+```yaml
+# docker-compose.yml
+version: "3.9"
+services:
+  zookeeper:
+    restart: always
+    image: wurstmeister/zookeeper:latest
+  kafka:
+    restart: always
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  postgres:
+    restart: always
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+```
+
+Then, start the environment:
+
+```shell
+docker-compose up
+```
+
+To create the databases, just run the following command:
+
+```shell
+docker-compose exec postgres psql -U user -tc 'CREATE database foo_db'
+docker-compose exec postgres psql -U user -tc 'CREATE database foobar_db'
+```
+</details><p>Note that these parameters can be customized on the configuration files.</p>
 </section>
 <section id="install-the-dependencies">
 <h3>Install the dependencies<a class="headerlink" href="#install-the-dependencies" title="Permalink to this headline"></a></h3>

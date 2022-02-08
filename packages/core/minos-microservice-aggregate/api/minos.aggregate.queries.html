@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.queries module &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
+  <title>minos.aggregate.queries module &mdash; Minos Microservice Aggregate 0.5.2 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.5.1
+                0.5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -111,7 +111,8 @@
 * <cite>EQUAL</cite>: Evaluates as <cite>True</cite> only if the field of the given model is equal (==) to the parameter.
 * <cite>NOT_EQUAL</cite>: Evaluates as <cite>True</cite> only if the field of the given model is not equal (!=) to the parameter.
 * <cite>IN</cite>: Evaluates as <cite>True</cite> only if the field of the given model belongs (in) to the parameter (which must be a
-collection).</p>
+collection).
+* <cite>LIKE</cite>: Evaluates as <cite>True</cite> only if the field of the given model matches to the parameter _pattern.</p>
 <p>For example, to define a condition in which the <cite>year</cite> must be between <cite>1994</cite> and <cite>2003</cite> or the <cite>color</cite> must be
 <cite>blue</cite>, the condition can be writen as:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Condition</span><span class="o">.</span><span class="n">OR</span><span class="p">(</span>
@@ -153,6 +154,12 @@ collection).</p>
 <dt class="sig sig-object py" id="minos.aggregate.queries.Condition.IN">
 <span class="sig-name descname"><span class="pre">IN</span></span><a class="headerlink" href="#minos.aggregate.queries.Condition.IN" title="Permalink to this definition"></a></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.queries._InCondition</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.aggregate.queries.Condition.LIKE">
+<span class="sig-name descname"><span class="pre">LIKE</span></span><a class="headerlink" href="#minos.aggregate.queries.Condition.LIKE" title="Permalink to this definition"></a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.queries._LikeCondition</span></code></p>
 </dd></dl>
 
 <dl class="py attribute">

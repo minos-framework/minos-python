@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.events.models &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
+  <title>minos.aggregate.events.models &mdash; Minos Microservice Aggregate 0.5.2 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.5.1
+                0.5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -96,20 +96,20 @@
     <span class="n">UUID</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">minos.aggregate.actions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Action</span><span class="p">,</span>
-<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">DeclarativeModel</span><span class="p">,</span>
 <span class="p">)</span>
 
+<span class="kn">from</span> <span class="nn">..actions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Action</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.fields</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">FieldDiff</span><span class="p">,</span>
     <span class="n">FieldDiffContainer</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">minos.aggregate.entities</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="kn">from</span> <span class="nn">..entities</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">RootEntity</span><span class="p">,</span>
     <span class="p">)</span>
 

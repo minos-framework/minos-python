@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.decorators.builders &mdash; Minos Microservice Network 0.5.1 documentation</title>
+  <title>minos.networks.decorators.builders &mdash; Minos Microservice Network 0.5.2 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.5.1
+                0.5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -79,6 +79,11 @@
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">defaultdict</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Awaitable</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Collection</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">partial</span><span class="p">,</span>
     <span class="n">wraps</span><span class="p">,</span>
@@ -87,10 +92,7 @@
     <span class="n">isawaitable</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Awaitable</span><span class="p">,</span>
-    <span class="n">Callable</span><span class="p">,</span>
     <span class="n">Optional</span><span class="p">,</span>
-    <span class="n">Type</span><span class="p">,</span>
     <span class="n">Union</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -123,7 +125,7 @@
     <span class="sd">&quot;&quot;&quot;Enroute builder class.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="EnrouteBuilder.__init__"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.builders.html#minos.networks.decorators.builders.EnrouteBuilder.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">classes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">],</span> <span class="n">middleware</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">classes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">],</span> <span class="n">middleware</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="n">middleware</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">middleware</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
@@ -190,10 +192,24 @@
 
             <span class="k">return</span> <span class="n">_wrapper</span>
 
-        <span class="k">return</span> <span class="p">{</span>
+        <span class="n">decorators</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">decorator</span><span class="p">:</span> <span class="n">_flatten</span><span class="p">(</span><span class="n">decorator</span><span class="p">,</span> <span class="n">fns</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">decorator</span><span class="p">,</span> <span class="n">fns</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_all_classes</span><span class="p">(</span><span class="n">method_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_not_redefined</span><span class="p">(</span><span class="n">decorators</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">decorators</span>
+
+    <span class="c1"># noinspection PyMethodMayBeStatic</span>
+    <span class="k">def</span> <span class="nf">_validate_not_redefined</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decorators</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="n">EnrouteDecorator</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mapper</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">decorator</span> <span class="ow">in</span> <span class="n">decorators</span><span class="p">:</span>
+            <span class="n">mapper</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">decorator</span><span class="p">)]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">decorator</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">cases</span> <span class="ow">in</span> <span class="n">mapper</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cases</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">MinosRedefinedEnrouteDecoratorException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Only one of </span><span class="si">{</span><span class="n">cases</span><span class="si">!r}</span><span class="s2"> can be used simultaneously.&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_build_all_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">EnrouteDecorator</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="n">Handler</span><span class="p">]]:</span>
         <span class="n">decomposed_handlers</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>

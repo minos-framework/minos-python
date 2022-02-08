@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.transactions.services &mdash; Minos Microservice Aggregate 0.5.1 documentation</title>
+  <title>minos.aggregate.transactions.services &mdash; Minos Microservice Aggregate 0.5.2 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.5.1
+                0.5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -123,9 +123,9 @@
     <span class="k">def</span> <span class="nf">__get_enroute__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">MinosConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="n">EnrouteDecorator</span><span class="p">]]:</span>
         <span class="n">service_name</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">name</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">__reserve__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="p">{</span><span class="n">enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reserve</span><span class="si">{</span><span class="n">service_name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">Transaction&quot;</span><span class="p">)},</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">__reject__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="p">{</span><span class="n">enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reject</span><span class="si">{</span><span class="n">service_name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">Transaction&quot;</span><span class="p">)},</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">__commit__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="p">{</span><span class="n">enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Commit</span><span class="si">{</span><span class="n">service_name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">Transaction&quot;</span><span class="p">)},</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__reserve__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="p">{</span><span class="n">enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;_Reserve</span><span class="si">{</span><span class="n">service_name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">Transaction&quot;</span><span class="p">)},</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__reject__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="p">{</span><span class="n">enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;_Reject</span><span class="si">{</span><span class="n">service_name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">Transaction&quot;</span><span class="p">)},</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__commit__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="p">{</span><span class="n">enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;_Commit</span><span class="si">{</span><span class="n">service_name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">Transaction&quot;</span><span class="p">)},</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">__reject_blocked__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="p">{</span><span class="n">enroute</span><span class="o">.</span><span class="n">periodic</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;* * * * *&quot;</span><span class="p">)},</span>
         <span class="p">}</span>
 

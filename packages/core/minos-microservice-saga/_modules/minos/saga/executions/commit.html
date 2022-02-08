@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.saga.executions.commit &mdash; Minos Microservice Saga 0.5.1 documentation</title>
+  <title>minos.saga.executions.commit &mdash; Minos Microservice Saga 0.5.2 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Saga
           </a>
               <div class="version">
-                0.5.1
+                0.5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -141,7 +141,7 @@
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_reserve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker_pool</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span> <span class="k">as</span> <span class="n">broker</span><span class="p">:</span>
             <span class="n">futures</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">broker</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">BrokerMessageV1</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reserve</span><span class="si">{</span><span class="n">service_name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">Transaction&quot;</span><span class="p">,</span> <span class="n">BrokerMessageV1Payload</span><span class="p">(</span><span class="n">uuid</span><span class="p">)))</span>
+                <span class="n">broker</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">BrokerMessageV1</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;_Reserve</span><span class="si">{</span><span class="n">service_name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">Transaction&quot;</span><span class="p">,</span> <span class="n">BrokerMessageV1Payload</span><span class="p">(</span><span class="n">uuid</span><span class="p">)))</span>
                 <span class="k">for</span> <span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">service_name</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transactions</span>
             <span class="p">)</span>
             <span class="k">await</span> <span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">futures</span><span class="p">)</span>
@@ -151,7 +151,7 @@
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_commit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">futures</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">broker_publisher</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
-                <span class="n">BrokerMessageV1</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Commit</span><span class="si">{</span><span class="n">service_name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">Transaction&quot;</span><span class="p">,</span> <span class="n">BrokerMessageV1Payload</span><span class="p">(</span><span class="n">uuid</span><span class="p">))</span>
+                <span class="n">BrokerMessageV1</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;_Commit</span><span class="si">{</span><span class="n">service_name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">Transaction&quot;</span><span class="p">,</span> <span class="n">BrokerMessageV1Payload</span><span class="p">(</span><span class="n">uuid</span><span class="p">))</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">service_name</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transactions</span>
         <span class="p">)</span>
@@ -167,7 +167,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">futures</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">broker_publisher</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
-                <span class="n">BrokerMessageV1</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reject</span><span class="si">{</span><span class="n">service_name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">Transaction&quot;</span><span class="p">,</span> <span class="n">BrokerMessageV1Payload</span><span class="p">(</span><span class="n">uuid</span><span class="p">))</span>
+                <span class="n">BrokerMessageV1</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;_Reject</span><span class="si">{</span><span class="n">service_name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">Transaction&quot;</span><span class="p">,</span> <span class="n">BrokerMessageV1Payload</span><span class="p">(</span><span class="n">uuid</span><span class="p">))</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">service_name</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transactions</span>
         <span class="p">)</span>
