@@ -111,8 +111,8 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
         observed = await handlers[BrokerCommandEnrouteDecorator("DeleteTicket")](self.request)
         self.assertEqual(expected, observed)
 
-    def test_raises(self):
-        class _BadService:
+    def test_raises_duplicated_command(self):
+        class _WrongService:
             @enroute.rest.command(url="orders/", method="GET")
             def _fn1(self, request):
                 return Response("bar")
@@ -121,7 +121,21 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
             def _fn2(self, request):
                 return Response("bar")
 
-        builder = EnrouteBuilder(_BadService)
+        builder = EnrouteBuilder(_WrongService)
+        with self.assertRaises(MinosRedefinedEnrouteDecoratorException):
+            builder.get_rest_command_query()
+
+    def test_raises_duplicated_command_query(self):
+        class _WrongService:
+            @enroute.rest.command(url="orders/", method="GET")
+            def _fn1(self, request):
+                return Response("bar")
+
+            @enroute.rest.query(url="orders/", method="GET")
+            def _fn2(self, request):
+                return Response("bar")
+
+        builder = EnrouteBuilder(_WrongService)
         with self.assertRaises(MinosRedefinedEnrouteDecoratorException):
             builder.get_rest_command_query()
 
