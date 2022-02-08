@@ -48,7 +48,7 @@ class MinosPool(MinosSetup, PoolBase, Generic[P], ABC):
         try:
             result = await self._check_instance(instance)
         except Exception:
-            log.exception("Check instance %r failed", instance)
+            logger.warning("Check instance %r failed", instance)
             self._PoolBase__recycle_instance(instance)
         else:
             if not result:
@@ -65,6 +65,7 @@ class MinosPool(MinosSetup, PoolBase, Generic[P], ABC):
         :param kwargs: Additional named arguments.
         :return: An asynchronous context manager.
         """
+        # noinspection PyUnresolvedReferences
         return ContextManager(self.__acquire, self._PoolBase__release)
 
     async def _destroy(self) -> None:
