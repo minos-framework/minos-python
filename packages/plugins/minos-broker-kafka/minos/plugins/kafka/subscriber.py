@@ -5,9 +5,12 @@ from __future__ import (
 import logging
 from asyncio import (
     TimeoutError,
+    sleep,
     wait_for,
 )
 from collections.abc import (
+    Awaitable,
+    Callable,
     Iterable,
 )
 from contextlib import (
@@ -15,10 +18,15 @@ from contextlib import (
 )
 from typing import (
     Optional,
+    Union,
 )
 
 from aiokafka import (
     AIOKafkaConsumer,
+)
+from aiomisc import (
+    CircuitBreaker,
+    CircuitBroken,
 )
 from cached_property import (
     cached_property,
@@ -30,6 +38,7 @@ from kafka.admin import (
     NewTopic,
 )
 from kafka.errors import (
+    KafkaError,
     TopicAlreadyExistsError,
 )
 
@@ -106,6 +115,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
         broker_port: int,
         group_id: Optional[str] = None,
         remove_topics_on_destroy: bool = False,
+        circuit_breaker_time: Union[int, float] = 3,
         **kwargs,
     ):
         super().__init__(topics, **kwargs)
@@ -114,6 +124,10 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
         self.group_id = group_id
 
         self.remove_topics_on_destroy = remove_topics_on_destroy
+
+        self._circuit_breaker = CircuitBreaker(
+            error_ratio=0.2, response_time=circuit_breaker_time, exceptions=[KafkaError]
+        )
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> KafkaBrokerSubscriber:
@@ -162,6 +176,33 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
         bytes_ = record.value
         message = BrokerMessage.from_avro_bytes(bytes_)
         return message
+
+    async def _with_circuit_breaker(self, future_func: Callable[[], Awaitable[None]]) -> None:
+        while True:
+            try:
+                with self._circuit_breaker.context():
+                    return await future_func()
+            except CircuitBroken:
+                await sleep(self._circuit_breaker_timeout)
+            except KafkaError as exc:
+                logger.warning(f"A kafka exception was raised: {exc!r}")
+                await sleep(self._exception_timeout)
+
+    @property
+    def _circuit_breaker_timeout(self) -> float:
+        return self._circuit_breaker.response_time * 0.5
+
+    @property
+    def _exception_timeout(self) -> float:
+        return self._circuit_breaker.response_time * 0.05
+
+    @property
+    def circuit_breaker(self) -> CircuitBreaker:
+        """Get the circuit breaker.
+
+        :return: A ``CircuitBreaker`` instance.
+        """
+        return self._circuit_breaker
 
     @cached_property
     def client(self) -> AIOKafkaConsumer:
