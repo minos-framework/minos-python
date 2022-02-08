@@ -19,6 +19,7 @@ Minos is a framework which helps you create [reactive](https://www.reactivemanif
 ### Roadmap
 
 #### 0.6.x
+
 * [#78](https://github.com/minos-framework/minos-python/issues/78) Implement a circuit breaker for `minos-broker-kafka`.
 * [#87](https://github.com/minos-framework/minos-python/issues/87) Implement idempotency for `BrokerSubscriber` message processing.
 * [#100](https://github.com/minos-framework/minos-python/issues/100) Create the `minos-serializers-avro` plugin.
@@ -84,9 +85,54 @@ The required environment to run this quickstart is the following:
 * A `postgres` instance available at `localhost:5432` with the `foo_db` and `foobar_db` databases accessible with the `user:pass` credentials.
 * Two TCP sockets available to use at `localhost:4545` and `localhost:4546`.
 
+
+<details>
+  <summary>Click to show a <code>docker-compose.yml</code> that provides the <code>kafka</code> and <code>postgres</code> instances ready to be used!</summary>
+
+```yaml
+# docker-compose.yml
+version: "3.9"
+services:
+  zookeeper:
+    restart: always
+    image: wurstmeister/zookeeper:latest
+  kafka:
+    restart: always
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  postgres:
+    restart: always
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+```
+
+Then, start the environment:
+
+```shell
+docker-compose up
+```
+
+To create the databases, just run the following command:
+
+```shell
+docker-compose exec postgres psql -U user -tc 'CREATE database foo_db'
+docker-compose exec postgres psql -U user -tc 'CREATE database foobar_db'
+```
+</details>
+
 Note that these parameters can be customized on the configuration files.
 
-###  Install the dependencies
+### Install the dependencies
 
 If you want to directly use `minos` without the command-line utility, the following command will install the needed packages:
 
@@ -99,7 +145,6 @@ pip install \
   minos-microservice-saga \ 
   minos-broker-kafka
 ```
-
 
 ### Configure a Microservice
 
