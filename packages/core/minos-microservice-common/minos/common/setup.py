@@ -112,7 +112,7 @@ class MinosSetup:
         """Destroy miscellaneous repository things."""
 
     def __del__(self):
-        if not self.already_destroyed:
+        if not getattr(self, "already_destroyed", True):
             warnings.warn(
                 f"A not destroyed {type(self).__name__!r} instance is trying to be deleted...", ResourceWarning
             )
