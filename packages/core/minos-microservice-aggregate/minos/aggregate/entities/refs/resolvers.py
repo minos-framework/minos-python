@@ -65,8 +65,10 @@ class RefResolver:
     async def _query(self, references: dict[str, set[UUID]]) -> dict[UUID, Model]:
         async with self.broker_pool.acquire() as broker:
             futures = (
-                broker.send(BrokerMessageV1(f"Get{name}s", BrokerMessageV1Payload({"uuids": uuids})))
-                for name, uuids in references.items()
+                broker.send(
+                    BrokerMessageV1(f"_Get{simplified_name}Snapshots", BrokerMessageV1Payload({"uuids": uuids}))
+                )
+                for simplified_name, uuids in references.items()
             )
             await gather(*futures)
 
