@@ -18,24 +18,24 @@ from tests.utils import (
 class TestRootEntityNotProvided(MinosTestCase):
     async def test_create_raises(self):
         with self.assertRaises(NotProvidedException):
-            await Car.create(doors=3, color="blue", _repository=None)
+            await Car.create(doors=3, color="blue", _event_repository=None)
         with self.assertRaises(NotProvidedException):
-            await Car.create(doors=3, color="blue", _snapshot=None)
+            await Car.create(doors=3, color="blue", _snapshot_repository=None)
 
     async def test_get_raises(self):
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
-            await Car.get(uuid4(), _snapshot=None)
+            await Car.get(uuid4(), _snapshot_repository=None)
 
     async def test_get_all_raises(self):
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
-            [c async for c in Car.get_all(_snapshot=None)]
+            [c async for c in Car.get_all(_snapshot_repository=None)]
 
     async def test_find_raises(self):
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
-            [c async for c in Car.find(Condition.TRUE, _snapshot=None)]
+            [c async for c in Car.find(Condition.TRUE, _snapshot_repository=None)]
 
 
 if __name__ == "__main__":
