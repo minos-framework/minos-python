@@ -69,3 +69,11 @@
 ## 0.5.1 (2022-02-03)
 
 * Fix bug related with dependency specification.
+
+## 0.5.2 (2022-02-08)
+
+* Add `Condition.LIKE` operator to be used with the `find` method from `SnapshotRepository`.
+* Add `get_all` method to `RootEntity` and `SnapshotRepository` to get all the stored instance on the repository. 
+* Rename `SnapshotService` command topics to avoid collisions with application-level topics. 
+* Rename `TransactionService` command topics to avoid collisions with application-level topics. 
+* Minor changes.

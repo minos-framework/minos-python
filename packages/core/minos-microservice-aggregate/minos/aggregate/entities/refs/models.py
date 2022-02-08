@@ -20,9 +20,6 @@ from dependency_injector.wiring import (
     inject,
 )
 
-from minos.aggregate.contextvars import (
-    IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
-)
 from minos.common import (
     DataDecoder,
     DataEncoder,
@@ -37,6 +34,10 @@ from minos.networks import (
     BrokerClientPool,
     BrokerMessageV1,
     BrokerMessageV1Payload,
+)
+
+from ...contextvars import (
+    IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
 
 MT = TypeVar("MT", bound=Model)

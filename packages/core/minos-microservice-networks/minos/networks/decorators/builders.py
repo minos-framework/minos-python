@@ -4,6 +4,11 @@ from asyncio import (
 from collections import (
     defaultdict,
 )
+from collections.abc import (
+    Awaitable,
+    Callable,
+    Collection,
+)
 from functools import (
     partial,
     wraps,
@@ -12,10 +17,7 @@ from inspect import (
     isawaitable,
 )
 from typing import (
-    Awaitable,
-    Callable,
     Optional,
-    Type,
     Union,
 )
 
@@ -48,7 +50,7 @@ class EnrouteBuilder:
     """Enroute builder class."""
 
     def __init__(
-        self, *classes: Union[str, Type], middleware: Optional[Union[str, Callable, list[Union[str, Callable]]]] = None
+        self, *classes: Union[str, type], middleware: Optional[Union[str, Callable, list[Union[str, Callable]]]] = None
     ):
         if middleware is None:
             middleware = tuple()
@@ -115,10 +117,24 @@ class EnrouteBuilder:
 
             return _wrapper
 
-        return {
+        decorators = {
             decorator: _flatten(decorator, fns)
             for decorator, fns in self._build_all_classes(method_name, **kwargs).items()
         }
+
+        self._validate_not_redefined(decorators)
+
+        return decorators
+
+    # noinspection PyMethodMayBeStatic
+    def _validate_not_redefined(self, decorators: Collection[EnrouteDecorator]) -> None:
+        mapper = defaultdict(set)
+        for decorator in decorators:
+            mapper[tuple(decorator)].add(decorator)
+
+        for cases in mapper.values():
+            if len(cases) > 1:
+                raise MinosRedefinedEnrouteDecoratorException(f"Only one of {cases!r} can be used simultaneously.")
 
     def _build_all_classes(self, method_name: str, **kwargs) -> dict[EnrouteDecorator, set[Handler]]:
         decomposed_handlers = defaultdict(set)
