@@ -1,9 +1,21 @@
-from itertools import chain
-from operator import itemgetter
-from pathlib import Path
+from itertools import (
+    chain,
+)
+from operator import (
+    itemgetter,
+)
+from pathlib import (
+    Path,
+)
 
-from minos.common import MinosConfig
-from ..networks import enroute, EnrouteAnalyzer
+from minos.common import (
+    MinosConfig,
+)
+
+from ..networks import (
+    EnrouteAnalyzer,
+    enroute,
+)
 
 
 class OpenAPIService:
