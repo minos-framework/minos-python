@@ -18,7 +18,6 @@ from inspect import (
 )
 from typing import (
     Optional,
-    Type,
     Union,
 )
 
@@ -51,7 +50,7 @@ class EnrouteBuilder:
     """Enroute builder class."""
 
     def __init__(
-        self, *classes: Union[str, Type], middleware: Optional[Union[str, Callable, list[Union[str, Callable]]]] = None
+        self, *classes: Union[str, type], middleware: Optional[Union[str, Callable, list[Union[str, Callable]]]] = None
     ):
         if middleware is None:
             middleware = tuple()
@@ -129,14 +128,13 @@ class EnrouteBuilder:
 
     # noinspection PyMethodMayBeStatic
     def _validate_not_redefined(self, decorators: Collection[EnrouteDecorator]) -> None:
-        raw = set(map(lambda obj: (type(obj).__bases__[0], *obj), decorators))
+        mapper = defaultdict(set)
+        for decorator in decorators:
+            mapper[tuple(decorator)].add(decorator)
 
-        if len(raw) == len(decorators):
-            return
-
-        duplicated = next(iter(raw))
-        decorator = duplicated[0](*duplicated[1:])
-        raise MinosRedefinedEnrouteDecoratorException(f"{decorator} can be used only once.")
+        for cases in mapper.values():
+            if len(cases) > 1:
+                raise MinosRedefinedEnrouteDecoratorException(f"Only one of {cases!r} can be used simultaneously.")
 
     def _build_all_classes(self, method_name: str, **kwargs) -> dict[EnrouteDecorator, set[Handler]]:
         decomposed_handlers = defaultdict(set)
