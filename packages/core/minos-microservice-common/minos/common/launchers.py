@@ -32,11 +32,11 @@ from aiomisc.log import (
     LogFormat,
     basic_config,
 )
-from aiomisc.log.enum import (
-    DateFormat,
-)
 from aiomisc.utils import (
     create_default_event_loop,
+)
+from aiomisc_log.enum import (
+    DateFormat,
 )
 from cached_property import (
     cached_property,
