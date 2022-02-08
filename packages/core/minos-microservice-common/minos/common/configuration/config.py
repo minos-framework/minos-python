@@ -272,6 +272,20 @@ class MinosConfig(MinosConfigAbstract):
         )
 
     @property
+    def query_repository(self) -> REPOSITORY:
+        """Get the query_repository config.
+
+        :return: A ``QUERY_REPOSITORY`` NamedTuple instance.
+        """
+        return REPOSITORY(
+            database=self._get("query_repository.database"),
+            user=self._get("query_repository.user"),
+            password=self._get("query_repository.password"),
+            host=self._get("query_repository.host"),
+            port=int(self._get("query_repository.port")),
+        )
+
+    @property
     def snapshot(self) -> SNAPSHOT:
         """Get the snapshot config.
 

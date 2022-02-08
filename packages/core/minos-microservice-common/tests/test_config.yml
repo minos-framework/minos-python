@@ -7,6 +7,12 @@ repository:
     password: min0s
     host: localhost
     port: 5432
+query_repository:
+    database: order_query_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
 snapshot:
     database: order_db
     user: minos
@@ -17,16 +23,16 @@ rest:
     host: localhost
     port: 8900
 broker:
-  host: localhost
-  port: 9092
-  queue:
-    database: order_db
-    user: minos
-    password: min0s
     host: localhost
-    port: 5432
-    records: 10
-    retry: 2
+    port: 9092
+    queue:
+        database: order_db
+        user: minos
+        password: min0s
+        host: localhost
+        port: 5432
+        records: 10
+        retry: 2
 services:
     - tests.services.OrderService
     - tests.services.OrderQueryService

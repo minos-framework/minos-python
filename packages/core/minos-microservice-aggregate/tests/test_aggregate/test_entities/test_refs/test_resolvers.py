@@ -43,7 +43,7 @@ class TestRefResolver(MinosTestCase):
 
         self.assertEqual(1, len(observed))
         self.assertIsInstance(observed[0], BrokerMessageV1)
-        self.assertEqual("GetBars", observed[0].topic)
+        self.assertEqual("_GetBarSnapshots", observed[0].topic)
         self.assertEqual({"uuids": {self.another_uuid}}, observed[0].content)
 
         self.assertEqual(Foo(self.uuid, 1, another=Ref(Bar(self.another_uuid, 1))), resolved)
