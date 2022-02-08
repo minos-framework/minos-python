@@ -35,6 +35,7 @@ class MinosPool(MinosSetup, PoolBase, Generic[P], ABC):
         MinosSetup.__init__(self, *args, already_setup=already_setup, **kwargs)
         PoolBase.__init__(self, maxsize=maxsize, recycle=recycle)
 
+    # noinspection PyUnresolvedReferences
     async def __acquire(self) -> Any:  # pragma: no cover
         # FIXME: This method inheritance should be improved.
 
@@ -43,9 +44,11 @@ class MinosPool(MinosSetup, PoolBase, Generic[P], ABC):
 
         instance = await self._instances.get()
 
+        # noinspection PyBroadException
         try:
             result = await self._check_instance(instance)
         except Exception:
+            log.exception("Check instance %r failed", instance)
             self._PoolBase__recycle_instance(instance)
         else:
             if not result:
