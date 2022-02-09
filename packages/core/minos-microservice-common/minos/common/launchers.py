@@ -78,11 +78,14 @@ class EntrypointLauncher(MinosSetup):
         log_format: Union[str, LogFormat] = "color",
         log_date_format: Union[str, DateFormat] = DateFormat["color"],
         external_modules: Optional[list[ModuleType]] = None,
+        external_packages: Optional[list[str]] = None,
         *args,
         **kwargs,
     ):
         if external_modules is None:
             external_modules = list()
+        if external_packages is None:
+            external_packages = list()
 
         super().__init__(*args, **kwargs)
 
@@ -98,6 +101,7 @@ class EntrypointLauncher(MinosSetup):
         self._raw_injections = injections
         self._raw_services = services
         self._external_modules = external_modules
+        self._external_packages = external_packages
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EntrypointLauncher:
@@ -174,7 +178,9 @@ class EntrypointLauncher(MinosSetup):
 
         :return: This method does not return anything.
         """
-        await self.injector.wire(modules=self._external_modules + self._internal_modules)
+        await self.injector.wire(
+            modules=self._external_modules + self._internal_modules, packages=self._external_packages
+        )
 
     @property
     def _internal_modules(self) -> list[ModuleType]:
