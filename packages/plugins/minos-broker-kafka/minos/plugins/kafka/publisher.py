@@ -60,8 +60,7 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
     """Kafka Broker Publisher class."""
 
     def __init__(self, *args, broker_host: str, broker_port: int, **kwargs):
-        BrokerPublisher.__init__(self, *args, **kwargs)
-        KafkaCircuitBreakerMixin.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.broker_host = broker_host
         self.broker_port = broker_port
@@ -86,7 +85,7 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
     async def _start_client(self) -> None:
         # noinspection PyBroadException
         try:
-            await self._with_circuit_breaker(self.client.start)
+            await self.with_circuit_breaker(self.client.start)
         except Exception as exc:
             await self._stop_client()
             raise exc
@@ -97,7 +96,7 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
 
     async def _send(self, message: BrokerMessage) -> None:
         fn = partial(self.client.send_and_wait, message.topic, message.avro_bytes)
-        await self._with_circuit_breaker(fn)
+        await self.with_circuit_breaker(fn)
 
     @property
     def client(self) -> AIOKafkaProducer:

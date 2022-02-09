@@ -115,8 +115,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
         remove_topics_on_destroy: bool = False,
         **kwargs,
     ):
-        BrokerSubscriber.__init__(self, topics, **kwargs)
-        KafkaCircuitBreakerMixin.__init__(self, **kwargs)
+        super().__init__(topics, **kwargs)
 
         self.broker_host = broker_host
         self.broker_port = broker_port
@@ -143,7 +142,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
     async def _start_client(self) -> None:
         # noinspection PyBroadException
         try:
-            await self._with_circuit_breaker(self.client.start)
+            await self.with_circuit_breaker(self.client.start)
         except Exception as exc:
             await self._stop_client()
             raise exc
@@ -153,7 +152,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
             await wait_for(self.client.stop(), 0.5)
 
     async def _stop_admin_client(self):
-        await self._with_circuit_breaker(self.admin_client.close)
+        await self.with_circuit_breaker(self.admin_client.close)
 
     async def _create_topics(self) -> None:
         logger.info(f"Creating {self.topics!r} topics...")
@@ -166,7 +165,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
             with suppress(TopicAlreadyExistsError):
                 self.admin_client.create_topics(new_topics)
 
-        await self._with_circuit_breaker(_fn)
+        await self.with_circuit_breaker(_fn)
 
     async def _delete_topics(self) -> None:
         if not self.remove_topics_on_destroy:
@@ -174,7 +173,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
 
         logger.info(f"Deleting {self.topics!r} topics...")
         fn = partial(self.admin_client.delete_topics, list(self.topics))
-        await self._with_circuit_breaker(fn)
+        await self.with_circuit_breaker(fn)
 
     @cached_property
     def admin_client(self):

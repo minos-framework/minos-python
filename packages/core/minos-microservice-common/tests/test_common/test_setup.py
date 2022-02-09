@@ -6,6 +6,7 @@ from minos.common import (
     MinosConfig,
     MinosSetup,
     NotProvidedException,
+    Object,
 )
 from tests.utils import (
     BASE_PATH,
@@ -13,6 +14,9 @@ from tests.utils import (
 
 
 class TestMinosSetup(unittest.IsolatedAsyncioTestCase):
+    def test_is_subclass(self):
+        self.assertTrue(issubclass(MinosSetup, Object))
+
     def test_already_setup_default(self):
         instance = _MinosSetupMock()
         self.assertEqual(False, instance.already_setup)

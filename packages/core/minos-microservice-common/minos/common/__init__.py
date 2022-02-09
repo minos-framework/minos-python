@@ -67,6 +67,9 @@ from .meta import (
     property_or_classproperty,
     self_or_classmethod,
 )
+from .mixins import (
+    CircuitBreakerMixin,
+)
 from .model import (
     AvroDataDecoder,
     AvroDataEncoder,
@@ -91,6 +94,9 @@ from .model import (
     TypeHintBuilder,
     TypeHintComparator,
     is_model_type,
+)
+from .object import (
+    Object,
 )
 from .pools import (
     MinosPool,
