@@ -16,12 +16,10 @@ from typing import (
 )
 
 from minos.common import (
+    Builder,
     SetupMixin,
 )
 
-from ...utils import (
-    Builder,
-)
 from ..messages import (
     BrokerMessage,
 )

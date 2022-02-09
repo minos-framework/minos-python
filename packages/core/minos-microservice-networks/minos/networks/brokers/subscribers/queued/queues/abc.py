@@ -13,9 +13,10 @@ from typing import (
     TypeVar,
 )
 
-from .....utils import (
+from minos.common import (
     Builder,
 )
+
 from ....collections import (
     BrokerQueue,
 )

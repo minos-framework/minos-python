@@ -15,6 +15,7 @@ from minos.common import (
 )
 
 BASE_PATH = Path(__file__).parent
+CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
 
 class MinosTestCase(unittest.IsolatedAsyncioTestCase):

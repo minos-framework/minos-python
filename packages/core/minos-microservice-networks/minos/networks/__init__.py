@@ -109,7 +109,6 @@ from .scheduling import (
     ScheduledResponseException,
 )
 from .utils import (
-    Builder,
     consume_queue,
     get_host_ip,
     get_host_name,
