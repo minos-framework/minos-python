@@ -4,8 +4,12 @@ from unittest.mock import (
     patch,
 )
 
-from aiohttp import ClientResponseError
-from aiomisc.circuit_breaker import CircuitBreakerStates
+from aiohttp import (
+    ClientResponseError,
+)
+from aiomisc.circuit_breaker import (
+    CircuitBreakerStates,
+)
 
 from minos.plugins.minos_discovery import (
     MinosDiscoveryClient,
@@ -13,7 +17,6 @@ from minos.plugins.minos_discovery import (
 
 
 class _Response:
-
     def __init__(self, ok):
         self.ok = ok
 
