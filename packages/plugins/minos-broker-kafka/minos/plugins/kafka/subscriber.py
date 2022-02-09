@@ -16,8 +16,15 @@ from collections.abc import (
 from contextlib import (
     suppress,
 )
+from functools import (
+    partial,
+)
+from inspect import (
+    isawaitable,
+)
 from typing import (
     Optional,
+    TypeVar,
     Union,
 )
 
@@ -55,6 +62,7 @@ from minos.networks import (
 )
 
 logger = logging.getLogger(__name__)
+R = TypeVar("R")
 
 
 class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
@@ -136,32 +144,50 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
 
     async def _setup(self) -> None:
         await super()._setup()
-        self._create_topics()
-        await self.client.start()
+        await self._create_topics()
+        await self._start_client()
 
     async def _destroy(self) -> None:
-        with suppress(TimeoutError):
-            await wait_for(self.client.stop(), 0.5)
-        self._delete_topics()
-        self.admin_client.close()
+        await self._stop_client()
+        await self._delete_topics()
+        await self._stop_admin_client()
         await super()._destroy()
 
-    def _create_topics(self) -> None:
+    async def _start_client(self) -> None:
+        # noinspection PyBroadException
+        try:
+            await self._with_circuit_breaker(self.client.start)
+        except Exception as exc:
+            await self._stop_client()
+            raise exc
+
+    async def _stop_client(self):
+        with suppress(TimeoutError):
+            await wait_for(self.client.stop(), 0.5)
+
+    async def _stop_admin_client(self):
+        await self._with_circuit_breaker(self.admin_client.close)
+
+    async def _create_topics(self) -> None:
         logger.info(f"Creating {self.topics!r} topics...")
 
         new_topics = list()
         for topic in self.topics:
             new_topics.append(NewTopic(name=topic, num_partitions=1, replication_factor=1))
 
-        with suppress(TopicAlreadyExistsError):
-            self.admin_client.create_topics(new_topics)
+        def _fn() -> None:
+            with suppress(TopicAlreadyExistsError):
+                self.admin_client.create_topics(new_topics)
 
-    def _delete_topics(self) -> None:
+        await self._with_circuit_breaker(_fn)
+
+    async def _delete_topics(self) -> None:
         if not self.remove_topics_on_destroy:
             return
 
         logger.info(f"Deleting {self.topics!r} topics...")
-        self.admin_client.delete_topics(list(self.topics))
+        fn = partial(self.admin_client.delete_topics, list(self.topics))
+        await self._with_circuit_breaker(fn)
 
     @cached_property
     def admin_client(self):
@@ -177,11 +203,14 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
         message = BrokerMessage.from_avro_bytes(bytes_)
         return message
 
-    async def _with_circuit_breaker(self, future_func: Callable[[], Awaitable[None]]) -> None:
+    async def _with_circuit_breaker(self, fn: Callable[[], Union[Awaitable[R], R]]) -> R:
         while True:
             try:
                 with self._circuit_breaker.context():
-                    return await future_func()
+                    ans = fn()
+                    if isawaitable(ans):
+                        ans = await ans
+                    return ans
             except CircuitBroken:
                 await sleep(self._circuit_breaker_timeout)
             except KafkaError as exc:

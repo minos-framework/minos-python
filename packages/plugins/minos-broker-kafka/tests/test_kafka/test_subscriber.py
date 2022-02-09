@@ -10,9 +10,11 @@ from unittest.mock import (
 from aiokafka import (
     AIOKafkaConsumer,
 )
+from aiomisc.circuit_breaker import CircuitBreakerStates
 from kafka import (
     KafkaAdminClient,
 )
+from kafka.errors import KafkaConnectionError
 
 from minos.common import (
     MinosConfig,
@@ -66,6 +68,25 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
         async with KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}) as subscriber:
             client = subscriber.admin_client
             self.assertIsInstance(client, KafkaAdminClient)
+
+    async def test_setup_destroy_without_connection(self):
+        publisher = KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}, circuit_breaker_time=0.1)
+        stop_mock = AsyncMock(side_effect=publisher.client.stop)
+
+        async def _fn():
+            if publisher.circuit_breaker.state == CircuitBreakerStates.RECOVERING:
+                raise ValueError()
+            raise KafkaConnectionError()
+
+        start_mock = AsyncMock(side_effect=_fn)
+        publisher.client.start = start_mock
+        publisher.client.stop = stop_mock
+
+        with self.assertRaises(ValueError):
+            async with publisher:
+                pass
+
+        self.assertEqual(1, stop_mock.call_count)
 
     async def test_setup_destroy_client(self):
         subscriber = KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"})
