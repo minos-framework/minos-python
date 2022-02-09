@@ -1,37 +1,32 @@
 import unittest
-from collections import (
-    namedtuple,
-)
 from unittest.mock import (
     call,
     patch,
 )
 
-from minos.networks import (
-    MinosDiscoveryConnectorException,
-)
+from aiohttp import ClientResponseError
+from aiomisc.circuit_breaker import CircuitBreakerStates
+
 from minos.plugins.minos_discovery import (
     MinosDiscoveryClient,
 )
 
-_Response = namedtuple("Response", ["ok"])
 
+class _Response:
 
-async def _fn(*args, **kwargs):
-    return _Response(True)
+    def __init__(self, ok):
+        self.ok = ok
 
-
-async def _fn_failure(*args, **kwargs):
-    return _Response(False)
-
-
-async def _fn_raises(*args, **kwargs):
-    raise ValueError
+    def raise_for_status(self):
+        """For testing purposes."""
+        if not self.ok:
+            # noinspection PyTypeChecker
+            raise ClientResponseError(None, tuple())
 
 
 class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.client = MinosDiscoveryClient("123.456.123.1", 1234)
+        self.client = MinosDiscoveryClient("123.456.123.1", 1234, circuit_breaker_time=0.1)
 
     def test_route(self):
         # noinspection HttpUrlsUsage
@@ -39,7 +34,7 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
 
     @patch("aiohttp.ClientSession.post")
     async def test_subscribe(self, mock):
-        mock.return_value.__aenter__ = _fn
+        mock.return_value.__aenter__.return_value = _Response(True)
 
         await self.client.subscribe(
             "56.56.56.56", 56, "test", [{"url": "/foo", "method": "POST"}, {"url": "/bar", "method": "GET"}]
@@ -55,15 +50,20 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
 
     @patch("aiohttp.ClientSession.post")
     async def test_subscribe_raises(self, mock):
+        async def _fn_failure(*args, **kwargs):
+            if self.client.circuit_breaker.state == CircuitBreakerStates.RECOVERING:
+                return _Response(True)
+            return _Response(False)
+
         mock.return_value.__aenter__ = _fn_failure
 
-        with self.assertRaises(MinosDiscoveryConnectorException):
-            await self.client.subscribe("56.56.56.56", 56, "test", [{"url": "/foo", "method": "POST"}], retry_delay=0)
-        self.assertEqual(3, mock.call_count)
+        await self.client.subscribe("56.56.56.56", 56, "test", [{"url": "/foo", "method": "POST"}])
+        self.assertLess(0, mock.call_count)
 
     @patch("aiohttp.ClientSession.delete")
     async def test_unsubscribe(self, mock):
-        mock.return_value.__aenter__ = _fn
+        mock.return_value.__aenter__.return_value = _Response(True)
+
         await self.client.unsubscribe("test")
         self.assertEqual(1, mock.call_count)
         # noinspection HttpUrlsUsage
@@ -71,11 +71,15 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
 
     @patch("aiohttp.ClientSession.delete")
     async def test_unsubscribe_raises(self, mock):
+        async def _fn_failure(*args, **kwargs):
+            if self.client.circuit_breaker.state == CircuitBreakerStates.RECOVERING:
+                return _Response(True)
+            return _Response(False)
+
         mock.return_value.__aenter__ = _fn_failure
 
-        with self.assertRaises(MinosDiscoveryConnectorException):
-            await self.client.unsubscribe("test", retry_delay=0)
-        self.assertEqual(3, mock.call_count)
+        await self.client.unsubscribe("test")
+        self.assertLess(0, mock.call_count)
 
 
 if __name__ == "__main__":

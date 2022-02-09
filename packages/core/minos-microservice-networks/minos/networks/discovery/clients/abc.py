@@ -9,6 +9,10 @@ from asyncio import (
 
 import aiohttp
 
+from minos.common import (
+    Object,
+)
+
 from ...exceptions import (
     MinosDiscoveryConnectorException,
 )
@@ -16,10 +20,11 @@ from ...exceptions import (
 logger = logging.getLogger(__name__)
 
 
-class DiscoveryClient(ABC):
+class DiscoveryClient(ABC, Object):
     """Minos Discovery Client class."""
 
-    def __init__(self, host: str, port: int):
+    def __init__(self, host: str, port: int, **kwargs):
+        super().__init__(**kwargs)
         self.host = host
         self.port = port
 

@@ -1,5 +1,19 @@
 import logging
+from collections.abc import (
+    Iterable,
+)
+from functools import (
+    partial,
+)
 
+from aiohttp import (
+    ClientResponseError,
+    ClientSession,
+)
+
+from minos.common import (
+    CircuitBreakerMixin,
+)
 from minos.networks import (
     DiscoveryClient,
 )
@@ -7,8 +21,11 @@ from minos.networks import (
 logger = logging.getLogger(__name__)
 
 
-class MinosDiscoveryClient(DiscoveryClient):
+class MinosDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
     """Minos Discovery Client class."""
+
+    def __init__(self, *args, circuit_breaker_exceptions: Iterable[type] = tuple(), **kwargs):
+        super().__init__(*args, circuit_breaker_exceptions=(ClientResponseError, *circuit_breaker_exceptions), **kwargs)
 
     async def subscribe(
         self,
@@ -36,7 +53,16 @@ class MinosDiscoveryClient(DiscoveryClient):
             "endpoints": [[endpoint["method"], endpoint["url"]] for endpoint in endpoints],
         }
 
-        await self._rest_subscribe(endpoint, service_metadata, host, port, name, endpoints, retry_tries, retry_delay)
+        fn = partial(self._subscribe, endpoint, service_metadata)
+        await self.with_circuit_breaker(fn)
+
+    @staticmethod
+    async def _subscribe(endpoint: str, service_metadata: dict[str, str]) -> None:
+        logger.debug(f"Subscribing into {endpoint!r}...")
+
+        async with ClientSession() as session:
+            async with session.post(endpoint, json=service_metadata) as response:
+                response.raise_for_status()
 
     async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> None:
         """Perform the unsubscription query.
@@ -48,4 +74,13 @@ class MinosDiscoveryClient(DiscoveryClient):
         """
         endpoint = f"{self.route}/microservices/{name}"
 
-        await self._rest_unsubscribe(endpoint, name, retry_tries, retry_delay)
+        fn = partial(self._unsubscribe, endpoint)
+        await self.with_circuit_breaker(fn)
+
+    @staticmethod
+    async def _unsubscribe(endpoint: str) -> None:
+        logger.debug(f"Unsubscribing into {endpoint!r}...")
+
+        async with ClientSession() as session:
+            async with session.delete(endpoint) as response:
+                response.raise_for_status()
