@@ -104,7 +104,7 @@ services:
     depends_on:
       - zookeeper
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_HOST_NAME: localhost
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
   postgres:
     restart: always
@@ -715,7 +715,7 @@ Execute the following command to start the microservice:
 python foo/main.py
 ```
 
-Now, if a new instance is created (with a rest call, like in the [previous section](#Expose a Command)), the `FooCreated` event will be handled and the microservice's console will print something like:
+Now, if a new instance is created (with a rest call, like in the [previous section](#expose-a-command)), the `FooCreated` event will be handled and the microservice's console will print something like:
 
 ```
 A Foo was created: Event(...)
