@@ -5,12 +5,9 @@ from __future__ import (
 import logging
 from asyncio import (
     TimeoutError,
-    sleep,
     wait_for,
 )
 from collections.abc import (
-    Awaitable,
-    Callable,
     Iterable,
 )
 from contextlib import (
@@ -19,21 +16,12 @@ from contextlib import (
 from functools import (
     partial,
 )
-from inspect import (
-    isawaitable,
-)
 from typing import (
     Optional,
-    TypeVar,
-    Union,
 )
 
 from aiokafka import (
     AIOKafkaConsumer,
-)
-from aiomisc import (
-    CircuitBreaker,
-    CircuitBroken,
 )
 from cached_property import (
     cached_property,
@@ -45,7 +33,6 @@ from kafka.admin import (
     NewTopic,
 )
 from kafka.errors import (
-    KafkaError,
     TopicAlreadyExistsError,
 )
 
@@ -61,8 +48,11 @@ from minos.networks import (
     QueuedBrokerSubscriberBuilder,
 )
 
+from .mixins import (
+    KafkaCircuitBreakerMixin,
+)
+
 logger = logging.getLogger(__name__)
-R = TypeVar("R")
 
 
 class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
@@ -113,7 +103,7 @@ class InMemoryQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):
         )
 
 
-class KafkaBrokerSubscriber(BrokerSubscriber):
+class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
     """Kafka Broker Subscriber class."""
 
     def __init__(
@@ -123,19 +113,16 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
         broker_port: int,
         group_id: Optional[str] = None,
         remove_topics_on_destroy: bool = False,
-        circuit_breaker_time: Union[int, float] = 3,
         **kwargs,
     ):
-        super().__init__(topics, **kwargs)
+        BrokerSubscriber.__init__(self, topics, **kwargs)
+        KafkaCircuitBreakerMixin.__init__(self, **kwargs)
+
         self.broker_host = broker_host
         self.broker_port = broker_port
         self.group_id = group_id
 
         self.remove_topics_on_destroy = remove_topics_on_destroy
-
-        self._circuit_breaker = CircuitBreaker(
-            error_ratio=0.2, response_time=circuit_breaker_time, exceptions=[KafkaError]
-        )
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> KafkaBrokerSubscriber:
@@ -202,36 +189,6 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
         bytes_ = record.value
         message = BrokerMessage.from_avro_bytes(bytes_)
         return message
-
-    async def _with_circuit_breaker(self, fn: Callable[[], Union[Awaitable[R], R]]) -> R:
-        while True:
-            try:
-                with self._circuit_breaker.context():
-                    ans = fn()
-                    if isawaitable(ans):
-                        ans = await ans
-                    return ans
-            except CircuitBroken:
-                await sleep(self._circuit_breaker_timeout)
-            except KafkaError as exc:
-                logger.warning(f"A kafka exception was raised: {exc!r}")
-                await sleep(self._exception_timeout)
-
-    @property
-    def _circuit_breaker_timeout(self) -> float:
-        return self._circuit_breaker.response_time * 0.5
-
-    @property
-    def _exception_timeout(self) -> float:
-        return self._circuit_breaker.response_time * 0.05
-
-    @property
-    def circuit_breaker(self) -> CircuitBreaker:
-        """Get the circuit breaker.
-
-        :return: A ``CircuitBreaker`` instance.
-        """
-        return self._circuit_breaker
 
     @cached_property
     def client(self) -> AIOKafkaConsumer:
