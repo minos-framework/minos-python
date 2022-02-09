@@ -26,7 +26,7 @@ from minos.common import (
     MinosConfig,
     MinosModel,
     MinosPool,
-    MinosSetup,
+    SetupMixin,
 )
 from minos.networks import (
     BrokerClientPool,
@@ -108,7 +108,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         super().tearDown()
 
 
-class FakeBrokerPublisher(MinosSetup):
+class FakeBrokerPublisher(SetupMixin):
     """For testing purposes."""
 
     async def send(self, data: Any, **kwargs) -> None:

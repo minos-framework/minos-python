@@ -23,7 +23,7 @@ from minos.aggregate import (
     TransactionEntry,
 )
 from minos.common import (
-    MinosSetup,
+    SetupMixin,
 )
 from tests.utils import (
     FakeAsyncIterator,
@@ -60,7 +60,7 @@ class TestSnapshotRepository(unittest.IsolatedAsyncioTestCase):
         self.classname = "path.to.Product"
 
     def test_subclass(self):
-        self.assertTrue(issubclass(SnapshotRepository, (ABC, MinosSetup)))
+        self.assertTrue(issubclass(SnapshotRepository, (ABC, SetupMixin)))
 
     def test_abstract(self):
         # noinspection PyUnresolvedReferences

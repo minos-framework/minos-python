@@ -25,8 +25,8 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     MinosConfig,
-    MinosSetup,
     NotProvidedException,
+    SetupMixin,
 )
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
@@ -58,7 +58,7 @@ from .messages import (
 logger = logging.getLogger(__name__)
 
 
-class SagaManager(MinosSetup):
+class SagaManager(SetupMixin):
     """Saga Manager implementation class.
 
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.

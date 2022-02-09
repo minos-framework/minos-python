@@ -8,7 +8,7 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    MinosSetup,
+    SetupMixin,
 )
 from minos.networks import (
     BrokerMessage,
@@ -27,7 +27,7 @@ class _BrokerPublisher(BrokerPublisher):
 
 class TestBrokerPublisher(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
-        self.assertTrue(issubclass(BrokerPublisher, (ABC, MinosSetup)))
+        self.assertTrue(issubclass(BrokerPublisher, (ABC, SetupMixin)))
         # noinspection PyUnresolvedReferences
         self.assertEqual({"_send"}, BrokerPublisher.__abstractmethods__)
 

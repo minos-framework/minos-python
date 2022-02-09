@@ -23,8 +23,8 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     MinosConfig,
-    MinosSetup,
     NotProvidedException,
+    SetupMixin,
 )
 
 from ..dispatchers import (
@@ -38,7 +38,7 @@ from ..subscribers import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerHandler(MinosSetup):
+class BrokerHandler(SetupMixin):
     """Broker Handler class."""
 
     def __init__(

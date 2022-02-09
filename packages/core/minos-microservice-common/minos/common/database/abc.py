@@ -20,7 +20,7 @@ from dependency_injector.wiring import (
 )
 
 from ..setup import (
-    MinosSetup,
+    SetupMixin,
 )
 from .locks import (
     PostgreSqlLock,
@@ -30,7 +30,7 @@ from .pools import (
 )
 
 
-class PostgreSqlMinosDatabase(MinosSetup):
+class PostgreSqlMinosDatabase(SetupMixin):
     """PostgreSql Minos Database base class."""
 
     def __init__(self, host: str, port: int, database: str, user: str, password: str, *args, **kwargs):

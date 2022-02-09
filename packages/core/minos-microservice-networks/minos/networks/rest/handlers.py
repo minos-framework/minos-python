@@ -23,7 +23,7 @@ from aiohttp import (
 
 from minos.common import (
     MinosConfig,
-    MinosSetup,
+    SetupMixin,
 )
 
 from ..decorators import (
@@ -41,7 +41,7 @@ from .requests import (
 logger = logging.getLogger(__name__)
 
 
-class RestHandler(MinosSetup):
+class RestHandler(SetupMixin):
     """Rest Handler class."""
 
     def __init__(self, host: str, port: int, endpoints: dict[(str, str), Callable], **kwargs):

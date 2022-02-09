@@ -12,7 +12,7 @@ from collections.abc import (
 )
 
 from minos.common import (
-    MinosSetup,
+    SetupMixin,
 )
 
 from ...messages import (
@@ -22,7 +22,7 @@ from ...messages import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerQueue(ABC, MinosSetup):
+class BrokerQueue(ABC, SetupMixin):
     """Broker Queue class."""
 
     async def enqueue(self, message: BrokerMessage) -> None:

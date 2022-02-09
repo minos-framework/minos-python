@@ -20,7 +20,7 @@ from aiomisc.pool import (
 )
 
 from .setup import (
-    MinosSetup,
+    SetupMixin,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,12 +28,11 @@ logger = logging.getLogger(__name__)
 P = TypeVar("P")
 
 
-class MinosPool(MinosSetup, PoolBase, Generic[P], ABC):
+class MinosPool(SetupMixin, PoolBase, Generic[P], ABC):
     """Base class for Pool implementations in minos"""
 
     def __init__(self, *args, maxsize: int = 10, recycle: Optional[int] = 300, already_setup: bool = True, **kwargs):
-        MinosSetup.__init__(self, *args, already_setup=already_setup, **kwargs)
-        PoolBase.__init__(self, maxsize=maxsize, recycle=recycle)
+        super().__init__(*args, maxsize=maxsize, recycle=recycle, already_setup=already_setup, **kwargs)
 
     # noinspection PyUnresolvedReferences
     async def __acquire(self) -> Any:  # pragma: no cover

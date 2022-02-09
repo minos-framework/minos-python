@@ -32,8 +32,8 @@ from .object import (
 logger = logging.getLogger(__name__)
 
 
-class MinosSetup(Object):
-    """Minos setup base class."""
+class SetupMixin(Object):
+    """Setup Mixin class."""
 
     def __init__(self, *args, already_setup: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -122,4 +122,4 @@ class MinosSetup(Object):
             )
 
 
-S = TypeVar("S", bound=MinosSetup)
+S = TypeVar("S", bound=SetupMixin)

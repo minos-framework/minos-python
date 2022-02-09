@@ -31,8 +31,8 @@ from minos.common import (
     NULL_UUID,
     Lock,
     MinosPool,
-    MinosSetup,
     NotProvidedException,
+    SetupMixin,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -68,7 +68,7 @@ from ..models import (
 )
 
 
-class EventRepository(ABC, MinosSetup):
+class EventRepository(ABC, SetupMixin):
     """Base event repository class in ``minos``."""
 
     @inject

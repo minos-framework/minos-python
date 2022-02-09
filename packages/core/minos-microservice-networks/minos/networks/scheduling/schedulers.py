@@ -27,7 +27,7 @@ from crontab import (
 
 from minos.common import (
     MinosConfig,
-    MinosSetup,
+    SetupMixin,
     current_datetime,
 )
 
@@ -44,7 +44,7 @@ from .requests import (
 logger = logging.getLogger(__name__)
 
 
-class PeriodicTaskScheduler(MinosSetup):
+class PeriodicTaskScheduler(SetupMixin):
     """Periodic Task Scheduler class."""
 
     def __init__(self, tasks: set[PeriodicTask], *args, **kwargs):

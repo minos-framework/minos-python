@@ -21,8 +21,8 @@ from minos.aggregate import (
     TransactionStatus,
 )
 from minos.common import (
-    MinosSetup,
     NotProvidedException,
+    SetupMixin,
 )
 from tests.utils import (
     FakeAsyncIterator,
@@ -52,7 +52,7 @@ class TestTransactionRepository(MinosTestCase):
             _TransactionRepository(lock_pool=None)
 
     def test_abstract(self):
-        self.assertTrue(issubclass(TransactionRepository, (ABC, MinosSetup)))
+        self.assertTrue(issubclass(TransactionRepository, (ABC, SetupMixin)))
         # noinspection PyUnresolvedReferences
         self.assertEqual({"_submit", "_select"}, TransactionRepository.__abstractmethods__)
 

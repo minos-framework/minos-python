@@ -25,26 +25,26 @@ from .importlib import (
     import_module,
 )
 from .setup import (
-    MinosSetup,
+    SetupMixin,
 )
 
 
 class DependencyInjector:
     """Async wrapper of ``dependency_injector.containers.Container``."""
 
-    def __init__(self, config: MinosConfig, **kwargs: Union[MinosSetup, Type[MinosSetup], str]):
+    def __init__(self, config: MinosConfig, **kwargs: Union[SetupMixin, Type[SetupMixin], str]):
         self.config = config
         self._raw_injections = kwargs
 
     @cached_property
-    def injections(self) -> dict[str, MinosSetup]:
+    def injections(self) -> dict[str, SetupMixin]:
         """Get the injections dictionary.
 
         :return: A dict of injections..
         """
         injections = dict()
 
-        def _fn(raw: Union[MinosSetup, Type[MinosSetup], str]) -> MinosSetup:
+        def _fn(raw: Union[SetupMixin, Type[SetupMixin], str]) -> SetupMixin:
             if isinstance(raw, str):
                 raw = import_module(raw)
             if isinstance(raw, type):
@@ -88,7 +88,7 @@ class DependencyInjector:
             container.set_provider(name, providers.Object(injection))
         return container
 
-    def __getattr__(self, item: str) -> MinosSetup:
+    def __getattr__(self, item: str) -> SetupMixin:
         if item not in self.injections:
             raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
         return self.injections[item]

@@ -7,7 +7,7 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    MinosSetup,
+    SetupMixin,
 )
 from minos.networks import (
     BrokerMessage,
@@ -29,7 +29,7 @@ class _BrokerQueue(BrokerQueue):
 
 class TestBrokerQueue(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
-        self.assertTrue(issubclass(BrokerQueue, (ABC, MinosSetup)))
+        self.assertTrue(issubclass(BrokerQueue, (ABC, SetupMixin)))
         # noinspection PyUnresolvedReferences
         self.assertEqual({"_enqueue", "_dequeue"}, BrokerQueue.__abstractmethods__)
 
