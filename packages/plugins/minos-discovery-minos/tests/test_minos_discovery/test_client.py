@@ -13,7 +13,6 @@ from minos.plugins.minos_discovery import (
 
 
 class _Response:
-
     def __init__(self, ok):
         self.ok = ok
 
