@@ -55,54 +55,6 @@ from .mixins import (
 logger = logging.getLogger(__name__)
 
 
-class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
-    """Kafka Broker Subscriber Builder class."""
-
-    def with_config(self, config: MinosConfig) -> BrokerSubscriberBuilder:
-        """Set config.
-
-        :param config: The config to be set.
-        :return: This method return the builder instance.
-        """
-        self.kwargs |= {
-            "group_id": config.service.name,
-            "broker_host": config.broker.host,
-            "broker_port": config.broker.port,
-        }
-        return self
-
-    def build(self) -> BrokerSubscriber:
-        """Build the instance.
-
-        :return: A ``KafkaBrokerSubscriber`` instance.
-        """
-        return KafkaBrokerSubscriber(**self.kwargs)
-
-
-class PostgreSqlQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):
-    """PostgreSql Queued Kafka Broker Subscriber Builder class."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args,
-            impl_builder=KafkaBrokerSubscriberBuilder.new(),
-            queue_builder=PostgreSqlBrokerSubscriberQueueBuilder.new(),
-            **kwargs,
-        )
-
-
-class InMemoryQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):
-    """In Memory Queued Kafka Broker Subscriber Builder class."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args,
-            impl_builder=KafkaBrokerSubscriberBuilder.new(),
-            queue_builder=InMemoryBrokerSubscriberQueueBuilder.new(),
-            **kwargs,
-        )
-
-
 class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
     """Kafka Broker Subscriber class."""
 
@@ -200,4 +152,52 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
             bootstrap_servers=f"{self.broker_host}:{self.broker_port}",
             group_id=self.group_id,
             auto_offset_reset="earliest",
+        )
+
+
+class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
+    """Kafka Broker Subscriber Builder class."""
+
+    def with_config(self, config: MinosConfig) -> BrokerSubscriberBuilder:
+        """Set config.
+
+        :param config: The config to be set.
+        :return: This method return the builder instance.
+        """
+        self.kwargs |= {
+            "group_id": config.service.name,
+            "broker_host": config.broker.host,
+            "broker_port": config.broker.port,
+        }
+        return self
+
+    def build(self) -> BrokerSubscriber:
+        """Build the instance.
+
+        :return: A ``KafkaBrokerSubscriber`` instance.
+        """
+        return KafkaBrokerSubscriber(**self.kwargs)
+
+
+class PostgreSqlQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):
+    """PostgreSql Queued Kafka Broker Subscriber Builder class."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            *args,
+            impl_builder=KafkaBrokerSubscriberBuilder.new(),
+            queue_builder=PostgreSqlBrokerSubscriberQueueBuilder.new(),
+            **kwargs,
+        )
+
+
+class InMemoryQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):
+    """In Memory Queued Kafka Broker Subscriber Builder class."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            *args,
+            impl_builder=KafkaBrokerSubscriberBuilder.new(),
+            queue_builder=InMemoryBrokerSubscriberQueueBuilder.new(),
+            **kwargs,
         )
