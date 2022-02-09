@@ -10,11 +10,15 @@ from unittest.mock import (
 from aiokafka import (
     AIOKafkaConsumer,
 )
-from aiomisc.circuit_breaker import CircuitBreakerStates
+from aiomisc.circuit_breaker import (
+    CircuitBreakerStates,
+)
 from kafka import (
     KafkaAdminClient,
 )
-from kafka.errors import KafkaConnectionError
+from kafka.errors import (
+    KafkaConnectionError,
+)
 
 from minos.common import (
     MinosConfig,
