@@ -20,6 +20,7 @@ class TestCircuitBreakerMixin(unittest.IsolatedAsyncioTestCase):
     def test_constructor(self):
         mixin = CircuitBreakerMixin()
         self.assertIsInstance(mixin.circuit_breaker, CircuitBreaker)
+        self.assertEqual((Exception,), mixin.circuit_breaker_exceptions)
 
     async def test_with_circuit_breaker(self):
         mixin = CircuitBreakerMixin(circuit_breaker_exceptions=[TypeError], circuit_breaker_time=0.1)

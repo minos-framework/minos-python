@@ -86,3 +86,11 @@ class CircuitBreakerMixin(Generic[E], Object):
         :return: A ``CircuitBreaker`` instance.
         """
         return self._circuit_breaker
+
+    @property
+    def circuit_breaker_exceptions(self) -> tuple[type[Exception]]:
+        """Get the circuit breaker exceptions.
+
+        :return: A tuple of ``Exception`` types.
+        """
+        return self._circuit_breaker_exceptions
