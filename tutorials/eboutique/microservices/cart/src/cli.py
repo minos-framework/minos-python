@@ -8,6 +8,7 @@ from typing import (
 )
 
 import typer
+
 from minos.common import (
     EntrypointLauncher,
 )
