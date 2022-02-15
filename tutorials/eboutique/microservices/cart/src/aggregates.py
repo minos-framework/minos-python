@@ -1,15 +1,17 @@
-from typing import Optional
+from typing import (
+    Optional,
+)
 from uuid import (
     UUID,
 )
 
 from minos.aggregate import (
     Aggregate,
-    RootEntity,
     Entity,
-    ExternalEntity,
     EntitySet,
-    Ref
+    ExternalEntity,
+    Ref,
+    RootEntity,
 )
 
 
@@ -30,6 +32,7 @@ class CartItem(Entity):
 
 class Cart(RootEntity):
     """Cart RootEntity class."""
+
     customer: str
     status: str
     items: Optional[EntitySet[CartItem]]
@@ -41,8 +44,8 @@ class CartAggregate(Aggregate[Cart]):
     @staticmethod
     async def createCart(data: {}) -> UUID:
         """Create a new Cart."""
-        data['status'] = "open"
-        cart = await Cart.create(customer=data['customer'], status=data['status'])
+        data["status"] = "open"
+        cart = await Cart.create(customer=data["customer"], status=data["status"])
         return cart.uuid
 
     @staticmethod

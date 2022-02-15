@@ -1,4 +1,10 @@
-from dependency_injector.wiring import Provide
+from dependency_injector.wiring import (
+    Provide,
+)
+from src.queries.repository import (
+    ProductQueryRepository,
+)
+
 from minos.aggregate import (
     Event,
 )
@@ -10,8 +16,6 @@ from minos.networks import (
     Response,
     enroute,
 )
-
-from src.queries.repository import ProductQueryRepository
 
 
 class ProductQueryService(QueryService):
@@ -36,7 +40,7 @@ class ProductQueryService(QueryService):
         :return: A response exception.
         """
         params = await request.params()
-        product = self.repository.get(params['uuid'])
+        product = self.repository.get(params["uuid"])
         return Response(product)
 
     @enroute.broker.event("ProductCreated")
