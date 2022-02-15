@@ -45,8 +45,8 @@ class CartCommandService(CommandService):
             params = await request.params()
 
             saga_execution = await self.saga_manager.run(
-                ADD_CART_ITEM, context=SagaContext(cart_uid=data['cart'], product_uid=params['uuid'],
-                                                   quantity=data['quantity'])
+                ADD_CART_ITEM,
+                context=SagaContext(cart_uid=data["cart"], product_uid=params["uuid"], quantity=data["quantity"]),
             )
             return Response({"saga_uid": saga_execution.uuid})
         except Exception as exc:

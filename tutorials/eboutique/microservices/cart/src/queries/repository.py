@@ -8,7 +8,6 @@ from .models import Base, Cart
 
 
 class CartQueryRepository(MinosSetup):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.engine = create_engine("postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}".format(**kwargs))
@@ -26,9 +25,9 @@ class CartQueryRepository(MinosSetup):
     def add(self, event: Event):
 
         cart = Cart()
-        cart.uuid = event['uuid']
-        cart.status = event.get_one('status')
-        cart.user = event.get_one('user')
+        cart.uuid = event["uuid"]
+        cart.status = event.get_one("status")
+        cart.user = event.get_one("user")
         self.session.add(cart)
 
     def add_item(self, event: Event):

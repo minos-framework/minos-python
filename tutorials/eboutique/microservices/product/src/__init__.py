@@ -11,7 +11,4 @@ from .cli import (
 from .commands import (
     ProductCommandService,
 )
-from .queries import (
-    ProductQueryService,
-    ProductQueryRepository
-)
+from .queries import ProductQueryService, ProductQueryRepository
