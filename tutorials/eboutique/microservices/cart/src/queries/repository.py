@@ -1,10 +1,22 @@
-from minos.common import MinosSetup, MinosConfig
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import (
+    create_engine,
+)
+from sqlalchemy.orm import (
+    sessionmaker,
+)
+
 from minos.aggregate import (
     Event,
 )
-from .models import Base, Cart
+from minos.common import (
+    MinosConfig,
+    MinosSetup,
+)
+
+from .models import (
+    Base,
+    Cart,
+)
 
 
 class CartQueryRepository(MinosSetup):
