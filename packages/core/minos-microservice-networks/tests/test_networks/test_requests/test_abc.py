@@ -12,7 +12,8 @@ from uuid import (
 
 from minos.networks import (
     Request,
-    Response, NotHasContentException,
+    Response,
+    NotHasContentException,
 )
 from tests.utils import (
     FakeModel,
