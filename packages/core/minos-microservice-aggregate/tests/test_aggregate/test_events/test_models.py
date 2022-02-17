@@ -202,6 +202,29 @@ class TestEventAccessors(unittest.TestCase):
         ]
         self.assertEqual(expected, observed)
 
+    def test_get_attr_single(self):
+        observed = self.diff.get_attr("color")
+        expected = "red"
+        self.assertEqual(expected, observed)
+
+    def test_get_attr_single_diff(self):
+        observed = self.diff.get_attr("color", return_diff=True)
+        expected = FieldDiff("color", str, "red")
+        self.assertEqual(expected, observed)
+
+    def test_get_attr_multiple(self):
+        observed = self.diff.get_attr("doors")
+        expected = [5, 3]
+        self.assertEqual(expected, observed)
+
+    def test_get_attr_multiple_diff(self):
+        observed = self.diff.get_attr("doors", return_diff=True)
+        expected = [
+            IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+            IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+        ]
+        self.assertEqual(expected, observed)
+
     def test_get_all(self):
         observed = self.diff.get_all()
         expected = {
@@ -221,6 +244,24 @@ class TestEventAccessors(unittest.TestCase):
         }
         self.assertEqual(expected, observed)
 
+    def test_get_attrs(self):
+        observed = self.diff.get_attrs()
+        expected = {
+            "color": "red",
+            "doors": [5, 3],
+        }
+        self.assertEqual(expected, observed)
+
+    def test_get_attrs_diffs(self):
+        observed = self.diff.get_attrs(return_diff=True)
+        expected = {
+            "color": FieldDiff("color", str, "red"),
+            "doors": [
+                IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+                IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+            ],
+        }
+        self.assertEqual(expected, observed)
 
 if __name__ == "__main__":
     unittest.main()
