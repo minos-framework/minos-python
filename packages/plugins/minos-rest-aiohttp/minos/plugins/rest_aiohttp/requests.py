@@ -36,7 +36,6 @@ from minos.common import (
     MinosAvroProtocol,
     import_module,
 )
-
 from minos.networks import (
     NotHasParamsException,
     Request,

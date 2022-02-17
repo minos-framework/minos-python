@@ -27,7 +27,6 @@ from minos.common import (
     MinosAvroProtocol,
     TypeHintBuilder,
 )
-
 from minos.networks import (
     Response,
 )

@@ -3,17 +3,17 @@ from abc import (
     ABC,
 )
 from typing import (
-    Optional,
     Any,
+    Optional,
 )
 from uuid import (
     UUID,
 )
 
 from minos.networks import (
+    NotHasContentException,
     Request,
     Response,
-    NotHasContentException,
 )
 from tests.utils import (
     FakeModel,
