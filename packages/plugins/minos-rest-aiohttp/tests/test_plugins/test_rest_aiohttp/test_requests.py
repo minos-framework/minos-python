@@ -17,10 +17,12 @@ from minos.networks import (
     NotHasContentException,
     NotHasParamsException,
     Response,
+)
+from minos.plugins.rest_aiohttp import (
     RestRequest,
     RestResponse,
 )
-from tests.test_networks.test_rest.utils import (
+from tests.test_plugins.test_rest_aiohttp.utils import (
     avro_mocked_request,
     bytes_mocked_request,
     form_mocked_request,

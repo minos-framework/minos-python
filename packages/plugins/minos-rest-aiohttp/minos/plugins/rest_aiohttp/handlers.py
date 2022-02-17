@@ -26,12 +26,10 @@ from minos.common import (
     MinosSetup,
 )
 
-from ..decorators import (
-    EnrouteBuilder,
-)
-from ..requests import (
+from minos.networks import (
     REQUEST_USER_CONTEXT_VAR,
     ResponseException,
+    EnrouteBuilder,
 )
 from .requests import (
     RestRequest,

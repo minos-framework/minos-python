@@ -28,7 +28,7 @@ from minos.common import (
     TypeHintBuilder,
 )
 
-from ..requests import (
+from minos.networks import (
     Response,
 )
 

@@ -23,11 +23,13 @@ from minos.networks import (
     REQUEST_USER_CONTEXT_VAR,
     Request,
     Response,
+)
+from minos.plugins.rest_aiohttp import (
     RestHandler,
     RestResponse,
     RestResponseException,
 )
-from tests.test_networks.test_rest.utils import (
+from tests.test_plugins.test_rest_aiohttp.utils import (
     json_mocked_request,
     mocked_request,
 )

@@ -7,7 +7,7 @@ from aiohttp.test_utils import (
 from minos.common import (
     MinosConfig,
 )
-from minos.networks import (
+from minos.plugins.rest_aiohttp import (
     RestService,
 )
 from tests.utils import (

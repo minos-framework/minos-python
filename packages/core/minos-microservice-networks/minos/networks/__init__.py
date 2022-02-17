@@ -93,13 +93,6 @@ from .requests import (
     ResponseException,
     WrappedRequest,
 )
-from .rest import (
-    RestHandler,
-    RestRequest,
-    RestResponse,
-    RestResponseException,
-    RestService,
-)
 from .scheduling import (
     PeriodicTask,
     PeriodicTaskScheduler,
