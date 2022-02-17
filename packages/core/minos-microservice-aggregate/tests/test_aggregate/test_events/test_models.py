@@ -263,5 +263,6 @@ class TestEventAccessors(unittest.TestCase):
         }
         self.assertEqual(expected, observed)
 
+
 if __name__ == "__main__":
     unittest.main()
