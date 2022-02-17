@@ -35,6 +35,8 @@ from ..requests import (
 )
 from .requests import (
     RestRequest,
+)
+from .responses import (
     RestResponse,
 )
 
