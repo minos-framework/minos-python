@@ -1,14 +1,15 @@
-from pathlib import (
-    Path,
-)
 from functools import (
     total_ordering,
 )
-from minos.common import (
-    DeclarativeModel,
+from pathlib import (
+    Path,
 )
 from typing import (
     Any,
+)
+
+from minos.common import (
+    DeclarativeModel,
 )
 
 BASE_PATH = Path(__file__).parent

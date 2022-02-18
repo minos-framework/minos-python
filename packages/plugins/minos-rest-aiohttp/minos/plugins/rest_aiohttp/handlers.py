@@ -25,12 +25,12 @@ from minos.common import (
     MinosConfig,
     MinosSetup,
 )
-
 from minos.networks import (
     REQUEST_USER_CONTEXT_VAR,
-    ResponseException,
     EnrouteBuilder,
+    ResponseException,
 )
+
 from .requests import (
     RestRequest,
 )
