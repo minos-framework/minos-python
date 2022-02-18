@@ -29,10 +29,9 @@ class CartItem(Entity):
 
 
 class Cart(RootEntity):
-    """Cart RootEntity class."""
-    customer: str
+    user: str
     status: str
-    items: Optional[EntitySet[CartItem]]
+    products: Optional[EntitySet[CartItem]]
 
 
 class CartAggregate(Aggregate[Cart]):
@@ -42,12 +41,15 @@ class CartAggregate(Aggregate[Cart]):
     async def createCart(data: {}) -> UUID:
         """Create a new Cart."""
         data['status'] = "open"
-        cart = await Cart.create(customer=data['customer'], status=data['status'])
+        cart = await Cart.create(user=data['user'], status=data['status'])
         return cart.uuid
 
     @staticmethod
-    async def add_item(product: UUID, quantity: UUID, cart: UUID, user: str) -> bool:
-        """add item product to Cart Entity."""
-        car_object = await Cart.get(cart)
+    async def addCartItem(cart: str, product: str, quantity) -> UUID:
+        """Create a new Cart."""
+        cart = await Cart.get(cart)
+        cart_item = await CartItem(product=product, quantity=quantity)
+        cart.products.add(cart_item)
+        await cart.save()
+        return cart.uuid
 
-        return True

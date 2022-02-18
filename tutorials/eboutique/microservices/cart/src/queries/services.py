@@ -27,7 +27,7 @@ class CartQueryService(QueryService):
         """
         params = await request.params()
         cart_obj = self.repository.get(params['uuid'])
-        raise Response(cart_obj)
+        return Response(cart_obj)
 
     @enroute.broker.event("CartCreated")
     async def cart_created(self, request: Request) -> None:
