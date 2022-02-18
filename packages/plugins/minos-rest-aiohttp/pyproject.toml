@@ -1,14 +1,14 @@
 [tool.poetry]
-name = "minos_rest_aiohttp"
-version = "0.0.1"
-description = "Minos Boilerplate contains all the boilerplate you need to create a Minos Python package."
+name = "minos-rest-aiohttp"
+version = "0.6.0"
+description = "The rest plugin of the Minos Framework."
 readme = "README.md"
-repository = "https://github.com/clariteia/minos_rest_aiohttp"
-homepage = "https://clariteia.com"
-authors = ["Clariteia Devs <devs@clariteia.com>"]
+repository = "https://github.com/minos-framework/minos-python"
+homepage = "http://www.minos.run/"
+authors = ["Minos Framework Devs <hey@minos.run>"]
 license = "MIT"
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
