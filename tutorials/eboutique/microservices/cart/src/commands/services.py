@@ -27,11 +27,11 @@ class CartCommandService(CommandService):
         :return: A ``Response`` instance.
         """
         try:
-            content = await request.content()
-            uuid = await CartAggregate.createCart(content)
+            data = request.content()
+            uuid = await CartAggregate.createCart(data)
             return Response({"uuid": uuid})
         except Exception as exc:
-            raise ResponseException(f"An error occurred during Cart creation:{content} {exc}")
+            raise ResponseException(f"An error occurred during Cart creation: {exc}")
 
     @enroute.rest.command("/cart/{uuid}/item", "POST")
     async def create_cart_item(self, request: Request) -> Response:
