@@ -2,4 +2,6 @@ from .services import (
     ProductQueryService,
 )
 
-from .repository import ProductQueryRepository
+from .repository import (
+    ProductQueryRepository
+)

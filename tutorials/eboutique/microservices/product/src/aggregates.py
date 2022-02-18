@@ -2,7 +2,10 @@ from uuid import (
     UUID,
 )
 
-from minos.aggregate import Aggregate, RootEntity, Entity, ValueObject, ValueObjectSet
+from minos.aggregate import (
+    Aggregate,
+    RootEntity, Entity, ValueObject, ValueObjectSet
+)
 
 
 class Price(Entity):
@@ -16,7 +19,6 @@ class Category(ValueObject):
 
 class Product(RootEntity):
     """Product RootEntity class."""
-
     title: str
     description: str
     picture: str
@@ -35,14 +37,14 @@ class ProductAggregate(Aggregate[Product]):
     @staticmethod
     async def createProduct(data: {}) -> UUID:
         """Create a new instance."""
-        price = Price(**data["price"])
-        data["price"] = price
-        if "categories" in data:
+        price = Price(**data['price'])
+        data['price'] = price
+        if 'categories' in data:
             cat_list = []
-            for category in data["categories"]:
+            for category in data['categories']:
                 category_object = Category(**category)
                 cat_list.append(category_object)
-        data["categories"] = set(cat_list)
+        data['categories'] = set(cat_list)
         root = await Product.create(**data)
         return root.uuid
 
