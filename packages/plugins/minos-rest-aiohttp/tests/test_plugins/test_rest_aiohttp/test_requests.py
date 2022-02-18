@@ -34,6 +34,13 @@ from tests.utils import (
     FakeModel,
 )
 
+APPLICATION_JSON = "application/json"
+APPLICATION_URLENCODED = "application/x-www-form-urlencoded"
+APPLICATION_OCTET_STREAM = "application/octet-stream"
+TEXT_PLAIN = "text/plain"
+AVRO_BINARY = "avro/binary"
+IMAGE_PNG = "image/png"
+
 
 class TestRestRequest(unittest.IsolatedAsyncioTestCase):
     def test_raw(self):
@@ -198,12 +205,12 @@ class TestRestRequestContent(unittest.IsolatedAsyncioTestCase):
 
     async def test_with_type(self):
         # noinspection PyPep8Naming
-        Car = ModelType.build("Car", {"doors": int, "color": str, "owner": type(None)})
-        expected = [Car(3, "blue", None), Car(5, "red", None)]
+        car = ModelType.build("Car", {"doors": int, "color": str, "owner": type(None)})
+        expected = [car(3, "blue", None), car(5, "red", None)]
 
         raw = json_mocked_request([{"doors": "3", "color": "blue"}, {"doors": "5", "color": "red"}])
         request = RestRequest(raw)
-        observed = await request.content(type_=list[Car])
+        observed = await request.content(type_=list[car])
 
         self.assertEqual(expected, observed)
 
@@ -250,12 +257,12 @@ class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
 
     async def test_url_params_with_type(self):
         # noinspection PyPep8Naming
-        Params = ModelType.build("Params", {"foo": list[int], "bar": int})
-        expected = Params(foo=[1, 3], bar=2)
+        params = ModelType.build("Params", {"foo": list[int], "bar": int})
+        expected = params(foo=[1, 3], bar=2)
 
         raw = mocked_request(url_params=[("foo", "1"), ("bar", "2"), ("foo", "3")])
         request = RestRequest(raw)
-        observed = await request.url_params(type_=Params)
+        observed = await request.url_params(type_=params)
 
         self.assertEqual(expected, observed)
 
@@ -286,12 +293,12 @@ class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
 
     async def test_query_params_with_type(self):
         # noinspection PyPep8Naming
-        Params = ModelType.build("Params", {"one": list[int], "two": int})
-        expected = Params(one=[1, 3], two=2)
+        params = ModelType.build("Params", {"one": list[int], "two": int})
+        expected = params(one=[1, 3], two=2)
 
         raw = mocked_request(query_params=[("one", "1"), ("two", "2"), ("one", "3")])
         request = RestRequest(raw)
-        observed = await request.query_params(type_=Params)
+        observed = await request.query_params(type_=params)
 
         self.assertEqual(expected, observed)
 
@@ -336,15 +343,15 @@ class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
 
     async def test_params_with_type(self):
         # noinspection PyPep8Naming
-        Params = ModelType.build("Params", {"foo": list[int], "bar": int, "one": list[int], "two": int})
-        expected = Params(foo=[1, 3], bar=2, one=[1, 3], two=2)
+        params = ModelType.build("Params", {"foo": list[int], "bar": int, "one": list[int], "two": int})
+        expected = params(foo=[1, 3], bar=2, one=[1, 3], two=2)
 
         raw = mocked_request(
             url_params=[("foo", "1"), ("bar", "2"), ("foo", "3")],
             query_params=[("one", "1"), ("two", "2"), ("one", "3")],
         )
         request = RestRequest(raw)
-        observed = await request.params(type_=Params)
+        observed = await request.params(type_=params)
 
         self.assertEqual(expected, observed)
 
@@ -362,7 +369,7 @@ class TestRestResponse(unittest.IsolatedAsyncioTestCase):
         response = RestResponse.from_response(base)
 
         self.assertEqual(orjson.dumps("foobar"), await response.content())
-        self.assertEqual("application/json", response.content_type)
+        self.assertEqual(APPLICATION_JSON, response.content_type)
 
     def test_from_response_already(self):
         base = RestResponse()
@@ -379,55 +386,55 @@ class TestRestResponse(unittest.IsolatedAsyncioTestCase):
     async def test_empty(self):
         response = RestResponse()
         self.assertEqual(None, await response.content())
-        self.assertEqual("application/json", response.content_type)
+        self.assertEqual(APPLICATION_JSON, response.content_type)
 
     async def test_content_json(self):
         data = [FakeModel("foo"), FakeModel("bar")]
         response = RestResponse(data)
         self.assertEqual(orjson.dumps([item.avro_data for item in data]), await response.content())
-        self.assertEqual("application/json", response.content_type)
+        self.assertEqual(APPLICATION_JSON, response.content_type)
 
     async def test_content_form(self):
         data = {"foo": "bar", "one": "two"}
         response = RestResponse(data, content_type="application/x-www-form-urlencoded")
         self.assertEqual("foo=bar&one=two".encode(), await response.content())
-        self.assertEqual("application/x-www-form-urlencoded", response.content_type)
+        self.assertEqual(APPLICATION_URLENCODED, response.content_type)
 
     async def test_content_bytes(self):
         data = "foobar".encode()
-        response = RestResponse(data, content_type="application/octet-stream")
+        response = RestResponse(data, content_type=APPLICATION_OCTET_STREAM)
         self.assertEqual("foobar".encode(), await response.content())
-        self.assertEqual("application/octet-stream", response.content_type)
+        self.assertEqual(APPLICATION_OCTET_STREAM, response.content_type)
 
     async def test_content_bytes_raises(self):
         data = 56
-        response = RestResponse(data, content_type="application/octet-stream")
+        response = RestResponse(data, content_type=APPLICATION_OCTET_STREAM)
         with self.assertRaises(ValueError):
             await response.content()
 
     async def test_content_text(self):
         data = "foobar"
-        response = RestResponse(data, content_type="text/plain")
+        response = RestResponse(data, content_type=TEXT_PLAIN)
         self.assertEqual("foobar".encode(), await response.content())
-        self.assertEqual("text/plain", response.content_type)
+        self.assertEqual(TEXT_PLAIN, response.content_type)
 
     async def test_content_text_raises(self):
         data = 56
-        response = RestResponse(data, content_type="text/plain")
+        response = RestResponse(data, content_type=TEXT_PLAIN)
         with self.assertRaises(ValueError):
             await response.content()
 
     async def test_content_avro(self):
         data = "foobar"
-        response = RestResponse(data, content_type="avro/binary")
+        response = RestResponse(data, content_type=AVRO_BINARY)
         self.assertEqual(data, MinosAvroProtocol.decode(await response.content()))
-        self.assertEqual("avro/binary", response.content_type)
+        self.assertEqual(AVRO_BINARY, response.content_type)
 
     async def test_content_image(self):
         data = bytes("image", "utf-8")
-        response = RestResponse(data, content_type="image/png")
+        response = RestResponse(data, content_type=IMAGE_PNG)
         self.assertEqual(data, await response.content())
-        self.assertEqual("image/png", response.content_type)
+        self.assertEqual(IMAGE_PNG, response.content_type)
 
 
 if __name__ == "__main__":

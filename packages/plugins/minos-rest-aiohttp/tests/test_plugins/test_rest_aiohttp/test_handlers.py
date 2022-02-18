@@ -37,6 +37,8 @@ from tests.utils import (
     BASE_PATH,
 )
 
+APPLICATION_JSON = "application/json"
+
 
 class _Cls:
     @staticmethod
@@ -83,14 +85,14 @@ class TestRestHandler(PostgresAsyncTestCase):
         response = await handler(json_mocked_request({"foo": "bar"}))
         self.assertIsInstance(response, web.Response)
         self.assertEqual(orjson.dumps({"foo": "bar"}), response.body)
-        self.assertEqual("application/json", response.content_type)
+        self.assertEqual(APPLICATION_JSON, response.content_type)
 
     async def test_get_callback_status(self):
         handler = self.handler.get_callback(_Cls._fn_status)
         response = await handler(json_mocked_request(203))
         self.assertIsInstance(response, web.Response)
         self.assertEqual(None, response.body)
-        self.assertEqual("application/json", response.content_type)
+        self.assertEqual(APPLICATION_JSON, response.content_type)
         self.assertEqual(203, response.status)
 
     async def test_get_callback_none(self):
@@ -98,7 +100,7 @@ class TestRestHandler(PostgresAsyncTestCase):
         response = await handler(mocked_request())
         self.assertIsInstance(response, web.Response)
         self.assertEqual(None, response.text)
-        self.assertEqual("application/json", response.content_type)
+        self.assertEqual(APPLICATION_JSON, response.content_type)
 
     async def test_get_callback_raises_response(self):
         handler = self.handler.get_callback(_Cls._fn_raises_response)
