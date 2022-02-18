@@ -153,6 +153,21 @@ class TestFieldDiffContainer(MinosTestCase):
         expected = f"FieldDiffContainer(doors=[{fields[0]}, {fields[1]}], color={fields[2]})"
         self.assertEqual(expected, repr(difference))
 
+    def test_repr_items_reserved_word(self):
+        fields = [
+            FieldDiff("items", str, "red"),
+        ]
+        difference = FieldDiffContainer(fields)
+        expected = f"FieldDiffContainer(items={fields[0]})"
+        self.assertEqual(expected, repr(difference))
+
+    def test_repr_to_avro_bytes_reserved_word(self):
+        fields = [
+            FieldDiff("to_avro_bytes", str, "red"),
+        ]
+        difference = FieldDiffContainer(fields)
+        expected = f"FieldDiffContainer(to_avro_bytes={fields[0]})"
+        self.assertEqual(expected, repr(difference))
 
 class TestFieldDiffContainerAccessors(unittest.TestCase):
     def setUp(self) -> None:
