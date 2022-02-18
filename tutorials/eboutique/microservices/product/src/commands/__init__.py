@@ -1,3 +1,0 @@
-from .services import (
-    ProductCommandService,
-)
