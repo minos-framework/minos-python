@@ -230,6 +230,9 @@ class Model(Mapping):
             raise KeyError(str(exc))
 
     def __getitem__(self, item: str) -> Any:
+        if item in dir(self) and callable(getattr(self, item)):
+            return self.__getattr__(item)
+
         try:
             return getattr(self, item)
         except AttributeError as exc:
