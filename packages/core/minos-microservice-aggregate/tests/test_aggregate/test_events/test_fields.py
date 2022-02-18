@@ -169,6 +169,7 @@ class TestFieldDiffContainer(MinosTestCase):
         expected = f"FieldDiffContainer(to_avro_bytes={fields[0]})"
         self.assertEqual(expected, repr(difference))
 
+
 class TestFieldDiffContainerAccessors(unittest.TestCase):
     def setUp(self) -> None:
         self.fields_diff = FieldDiffContainer(
