@@ -1,16 +1,5 @@
-from sqlalchemy import (
-    Column,
-    Float,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-)
-from sqlalchemy.orm import (
-    backref,
-    declarative_base,
-    relationship,
-)
+from sqlalchemy import Column, String, Text, Float, Integer, ForeignKey
+from sqlalchemy.orm import declarative_base, relationship, backref
 
 Base = declarative_base()
 

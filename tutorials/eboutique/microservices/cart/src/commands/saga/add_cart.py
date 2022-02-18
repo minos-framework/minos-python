@@ -1,13 +1,6 @@
-from src import (
-    Cart,
-    CartItem,
-)
+from minos.saga import Saga, SagaContext, SagaRequest
 
-from minos.saga import (
-    Saga,
-    SagaContext,
-    SagaRequest,
-)
+from src import Cart, CartItem
 
 
 def _raise_error():

@@ -1,6 +1,7 @@
-from .repository import (
-    CartQueryRepository,
-)
 from .services import (
     CartQueryService,
+)
+
+from .repository import (
+    CartQueryRepository,
 )

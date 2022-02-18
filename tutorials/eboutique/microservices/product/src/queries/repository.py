@@ -1,24 +1,10 @@
-from sqlalchemy import (
-    create_engine,
-)
-from sqlalchemy.orm import (
-    sessionmaker,
-)
-
+from minos.common import MinosSetup, MinosConfig
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from minos.aggregate import (
     Event,
 )
-from minos.common import (
-    MinosConfig,
-    MinosSetup,
-)
-
-from .models import (
-    Base,
-    Categories,
-    Price,
-    Product,
-)
+from .models import Base, Product, Price, Categories
 
 
 class ProductQueryRepository(MinosSetup):

@@ -1,10 +1,4 @@
-from dependency_injector.wiring import (
-    Provide,
-)
-from src.queries.repository import (
-    ProductQueryRepository,
-)
-
+from dependency_injector.wiring import Provide
 from minos.aggregate import (
     Event,
 )
@@ -16,6 +10,8 @@ from minos.networks import (
     Response,
     enroute,
 )
+
+from src.queries.repository import ProductQueryRepository
 
 
 class ProductQueryService(QueryService):

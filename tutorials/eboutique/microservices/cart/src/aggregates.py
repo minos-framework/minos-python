@@ -1,18 +1,9 @@
-from typing import (
-    Optional,
-)
+from typing import Optional
 from uuid import (
     UUID,
 )
 
-from minos.aggregate import (
-    Aggregate,
-    Entity,
-    EntitySet,
-    ExternalEntity,
-    Ref,
-    RootEntity,
-)
+from minos.aggregate import Aggregate, RootEntity, Entity, ExternalEntity, EntitySet, Ref
 
 
 class Price(ExternalEntity):

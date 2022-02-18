@@ -2,13 +2,7 @@ from uuid import (
     UUID,
 )
 
-from minos.aggregate import (
-    Aggregate,
-    Entity,
-    RootEntity,
-    ValueObject,
-    ValueObjectSet,
-)
+from minos.aggregate import Aggregate, RootEntity, Entity, ValueObject, ValueObjectSet
 
 
 class Price(Entity):

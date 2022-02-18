@@ -10,12 +10,9 @@ from minos.networks import (
 from minos.saga import (
     SagaContext,
 )
-
+from .saga.add_cart import ADD_CART_ITEM
 from ..aggregates import (
     CartAggregate,
-)
-from .saga.add_cart import (
-    ADD_CART_ITEM,
 )
 
 
