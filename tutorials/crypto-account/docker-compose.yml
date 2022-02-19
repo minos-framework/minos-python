@@ -1,3 +1,20 @@
 version: '3.9'
 volumes: {}
-services: {}
+services:
+  microservice-coinbase:
+    restart: always
+    build:
+      context: microservices/coinbase
+      target: production
+    environment: &id001
+      MINOS_BROKER_QUEUE_HOST: postgres
+      MINOS_BROKER_HOST: kafka
+      MINOS_REPOSITORY_HOST: postgres
+      MINOS_SNAPSHOT_HOST: postgres
+      MINOS_DISCOVERY_HOST: discovery
+    depends_on: &id002
+    - postgres
+    - kafka
+    - discovery
+x-microservice-environment: *id001
+x-microservice-depends-on: *id002
