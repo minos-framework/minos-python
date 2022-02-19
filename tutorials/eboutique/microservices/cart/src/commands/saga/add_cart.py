@@ -1,3 +1,8 @@
+from src import (
+    Cart,
+    CartItem,
+)
+
 from minos.saga import (
     Saga,
     SagaContext,
@@ -8,7 +13,6 @@ from minos.common import (
     ModelType,
 )
 from src.aggregates import CartAggregate
-
 
 def _raise_error():
     return ValueError("The Product uid does not exist")
@@ -38,3 +42,16 @@ async def _add_item_to_cart(context: SagaContext):
 ADD_CART_ITEM = (
     Saga().remote_step(_get_product).on_success(_get_product_success).commit(_add_item_to_cart)
 )
+
+async def _add_item_to_cart(context: SagaContext):
+    cart = context["cart_uid"]
+    product = context["product_uid"]
+    quantity = context["quantity"]
+    cart = await Cart.get(cart)
+    cart_item = await CartItem(product=product, cart=cart, quantity=quantity)
+    cart.items.add(cart_item)
+    await cart.save()
+    return SagaContext(cart=cart)
+
+
+ADD_CART_ITEM = Saga().remote_step(_get_product).on_error(_raise_error).commit(_add_item_to_cart)

@@ -1,3 +1,10 @@
+from dependency_injector.wiring import (
+    Provide,
+)
+from src.queries.repository import (
+    CartQueryRepository,
+)
+
 from minos.aggregate import (
     Event,
 )
@@ -10,12 +17,10 @@ from minos.networks import (
     enroute,
 )
 
-from dependency_injector.wiring import Provide
-from src.queries.repository import CartQueryRepository
-
 
 class CartQueryService(QueryService):
     """CartQueryService class."""
+
     repository: CartQueryRepository = Provide["cart_repository"]
 
     @enroute.rest.query("/cart/{uuid}", "GET")
@@ -26,8 +31,8 @@ class CartQueryService(QueryService):
         :return: A response exception.
         """
         params = await request.params()
-        cart_obj = self.repository.get(params['uuid'])
-        return Response(cart_obj)
+        cart_obj = self.repository.get(params["uuid"])
+        raise Response(cart_obj)
 
     @enroute.broker.event("CartCreated")
     async def cart_created(self, request: Request) -> None:

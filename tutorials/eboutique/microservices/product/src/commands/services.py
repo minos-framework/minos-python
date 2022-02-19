@@ -55,7 +55,7 @@ class ProductCommandService(CommandService):
         """
         try:
             params = request.params()  # get the url params [uuid]
-            uuid = params['uuid']
+            uuid = params["uuid"]
             uuid = await ProductAggregate.deleteProduct(uuid)
             return Response({"uuid": uuid})
         except Exception as exc:

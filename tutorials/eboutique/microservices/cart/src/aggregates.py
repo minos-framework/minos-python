@@ -1,15 +1,17 @@
-from typing import Optional
+from typing import (
+    Optional,
+)
 from uuid import (
     UUID,
 )
 
 from minos.aggregate import (
     Aggregate,
-    RootEntity,
     Entity,
-    ExternalEntity,
     EntitySet,
-    Ref
+    ExternalEntity,
+    Ref,
+    RootEntity,
 )
 
 
@@ -30,6 +32,7 @@ class CartItem(Entity):
 
 class Cart(RootEntity):
     user: str
+    """Cart RootEntity class."""
     status: str
     products: Optional[EntitySet[CartItem]]
 

@@ -4,7 +4,7 @@ __version__ = "0.1.0"
 
 from .aggregates import (
     Cart,
-    CartItem
+    CartItem,
 )
 from .cli import (
     main,
@@ -13,6 +13,6 @@ from .commands import (
     CartCommandService,
 )
 from .queries import (
+    CartQueryRepository,
     CartQueryService,
-    CartQueryRepository
 )
