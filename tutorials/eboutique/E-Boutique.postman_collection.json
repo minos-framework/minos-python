@@ -1,0 +1,149 @@
+{
+	"info": {
+		"_postman_id": "d9369473-ae78-49db-af1a-e2ef6da183fe",
+		"name": "E-Boutique",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Product",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Product One\",\n    \"description\": \"Product One in our catalog\",\n    \"picture\": \"images / product.jpeg\",\n    \"categories\": [\n        {\n            \"title\": \"tshirt\"\n        },\n        {\n            \"title\": \"casual\"\n        }\n    ],\n    \"price\": {\n        \"currency\": \"EUR\",\n        \"units\": 59\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5566/product",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5566",
+							"path": [
+								"product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Product",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5566/product/f93a782d-4487-4314-968a-0b43fafb73cc",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5566",
+							"path": [
+								"product",
+								"f93a782d-4487-4314-968a-0b43fafb73cc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5566/products",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5566",
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cart",
+			"item": [
+				{
+					"name": "Items",
+					"item": [
+						{
+							"name": "Create",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"product\": \"f93a782d-4487-4314-968a-0b43fafb73cc\",\n    \"quantity\": 2\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:5566/cart/2d2be9b3-8b85-475b-ac1e-b30a974550c6/item",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "5566",
+									"path": [
+										"cart",
+										"2d2be9b3-8b85-475b-ac1e-b30a974550c6",
+										"item"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": \"a6ef81f1-8145-46e3-bd54-52713958cae3\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5566/cart",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5566",
+							"path": [
+								"cart"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
