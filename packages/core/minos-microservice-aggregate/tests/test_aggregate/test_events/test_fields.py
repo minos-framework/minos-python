@@ -154,6 +154,8 @@ class TestFieldDiffContainer(MinosTestCase):
         self.assertEqual(expected, repr(difference))
 
     def test_repr_items_reserved_word(self):
+        """Issue #201"""
+
         fields = [
             FieldDiff("items", str, "red"),
         ]
@@ -162,6 +164,8 @@ class TestFieldDiffContainer(MinosTestCase):
         self.assertEqual(expected, repr(difference))
 
     def test_repr_to_avro_bytes_reserved_word(self):
+        """Issue #201"""
+
         fields = [
             FieldDiff("to_avro_bytes", str, "red"),
         ]
