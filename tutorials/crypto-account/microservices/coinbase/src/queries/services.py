@@ -32,7 +32,7 @@ class CoinbaseQueryService(QueryService):
         """
         raise ResponseException("Not implemented yet!")
 
-    @enroute.broker.event("CreateCoinbaseWallet")
+    @enroute.broker.event("CoinbaseCreated")
     async def coinbase_created(self, request: Request) -> None:
         """Handle the Coinbase creation events.
 
@@ -40,8 +40,8 @@ class CoinbaseQueryService(QueryService):
         :return: This method does not return anything.
         """
         event: Event = await request.content()
-
-        print(event)
+        self.repository.addWallet(uuid=event['uuid'], user=event.get_one('user'), api_key=event.get_one('api_key'),
+                                  api_secret=event.get_one('api_secret'))
 
     @enroute.broker.event("CoinbaseUpdated")
     async def coinbase_updated(self, request: Request) -> None:

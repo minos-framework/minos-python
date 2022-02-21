@@ -1,5 +1,8 @@
 version: '3.9'
-volumes: {}
+volumes:
+  postgres: {}
+  zookeeper: {}
+  kafka: {}
 services:
   microservice-coinbase:
     restart: always
@@ -16,5 +19,35 @@ services:
     - postgres
     - kafka
     - discovery
+  postgres:
+    restart: always
+    build: external/postgres
+    command: postgres -c 'max_connections=200'
+    ports:
+    - '5432'
+    volumes:
+    - postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: minos
+      POSTGRES_PASSWORD: min0s
+  zookeeper:
+    restart: always
+    image: digitalwonderland/zookeeper:latest
+    volumes:
+    - zookeeper:/var/lib/zookeeper
+  kafka:
+    restart: always
+    image: wurstmeister/kafka:latest
+    ports:
+    - '9092'
+    depends_on:
+    - zookeeper
+    volumes:
+    - kafka:/kafka/kafka-logs
+    environment:
+      KAFKA_LOG_DIRS: /kafka/kafka-logs
+      KAFKA_DELETE_TOPIC_ENABLE: 'true'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: kafka
 x-microservice-environment: *id001
 x-microservice-depends-on: *id002

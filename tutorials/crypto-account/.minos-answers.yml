@@ -1,3 +1,7 @@
+broker: kafka
+broker_deploy: self-hosted
+database: postgres
+postgres_deploy: self-hosted
 project_deploy: docker-compose
 project_description: The Crypto Money Account Manager
 project_name: crypto-account
