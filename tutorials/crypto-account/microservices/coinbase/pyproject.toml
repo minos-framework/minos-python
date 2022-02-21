@@ -15,7 +15,8 @@ minos-microservice-cqrs = "^0.5.0"
 minos-broker-kafka = "^0.5.0"
 minos-discovery-minos = "^0.5.0"
 typer = "^0.3.2"
-SQLAlchemy = "^1.4.32"
+SQLAlchemy = "^1.4.31"
+ccxt = "^1.73.44"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"

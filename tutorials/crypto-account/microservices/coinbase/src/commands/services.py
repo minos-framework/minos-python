@@ -16,8 +16,8 @@ from ..aggregates import (
 class CoinbaseCommandService(CommandService):
     """CoinbaseCommandService class."""
 
-    @enroute.rest.command("/coinbases", "POST")
-    @enroute.broker.command("CreateCoinbase")
+    @enroute.rest.command("/coinbase", "POST")
+    @enroute.broker.command("CreateCoinbaseWallet")
     async def create_coinbase(self, request: Request) -> Response:
         """Create a new ``Coinbase`` instance.
 
@@ -25,6 +25,7 @@ class CoinbaseCommandService(CommandService):
         :return: A ``Response`` instance.
         """
         try:
+            content = await request.content()
             uuid = await CoinbaseAggregate.create()
             return Response({"uuid": uuid})
         except Exception as exc:

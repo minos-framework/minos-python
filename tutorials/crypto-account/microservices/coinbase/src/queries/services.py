@@ -1,6 +1,10 @@
 from minos.aggregate import (
     Event,
 )
+
+from dependency_injector.wiring import (
+    Provide,
+)
 from minos.cqrs import (
     QueryService,
 )
@@ -11,9 +15,13 @@ from minos.networks import (
     enroute,
 )
 
+from src import CoinbaseQueryServiceRepository
+
 
 class CoinbaseQueryService(QueryService):
     """CoinbaseQueryService class."""
+
+    repository: CoinbaseQueryServiceRepository = Provide["coinbase_repository"]
 
     @enroute.rest.query("/coinbases", "GET")
     async def get_coinbase(self, request: Request) -> Response:
@@ -24,7 +32,7 @@ class CoinbaseQueryService(QueryService):
         """
         raise ResponseException("Not implemented yet!")
 
-    @enroute.broker.event("CoinbaseCreated")
+    @enroute.broker.event("CreateCoinbaseWallet")
     async def coinbase_created(self, request: Request) -> None:
         """Handle the Coinbase creation events.
 
@@ -32,6 +40,7 @@ class CoinbaseQueryService(QueryService):
         :return: This method does not return anything.
         """
         event: Event = await request.content()
+
         print(event)
 
     @enroute.broker.event("CoinbaseUpdated")

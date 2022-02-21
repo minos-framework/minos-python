@@ -1,7 +1,7 @@
 from minos.common import MinosSetup, MinosConfig
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from src.queries.models import Base
+from src.queries.models import Base, Wallet
 
 
 class CoinbaseQueryServiceRepository(MinosSetup):
@@ -17,6 +17,9 @@ class CoinbaseQueryServiceRepository(MinosSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CoinbaseQueryRepository:
         return cls(*args, **(config.query_repository._asdict()) | kwargs)
 
-    @property
-    def session(self):
-        return self.session
+    def addWallet(self, user: str, api_key: str, api_secret: str):
+        wallet = Wallet()
+        wallet.user = user
+        wallet.api_key = api_key
+        wallet.api_secret = api_secret
+        self.session.add(wallet)

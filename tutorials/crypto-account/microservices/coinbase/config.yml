@@ -12,6 +12,7 @@ service:
     snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
     saga_manager: minos.saga.SagaManager
     discovery: minos.networks.DiscoveryConnector
+    coinbase_repository: src.CoinbaseQueryServiceRepository
   services:
     - minos.networks.BrokerHandlerService
     - minos.networks.RestService
