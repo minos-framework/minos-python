@@ -1,13 +1,20 @@
+from minos.common import (
+    ModelType,
+)
+from minos.saga import (
+    Saga,
+    SagaContext,
+    SagaRequest,
+    SagaResponse,
+)
+
 from src import (
     Cart,
     CartItem,
 )
-
-from minos.saga import Saga, SagaContext, SagaRequest, SagaResponse
-from minos.common import (
-    ModelType,
+from src.aggregates import (
+    CartAggregate,
 )
-from src.aggregates import CartAggregate
 
 
 # noinspection PyUnusedLocal
