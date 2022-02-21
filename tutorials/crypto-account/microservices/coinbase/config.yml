@@ -47,8 +47,8 @@ repository:
   port: 5432
 query_repository:
   database: coinbase_query_db
-  user: postgres
-  password: ""
+  user: minos
+  password: min0s
   host: localhost
   port: 5432
 snapshot:

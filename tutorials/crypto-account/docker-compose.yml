@@ -3,6 +3,7 @@ volumes:
   postgres: {}
   zookeeper: {}
   kafka: {}
+  redis: {}
 services:
   microservice-coinbase:
     restart: always
@@ -49,5 +50,30 @@ services:
       KAFKA_DELETE_TOPIC_ENABLE: 'true'
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_HOST_NAME: kafka
+  apigateway:
+    restart: always
+    build: external/apigateway
+    ports:
+    - 5566:5566
+    depends_on:
+    - discovery
+    environment:
+      PYTHONPATH: /api_gateway
+      DISCOVERY_SERVICE_HOST: discovery
+      API_GATEWAY_DISCOVERY_HOST: discovery
+  discovery:
+    restart: always
+    build: external/discovery
+    ports:
+    - '5567'
+    depends_on:
+    - redis
+    environment:
+      DISCOVERY_SERVICE_DB_HOST: redis
+  redis:
+    restart: always
+    image: redis:latest
+    volumes:
+    - redis:/data
 x-microservice-environment: *id001
 x-microservice-depends-on: *id002
