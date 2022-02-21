@@ -43,8 +43,8 @@ class CartAggregate(Aggregate[Cart]):
     @staticmethod
     async def createCart(data: {}) -> UUID:
         """Create a new Cart."""
-        data['status'] = "open"
-        cart = await Cart.create(user=data['user'], status=data['status'], products=EntitySet())
+        data["status"] = "open"
+        cart = await Cart.create(user=data["user"], status=data["status"], products=EntitySet())
         return cart.uuid
 
     @staticmethod
@@ -55,4 +55,3 @@ class CartAggregate(Aggregate[Cart]):
         cart.products.add(cart_item)
         await cart.save()
         return cart
-

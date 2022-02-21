@@ -1,18 +1,20 @@
-from src import (
-    Cart,
-    CartItem,
+from minos.common import (
+    ModelType,
 )
-
 from minos.saga import (
     Saga,
     SagaContext,
     SagaRequest,
-    SagaResponse
+    SagaResponse,
 )
-from minos.common import (
-    ModelType,
+
+from src import (
+    Cart,
+    CartItem,
 )
-from src.aggregates import CartAggregate
+from src.aggregates import (
+    CartAggregate,
+)
 
 
 # noinspection PyUnusedLocal
@@ -25,7 +27,7 @@ ProductGet = ModelType.build("ProductGet", {"uid": str})
 
 def _get_product(context: SagaContext):
     # check if the product exist
-    return SagaRequest("GetProductById", ProductGet(uid=context['product_uid']))
+    return SagaRequest("GetProductById", ProductGet(uid=context["product_uid"]))
 
 
 async def _get_product_success(context: SagaContext, response: SagaResponse) -> SagaContext:
@@ -42,8 +44,6 @@ async def _add_item_to_cart(context: SagaContext):
     return SagaContext(cart=c)
 
 
-ADD_CART_ITEM = Saga()\
-    .remote_step(_get_product)\
-        .on_error(_raise)\
-        .on_success(_get_product_success)\
-    .commit(_add_item_to_cart)
+ADD_CART_ITEM = (
+    Saga().remote_step(_get_product).on_error(_raise).on_success(_get_product_success).commit(_add_item_to_cart)
+)
