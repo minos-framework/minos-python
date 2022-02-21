@@ -17,7 +17,6 @@ class CoinbaseCommandService(CommandService):
     """CoinbaseCommandService class."""
 
     @enroute.rest.command("/coinbase", "POST")
-    @enroute.broker.command("CreateCoinbaseWallet")
     async def create_coinbase(self, request: Request) -> Response:
         """Create a new ``Coinbase`` instance.
 
