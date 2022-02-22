@@ -11,18 +11,23 @@ from minos.aggregate import (
     EntitySet,
     ExternalEntity,
     Ref,
-    RootEntity,
+    RootEntity, ValueObject, ValueObjectSet,
 )
 
 
-class Price(ExternalEntity):
+class Price(Entity):
     currency: str
     units: int
 
 
+class Category(ValueObject):
+    title: str
+
+
 class Product(ExternalEntity):
     title: str
-    price: Ref[Price]
+    price: Price
+    categories: ValueObjectSet[Category]
 
 
 class CartItem(Entity):
