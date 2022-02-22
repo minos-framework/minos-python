@@ -1,10 +1,6 @@
 from dependency_injector.wiring import (
     Provide,
 )
-from src.queries.repository import (
-    CartQueryRepository,
-)
-
 from minos.aggregate import (
     Event,
 )
@@ -15,6 +11,10 @@ from minos.networks import (
     Request,
     Response,
     enroute,
+)
+
+from src.queries.repository import (
+    CartQueryRepository,
 )
 
 
