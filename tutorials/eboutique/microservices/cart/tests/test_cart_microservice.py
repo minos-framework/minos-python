@@ -39,7 +39,7 @@ def test_add_cart():
     add_c_response = requests.post(
         "http://localhost:5566/cart",
         json={
-            "customer": "a6ef81f1-8145-46e3-bd54-52713958cae3",
+            "user": "a6ef81f1-8145-46e3-bd54-52713958cae3",
         },
     )
     assert add_c_response.status_code == 200

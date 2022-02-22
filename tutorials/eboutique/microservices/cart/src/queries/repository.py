@@ -41,6 +41,7 @@ class CartQueryRepository(MinosSetup):
         cart.status = event.get_one("status")
         cart.user = event.get_one("user")
         self.session.add(cart)
+        self.session.commit()
 
     def add_item(self, event: Event):
         ...
