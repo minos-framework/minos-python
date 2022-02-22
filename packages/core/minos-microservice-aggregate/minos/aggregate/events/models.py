@@ -78,9 +78,9 @@ class Event(DeclarativeModel):
 
     def get_one(self, name: str, return_diff: bool = False) -> Union[FieldDiff, Any, list[FieldDiff], list[Any]]:
         warnings.warn("get_one() method is deprecated by get_attr() and will be removed soon.", DeprecationWarning)
-        return self.get_attr(name, return_diff)
+        return self.get_field(name, return_diff)
 
-    def get_attr(self, name: str, return_diff: bool = False) -> Union[FieldDiff, Any, list[FieldDiff], list[Any]]:
+    def get_field(self, name: str, return_diff: bool = False) -> Union[FieldDiff, Any, list[FieldDiff], list[Any]]:
         """Get first field diff with given name.
 
         :param name: The name of the field diff.
@@ -92,9 +92,9 @@ class Event(DeclarativeModel):
 
     def get_all(self, return_diff: bool = False) -> dict[str, Union[FieldDiff, Any, list[FieldDiff], list[Any]]]:
         warnings.warn("get_all() method is deprecated by get_attrs() and will be removed soon.", DeprecationWarning)
-        return self.get_attrs(return_diff)
+        return self.get_fields(return_diff)
 
-    def get_attrs(self, return_diff: bool = False) -> dict[str, Union[FieldDiff, Any, list[FieldDiff], list[Any]]]:
+    def get_fields(self, return_diff: bool = False) -> dict[str, Union[FieldDiff, Any, list[FieldDiff], list[Any]]]:
         """Get all field diffs with given name.
 
         :param return_diff: If ``True`` the result is returned as field diff instances, otherwise the result is
