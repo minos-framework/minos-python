@@ -11,7 +11,9 @@ from minos.aggregate import (
     EntitySet,
     ExternalEntity,
     Ref,
-    RootEntity, ValueObject, ValueObjectSet,
+    RootEntity,
+    ValueObject,
+    ValueObjectSet,
 )
 
 
