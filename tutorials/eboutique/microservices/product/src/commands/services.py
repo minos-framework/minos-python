@@ -24,8 +24,8 @@ class ProductCommandService(CommandService):
         :return: A ``Response`` instance.
         """
         try:
-            content = request.content()  # get the request payload
-            product = await ProductAggregate.getProduct(content["uid"])
+            content = await request.content()  # get the request payload
+            product = await ProductAggregate.getProduct(content['uid'])
             return Response(product)
         except Exception as exc:
             raise ResponseException(f"An error occurred during the Query process: {exc}")
