@@ -7,6 +7,6 @@ def test_add_coinbase_account():
         json={
             "user": "a6ef81f1-8145-46e3-bd54-52713958cae3",
             "api_key": "6ribNaFzwywbwWaD",
-            "api_secret": "r36KWJEtzA3eN4BDkdOYenCOK7QVsfpI"
+            "api_secret": "r36KWJEtzA3eN4BDkdOYenCOK7QVsfpI",
         },
     )

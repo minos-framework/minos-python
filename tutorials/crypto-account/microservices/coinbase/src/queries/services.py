@@ -40,8 +40,12 @@ class CoinbaseQueryService(QueryService):
         :return: This method does not return anything.
         """
         event: Event = await request.content()
-        self.repository.addWallet(uuid=event['uuid'], user=event.get_one('user'), api_key=event.get_one('api_key'),
-                                  api_secret=event.get_one('api_secret'))
+        self.repository.addWallet(
+            uuid=event["uuid"],
+            user=event.get_one("user"),
+            api_key=event.get_one("api_key"),
+            api_secret=event.get_one("api_secret"),
+        )
 
     @enroute.broker.event("CoinbaseUpdated")
     async def coinbase_updated(self, request: Request) -> None:

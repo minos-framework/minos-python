@@ -25,8 +25,9 @@ class CoinbaseCommandService(CommandService):
         """
         try:
             content = await request.content()
-            uuid = await CoinbaseAggregate.create(user=content['user'],
-                                                  api_key=content['api_key'], api_secret=content['api_secret'])
+            uuid = await CoinbaseAggregate.create(
+                user=content["user"], api_key=content["api_key"], api_secret=content["api_secret"]
+            )
             return Response({"uuid": uuid})
         except Exception as exc:
             raise ResponseException(f"An error occurred during Coinbase creation: {exc}")
