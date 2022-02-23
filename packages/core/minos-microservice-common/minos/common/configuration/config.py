@@ -26,7 +26,6 @@ QUEUE = namedtuple("Queue", "database user password host port records retry")
 SERVICE = namedtuple("Service", "name aggregate injections services")
 STORAGE = namedtuple("Storage", "path")
 DECORATOR_ENTRY = namedtuple("DecoratorEntry", "name location")
-DECORATORS = namedtuple("Decorators", "name path")
 
 SAGA = namedtuple("Saga", "storage")
 REST = namedtuple("Rest", "host port")
