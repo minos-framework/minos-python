@@ -10,6 +10,7 @@ from minos.aggregate import (
 
 class Coinbase(RootEntity):
     """Coinbase RootEntity class."""
+
     user: str
     api_key: str
     api_secret: str
