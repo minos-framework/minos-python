@@ -104,6 +104,14 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("localhost", discovery.host)
         self.assertEqual(8080, discovery.port)
 
+    def test_config_decorators(self):
+        config = MinosConfig(path=self.config_file_path, with_environment=False)
+        decorators = config.decorators
+        self.assertIsInstance(decorators, list)
+        decorator = decorators[0]
+        self.assertEqual(decorator.name, "rest")
+        self.assertEqual(decorator.location, "minos.plugins.rest_aiohttp.RestEnroute")
+
 
 if __name__ == "__main__":
     unittest.main()

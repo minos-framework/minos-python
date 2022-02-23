@@ -45,3 +45,8 @@ discovery:
     client: minos
     host: localhost
     port: 8080
+decorators:
+    - name: rest
+      location: minos.plugins.rest_aiohttp.RestEnroute
+    - name: other
+      location: minos.plugins.other.AnotherClass

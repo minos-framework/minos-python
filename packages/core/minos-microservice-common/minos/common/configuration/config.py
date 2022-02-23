@@ -25,6 +25,8 @@ BROKER = namedtuple("Broker", "host port queue")
 QUEUE = namedtuple("Queue", "database user password host port records retry")
 SERVICE = namedtuple("Service", "name aggregate injections services")
 STORAGE = namedtuple("Storage", "path")
+DECORATOR_ENTRY = namedtuple("DecoratorEntry", "name location")
+DECORATORS = namedtuple("Decorators", "name path")
 
 SAGA = namedtuple("Saga", "storage")
 REST = namedtuple("Rest", "host port")
@@ -309,3 +311,13 @@ class MinosConfig(MinosConfigAbstract):
         host = self._get("discovery.host")
         port = self._get("discovery.port")
         return DISCOVERY(client=client, host=host, port=port)
+
+    @property
+    def decorators(self) -> list[DECORATOR_ENTRY]:
+        info = self._get("decorators")
+        services = [self._decorator_entry(service) for service in info]
+        return services
+
+    @staticmethod
+    def _decorator_entry(service: dict[str, Any]) -> DECORATOR_ENTRY:
+        return DECORATOR_ENTRY(name=service["name"], location=service["location"])
