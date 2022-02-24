@@ -60,7 +60,7 @@ class CartQueryRepository(MinosSetup):
     def get(self, uuid):
         cart_obj = self.session.query(Cart).options(subqueryload(Cart.items)).filter(Cart.uuid == uuid).first()
         if cart_obj is not None:
-            row_as_dict = {column: str(getattr(cart_obj, column)) for column in cart_obj.__table__.c.keys()}
+            row_as_dict = {str(column): str(getattr(cart_obj, column)) for column in cart_obj.__table__.c.keys()}
             return row_as_dict
         else:
             return None

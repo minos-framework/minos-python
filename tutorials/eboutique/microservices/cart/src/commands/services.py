@@ -36,8 +36,6 @@ class CartCommandService(CommandService):
         except Exception as exc:
             raise ResponseException(f"An error occurred during Cart creation:{content} {exc}")
 
-        return Response({"uuid": uuid})
-
     @enroute.rest.command("/cart/{uuid}/item", "POST")
     async def create_cart_item(self, request: Request) -> Response:
         """Create a new ``Cart`` instance.
