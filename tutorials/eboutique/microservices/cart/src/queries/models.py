@@ -11,11 +11,12 @@ from sqlalchemy.orm import (
     relationship,
 )
 from sqlalchemy.dialects.postgresql import UUID as UUID_PG
+from sqlalchemy_serializer import SerializerMixin
 
 Base = declarative_base()
 
 
-class Product(Base):
+class Product(Base, SerializerMixin):
     __tablename__ = "product"
     id = Column(Integer, primary_key=True)
     uuid = Column("uuid", UUID_PG(as_uuid=True))
@@ -23,7 +24,7 @@ class Product(Base):
     picture = Column(String(120))
 
 
-class CartItem(Base):
+class CartItem(Base, SerializerMixin):
     __tablename__ = "items"
 
     id = Column(Integer, primary_key=True)
@@ -35,7 +36,7 @@ class CartItem(Base):
     product = relationship("Product", backref=backref("items"))
 
 
-class Cart(Base):
+class Cart(Base, SerializerMixin):
     __tablename__ = "cart"
 
     id = Column(Integer, primary_key=True)

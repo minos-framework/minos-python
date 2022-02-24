@@ -35,7 +35,8 @@ class CartQueryService(QueryService):
         :return: A response exception.
         """
         params = await request.params()
-        cart_obj = self.repository.get(params["uuid"])
+        cart_obj = self.repository.get_items_cart(params["uuid"])
+        logger.warning(cart_obj)
         return Response(cart_obj)
 
     @enroute.broker.event("CartCreated")
@@ -58,7 +59,6 @@ class CartQueryService(QueryService):
         event: Event = await request.content()
 
         cart_uuid = event['uuid']
-        logger.warning(type(cart_uuid))
         items = event.get_all()
         self.repository.add_item(cart_uuid=cart_uuid, product=items['products'][0]['product'],
                                  item=items['products'][0])

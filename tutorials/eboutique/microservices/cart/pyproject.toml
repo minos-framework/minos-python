@@ -17,6 +17,7 @@ minos-discovery-minos = "^0.5.0"
 typer = "^0.3.2"
 SQLAlchemy = "^1.4.31"
 requests = "^2.27.1"
+SQLAlchemy-serializer = "^1.4.1"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"

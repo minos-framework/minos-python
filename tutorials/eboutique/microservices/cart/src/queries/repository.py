@@ -1,3 +1,5 @@
+import logging
+
 from sqlalchemy import (
     create_engine,
 )
@@ -18,6 +20,7 @@ from .models import (
     Cart, Product, CartItem,
 )
 
+logger = logging.getLogger(__name__)
 
 class CartQueryRepository(MinosSetup):
     def __init__(self, *args, **kwargs):
@@ -43,6 +46,8 @@ class CartQueryRepository(MinosSetup):
         self.session.commit()
 
     def add_item(self, cart_uuid: str, product: dict, item: dict ):
+        logger.warning(product)
+        logger.warning(item)
         cart_obj = self.session.query(Cart).filter(Cart.uuid == cart_uuid).first()
         if cart_obj is not None:
             # check if the product already exist
@@ -58,9 +63,16 @@ class CartQueryRepository(MinosSetup):
             raise Exception
 
     def get(self, uuid):
-        cart_obj = self.session.query(Cart).options(subqueryload(Cart.items)).filter(Cart.uuid == uuid).first()
+        cart_obj = self.session.query(Cart).filter(Cart.uuid == uuid).first()
         if cart_obj is not None:
-            row_as_dict = {str(column): str(getattr(cart_obj, column)) for column in cart_obj.__table__.c.keys()}
-            return row_as_dict
+            return cart_obj.to_dict()
+        else:
+            return None
+
+    def get_items_cart(self, cart_uuid):
+        product = self.session.query(Cart).filter(Cart.uuid == cart_uuid).first()
+        cart_obj = self.session.query(CartItem).filter(CartItem.product == product).all()
+        if len(cart_obj) > 0:
+            return cart_obj
         else:
             return None
