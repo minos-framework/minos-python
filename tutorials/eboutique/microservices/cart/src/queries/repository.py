@@ -51,7 +51,7 @@ class CartQueryRepository(MinosSetup):
                 product_obj = Product(uuid=product['uuid'], title=product['title'], picture=product['picture'])
                 self.session.add(product_obj)
                 self.session.commit()
-            item_obj = CartItem(uuid=item['uuid'], quantity=item['quantity'], cart=cart_obj, productÇ=product_obj)
+            item_obj = CartItem(uuid=item['uuid'], quantity=item['quantity'], cart=cart_obj, product=product_obj)
             self.session.add(item_obj)
             self.session.commit()
         else:
