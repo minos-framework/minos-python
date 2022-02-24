@@ -8,7 +8,7 @@ from minos.networks import (
     enroute,
 )
 from minos.saga import (
-    SagaContext,
+    SagaContext, SagaStatus,
 )
 
 from ..aggregates import (
@@ -35,6 +35,7 @@ class CartCommandService(CommandService):
             return Response({"uuid": uuid})
         except Exception as exc:
             raise ResponseException(f"An error occurred during Cart creation:{content} {exc}")
+
         return Response({"uuid": uuid})
 
     @enroute.rest.command("/cart/{uuid}/item", "POST")
@@ -44,14 +45,14 @@ class CartCommandService(CommandService):
         :param request: The ``Request`` instance.
         :return: A ``Response`` instance.
         """
-        try:
-            data = await request.content()
-            params = await request.params()
+        data = await request.content()
+        params = await request.params()
 
-            saga_execution = await self.saga_manager.run(
-                ADD_CART_ITEM,
-                context=SagaContext(cart_uid=data["cart"], product_uid=params["uuid"], quantity=data["quantity"]),
-            )
-            return Response({"saga_uid": saga_execution.uuid})
-        except Exception as exc:
-            raise ResponseException(f"An error occurred during Cart creation: {exc}")
+        saga_execution = await self.saga_manager.run(
+            ADD_CART_ITEM,
+            context=SagaContext(cart_uid=params["uuid"], product_uid=data["product"], quantity=data["quantity"]),
+        )
+        if saga_execution.status == SagaStatus.Finished:
+            return Response(saga_execution.context["cart"])
+        else:
+            raise ResponseException("Error executing SAGA.")

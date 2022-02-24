@@ -1,3 +1,5 @@
+import logging
+
 from dependency_injector.wiring import (
     Provide,
 )
@@ -17,6 +19,8 @@ from minos.networks import (
     enroute,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class CartQueryService(QueryService):
     """CartQueryService class."""
@@ -32,7 +36,7 @@ class CartQueryService(QueryService):
         """
         params = await request.params()
         cart_obj = self.repository.get(params["uuid"])
-        raise Response(cart_obj)
+        return Response(cart_obj)
 
     @enroute.broker.event("CartCreated")
     async def cart_created(self, request: Request) -> None:
@@ -43,7 +47,6 @@ class CartQueryService(QueryService):
         """
         event: Event = await request.content()
         self.repository.add(event)
-        print(event)
 
     @enroute.broker.event("CartUpdated")
     async def cart_updated(self, request: Request) -> None:
@@ -53,7 +56,12 @@ class CartQueryService(QueryService):
         :return: This method does not return anything.
         """
         event: Event = await request.content()
-        print(event)
+
+        cart_uuid = event['uuid']
+        logger.warning(type(cart_uuid))
+        items = event.get_all()
+        self.repository.add_item(cart_uuid=cart_uuid, product=items['products'][0]['product'],
+                                 item=items['products'][0])
 
     @enroute.broker.event("CartDeleted")
     async def cart_deleted(self, request: Request) -> None:

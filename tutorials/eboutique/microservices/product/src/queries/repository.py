@@ -57,6 +57,7 @@ class ProductQueryRepository(MinosSetup):
 
         product.categories = product_categories
         self.session.add(product)
+        self.session.commit()
 
     def get_all(self):
         results = []

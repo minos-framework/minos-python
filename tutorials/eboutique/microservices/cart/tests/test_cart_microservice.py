@@ -1,8 +1,11 @@
+import logging
+
 import time
 
 import pytest
 import requests as requests
 
+logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def add_product():
@@ -39,7 +42,7 @@ def test_add_cart():
     add_c_response = requests.post(
         "http://localhost:5566/cart",
         json={
-            "customer": "a6ef81f1-8145-46e3-bd54-52713958cae3",
+            "user": "a6ef81f1-8145-46e3-bd54-52713958cae3",
         },
     )
     assert add_c_response.status_code == 200
@@ -61,9 +64,10 @@ def test_add_item_to_cart(add_product, add_cart):
         "quantity": 2
     })
     assert add_c_i_response.status_code == 200
-    # time.sleep(1)
-    # check if the query service received the info
-
-
+    time.sleep(1)
+    get_c_response = requests.get("http://localhost:5566/cart/{}".format(cart_id))
+    content_get = get_c_response.json()
+    assert content_get["uuid"] == cart_id
+    logger.warning(content_get)
 
 
