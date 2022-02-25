@@ -3,6 +3,8 @@ import logging
 from dependency_injector.wiring import (
     Provide,
 )
+
+from src.queries.models import Cart
 from src.queries.repository import (
     CartQueryRepository,
 )
@@ -35,7 +37,18 @@ class CartQueryService(QueryService):
         :return: A response exception.
         """
         params = await request.params()
-        cart_obj = self.repository.get(params["uuid"])
+        cart_obj: Cart = self.repository.get(params["uuid"])
+        return Response({'uuid': cart_obj.uuid, 'user': cart_obj.user, 'status': cart_obj.status})
+
+    @enroute.rest.query("/cart/{uuid}/items", "GET")
+    async def get_cart_items(self, request: Request) -> Response:
+        """Get a Cart instance.
+
+        :param request: A request instance..
+        :return: A response exception.
+        """
+        params = await request.params()
+        cart_obj = self.repository.get_items_cart(params["uuid"])
         logger.warning(cart_obj)
         return Response(cart_obj)
 
@@ -57,25 +70,7 @@ class CartQueryService(QueryService):
         :return: This method does not return anything.
         """
         event: Event = await request.content()
-
         cart_uuid = event['uuid']
         items = event.get_all()
         self.repository.add_item(cart_uuid=cart_uuid, product=items['products'][0]['product'],
                                  item=items['products'][0])
-
-    """
-    @enroute.broker.event("CartUpdated.products.create")
-    async def cart_updated_items(self, request: Request) -> None:
-        event: Event = await request.content()
-        print(event)
-    """
-
-    @enroute.broker.event("CartDeleted")
-    async def cart_deleted(self, request: Request) -> None:
-        """Handle the Cart deletion events.
-
-        :param request: A request instance containing the aggregate difference.
-        :return: This method does not return anything.
-        """
-        event: Event = await request.content()
-        print(event)

@@ -45,9 +45,7 @@ class CartQueryRepository(MinosSetup):
         self.session.add(cart)
         self.session.commit()
 
-    def add_item(self, cart_uuid: str, product: dict, item: dict ):
-        logger.warning(product)
-        logger.warning(item)
+    def add_item(self, cart_uuid: str, product: dict, item: dict):
         cart_obj = self.session.query(Cart).filter(Cart.uuid == cart_uuid).first()
         if cart_obj is not None:
             # check if the product already exist
@@ -65,14 +63,16 @@ class CartQueryRepository(MinosSetup):
     def get(self, uuid):
         cart_obj = self.session.query(Cart).filter(Cart.uuid == uuid).first()
         if cart_obj is not None:
-            return cart_obj.to_dict()
+            return cart_obj
         else:
             return None
 
     def get_items_cart(self, cart_uuid):
-        product = self.session.query(Cart).filter(Cart.uuid == cart_uuid).first()
-        cart_obj = self.session.query(CartItem).filter(CartItem.product == product).all()
-        if len(cart_obj) > 0:
-            return cart_obj
+        query = self.session.query(CartItem).filter(CartItem.cart.uuid == cart_uuid)
+        cart_items = query.all()
+        logger.warning("Items")
+        logger.warning(cart_items)
+        if len(cart_items) > 0:
+            return cart_items
         else:
             return None
