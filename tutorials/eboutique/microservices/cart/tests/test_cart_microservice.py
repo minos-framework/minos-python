@@ -59,7 +59,8 @@ def test_add_item_to_cart(add_product, add_cart):
         "http://localhost:5566/cart/{}/item".format(cart_id), json={"product": product_uid, "quantity": 2}
     )
     assert add_c_i_response.status_code == 200
-    time.sleep(1)
+    time.sleep(6)
     get_c_response = requests.get("http://localhost:5566/cart/{}/items".format(cart_id))
     content_get = get_c_response.json()
-    assert content_get["uuid"] == cart_id
+    for item in content_get:
+        assert item["product"]['uuid'] == product_uid

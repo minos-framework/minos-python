@@ -1,5 +1,3 @@
-import logging
-
 from dependency_injector.wiring import (
     Provide,
 )
@@ -21,8 +19,6 @@ from minos.networks import (
     enroute,
 )
 
-logger = logging.getLogger(__name__)
-
 
 class CartQueryService(QueryService):
     """CartQueryService class."""
@@ -38,7 +34,7 @@ class CartQueryService(QueryService):
         """
         params = await request.params()
         cart_obj: Cart = self.repository.get(params["uuid"])
-        return Response({'uuid': cart_obj.uuid, 'user': cart_obj.user, 'status': cart_obj.status})
+        return Response(cart_obj)
 
     @enroute.rest.query("/cart/{uuid}/items", "GET")
     async def get_cart_items(self, request: Request) -> Response:
@@ -48,9 +44,8 @@ class CartQueryService(QueryService):
         :return: A response exception.
         """
         params = await request.params()
-        cart_obj = self.repository.get_items_cart(params["uuid"])
-        logger.warning(cart_obj)
-        return Response(cart_obj)
+        items_obj = self.repository.get_items_cart(params["uuid"])
+        return Response(items_obj)
 
     @enroute.broker.event("CartCreated")
     async def cart_created(self, request: Request) -> None:

@@ -1,10 +1,8 @@
-import logging
-
 from sqlalchemy import (
     create_engine,
 )
 from sqlalchemy.orm import (
-    sessionmaker, subqueryload,
+    sessionmaker
 )
 
 from minos.aggregate import (
@@ -17,10 +15,8 @@ from minos.common import (
 
 from .models import (
     Base,
-    Cart, Product, CartItem,
+    Cart, Product, CartItem
 )
-
-logger = logging.getLogger(__name__)
 
 class CartQueryRepository(MinosSetup):
     def __init__(self, *args, **kwargs):
@@ -53,7 +49,6 @@ class CartQueryRepository(MinosSetup):
             if product_obj is None:
                 product_obj = Product(uuid=product['uuid'], title=product['title'], picture=product['picture'])
                 self.session.add(product_obj)
-                self.session.commit()
             item_obj = CartItem(uuid=item['uuid'], quantity=item['quantity'], cart=cart_obj, product=product_obj)
             self.session.add(item_obj)
             self.session.commit()
@@ -63,16 +58,21 @@ class CartQueryRepository(MinosSetup):
     def get(self, uuid):
         cart_obj = self.session.query(Cart).filter(Cart.uuid == uuid).first()
         if cart_obj is not None:
-            return cart_obj
+            return {'uuid': cart_obj.uuid, 'user': cart_obj.user, 'status': cart_obj.status}
         else:
             return None
 
     def get_items_cart(self, cart_uuid):
-        query = self.session.query(CartItem).filter(CartItem.cart.uuid == cart_uuid)
-        cart_items = query.all()
-        logger.warning("Items")
-        logger.warning(cart_items)
-        if len(cart_items) > 0:
+        cart_object = self.session.query(Cart).filter(Cart.uuid == cart_uuid).first()
+        query = self.session.query(CartItem).filter(CartItem.cart == cart_object)
+        count = query.count()
+        if count > 0:
+            cart_items_obj = query.all()
+            cart_items = []
+            for item in cart_items_obj:
+                cart_items.append({'uuid': item.uuid, 'quantity': item.quantity,
+                                   'product': {'uuid': item.product.uuid, 'title': item.product.title}
+                                   })
             return cart_items
         else:
             return None
