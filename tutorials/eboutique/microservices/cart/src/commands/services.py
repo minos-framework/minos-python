@@ -8,7 +8,8 @@ from minos.networks import (
     enroute,
 )
 from minos.saga import (
-    SagaContext, SagaStatus,
+    SagaContext,
+    SagaStatus,
 )
 
 from ..aggregates import (

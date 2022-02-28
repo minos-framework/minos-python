@@ -1,7 +1,6 @@
-from .services import (
-    CoinbaseQueryService,
-)
-
 from .repository import (
     CoinbaseQueryServiceRepository,
+)
+from .services import (
+    CoinbaseQueryService,
 )

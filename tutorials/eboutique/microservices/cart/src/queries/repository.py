@@ -2,7 +2,7 @@ from sqlalchemy import (
     create_engine,
 )
 from sqlalchemy.orm import (
-    sessionmaker
+    sessionmaker,
 )
 
 from minos.aggregate import (
@@ -15,8 +15,11 @@ from minos.common import (
 
 from .models import (
     Base,
-    Cart, Product, CartItem
+    Cart,
+    CartItem,
+    Product,
 )
+
 
 class CartQueryRepository(MinosSetup):
     def __init__(self, *args, **kwargs):
@@ -45,11 +48,11 @@ class CartQueryRepository(MinosSetup):
         cart_obj = self.session.query(Cart).filter(Cart.uuid == cart_uuid).first()
         if cart_obj is not None:
             # check if the product already exist
-            product_obj = self.session.query(Product).filter(Product.uuid == product['uuid']).first()
+            product_obj = self.session.query(Product).filter(Product.uuid == product["uuid"]).first()
             if product_obj is None:
-                product_obj = Product(uuid=product['uuid'], title=product['title'], picture=product['picture'])
+                product_obj = Product(uuid=product["uuid"], title=product["title"], picture=product["picture"])
                 self.session.add(product_obj)
-            item_obj = CartItem(uuid=item['uuid'], quantity=item['quantity'], cart=cart_obj, product=product_obj)
+            item_obj = CartItem(uuid=item["uuid"], quantity=item["quantity"], cart=cart_obj, product=product_obj)
             self.session.add(item_obj)
             self.session.commit()
         else:
@@ -58,7 +61,7 @@ class CartQueryRepository(MinosSetup):
     def get(self, uuid):
         cart_obj = self.session.query(Cart).filter(Cart.uuid == uuid).first()
         if cart_obj is not None:
-            return {'uuid': cart_obj.uuid, 'user': cart_obj.user, 'status': cart_obj.status}
+            return {"uuid": cart_obj.uuid, "user": cart_obj.user, "status": cart_obj.status}
         else:
             return None
 
@@ -70,9 +73,13 @@ class CartQueryRepository(MinosSetup):
             cart_items_obj = query.all()
             cart_items = []
             for item in cart_items_obj:
-                cart_items.append({'uuid': item.uuid, 'quantity': item.quantity,
-                                   'product': {'uuid': item.product.uuid, 'title': item.product.title}
-                                   })
+                cart_items.append(
+                    {
+                        "uuid": item.uuid,
+                        "quantity": item.quantity,
+                        "product": {"uuid": item.product.uuid, "title": item.product.title},
+                    }
+                )
             return cart_items
         else:
             return None

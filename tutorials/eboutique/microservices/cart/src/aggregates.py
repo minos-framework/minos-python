@@ -11,7 +11,9 @@ from minos.aggregate import (
     EntitySet,
     ExternalEntity,
     Ref,
-    RootEntity, ValueObjectSet, ValueObject,
+    RootEntity,
+    ValueObject,
+    ValueObjectSet,
 )
 
 
@@ -48,8 +50,8 @@ class CartAggregate(Aggregate[Cart]):
     @staticmethod
     async def createCart(data: {}) -> UUID:
         """Create a new Cart."""
-        data['status'] = "open"
-        cart = await Cart.create(user=data['user'], status=data['status'], products=EntitySet())
+        data["status"] = "open"
+        cart = await Cart.create(user=data["user"], status=data["status"], products=EntitySet())
         return cart.uuid
 
     @staticmethod

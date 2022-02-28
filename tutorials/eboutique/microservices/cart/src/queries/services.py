@@ -1,8 +1,9 @@
 from dependency_injector.wiring import (
     Provide,
 )
-
-from src.queries.models import Cart
+from src.queries.models import (
+    Cart,
+)
 from src.queries.repository import (
     CartQueryRepository,
 )
@@ -65,7 +66,8 @@ class CartQueryService(QueryService):
         :return: This method does not return anything.
         """
         event: Event = await request.content()
-        cart_uuid = event['uuid']
+        cart_uuid = event["uuid"]
         items = event.get_all()
-        self.repository.add_item(cart_uuid=cart_uuid, product=items['products'][0]['product'],
-                                 item=items['products'][0])
+        self.repository.add_item(
+            cart_uuid=cart_uuid, product=items["products"][0]["product"], item=items["products"][0]
+        )
