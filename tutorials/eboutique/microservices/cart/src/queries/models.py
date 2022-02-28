@@ -30,7 +30,7 @@ class CartItem(Base):
     quantity = Column(Integer)
     cart_id = Column(Integer, ForeignKey("cart.id"))
     cart = relationship("Cart", backref=backref("items"))
-    product_id = Column(Integer, ForeignKey('product.id'))
+    product_id = Column(Integer, ForeignKey("product.id"))
     product = relationship("Product", backref=backref("items"))
 
 

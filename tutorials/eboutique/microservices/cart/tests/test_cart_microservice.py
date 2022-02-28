@@ -7,6 +7,7 @@ import requests as requests
 
 logger = logging.getLogger(__name__)
 
+
 @pytest.fixture
 def add_product():
     add_p_response = requests.post(
@@ -20,7 +21,8 @@ def add_product():
         },
     )
     content = add_p_response.json()
-    return content['uuid']
+    return content["uuid"]
+
 
 @pytest.fixture
 def add_cart():
@@ -31,7 +33,7 @@ def add_cart():
         },
     )
     content = add_c_response.json()
-    return content['uuid']
+    return content["uuid"]
 
 
 def test_add_cart():
@@ -63,4 +65,4 @@ def test_add_item_to_cart(add_product, add_cart):
     get_c_response = requests.get("http://localhost:5566/cart/{}/items".format(cart_id))
     content_get = get_c_response.json()
     for item in content_get:
-        assert item["product"]['uuid'] == product_uid
+        assert item["product"]["uuid"] == product_uid
