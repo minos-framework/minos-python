@@ -1,5 +1,3 @@
-from sqlalchemy.orm import declarative_base
-
 from sqlalchemy import (
     Column,
     Float,
@@ -7,6 +5,9 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+)
+from sqlalchemy.orm import (
+    declarative_base,
 )
 
 Base = declarative_base()

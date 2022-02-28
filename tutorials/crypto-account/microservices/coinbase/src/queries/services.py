@@ -1,9 +1,12 @@
-from minos.aggregate import (
-    Event,
-)
-
 from dependency_injector.wiring import (
     Provide,
+)
+from src import (
+    CoinbaseQueryServiceRepository,
+)
+
+from minos.aggregate import (
+    Event,
 )
 from minos.cqrs import (
     QueryService,
@@ -14,8 +17,6 @@ from minos.networks import (
     ResponseException,
     enroute,
 )
-
-from src import CoinbaseQueryServiceRepository
 
 
 class CoinbaseQueryService(QueryService):

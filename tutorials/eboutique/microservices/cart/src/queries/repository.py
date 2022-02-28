@@ -1,7 +1,9 @@
 from sqlalchemy import (
     create_engine,
 )
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import (
+    sessionmaker,
+)
 
 from minos.aggregate import (
     Event,
@@ -11,7 +13,12 @@ from minos.common import (
     MinosSetup,
 )
 
-from .models import Base, Cart, Product, CartItem
+from .models import (
+    Base,
+    Cart,
+    CartItem,
+    Product,
+)
 
 
 class CartQueryRepository(MinosSetup):

@@ -1,8 +1,9 @@
 from dependency_injector.wiring import (
     Provide,
 )
-
-from src.queries.models import Cart
+from src.queries.models import (
+    Cart,
+)
 from src.queries.repository import (
     CartQueryRepository,
 )

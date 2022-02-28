@@ -1,7 +1,18 @@
-from minos.common import MinosSetup, MinosConfig
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from src.queries.models import Base, Wallet
+from sqlalchemy import (
+    create_engine,
+)
+from sqlalchemy.orm import (
+    sessionmaker,
+)
+from src.queries.models import (
+    Base,
+    Wallet,
+)
+
+from minos.common import (
+    MinosConfig,
+    MinosSetup,
+)
 
 
 class CoinbaseQueryServiceRepository(MinosSetup):
