@@ -1,6 +1,3 @@
-from typing import (
-    Optional,
-)
 from uuid import (
     UUID,
 )
@@ -48,14 +45,14 @@ class CartAggregate(Aggregate[Cart]):
     """CartAggregate class."""
 
     @staticmethod
-    async def createCart(data: {}) -> UUID:
+    async def create_cart(data: {}) -> UUID:
         """Create a new Cart."""
         data["status"] = "open"
         cart = await Cart.create(user=data["user"], status=data["status"], products=EntitySet())
         return cart.uuid
 
     @staticmethod
-    async def addCartItem(cart: str, product: str, quantity) -> UUID:
+    async def add_cart_item(cart: UUID, product: str, quantity) -> UUID:
         """Create a new Cart."""
         cart = await Cart.get(cart)
         cart_item = CartItem(product=product, quantity=quantity)

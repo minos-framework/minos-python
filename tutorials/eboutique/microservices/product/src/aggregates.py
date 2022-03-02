@@ -34,17 +34,18 @@ class ProductAggregate(Aggregate[Product]):
     """ProductAggregate class."""
 
     @staticmethod
-    async def getProduct(uid) -> Product:
-        product = await Product.get(uid)
+    async def get_product(uuid: UUID) -> Product:
+        """Get product"""
+        product = await Product.get(uuid)
         return product
 
     @staticmethod
-    async def createProduct(data: {}) -> UUID:
+    async def create_product(data: {}) -> UUID:
         """Create a new instance."""
         price = Price(**data["price"])
         data["price"] = price
+        cat_list = []
         if "categories" in data:
-            cat_list = []
             for category in data["categories"]:
                 category_object = Category(**category)
                 cat_list.append(category_object)
@@ -53,8 +54,8 @@ class ProductAggregate(Aggregate[Product]):
         return root.uuid
 
     @staticmethod
-    async def deleteProduct(uid) -> UUID:
+    async def delete_product(uid) -> UUID:
         """Create a new instance."""
         product = await Product.get(uid)
-        product.delete()
+        await product.delete()
         return product.uuid

@@ -25,7 +25,7 @@ class ProductCommandService(CommandService):
         """
         try:
             content = await request.content()  # get the request payload
-            product = await ProductAggregate.getProduct(content["uid"])
+            product = await ProductAggregate.get_product(content["uid"])
             return Response(product)
         except Exception as exc:
             raise ResponseException(f"An error occurred during the Query process: {exc}")
@@ -40,7 +40,7 @@ class ProductCommandService(CommandService):
         """
         try:
             content = await request.content()  # get the request payload
-            uuid = await ProductAggregate.createProduct(content)
+            uuid = await ProductAggregate.create_product(content)
             return Response({"uuid": uuid})
         except Exception as exc:
             raise ResponseException(f"An error occurred during the Product creation: {exc}")
@@ -56,7 +56,7 @@ class ProductCommandService(CommandService):
         try:
             params = request.params()  # get the url params [uuid]
             uuid = params["uuid"]
-            uuid = await ProductAggregate.deleteProduct(uuid)
+            uuid = await ProductAggregate.delete_product(uuid)
             return Response({"uuid": uuid})
         except Exception as exc:
             raise ResponseException(f"An error occurred during Product delete: {exc}")

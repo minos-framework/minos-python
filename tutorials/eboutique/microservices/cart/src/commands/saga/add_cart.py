@@ -14,7 +14,7 @@ from minos.saga import (
 
 
 def _raise_error(context: SagaContext, response: SagaResponse) -> SagaContext:
-    return ValueError("The Product uid does not exist")
+    raise ValueError("The Product uid does not exist")
 
 
 ProductGet = ModelType.build("ProductGet", {"uid": str})
@@ -35,7 +35,7 @@ async def _add_item_to_cart(context: SagaContext):
     cart = context["cart_uid"]
     product = context["product_uid"]
     quantity = context["quantity"]
-    cart_obj = await CartAggregate.addCartItem(cart, product, quantity)
+    cart_obj = await CartAggregate.add_cart_item(cart, product, quantity)
     return SagaContext(cart=cart_obj)
 
 
