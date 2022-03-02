@@ -64,6 +64,14 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
                 return getattr(self.data, item)
             raise exc
 
+    def __getitem__(self, item: str) -> Any:
+        try:
+            return super().__getitem__(item)
+        except KeyError as exc:
+            if item != "data":
+                return self.data[item]
+            raise exc
+
     @property
     def int(self) -> int:
         """Get the UUID as a 128-bit integer.

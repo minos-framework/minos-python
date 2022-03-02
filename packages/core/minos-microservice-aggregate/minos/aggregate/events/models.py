@@ -65,13 +65,13 @@ class Event(DeclarativeModel):
     def __lt__(self, other: Any) -> bool:
         return isinstance(other, type(self)) and self.version < other.version
 
-    def __getattr__(self, item: str) -> Any:
+    def __getitem__(self, item: str) -> Any:
         try:
-            return super().__getattr__(item)
-        except AttributeError as exc:
+            return super().__getitem__(item)
+        except KeyError as exc:
             if item != "fields_diff":
                 try:
-                    return self.get_one(item)
+                    return self.get_field(item)
                 except Exception:
                     raise exc
             raise exc

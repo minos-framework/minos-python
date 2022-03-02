@@ -25,22 +25,23 @@ class SagaContext(BucketModel, MutableMapping):
 
         super().__init__(fields=fields)
 
-    def __setattr__(self, key: str, value: Any) -> None:
+    def __setitem__(self, key: str, value: Any) -> None:
         try:
-            super().__setattr__(key, value)
-        except AttributeError:
+            super().__setitem__(key, value)
+        except KeyError:
             self._fields[key] = Field(key, Any, value)
 
     def __delitem__(self, item: str) -> None:
         try:
-            return delattr(self, item)
-        except AttributeError as exc:
-            raise KeyError(exc)
+            del self._fields[item]
+        except KeyError:
+            raise KeyError(f"{type(self).__name__!r} does not contain the {item!r} field")
 
     def __delattr__(self, item: str) -> None:
         if item.startswith("_"):
             super().__delattr__(item)
-        elif item in self._fields:
-            del self._fields[item]
         else:
-            raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} field")
+            try:
+                self[item]
+            except KeyError as exc:
+                raise AttributeError(str(exc))
