@@ -1,0 +1,24 @@
+site_name: Minos Standard
+site_author: Andrea Mucci
+site_description: >-
+  Minos Protocol Standard
+copyright: Copyright &copy; 2021 - 2022 Clariteia
+theme:
+    name: material
+    language: es
+    features:
+        - navigation.instant
+        - navigation.sections
+extra:
+    version:
+        provider: mike
+plugins:
+    - search
+    - mermaid2:
+          version: 8.14.0
+
+nav:
+    - Home: index.md
+    - Introduction: introduction.md
+    - Architecture:
+          - Overview: architecture/overview.md
