@@ -18,7 +18,7 @@ minos-discovery-minos = { path = "packages/plugins/minos-discovery-minos", devel
 [tool.poetry.dev-dependencies]
 black = "^22.1"
 isort = "^5.8.0"
-pytest = "^6.2.4"
+pytest = "^7.0.1"
 coverage = "^6.3"
 flake8 = "^4.0.1"
 Sphinx = "^4.0.1"
