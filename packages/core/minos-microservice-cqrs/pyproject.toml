@@ -42,7 +42,7 @@ minos-microservice-networks = { path = "../minos-microservice-networks", develop
 minos-microservice-aggregate = { path = "../minos-microservice-aggregate", develop = true }
 black = "^22.1"
 isort = "^5.8.0"
-pytest = "^6.2.4"
+pytest = "^7.0.1"
 coverage = "^6.3"
 flake8 = "^4.0.1"
 Sphinx = "^4.0.1"
