@@ -1,7 +1,3 @@
-from src.aggregates import (
-    CartAggregate,
-)
-
 from minos.common import (
     ModelType,
 )
@@ -10,6 +6,10 @@ from minos.saga import (
     SagaContext,
     SagaRequest,
     SagaResponse,
+)
+
+from src.aggregates import (
+    CartAggregate,
 )
 
 
