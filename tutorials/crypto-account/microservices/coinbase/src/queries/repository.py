@@ -18,7 +18,7 @@ from minos.common import (
 class CoinbaseQueryServiceRepository(MinosSetup):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.engine = create_engine("postgresql+psycopg2://postgres:@localhost:5432/coinbase_query_db".format(**kwargs))
+        self.engine = create_engine("postgresql+psycopg2://postgres:@localhost:5432/coinbase_query_db")
         self.session = sessionmaker(bind=self.engine)
 
     async def _setup(self) -> None:
