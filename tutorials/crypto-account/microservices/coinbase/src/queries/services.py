@@ -41,7 +41,7 @@ class CoinbaseQueryService(QueryService):
         :return: This method does not return anything.
         """
         event: Event = await request.content()
-        self.repository.addWallet(
+        self.repository.add_wallet(
             uuid=event["uuid"],
             user=event.get_one("user"),
             api_key=event.get_one("api_key"),

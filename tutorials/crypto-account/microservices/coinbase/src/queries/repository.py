@@ -28,7 +28,7 @@ class CoinbaseQueryServiceRepository(MinosSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CoinbaseQueryRepository:
         return cls(*args, **(config.query_repository._asdict()) | kwargs)
 
-    def addWallet(self, user: str, api_key: str, api_secret: str):
+    def add_wallet(self, user: str, api_key: str, api_secret: str):
         wallet = Wallet()
         wallet.user = user
         wallet.api_key = api_key
