@@ -160,6 +160,12 @@ class GenericUser(DeclarativeModel, Generic[T]):
     username: T
 
 
+class ReservedWordUser(DeclarativeModel, Generic[T]):
+    """For testing purposes."""
+
+    items: str
+
+
 class Auth(DeclarativeModel):
     """For testing purposes."""
 

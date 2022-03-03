@@ -73,16 +73,35 @@ class TestRef(MinosTestCase):
 
         self.assertEqual(uuid, value.uuid)
 
-    def test_model_attribute(self):
+    def test_model_getattr(self):
         value = Ref(Bar(uuid4(), 1))
 
         self.assertEqual(1, value.age)
 
-    def test_model_attribute_raises(self):
+    def test_model_getattr_raises(self):
         value = Ref(Bar(uuid4(), 1))
 
         with self.assertRaises(AttributeError):
             value.year
+
+    def test_model_setattr(self):
+        value = Ref(Bar(uuid4(), 1))
+
+        value.age = 2
+
+        self.assertEqual(2, value.data.age)
+
+    def test_model_getitem(self):
+        value = Ref(Bar(uuid4(), 1))
+
+        self.assertEqual(1, value["age"])
+
+    def test_model_setitem(self):
+        value = Ref(Bar(uuid4(), 1))
+
+        value["age"] = 2
+
+        self.assertEqual(2, value.data.age)
 
     def test_fields(self):
         value = Ref(Bar(uuid4(), 1))
