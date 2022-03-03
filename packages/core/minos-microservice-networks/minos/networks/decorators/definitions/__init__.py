@@ -22,7 +22,4 @@ from .rest import (
     RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
 )
-from .graphql import (
-    GraphqlEnrouteDecorator,
-    GraphqlQueryEnrouteDecorator
-)
+from .graphql import GraphqlEnrouteDecorator, GraphqlQueryEnrouteDecorator

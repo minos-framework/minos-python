@@ -8,7 +8,4 @@ from minos.networks import (
 class GraphqlService:
     @enroute.graphql(url="/graphql", method="POST")
     def add_ticket(self, request: Request) -> Response:
-        return Response({
-          "data": {},
-          "errors": []
-        })
+        return Response({"data": {}, "errors": []})

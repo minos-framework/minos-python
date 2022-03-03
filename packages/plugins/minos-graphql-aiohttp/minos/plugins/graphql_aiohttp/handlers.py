@@ -102,7 +102,7 @@ class RestHandler(MinosSetup):
     @cached_property
     def _app(self) -> web.Application:
         app = web.Application()
-        #self._mount_routes(app)
+        # self._mount_routes(app)
         self._mount_graphql(app)
         return app
 

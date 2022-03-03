@@ -9,7 +9,7 @@ from .definitions import (
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestQueryEnrouteDecorator,
-    GraphqlQueryEnrouteDecorator
+    GraphqlQueryEnrouteDecorator,
 )
 
 
