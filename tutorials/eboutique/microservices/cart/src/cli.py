@@ -8,19 +8,29 @@ from typing import (
 )
 
 import typer
-from aiohttp import web
-from ddtrace.contrib.aiohttp import trace_app
+from aiohttp import (
+    web,
+)
+from ddtrace import (
+    patch_all,
+    tracer,
+)
+from ddtrace.contrib.aiohttp import (
+    trace_app,
+)
+from ddtrace.contrib.asyncio import (
+    context_provider,
+)
+from ddtrace.profiling import (
+    Profiler,
+)
 from minos.common import (
     EntrypointLauncher,
     MinosConfig,
 )
-from ddtrace.profiling import Profiler
-from ddtrace import tracer
-from ddtrace.contrib.asyncio import context_provider
-from ddtrace import (
-    patch_all,
+from minos.networks import (
+    RestService,
 )
-from minos.networks import RestService
 
 patch_all(logging=True, aiohttp=True)
 
