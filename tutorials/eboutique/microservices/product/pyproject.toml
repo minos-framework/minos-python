@@ -16,6 +16,8 @@ minos-broker-kafka = "^0.5.0"
 minos-discovery-minos = "^0.5.0"
 typer = "^0.3.2"
 SQLAlchemy = "^1.4.31"
+ddtrace = "^0.58.5"
+datadog = "^0.43.0"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"

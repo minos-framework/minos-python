@@ -5,10 +5,14 @@ x-microservice-environment: &microservice-environment
   - MINOS_REPOSITORY_HOST=postgres
   - MINOS_SNAPSHOT_HOST=postgres
   - MINOS_DISCOVERY_HOST=discovery
+  - DD_AGENT_HOST=datadog
+  - DD_TRACE_AGENT_PORT=8126
+  - DD_LOGS_INJECTION=true
 x-microservice-depends-on: &microservice-depends-on
   - postgres
   - kafka
   - discovery
+  - datadog
 volumes:
   postgres: {}
   zookeeper: {}
@@ -89,3 +93,30 @@ services:
       - '6379'
     volumes:
       - 'redis:/bitnami/redis/data'
+
+  datadog:
+      build:
+          context: external/datadog
+      links:
+          - redis # ensures that redis is a host that the container can find
+      ports:
+          - "8126:8126/tcp"
+      environment:
+          - DD_API_KEY=103e74f3bc2f916f4fe4e45aefe77cd8
+          - DD_LOGS_INJECTION=true
+          - DD_PROFILING_ENABLED=true
+          - DD_SERVICE=eboutique
+          - DD_TRACE_ENABLED=true
+          - DD_VERSION=1.0.3
+          - DD_ENV=development
+          - DD_SITE=datadoghq.eu
+          - DD_APM_ENABLED=true
+          - DD_TRACE_DEBUG=true
+          - DD_APM_NON_LOCAL_TRAFFIC=true
+      volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - /proc/:/host/proc/:ro
+          - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+networks:
+  default:
+      name: eboutique_network
