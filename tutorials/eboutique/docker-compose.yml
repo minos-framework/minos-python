@@ -102,7 +102,7 @@ services:
       ports:
           - "8126:8126/tcp"
       environment:
-          - DD_API_KEY=103e74f3bc2f916f4fe4e45aefe77cd8
+          - DD_API_KEY=your_key
           - DD_LOGS_INJECTION=true
           - DD_PROFILING_ENABLED=true
           - DD_SERVICE=eboutique
