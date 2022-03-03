@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from functools import (
+    lru_cache,
+)
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -47,11 +50,12 @@ class ModelType(type):
         :param kwargs: Type hints of the new type as named parameters.
         :return: A ``ModelType`` instance.
         """
-        if type_hints_ is not None and len(kwargs):
-            raise ValueError("Type hints can be passed in a dictionary or as named parameters, but not both.")
-
         if type_hints_ is None:
-            type_hints_ = kwargs
+            type_hints_ = tuple(kwargs.items())
+        else:
+            if len(kwargs):
+                raise ValueError("Type hints can be passed in a dictionary or as named parameters, but not both.")
+            type_hints_ = tuple(type_hints_.items())
 
         if namespace_ is None:
             try:
@@ -60,7 +64,12 @@ class ModelType(type):
                 namespace_ = str()
 
         # noinspection PyTypeChecker
-        return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_})
+        return mcs._build(name_, type_hints_, namespace_)
+
+    @classmethod
+    @lru_cache()
+    def _build(mcs, name_: str, type_hints_: tuple[tuple[str, type], ...], namespace_: Optional[str]):
+        return mcs(name_, tuple(), {"type_hints": dict(type_hints_), "namespace": namespace_})
 
     @classmethod
     def from_typed_dict(mcs, typed_dict) -> ModelType:
