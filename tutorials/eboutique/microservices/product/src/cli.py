@@ -8,38 +8,43 @@ from typing import (
 )
 
 import typer
-from aiohttp import web
-from ddtrace.contrib.aiohttp import trace_app
-from minos.common import (
-    EntrypointLauncher, MinosConfig,
+from aiohttp import (
+    web,
 )
-from ddtrace.profiling import Profiler
-from ddtrace import tracer
-from ddtrace.contrib.asyncio import context_provider
 from ddtrace import (
     patch_all,
+    tracer,
 )
-from minos.networks import RestService
+from ddtrace.contrib.aiohttp import (
+    trace_app,
+)
+from ddtrace.contrib.asyncio import (
+    context_provider,
+)
+from ddtrace.profiling import (
+    Profiler,
+)
+from minos.common import (
+    EntrypointLauncher,
+    MinosConfig,
+)
+from minos.networks import (
+    RestService,
+)
 
 patch_all(logging=True, aiohttp=True)
 
-tracer.configure(
-    hostname='datadog',
-    port=8126,
-    enabled=True,
-    context_provider=context_provider
-)
+tracer.configure(hostname="datadog", port=8126, enabled=True, context_provider=context_provider)
 
-prof = Profiler(
-    service="product",
-    tracer=tracer
-)
+prof = Profiler(service="product", tracer=tracer)
 prof.start()
 
 logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
-FORMAT = ('%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] '
-          '[dd.service=%(dd.service)s dd.env=%(dd.env)s dd.version=%(dd.version)s dd.trace_id=%(dd.trace_id)s dd.span_id=%(dd.span_id)s] '
-          '- %(message)s')
+FORMAT = (
+    "%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] "
+    "[dd.service=%(dd.service)s dd.env=%(dd.env)s dd.version=%(dd.version)s dd.trace_id=%(dd.trace_id)s dd.span_id=%(dd.span_id)s] "
+    "- %(message)s"
+)
 logging.basicConfig(format=FORMAT)
 log = logging.getLogger(__name__)
 log.level = logging.INFO
@@ -61,7 +66,7 @@ def start(
 
     rest_app: web.Application = rest_service.handler.get_app()
 
-    trace_app(rest_app, tracer, service='product')
+    trace_app(rest_app, tracer, service="product")
 
     launcher.launch()
 
