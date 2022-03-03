@@ -28,4 +28,6 @@ from .definitions import (
     RestCommandEnrouteDecorator,
     RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
+    GraphqlEnrouteDecorator,
+    GraphqlQueryEnrouteDecorator,
 )

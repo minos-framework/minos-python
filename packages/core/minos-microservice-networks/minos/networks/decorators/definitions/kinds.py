@@ -10,6 +10,7 @@ class EnrouteDecoratorKind(Enum):
     Command = auto()
     Query = auto()
     Event = auto()
+    Graphql = auto()
 
     @property
     def pre_fn_name(self) -> str:

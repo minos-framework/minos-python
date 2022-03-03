@@ -9,6 +9,7 @@ from .definitions import (
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestQueryEnrouteDecorator,
+    GraphqlQueryEnrouteDecorator
 )
 
 
@@ -39,6 +40,7 @@ class Enroute:
     broker = BrokerEnroute
     rest = RestEnroute
     periodic = PeriodicEnroute
+    graphql = GraphqlQueryEnrouteDecorator
 
 
 enroute = Enroute

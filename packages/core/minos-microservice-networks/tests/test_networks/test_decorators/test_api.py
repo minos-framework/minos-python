@@ -7,6 +7,7 @@ from minos.networks import (
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestQueryEnrouteDecorator,
+    GraphqlQueryEnrouteDecorator,
     enroute,
 )
 
@@ -19,6 +20,10 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
     def test_rest_query(self):
         decorator = enroute.rest.query(url="tickets/", method="GET")
         self.assertEqual(RestQueryEnrouteDecorator("tickets/", "GET"), decorator)
+
+    def test_graphql(self):
+        decorator = enroute.graphql(url="graphql/", method="POST")
+        self.assertEqual(GraphqlQueryEnrouteDecorator("graphql/", "POST"), decorator)
 
     def test_rest_event_raises(self):
         with self.assertRaises(AttributeError):

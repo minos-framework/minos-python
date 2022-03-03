@@ -63,6 +63,8 @@ from .decorators import (
     RestCommandEnrouteDecorator,
     RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
+    GraphqlEnrouteDecorator,
+    GraphqlQueryEnrouteDecorator,
     enroute,
 )
 from .discovery import (

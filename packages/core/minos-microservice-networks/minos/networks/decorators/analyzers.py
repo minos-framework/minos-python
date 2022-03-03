@@ -28,6 +28,8 @@ from .definitions import (
     RestCommandEnrouteDecorator,
     RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
+    GraphqlEnrouteDecorator,
+    GraphqlQueryEnrouteDecorator,
 )
 
 
@@ -49,6 +51,14 @@ class EnrouteAnalyzer:
         """
         # noinspection PyTypeChecker
         return self._get_items({RestCommandEnrouteDecorator, RestQueryEnrouteDecorator})
+
+    def get_graphql(self) -> dict[str, set[GraphqlEnrouteDecorator]]:
+        """Returns rest's command and query values.
+
+        :return: A mapping with functions as keys and a sets of decorators as values.
+        """
+        # noinspection PyTypeChecker
+        return self._get_items({GraphqlQueryEnrouteDecorator})
 
     def get_broker_command_query_event(self) -> dict[str, set[BrokerEnrouteDecorator]]:
         """Returns broker's command, query and event values.
