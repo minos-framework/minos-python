@@ -3,8 +3,7 @@ from graphql import (
     graphql, GraphQLSchema, GraphQLObjectType, GraphQLField, GraphQLString)
 
 
-async def resolve_hello(obj, info):
-    await asyncio.sleep(3)
+def resolve_hello(obj, info):
     return 'world'
 
 schema = GraphQLSchema(

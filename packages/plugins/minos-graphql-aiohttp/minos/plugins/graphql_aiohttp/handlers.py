@@ -37,6 +37,9 @@ from .requests import (
 from .responses import (
     RestResponse,
 )
+from graphql_server.aiohttp import GraphQLView
+
+from .graphql_example import schema
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +102,8 @@ class RestHandler(MinosSetup):
     @cached_property
     def _app(self) -> web.Application:
         app = web.Application()
-        self._mount_routes(app)
+        #self._mount_routes(app)
+        self._mount_graphql(app)
         return app
 
     def _mount_routes(self, app: web.Application):
@@ -113,6 +117,9 @@ class RestHandler(MinosSetup):
     def _mount_one_route(self, method: str, url: str, action: Callable, app: web.Application) -> None:
         handler = self.get_callback(action)
         app.router.add_route(method, url, handler)
+
+    def _mount_graphql(self, app: web.Application):
+        GraphQLView.attach(app, schema=schema, graphiql=True)
 
     @staticmethod
     def get_callback(
