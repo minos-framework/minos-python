@@ -4,12 +4,16 @@ from aiohttp import (
 from aiomisc.service.aiohttp import (
     AIOHTTPService,
 )
+from graphql_server.aiohttp import (
+    GraphQLView,
+)
+
+from .graphql_example import (
+    schema,
+)
 from .handlers import (
     RestHandler,
 )
-from graphql_server.aiohttp import GraphQLView
-
-from .graphql_example import schema
 
 
 class RestService(AIOHTTPService):

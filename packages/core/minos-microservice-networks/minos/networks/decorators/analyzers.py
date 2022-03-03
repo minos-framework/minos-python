@@ -24,12 +24,12 @@ from .definitions import (
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
     EnrouteDecorator,
+    GraphqlEnrouteDecorator,
+    GraphqlQueryEnrouteDecorator,
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
-    GraphqlEnrouteDecorator,
-    GraphqlQueryEnrouteDecorator,
 )
 
 

@@ -10,6 +10,10 @@ from .broker import (
 from .checkers import (
     CheckDecorator,
 )
+from .graphql import (
+    GraphqlEnrouteDecorator,
+    GraphqlQueryEnrouteDecorator,
+)
 from .kinds import (
     EnrouteDecoratorKind,
 )
@@ -22,4 +26,3 @@ from .rest import (
     RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
 )
-from .graphql import GraphqlEnrouteDecorator, GraphqlQueryEnrouteDecorator

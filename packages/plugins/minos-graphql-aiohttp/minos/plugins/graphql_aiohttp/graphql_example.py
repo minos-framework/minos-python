@@ -1,5 +1,12 @@
 import asyncio
-from graphql import graphql, GraphQLSchema, GraphQLObjectType, GraphQLField, GraphQLString
+
+from graphql import (
+    GraphQLField,
+    GraphQLObjectType,
+    GraphQLSchema,
+    GraphQLString,
+    graphql,
+)
 
 
 def resolve_hello(obj, info):

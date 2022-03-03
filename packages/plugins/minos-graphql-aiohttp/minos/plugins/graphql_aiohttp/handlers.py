@@ -20,6 +20,9 @@ from typing import (
 from aiohttp import (
     web,
 )
+from graphql_server.aiohttp import (
+    GraphQLView,
+)
 
 from minos.common import (
     MinosConfig,
@@ -31,15 +34,15 @@ from minos.networks import (
     ResponseException,
 )
 
+from .graphql_example import (
+    schema,
+)
 from .requests import (
     RestRequest,
 )
 from .responses import (
     RestResponse,
 )
-from graphql_server.aiohttp import GraphQLView
-
-from .graphql_example import schema
 
 logger = logging.getLogger(__name__)
 

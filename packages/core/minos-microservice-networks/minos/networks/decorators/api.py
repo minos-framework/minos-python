@@ -6,10 +6,10 @@ from .definitions import (
     BrokerCommandEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
+    GraphqlQueryEnrouteDecorator,
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestQueryEnrouteDecorator,
-    GraphqlQueryEnrouteDecorator,
 )
 
 
