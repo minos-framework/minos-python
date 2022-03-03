@@ -1,5 +1,10 @@
-from aiohttp import web
-from minos.plugins.graphql_aiohttp.services import RestService
+from aiohttp import (
+    web,
+)
+
+from minos.plugins.graphql_aiohttp.services import (
+    RestService,
+)
 
 
 def main():

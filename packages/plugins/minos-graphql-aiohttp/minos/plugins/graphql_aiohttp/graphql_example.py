@@ -1,16 +1,18 @@
 import asyncio
+
 from graphql import (
-    graphql, GraphQLSchema, GraphQLObjectType, GraphQLField, GraphQLString)
+    GraphQLField,
+    GraphQLObjectType,
+    GraphQLSchema,
+    GraphQLString,
+    graphql,
+)
 
 
 def resolve_hello(obj, info):
-    return 'world'
+    return "world"
+
 
 schema = GraphQLSchema(
-    query=GraphQLObjectType(
-        name='RootQueryType',
-        fields={
-            'hello': GraphQLField(
-                GraphQLString,
-                resolve=resolve_hello)
-        }))
+    query=GraphQLObjectType(name="RootQueryType", fields={"hello": GraphQLField(GraphQLString, resolve=resolve_hello)})
+)

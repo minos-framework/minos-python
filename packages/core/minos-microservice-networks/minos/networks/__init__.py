@@ -55,6 +55,8 @@ from .decorators import (
     EnrouteBuilder,
     EnrouteDecorator,
     EnrouteDecoratorKind,
+    GraphqlEnrouteDecorator,
+    GraphqlQueryEnrouteDecorator,
     Handler,
     HandlerMeta,
     HandlerWrapper,
@@ -63,8 +65,6 @@ from .decorators import (
     RestCommandEnrouteDecorator,
     RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
-    GraphqlEnrouteDecorator,
-    GraphqlQueryEnrouteDecorator,
     enroute,
 )
 from .discovery import (

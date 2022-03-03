@@ -4,12 +4,16 @@ from aiohttp import (
 from aiomisc.service.aiohttp import (
     AIOHTTPService,
 )
+from graphql_server.aiohttp import (
+    GraphQLView,
+)
+
+from .graphql_example import (
+    schema,
+)
 from .handlers import (
     RestHandler,
 )
-from graphql_server.aiohttp import GraphQLView
-
-from .graphql_example import schema
 
 
 class RestService(AIOHTTPService):
@@ -21,8 +25,8 @@ class RestService(AIOHTTPService):
     """
 
     def __init__(self, **kwargs):
-        #self.handler = RestHandler.from_config(**kwargs)
-        #super().__init__(**(kwargs | {"address": self.handler.host, "port": self.handler.port}))
+        # self.handler = RestHandler.from_config(**kwargs)
+        # super().__init__(**(kwargs | {"address": self.handler.host, "port": self.handler.port}))
         super().__init__(**(kwargs | {"address": "localhost", "port": 7030}))
 
     def _mount_graphql(self, app: web.Application):
@@ -37,5 +41,4 @@ class RestService(AIOHTTPService):
         # self._mount_routes(app)
         self._mount_graphql(app)
         return app
-        #return self.handler.get_app()  # pragma: no cover
-
+        # return self.handler.get_app()  # pragma: no cover

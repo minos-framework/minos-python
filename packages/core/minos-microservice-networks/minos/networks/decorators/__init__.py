@@ -23,11 +23,11 @@ from .definitions import (
     CheckDecorator,
     EnrouteDecorator,
     EnrouteDecoratorKind,
+    GraphqlEnrouteDecorator,
+    GraphqlQueryEnrouteDecorator,
     PeriodicEnrouteDecorator,
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
-    GraphqlEnrouteDecorator,
-    GraphqlQueryEnrouteDecorator,
 )

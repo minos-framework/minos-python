@@ -4,10 +4,10 @@ from minos.networks import (
     BrokerCommandEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
+    GraphqlQueryEnrouteDecorator,
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestQueryEnrouteDecorator,
-    GraphqlQueryEnrouteDecorator,
     enroute,
 )
 
