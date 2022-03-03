@@ -60,17 +60,33 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
         try:
             return super().__getattr__(item)
         except AttributeError as exc:
-            if item != "data":
-                return getattr(self.data, item)
-            raise exc
+            if item == "data":
+                raise exc
+            return getattr(self.data, item)
+
+    def __setattr__(self, key: str, value: Any) -> None:
+        try:
+            return super().__setattr__(key, value)
+        except AttributeError as exc:
+            if key == "data":
+                raise exc
+            return setattr(self.data, key, value)
 
     def __getitem__(self, item: str) -> Any:
         try:
             return super().__getitem__(item)
         except KeyError as exc:
-            if item != "data":
-                return self.data[item]
-            raise exc
+            if item == "data":
+                raise exc
+            return self.data[item]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        try:
+            return super().__setitem__(key, value)
+        except KeyError as exc:
+            if key == "data":
+                raise exc
+            self.data[key] = value
 
     @property
     def int(self) -> int:
