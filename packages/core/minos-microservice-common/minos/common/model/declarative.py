@@ -3,6 +3,9 @@ from __future__ import (
 )
 
 import logging
+from functools import (
+    lru_cache,
+)
 from itertools import (
     zip_longest,
 )
@@ -10,7 +13,6 @@ from typing import (
     Any,
     Iterator,
     Optional,
-    Type,
     TypeVar,
     get_type_hints,
 )
@@ -43,7 +45,7 @@ class DeclarativeModel(Model):
 
     # noinspection PyUnusedLocal
     @classmethod
-    def from_model_type(cls: Type[T], model_type: ModelType, *args, **kwargs) -> T:
+    def from_model_type(cls: type[T], model_type: ModelType, *args, **kwargs) -> T:
         """Build a ``DeclarativeModel`` from a ``ModelType``.
 
         :param model_type: ``ModelType`` object containing the model structure.
@@ -76,7 +78,7 @@ class DeclarativeModel(Model):
         else:
             cls = type(self_or_cls)
         for b in cls.__mro__[::-1]:
-            list_fields = {k: v for k, v in get_type_hints(b).items() if not k.startswith("_")}
+            list_fields = _get_class_type_hints(b)
             type_hints |= list_fields
         logger.debug(f"The obtained type hints are: {type_hints!r}")
 
@@ -87,6 +89,11 @@ class DeclarativeModel(Model):
 
         type_hints |= super()._type_hints()
         yield from type_hints.items()
+
+
+@lru_cache()
+def _get_class_type_hints(b: type) -> dict[str, type]:
+    return {k: v for k, v in get_type_hints(b).items() if not k.startswith("_")}
 
 
 T = TypeVar("T", bound=DeclarativeModel)

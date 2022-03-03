@@ -3,12 +3,18 @@ from __future__ import (
 )
 
 from typing import (
+    TYPE_CHECKING,
     Any,
     TypeVar,
     Union,
     get_args,
     get_origin,
 )
+
+if TYPE_CHECKING:
+    from ..abc import (
+        Model,
+    )
 
 
 # noinspection SpellCheckingInspection
@@ -29,16 +35,16 @@ class GenericTypeProjector:
         self.mapper = mapper
 
     @classmethod
-    def from_model(cls, type_: type) -> GenericTypeProjector:
+    def from_model(cls, model: Union[Model, type[Model]]) -> GenericTypeProjector:
         """Build a new instance from model.
 
-        :param type_: The model class.
+        :param model: The model class.
         :return: A ``GenericTypeProjector`` instance.
         """
-        # noinspection PyUnresolvedReferences
-        generics_ = dict(zip(type_.type_hints_parameters, get_args(type_)))
-        # noinspection PyUnresolvedReferences
-        return cls(type_.type_hints, generics_)
+        # noinspection PyTypeChecker
+        generics_ = dict(zip(model.type_hints_parameters, get_args(model)))
+        # noinspection PyTypeChecker
+        return cls(model.type_hints, generics_)
 
     def build(self) -> dict[str, type]:
         """Builder a projection of type vars values.
@@ -47,13 +53,13 @@ class GenericTypeProjector:
         """
         return {k: self._build(v) for k, v in self.type_hints.items()}
 
-    def _build(self, value: Any) -> type:
-        if isinstance(value, TypeVar):
-            return self.mapper.get(value, unpack_typevar(value))
+    def _build(self, type_: type) -> type:
+        if isinstance(type_, TypeVar):
+            return self.mapper.get(type_, unpack_typevar(type_))
 
-        origin = get_origin(value)
+        origin = get_origin(type_)
         if origin is None:
-            return value
+            return type_
 
         # noinspection PyUnresolvedReferences
-        return self._build(origin)[tuple(self._build(arg) for arg in get_args(value))]
+        return self._build(origin)[tuple(self._build(arg) for arg in get_args(type_))]
