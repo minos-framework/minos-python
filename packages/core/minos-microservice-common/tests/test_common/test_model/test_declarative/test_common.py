@@ -1,6 +1,7 @@
 import unittest
 from typing import (
-    Optional, Callable,
+    Callable,
+    Optional,
 )
 
 from minos.common import (
@@ -18,10 +19,10 @@ from tests.model_classes import (
     CustomerFailDict,
     CustomerFailList,
     GenericUser,
+    ReservedWordUser,
     ShoppingList,
     T,
     User,
-    ReservedWordUser,
 )
 
 
