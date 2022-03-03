@@ -33,10 +33,23 @@ class TestSagaContext(unittest.TestCase):
         self.assertEqual("two", context.two)
         self.assertEqual(Foo("three"), context.three)
 
+    def test_setter_reserved_word(self):
+        context = SagaContext()
+        context.items = "bar"
+        self.assertEqual("bar", context.items)
+        self.assertNotIn("bar", context.fields)
+
     def test_deleter(self):
         context = SagaContext(one=1)
         del context.one
         self.assertEqual(SagaContext(), SagaContext())
+
+    def test_deleter_reserved_word(self):
+        context = SagaContext()
+        context["items"] = "foo"
+        with self.assertRaises(AttributeError):
+            del context.items
+        self.assertEqual("foo", context.fields["items"].value)
 
     def test_deleter_raises(self):
         with self.assertRaises(AttributeError):
@@ -61,6 +74,11 @@ class TestSagaContext(unittest.TestCase):
         context["two"] = "two"
         context["three"] = Foo("three")
         self.assertEqual(SagaContext(one=1, two="two", three=Foo("three")), context)
+
+    def test_item_setter_reserved_word(self):
+        context = SagaContext()
+        context["items"] = "bar"
+        self.assertEqual("bar", context.fields["items"].value)
 
     def test_item_getter(self):
         context = SagaContext(one=1, two="two", three=Foo("three"))

@@ -38,7 +38,7 @@ class SagaContext(BucketModel, MutableMapping):
             raise KeyError(f"{type(self).__name__!r} does not contain the {item!r} field")
 
     def __delattr__(self, item: str) -> None:
-        if item.startswith("_"):
+        if item.startswith("_") or item in dir(self):
             super().__delattr__(item)
         else:
             try:
