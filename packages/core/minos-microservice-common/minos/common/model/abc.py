@@ -236,7 +236,7 @@ class Model(Mapping):
             raise KeyError(f"{type(self).__name__!r} does not contain the {item!r} field.")
 
     def __setattr__(self, key: str, value: Any) -> None:
-        if key.startswith("_"):
+        if key.startswith("_") or key in dir(self):
             object.__setattr__(self, key, value)
         else:
             try:
