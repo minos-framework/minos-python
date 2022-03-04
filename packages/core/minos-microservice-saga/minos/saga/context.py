@@ -40,8 +40,9 @@ class SagaContext(BucketModel, MutableMapping):
     def __delattr__(self, item: str) -> None:
         if item.startswith("_") or item in dir(self):
             super().__delattr__(item)
-        else:
-            try:
-                self[item]
-            except KeyError as exc:
-                raise AttributeError(str(exc))
+            return
+
+        try:
+            self[item]
+        except KeyError as exc:
+            raise AttributeError(str(exc))

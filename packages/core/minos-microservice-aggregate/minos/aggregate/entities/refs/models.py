@@ -63,6 +63,7 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
             if key == "uuid":
                 self.uuid = value
                 return
+
             try:
                 self.data[key] = value
             except Exception:
@@ -72,8 +73,12 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
         try:
             return super().__getitem__(item)
         except KeyError as exc:
+            if item == "data":
+                raise exc
+
             if item == "uuid":
                 return self.uuid
+
             try:
                 return self.data[item]
             except Exception:
@@ -85,7 +90,11 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
         except AttributeError as exc:
             if item == "data":
                 raise exc
-            return getattr(self.data, item)
+
+            try:
+                return getattr(self.data, item)
+            except Exception:
+                raise exc
 
     @property
     def int(self) -> int:

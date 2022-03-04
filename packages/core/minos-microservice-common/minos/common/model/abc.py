@@ -238,13 +238,17 @@ class Model(Mapping):
     def __setattr__(self, key: str, value: Any) -> None:
         if key.startswith("_") or key in dir(self):
             object.__setattr__(self, key, value)
-        else:
-            try:
-                self[key] = value
-            except KeyError as exc:
-                raise AttributeError(str(exc))
+            return
+
+        try:
+            self[key] = value
+        except KeyError as exc:
+            raise AttributeError(str(exc))
 
     def __getattr__(self, item: str) -> Any:
+        if item.startswith("_") or item in dir(self):
+            raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
+
         try:
             return self[item]
         except KeyError as exc:
