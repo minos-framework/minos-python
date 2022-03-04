@@ -12,6 +12,7 @@ from uuid import (
 from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
     Ref,
+    RefException,
 )
 from minos.common import (
     DeclarativeModel,
@@ -22,6 +23,7 @@ from minos.common import (
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
+    BrokerMessageV1Status,
 )
 from tests.utils import (
     MinosTestCase,
@@ -61,6 +63,42 @@ class TestRef(MinosTestCase):
 
         self.assertEqual(uuid.is_safe, value.is_safe)
 
+    def test_uuid_getattr(self):
+        uuid = uuid4()
+        value = Ref(uuid)
+
+        self.assertEqual(uuid, value.uuid)
+
+    def test_uuid_setattr(self):
+        uuid_1 = uuid4()
+        uuid_2 = uuid4()
+        value = Ref(uuid_1)
+
+        value.uuid = uuid_2
+
+        self.assertEqual(uuid_2, value.data)
+
+    def test_uuid_getitem(self):
+        uuid = uuid4()
+        value = Ref(uuid)
+
+        self.assertEqual(uuid, value["uuid"])
+
+    def test_model_getitem_raises(self):
+        value = Ref(Bar(uuid4(), 1))
+
+        with self.assertRaises(KeyError):
+            value["year"]
+
+    def test_uuid_setitem(self):
+        uuid_1 = uuid4()
+        uuid_2 = uuid4()
+        value = Ref(uuid_1)
+
+        value["uuid"] = uuid_2
+
+        self.assertEqual(uuid_2, value.data)
+
     def test_model(self):
         another = Bar(uuid4(), 1)
         value = Foo(another=another)
@@ -73,16 +111,65 @@ class TestRef(MinosTestCase):
 
         self.assertEqual(uuid, value.uuid)
 
-    def test_model_attribute(self):
+    def test_model_getattr(self):
         value = Ref(Bar(uuid4(), 1))
 
         self.assertEqual(1, value.age)
 
-    def test_model_attribute_raises(self):
+    def test_model_getattr_raises(self):
         value = Ref(Bar(uuid4(), 1))
 
         with self.assertRaises(AttributeError):
             value.year
+
+    def test_model_setattr(self):
+        value = Ref(Bar(uuid4(), 1))
+
+        value.age = 2
+
+        self.assertEqual(2, value.data.age)
+
+    def test_model_setattr_uuid(self):
+        uuid_2 = uuid4()
+        value = Ref(Bar(uuid4(), 1))
+
+        value.uuid = uuid_2
+
+        self.assertEqual(uuid_2, value.data)
+
+    def test_model_setattr_raises(self):
+        uuid_2 = uuid4()
+        value = Ref(Bar(uuid4(), 1))
+
+        with self.assertRaises(AttributeError):
+            value.something = uuid_2
+
+    def test_model_getitem(self):
+        value = Ref(Bar(uuid4(), 1))
+
+        self.assertEqual(1, value["age"])
+
+    def test_model_setitem(self):
+        value = Ref(Bar(uuid4(), 1))
+
+        value["age"] = 2
+
+        self.assertEqual(2, value.data.age)
+
+    def test_model_setitem_uuid(self):
+        uuid_2 = uuid4()
+        value = Ref(Bar(uuid4(), 1))
+
+        value["uuid"] = uuid_2
+
+        self.assertEqual(uuid_2, value.data)
+
+    def test_model_setitem_raises(self):
+        uuid_2 = uuid4()
+        value = Ref(Bar(uuid4(), 1))
+
+        with self.assertRaises(KeyError):
+            value["something"] = uuid_2
 
     def test_fields(self):
         value = Ref(Bar(uuid4(), 1))
@@ -214,6 +301,18 @@ class TestRef(MinosTestCase):
         self.assertEqual("GetBar", observed[0].topic)
         self.assertEqual({"uuid": another}, observed[0].content)
         self.assertEqual(ref.data, Bar(another, 1))
+
+    async def test_resolve_raises(self):
+        another = uuid4()
+
+        self.broker_subscriber_builder.with_messages(
+            [BrokerMessageV1("", BrokerMessageV1Payload(status=BrokerMessageV1Status.ERROR))]
+        )
+
+        ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
+
+        with self.assertRaises(RefException):
+            await ref.resolve()
 
     async def test_resolve_already(self):
         uuid = uuid4()

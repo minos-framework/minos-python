@@ -19,7 +19,7 @@ class PreEventHandler:
     """Pre Event Handler class."""
 
     @classmethod
-    async def handle(cls, diff: T, resolve_references: bool = True, **kwargs) -> T:
+    async def handle(cls, diff: T, resolve_references: bool = False, **kwargs) -> T:
         """Handle Ref resolution for Events.
 
         :param diff: The instance containing ``Ref`` instances.
@@ -33,7 +33,7 @@ class PreEventHandler:
         try:
             return await RefResolver(**kwargs).resolve(diff)
         except Exception as exc:
-            logger.warning(f"An exception was raised while trying to resolve model references: {exc!r}")
+            logger.exception(f"An exception was raised while trying to resolve model references: {exc!r}")
             return diff
 
 

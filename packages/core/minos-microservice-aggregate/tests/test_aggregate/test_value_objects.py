@@ -19,14 +19,14 @@ class _Location(ValueObject):
 
 class TestValueObject(TestCase):
     def setUp(self) -> None:
-        self.value_object = _Location(street="street name")
+        self.value = _Location(street="street name")
 
     def test_instantiate(self):
-        self.assertEqual("street name", self.value_object.street)
+        self.assertEqual("street name", self.value.street)
 
     def test_raise_when_accessed(self):
         with self.assertRaises(ValueObjectException):
-            self.value_object.street = "this assignment must raise"
+            self.value["street"] = "this assignment must raise"
 
 
 class TestValueObjectSet(TestCase):
