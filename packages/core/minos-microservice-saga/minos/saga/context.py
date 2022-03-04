@@ -37,12 +37,18 @@ class SagaContext(BucketModel, MutableMapping):
         except KeyError:
             raise KeyError(f"{type(self).__name__!r} does not contain the {item!r} field")
 
+    def __setattr__(self, key: str, value: Any) -> None:
+        try:
+            super().__setattr__(key, value)
+        except AttributeError:
+            self[key] = value
+
     def __delattr__(self, item: str) -> None:
         if item.startswith("_"):
             super().__delattr__(item)
             return
 
         try:
-            self[item]
+            del self[item]
         except KeyError as exc:
             raise AttributeError(str(exc))

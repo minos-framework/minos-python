@@ -76,6 +76,15 @@ class Event(DeclarativeModel):
                     raise exc
             raise exc
 
+    def __getattr__(self, item: str) -> Any:
+        try:
+            return super().__getattr__(item)
+        except AttributeError as exc:
+            try:
+                return self[item]
+            except Exception:
+                raise exc
+
     def get_one(self, name: str, return_diff: bool = False) -> Union[FieldDiff, Any, list[FieldDiff], list[Any]]:
         """Get first field diff with given name.
 

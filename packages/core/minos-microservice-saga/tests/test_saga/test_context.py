@@ -57,7 +57,7 @@ class TestSagaContext(unittest.TestCase):
         context["items"] = "foo"
         del context.items
         self.assertIsInstance(context.items, Callable)
-        self.assertEqual("foo", context.fields["items"].value)
+        self.assertNotIn("items", context.fields)
 
     def test_deleter_raises(self):
         with self.assertRaises(AttributeError):

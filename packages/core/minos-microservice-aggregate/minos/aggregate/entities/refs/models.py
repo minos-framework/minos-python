@@ -89,6 +89,19 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
             except Exception:
                 raise exc
 
+    def __setattr__(self, key: str, value: Any) -> None:
+        try:
+            return super().__setattr__(key, value)
+        except AttributeError as exc:
+            if key == "uuid":
+                self.data = value
+                return
+
+            try:
+                setattr(self.data, key, value)
+            except Exception:
+                raise exc
+
     def __getattr__(self, item: str) -> Any:
         try:
             return super().__getattr__(item)
@@ -182,14 +195,6 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
         if not self.resolved:
             return self.data
         return self.data.uuid
-
-    @uuid.setter
-    def uuid(self, value: UUID) -> None:
-        """Set the uuid that identifies the ``Model``.
-
-        :return: This method does not return anything.
-        """
-        self.data = value
 
     @property
     def data_cls(self) -> Optional[type]:

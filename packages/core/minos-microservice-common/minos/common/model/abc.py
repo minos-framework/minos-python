@@ -240,13 +240,16 @@ class Model(Mapping):
             object.__setattr__(self, key, value)
             return
 
+        if key not in self._fields:
+            raise AttributeError(f"{type(self).__name__!r} does not contain the {key!r} attribute.")
+
         try:
             self[key] = value
         except KeyError as exc:
             raise AttributeError(str(exc))
 
     def __getattr__(self, item: str) -> Any:
-        if item.startswith("_"):
+        if item.startswith("_") or item not in self._fields:
             raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
 
         try:
