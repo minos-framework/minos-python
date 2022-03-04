@@ -66,7 +66,7 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
             return super().__setitem__(key, value)
         except KeyError as exc:
             if key == "uuid":
-                self.uuid = value
+                self.data = value
                 return
 
             try:
