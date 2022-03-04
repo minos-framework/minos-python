@@ -199,7 +199,7 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
 
         :return: This method does not return anything.
         """
-        raise NotImplementedError
+        raise RuntimeError("The 'uuid' must be set through the '__setattr__' method.")  # pragma: no cover
 
     @property
     def data_cls(self) -> Optional[type]:
