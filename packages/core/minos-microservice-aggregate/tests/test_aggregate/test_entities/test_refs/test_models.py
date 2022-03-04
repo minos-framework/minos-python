@@ -129,6 +129,13 @@ class TestRef(MinosTestCase):
 
         self.assertEqual(uuid_2, value.data)
 
+    def test_model_setattr_raises(self):
+        uuid_2 = uuid4()
+        value = Ref(Bar(uuid4(), 1))
+
+        with self.assertRaises(AttributeError):
+            value.something = uuid_2
+
     def test_model_getitem(self):
         value = Ref(Bar(uuid4(), 1))
 
@@ -148,6 +155,13 @@ class TestRef(MinosTestCase):
         value["uuid"] = uuid_2
 
         self.assertEqual(uuid_2, value.data)
+
+    def test_model_setitem_raises(self):
+        uuid_2 = uuid4()
+        value = Ref(Bar(uuid4(), 1))
+
+        with self.assertRaises(KeyError):
+            value["something"] = uuid_2
 
     def test_fields(self):
         value = Ref(Bar(uuid4(), 1))

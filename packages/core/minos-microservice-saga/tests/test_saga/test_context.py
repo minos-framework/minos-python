@@ -44,6 +44,13 @@ class TestSagaContext(unittest.TestCase):
         del context.one
         self.assertEqual(SagaContext(), SagaContext())
 
+    def test_deleter_attr(self):
+        context = SagaContext(one=1)
+        context._something = 1
+        del context._something
+        with self.assertRaises(AttributeError):
+            context._something
+
     def test_deleter_reserved_word(self):
         context = SagaContext()
         context["items"] = "foo"
