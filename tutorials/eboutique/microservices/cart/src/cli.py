@@ -62,12 +62,12 @@ def start(
 ):
     """Start the microservice."""
     launcher = EntrypointLauncher.from_config(file_path, external_modules=[sys.modules["src"]])
+    launcher.loop.run_until_complete(launcher.setup())
     rest_service: RestService = launcher.services[1]
 
     rest_app: web.Application = rest_service.handler.get_app()
 
     trace_app(rest_app, tracer, service="cart")
-
     launcher.launch()
 
 
