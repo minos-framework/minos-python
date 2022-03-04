@@ -78,9 +78,6 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
         try:
             return super().__getitem__(item)
         except KeyError as exc:
-            if item == "data":
-                raise exc
-
             if item == "uuid":
                 return self.uuid
 
@@ -195,6 +192,14 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
         if not self.resolved:
             return self.data
         return self.data.uuid
+
+    @uuid.setter
+    def uuid(self, value: UUID) -> None:
+        """Set the uuid that identifies the ``Model``.
+
+        :return: This method does not return anything.
+        """
+        raise NotImplementedError
 
     @property
     def data_cls(self) -> Optional[type]:

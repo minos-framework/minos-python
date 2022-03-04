@@ -84,6 +84,12 @@ class TestRef(MinosTestCase):
 
         self.assertEqual(uuid, value["uuid"])
 
+    def test_model_getitem_raises(self):
+        value = Ref(Bar(uuid4(), 1))
+
+        with self.assertRaises(KeyError):
+            value["year"]
+
     def test_uuid_setitem(self):
         uuid_1 = uuid4()
         uuid_2 = uuid4()
