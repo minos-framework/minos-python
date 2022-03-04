@@ -24,12 +24,12 @@ from minos.networks import (
     Request,
     Response,
 )
-from minos.plugins.rest_aiohttp import (
+from minos.plugins.graphql_aiohttp import (
     RestHandler,
     RestResponse,
     RestResponseException,
 )
-from tests.test_plugins.test_rest_aiohttp.utils import (
+from tests.test_plugins.test_graphql_aiohttp.utils import (
     json_mocked_request,
     mocked_request,
 )

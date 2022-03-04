@@ -18,11 +18,11 @@ from minos.networks import (
     NotHasParamsException,
     Response,
 )
-from minos.plugins.rest_aiohttp import (
+from minos.plugins.graphql_aiohttp import (
     RestRequest,
     RestResponse,
 )
-from tests.test_plugins.test_rest_aiohttp.utils import (
+from tests.test_plugins.test_graphql_aiohttp.utils import (
     avro_mocked_request,
     bytes_mocked_request,
     form_mocked_request,
