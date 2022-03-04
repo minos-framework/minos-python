@@ -33,7 +33,7 @@ class PreEventHandler:
         try:
             return await RefResolver(**kwargs).resolve(diff)
         except Exception as exc:
-            logger.warning(f"An exception was raised while trying to resolve model references: {exc!r}")
+            logger.exception(f"An exception was raised while trying to resolve model references: {exc!r}")
             return diff
 
 
