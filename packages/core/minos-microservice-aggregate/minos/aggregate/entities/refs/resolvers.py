@@ -1,3 +1,4 @@
+import logging
 from asyncio import (
     gather,
 )
@@ -29,12 +30,17 @@ from minos.networks import (
     BrokerMessageV1Payload,
 )
 
+from ...exceptions import (
+    RefException,
+)
 from .extractors import (
     RefExtractor,
 )
 from .injectors import (
     RefInjector,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class RefResolver:
@@ -76,5 +82,10 @@ class RefResolver:
 
     @staticmethod
     async def _get_response(broker: BrokerClient, count: int, **kwargs) -> Iterable[Model]:
-        messages = [message async for message in broker.receive_many(count, **kwargs)]
+        messages = list()
+        async for message in broker.receive_many(count, **kwargs):
+            if not message.ok:
+                raise RefException(f"The received message is not ok: {message!r}")
+            messages.append(message)
+
         return chain(*(message.content for message in messages))

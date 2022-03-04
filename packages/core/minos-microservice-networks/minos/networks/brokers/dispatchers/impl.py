@@ -156,7 +156,7 @@ class BrokerDispatcher(MinosSetup):
                 else:
                     content, status = None, BrokerMessageV1Status.SUCCESS
             except ResponseException as exc:
-                logger.warning(f"Raised an application exception: {exc!s}")
+                logger.error(f"Raised an application exception: {exc!s}")
                 content, status = repr(exc), exc.status
             except Exception as exc:
                 logger.exception(f"Raised a system exception: {exc!r}")

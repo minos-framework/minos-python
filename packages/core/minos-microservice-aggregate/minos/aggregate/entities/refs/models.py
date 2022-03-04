@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     Any,
     Generic,
@@ -39,7 +40,11 @@ from minos.networks import (
 from ...contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
+from ...exceptions import (
+    RefException,
+)
 
+logger = logging.getLogger(__name__)
 MT = TypeVar("MT", bound=Model)
 
 
@@ -56,13 +61,55 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
 
         self._broker_pool = broker_pool
 
+    def __setitem__(self, key: str, value: Any) -> None:
+        try:
+            return super().__setitem__(key, value)
+        except KeyError as exc:
+            if key == "uuid":
+                self.data = value
+                return
+
+            try:
+                self.data[key] = value
+            except Exception:
+                raise exc
+
+    def __getitem__(self, item: str) -> Any:
+        try:
+            return super().__getitem__(item)
+        except KeyError as exc:
+            if item == "uuid":
+                return self.uuid
+
+            try:
+                return self.data[item]
+            except Exception:
+                raise exc
+
+    def __setattr__(self, key: str, value: Any) -> None:
+        try:
+            return super().__setattr__(key, value)
+        except AttributeError as exc:
+            if key == "uuid":
+                self.data = value
+                return
+
+            try:
+                setattr(self.data, key, value)
+            except Exception:
+                raise exc
+
     def __getattr__(self, item: str) -> Any:
         try:
             return super().__getattr__(item)
         except AttributeError as exc:
-            if item != "data":
+            if item == "data":
+                raise exc
+
+            try:
                 return getattr(self.data, item)
-            raise exc
+            except Exception:
+                raise exc
 
     @property
     def int(self) -> int:
@@ -146,6 +193,14 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
             return self.data
         return self.data.uuid
 
+    @uuid.setter
+    def uuid(self, value: UUID) -> None:
+        """Set the uuid that identifies the ``Model``.
+
+        :return: This method does not return anything.
+        """
+        raise RuntimeError("The 'uuid' must be set through the '__setattr__' method.")  # pragma: no cover
+
     @property
     def data_cls(self) -> Optional[type]:
         """Get data class if available.
@@ -178,6 +233,8 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
     @staticmethod
     async def _get_response(broker: BrokerClient, **kwargs) -> MT:
         message = await broker.receive(**kwargs)
+        if not message.ok:
+            raise RefException(f"The received message is not ok: {message!r}")
         return message.content
 
     @property

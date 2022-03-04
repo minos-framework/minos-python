@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .entities import (
         RootEntity,
     )
-    from .models import (
+    from .events import (
         Event,
     )
 
@@ -73,3 +73,7 @@ class AlreadyDeletedException(SnapshotRepositoryException):
 
 class ValueObjectException(AggregateException):
     """If an attribute of an immutable class is modified, this exception will be raised"""
+
+
+class RefException(AggregateException):
+    """Exception to be raised when some reference can not be resolved."""
