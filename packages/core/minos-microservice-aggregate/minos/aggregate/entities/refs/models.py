@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     Any,
     Generic,
@@ -39,7 +40,11 @@ from minos.networks import (
 from ...contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
+from ...exceptions import (
+    RefException,
+)
 
+logger = logging.getLogger(__name__)
 MT = TypeVar("MT", bound=Model)
 
 
@@ -218,6 +223,8 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
     @staticmethod
     async def _get_response(broker: BrokerClient, **kwargs) -> MT:
         message = await broker.receive(**kwargs)
+        if not message.ok:
+            raise RefException(f"The received message is not ok: {message!r}")
         return message.content
 
     @property

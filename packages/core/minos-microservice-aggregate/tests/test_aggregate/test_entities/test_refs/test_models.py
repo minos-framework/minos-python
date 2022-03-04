@@ -12,6 +12,7 @@ from uuid import (
 from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
     Ref,
+    RefException,
 )
 from minos.common import (
     DeclarativeModel,
@@ -22,6 +23,7 @@ from minos.common import (
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
+    BrokerMessageV1Status,
 )
 from tests.utils import (
     MinosTestCase,
@@ -293,6 +295,18 @@ class TestRef(MinosTestCase):
         self.assertEqual("GetBar", observed[0].topic)
         self.assertEqual({"uuid": another}, observed[0].content)
         self.assertEqual(ref.data, Bar(another, 1))
+
+    async def test_resolve_raises(self):
+        another = uuid4()
+
+        self.broker_subscriber_builder.with_messages(
+            [BrokerMessageV1("", BrokerMessageV1Payload(status=BrokerMessageV1Status.ERROR))]
+        )
+
+        ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
+
+        with self.assertRaises(RefException):
+            await ref.resolve()
 
     async def test_resolve_already(self):
         uuid = uuid4()

@@ -42,6 +42,7 @@ from .exceptions import (
     EventRepositoryConflictException,
     EventRepositoryException,
     NotFoundException,
+    RefException,
     SnapshotRepositoryConflictException,
     SnapshotRepositoryException,
     TransactionNotFoundException,
