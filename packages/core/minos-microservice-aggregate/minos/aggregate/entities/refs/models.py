@@ -59,16 +59,25 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
     def __setitem__(self, key: str, value: Any) -> None:
         try:
             return super().__setitem__(key, value)
-        except KeyError:
-            self.data[key] = value
+        except KeyError as exc:
+            if key == "uuid":
+                self.uuid = value
+                return
+            try:
+                self.data[key] = value
+            except Exception:
+                raise exc
 
     def __getitem__(self, item: str) -> Any:
         try:
             return super().__getitem__(item)
         except KeyError as exc:
-            if item == "data":
+            if item == "uuid":
+                return self.uuid
+            try:
+                return self.data[item]
+            except Exception:
                 raise exc
-            return self.data[item]
 
     def __getattr__(self, item: str) -> Any:
         try:
@@ -159,6 +168,14 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
         if not self.resolved:
             return self.data
         return self.data.uuid
+
+    @uuid.setter
+    def uuid(self, value: UUID) -> None:
+        """Set the uuid that identifies the ``Model``.
+
+        :return: This method does not return anything.
+        """
+        self.data = value
 
     @property
     def data_cls(self) -> Optional[type]:

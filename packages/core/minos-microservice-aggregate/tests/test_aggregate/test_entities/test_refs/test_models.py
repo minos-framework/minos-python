@@ -61,6 +61,36 @@ class TestRef(MinosTestCase):
 
         self.assertEqual(uuid.is_safe, value.is_safe)
 
+    def test_uuid_getattr(self):
+        uuid = uuid4()
+        value = Ref(uuid)
+
+        self.assertEqual(uuid, value.uuid)
+
+    def test_uuid_setattr(self):
+        uuid_1 = uuid4()
+        uuid_2 = uuid4()
+        value = Ref(uuid_1)
+
+        value.uuid = uuid_2
+
+        self.assertEqual(uuid_2, value.data)
+
+    def test_uuid_getitem(self):
+        uuid = uuid4()
+        value = Ref(uuid)
+
+        self.assertEqual(uuid, value["uuid"])
+
+    def test_uuid_setitem(self):
+        uuid_1 = uuid4()
+        uuid_2 = uuid4()
+        value = Ref(uuid_1)
+
+        value["uuid"] = uuid_2
+
+        self.assertEqual(uuid_2, value.data)
+
     def test_model(self):
         another = Bar(uuid4(), 1)
         value = Foo(another=another)
@@ -91,6 +121,14 @@ class TestRef(MinosTestCase):
 
         self.assertEqual(2, value.data.age)
 
+    def test_model_setattr_uuid(self):
+        uuid_2 = uuid4()
+        value = Ref(Bar(uuid4(), 1))
+
+        value.uuid = uuid_2
+
+        self.assertEqual(uuid_2, value.data)
+
     def test_model_getitem(self):
         value = Ref(Bar(uuid4(), 1))
 
@@ -102,6 +140,14 @@ class TestRef(MinosTestCase):
         value["age"] = 2
 
         self.assertEqual(2, value.data.age)
+
+    def test_model_setitem_uuid(self):
+        uuid_2 = uuid4()
+        value = Ref(Bar(uuid4(), 1))
+
+        value["uuid"] = uuid_2
+
+        self.assertEqual(uuid_2, value.data)
 
     def test_fields(self):
         value = Ref(Bar(uuid4(), 1))
