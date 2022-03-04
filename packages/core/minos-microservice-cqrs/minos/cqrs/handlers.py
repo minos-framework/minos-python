@@ -19,7 +19,7 @@ class PreEventHandler:
     """Pre Event Handler class."""
 
     @classmethod
-    async def handle(cls, diff: T, resolve_references: bool = True, **kwargs) -> T:
+    async def handle(cls, diff: T, resolve_references: bool = False, **kwargs) -> T:
         """Handle Ref resolution for Events.
 
         :param diff: The instance containing ``Ref`` instances.
