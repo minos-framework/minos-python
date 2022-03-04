@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; Minos Microservice Aggregate 0.5.2 documentation</title>
+  <title>Index &mdash; Minos Microservice Aggregate 0.5.3 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.5.2
+                0.5.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -150,6 +150,8 @@
         <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.EventRepositoryException.__init__">(minos.aggregate.exceptions.EventRepositoryException method)</a>
 </li>
         <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.NotFoundException.__init__">(minos.aggregate.exceptions.NotFoundException method)</a>
+</li>
+        <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.RefException.__init__">(minos.aggregate.exceptions.RefException method)</a>
 </li>
         <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.SnapshotRepositoryConflictException.__init__">(minos.aggregate.exceptions.SnapshotRepositoryConflictException method)</a>
 </li>
@@ -297,6 +299,8 @@
 </li>
         <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.NotFoundException.args">(minos.aggregate.exceptions.NotFoundException attribute)</a>
 </li>
+        <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.RefException.args">(minos.aggregate.exceptions.RefException attribute)</a>
+</li>
         <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.SnapshotRepositoryConflictException.args">(minos.aggregate.exceptions.SnapshotRepositoryConflictException attribute)</a>
 </li>
         <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.SnapshotRepositoryException.args">(minos.aggregate.exceptions.SnapshotRepositoryException attribute)</a>
@@ -310,14 +314,14 @@
         <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.ValueObjectException.args">(minos.aggregate.exceptions.ValueObjectException attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry.as_raw">as_raw() (minos.aggregate.events.entries.EventEntry method)</a>
 
       <ul>
         <li><a href="api/minos.aggregate.snapshots.entries.html#minos.aggregate.snapshots.entries.SnapshotEntry.as_raw">(minos.aggregate.snapshots.entries.SnapshotEntry method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/minos.aggregate.queries.html#minos.aggregate.queries.Ordering.ASC">ASC (minos.aggregate.queries.Ordering attribute)</a>
 </li>
       <li><a href="api/minos.aggregate.collections.html#minos.aggregate.collections.IncrementalSet.avro_bytes">avro_bytes (minos.aggregate.collections.IncrementalSet property)</a>
@@ -1120,6 +1124,10 @@
       </ul></li>
       <li><a href="api/minos.aggregate.snapshots.pg.readers.html#minos.aggregate.snapshots.pg.readers.PostgreSqlSnapshotReader.get_entry">get_entry() (minos.aggregate.snapshots.pg.readers.PostgreSqlSnapshotReader method)</a>
 </li>
+      <li><a href="api/minos.aggregate.events.models.html#minos.aggregate.events.models.Event.get_field">get_field() (minos.aggregate.events.models.Event method)</a>
+</li>
+      <li><a href="api/minos.aggregate.events.models.html#minos.aggregate.events.models.Event.get_fields">get_fields() (minos.aggregate.events.models.Event method)</a>
+</li>
       <li><a href="api/minos.aggregate.events.fields.html#minos.aggregate.events.fields.FieldDiffContainer.get_one">get_one() (minos.aggregate.events.fields.FieldDiffContainer method)</a>
 
       <ul>
@@ -1514,8 +1522,6 @@
         <li><a href="api/minos.aggregate.snapshots.pg.writers.html#module-minos.aggregate.snapshots.pg.writers">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     minos.aggregate.snapshots.services
 
@@ -1530,6 +1536,8 @@
         <li><a href="api/minos.aggregate.transactions.html#module-minos.aggregate.transactions">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     minos.aggregate.transactions.contextvars
 
@@ -1586,12 +1594,24 @@
         <li><a href="api/minos.aggregate.value_objects.html#module-minos.aggregate.value_objects">module</a>
 </li>
       </ul></li>
-      <li><a href="api/minos.aggregate.events.fields.html#minos.aggregate.events.fields.FieldDiff.model_type">model_type (minos.aggregate.events.fields.FieldDiff attribute)</a>
+      <li><a href="api/minos.aggregate.collections.html#minos.aggregate.collections.IncrementalSet.model_type">model_type (minos.aggregate.collections.IncrementalSet attribute)</a>
 
       <ul>
+        <li><a href="api/minos.aggregate.collections.html#minos.aggregate.collections.IncrementalSetDiff.model_type">(minos.aggregate.collections.IncrementalSetDiff attribute)</a>
+</li>
+        <li><a href="api/minos.aggregate.entities.models.html#minos.aggregate.entities.models.Entity.model_type">(minos.aggregate.entities.models.Entity attribute)</a>
+</li>
+        <li><a href="api/minos.aggregate.entities.refs.models.html#minos.aggregate.entities.refs.models.Ref.model_type">(minos.aggregate.entities.refs.models.Ref attribute)</a>
+</li>
+        <li><a href="api/minos.aggregate.events.fields.html#minos.aggregate.events.fields.FieldDiff.model_type">(minos.aggregate.events.fields.FieldDiff attribute)</a>
+</li>
         <li><a href="api/minos.aggregate.events.fields.html#minos.aggregate.events.fields.FieldDiffContainer.model_type">(minos.aggregate.events.fields.FieldDiffContainer attribute)</a>
 </li>
         <li><a href="api/minos.aggregate.events.fields.html#minos.aggregate.events.fields.IncrementalFieldDiff.model_type">(minos.aggregate.events.fields.IncrementalFieldDiff attribute)</a>
+</li>
+        <li><a href="api/minos.aggregate.events.models.html#minos.aggregate.events.models.Event.model_type">(minos.aggregate.events.models.Event attribute)</a>
+</li>
+        <li><a href="api/minos.aggregate.value_objects.html#minos.aggregate.value_objects.ValueObject.model_type">(minos.aggregate.value_objects.ValueObject attribute)</a>
 </li>
       </ul></li>
       <li>
@@ -1788,6 +1808,8 @@
       <li><a href="api/minos.aggregate.snapshots.pg.api.html#minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository.reader">reader (minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository attribute)</a>
 </li>
       <li><a href="api/minos.aggregate.entities.refs.models.html#minos.aggregate.entities.refs.models.Ref">Ref (class in minos.aggregate.entities.refs.models)</a>
+</li>
+      <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.RefException">RefException</a>
 </li>
       <li><a href="api/minos.aggregate.entities.refs.extractors.html#minos.aggregate.entities.refs.extractors.RefExtractor">RefExtractor (class in minos.aggregate.entities.refs.extractors)</a>
 </li>
@@ -2267,6 +2289,8 @@
         <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.EventRepositoryException.with_traceback">(minos.aggregate.exceptions.EventRepositoryException method)</a>
 </li>
         <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.NotFoundException.with_traceback">(minos.aggregate.exceptions.NotFoundException method)</a>
+</li>
+        <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.RefException.with_traceback">(minos.aggregate.exceptions.RefException method)</a>
 </li>
         <li><a href="api/minos.aggregate.exceptions.html#minos.aggregate.exceptions.SnapshotRepositoryConflictException.with_traceback">(minos.aggregate.exceptions.SnapshotRepositoryConflictException method)</a>
 </li>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.events.models module &mdash; Minos Microservice Aggregate 0.5.2 documentation</title>
+  <title>minos.aggregate.events.models module &mdash; Minos Microservice Aggregate 0.5.3 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.5.2
+                0.5.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -141,7 +141,7 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="minos.aggregate.events.models.Event.avro_schema">
-<span class="sig-name descname"><span class="pre">avro_schema</span></span><a class="headerlink" href="#minos.aggregate.events.models.Event.avro_schema" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">avro_schema</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[{'name':</span> <span class="pre">'Event',</span> <span class="pre">'namespace':</span> <span class="pre">'minos.aggregate.events.models.1a30cf68-3da1-4f8e-a3f6-09614e34ee7e',</span> <span class="pre">'type':</span> <span class="pre">'record',</span> <span class="pre">'fields':</span> <span class="pre">[{'name':</span> <span class="pre">'uuid',</span> <span class="pre">'type':</span> <span class="pre">{'type':</span> <span class="pre">'string',</span> <span class="pre">'logicalType':</span> <span class="pre">'uuid'}},</span> <span class="pre">{'name':</span> <span class="pre">'name',</span> <span class="pre">'type':</span> <span class="pre">'string'},</span> <span class="pre">{'name':</span> <span class="pre">'version',</span> <span class="pre">'type':</span> <span class="pre">'int'},</span> <span class="pre">{'name':</span> <span class="pre">'action',</span> <span class="pre">'type':</span> <span class="pre">{'type':</span> <span class="pre">'string',</span> <span class="pre">'logicalType':</span> <span class="pre">'minos.aggregate.actions.Action'}},</span> <span class="pre">{'name':</span> <span class="pre">'created_at',</span> <span class="pre">'type':</span> <span class="pre">{'type':</span> <span class="pre">'long',</span> <span class="pre">'logicalType':</span> <span class="pre">'timestamp-micros'}},</span> <span class="pre">{'name':</span> <span class="pre">'fields_diff',</span> <span class="pre">'type':</span> <span class="pre">[{'name':</span> <span class="pre">'FieldDiffContainer',</span> <span class="pre">'namespace':</span> <span class="pre">'minos.aggregate.events.fields.f36f9360-3717-406c-820b-35e5aac38ecf',</span> <span class="pre">'type':</span> <span class="pre">'record',</span> <span class="pre">'fields':</span> <span class="pre">[]}]}]}]</span></em><a class="headerlink" href="#minos.aggregate.events.models.Event.avro_schema" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -465,6 +465,45 @@ returned as value instances.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.models.Event.get_field">
+<span class="sig-name descname"><span class="pre">get_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/events/models.html#Event.get_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.events.models.Event.get_field" title="Permalink to this definition"></a></dt>
+<dd><p>Get first field diff with given name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The name of the field diff.</p></li>
+<li><p><strong>return_diff</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the result is returned as field diff instances, otherwise the result is
+returned as value instances.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<a class="reference internal" href="minos.aggregate.events.fields.html#minos.aggregate.events.fields.FieldDiff" title="minos.aggregate.events.fields.FieldDiff"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.events.fields.FieldDiff</span></code></a>, <code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="minos.aggregate.events.fields.html#minos.aggregate.events.fields.FieldDiff" title="minos.aggregate.events.fields.FieldDiff"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.events.fields.FieldDiff</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>]]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">FieldDiff</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.models.Event.get_fields">
+<span class="sig-name descname"><span class="pre">get_fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/events/models.html#Event.get_fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.events.models.Event.get_fields" title="Permalink to this definition"></a></dt>
+<dd><p>Get all field diffs with given name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>return_diff</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the result is returned as field diff instances, otherwise the result is
+returned as value instances.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<a class="reference internal" href="minos.aggregate.events.fields.html#minos.aggregate.events.fields.FieldDiff" title="minos.aggregate.events.fields.FieldDiff"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.events.fields.FieldDiff</span></code></a>, <code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="minos.aggregate.events.fields.html#minos.aggregate.events.fields.FieldDiff" title="minos.aggregate.events.fields.FieldDiff"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.events.fields.FieldDiff</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>]]]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A list of <code class="docutils literal notranslate"><span class="pre">FieldDiff</span></code> instances.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="minos.aggregate.events.models.Event.get_one">
 <span class="sig-name descname"><span class="pre">get_one</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/events/models.html#Event.get_one"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.events.models.Event.get_one" title="Permalink to this definition"></a></dt>
 <dd><p>Get first field diff with given name.</p>
@@ -494,6 +533,12 @@ returned as value instances.</p></li>
 <dt class="sig sig-object py" id="minos.aggregate.events.models.Event.keys">
 <span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">set-like</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">keys</span></span></span><a class="headerlink" href="#minos.aggregate.events.models.Event.keys" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.aggregate.events.models.Event.model_type">
+<span class="sig-name descname"><span class="pre">model_type</span></span><a class="headerlink" href="#minos.aggregate.events.models.Event.model_type" title="Permalink to this definition"></a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.model.types.model_types.Event</span></code></p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="minos.aggregate.events.models.Event.name">
@@ -550,7 +595,7 @@ returned as value instances.</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="minos.aggregate.events.models.Event.type_hints">
-<span class="sig-name descname"><span class="pre">type_hints</span></span><a class="headerlink" href="#minos.aggregate.events.models.Event.type_hints" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">type_hints</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'action':</span> <span class="pre">&lt;enum</span> <span class="pre">'Action'&gt;,</span> <span class="pre">'created_at':</span> <span class="pre">&lt;class</span> <span class="pre">'datetime.datetime'&gt;,</span> <span class="pre">'fields_diff':</span> <span class="pre">&lt;class</span> <span class="pre">'minos.aggregate.events.fields.FieldDiffContainer'&gt;,</span> <span class="pre">'name':</span> <span class="pre">&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">'uuid':</span> <span class="pre">&lt;class</span> <span class="pre">'uuid.UUID'&gt;,</span> <span class="pre">'version':</span> <span class="pre">&lt;class</span> <span class="pre">'int'&gt;}</span></em><a class="headerlink" href="#minos.aggregate.events.models.Event.type_hints" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">

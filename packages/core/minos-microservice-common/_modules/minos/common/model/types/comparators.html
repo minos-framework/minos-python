@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.common.model.types.comparators &mdash; Minos Microservice Common 0.5.2 documentation</title>
+  <title>minos.common.model.types.comparators &mdash; Minos Microservice Common 0.5.3 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Common
           </a>
               <div class="version">
-                0.5.2
+                0.5.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -78,6 +78,9 @@
 <span class="p">)</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">lru_cache</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">TypeVar</span><span class="p">,</span>
@@ -140,7 +143,9 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_first</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_second</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="n">second</span><span class="p">:</span> <span class="n">K</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="nd">@lru_cache</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">_compare</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">first</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="n">second</span><span class="p">:</span> <span class="n">K</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">):</span>
             <span class="n">first</span> <span class="o">=</span> <span class="n">unpack_typevar</span><span class="p">(</span><span class="n">first</span><span class="p">)</span>
 
@@ -150,10 +155,10 @@
         <span class="k">if</span> <span class="n">second</span> <span class="ow">is</span> <span class="n">Any</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
 
-        <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">first</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Union</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compare</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">second</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">get_args</span><span class="p">(</span><span class="n">first</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">first</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Union</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_compare</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">second</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">get_args</span><span class="p">(</span><span class="n">first</span><span class="p">)):</span>
             <span class="k">return</span> <span class="kc">True</span>
 
-        <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">second</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Union</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compare</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">get_args</span><span class="p">(</span><span class="n">second</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">second</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Union</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_compare</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">get_args</span><span class="p">(</span><span class="n">second</span><span class="p">)):</span>
             <span class="k">return</span> <span class="kc">True</span>
 
         <span class="k">if</span> <span class="n">is_model_subclass</span><span class="p">(</span><span class="n">first</span><span class="p">):</span>
@@ -173,16 +178,17 @@
                 <span class="k">return</span> <span class="kc">True</span>
 
         <span class="n">first_origin</span><span class="p">,</span> <span class="n">second_origin</span> <span class="o">=</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">first</span><span class="p">),</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">second</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">first_origin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare</span><span class="p">(</span><span class="n">first_origin</span><span class="p">,</span> <span class="n">second_origin</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_args</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">first_origin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_compare</span><span class="p">(</span><span class="n">first_origin</span><span class="p">,</span> <span class="n">second_origin</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_compare_args</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">_compare_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="n">second</span><span class="p">:</span> <span class="n">K</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_compare_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">first</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="n">second</span><span class="p">:</span> <span class="n">K</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="n">first_args</span><span class="p">,</span> <span class="n">second_args</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">first</span><span class="p">),</span> <span class="n">get_args</span><span class="p">(</span><span class="n">second</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_args</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">second_args</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compare</span><span class="p">(</span><span class="n">fi</span><span class="p">,</span> <span class="n">si</span><span class="p">)</span> <span class="k">for</span> <span class="n">fi</span><span class="p">,</span> <span class="n">si</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">first_args</span><span class="p">,</span> <span class="n">second_args</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_compare</span><span class="p">(</span><span class="n">fi</span><span class="p">,</span> <span class="n">si</span><span class="p">)</span> <span class="k">for</span> <span class="n">fi</span><span class="p">,</span> <span class="n">si</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">first_args</span><span class="p">,</span> <span class="n">second_args</span><span class="p">))</span></div>
 </pre></div>
 
            </div>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.common.model.types.generics &mdash; Minos Microservice Common 0.5.2 documentation</title>
+  <title>minos.common.model.types.generics &mdash; Minos Microservice Common 0.5.3 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Common
           </a>
               <div class="version">
-                0.5.2
+                0.5.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -78,12 +78,18 @@
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">TypeVar</span><span class="p">,</span>
     <span class="n">Union</span><span class="p">,</span>
     <span class="n">get_args</span><span class="p">,</span>
     <span class="n">get_origin</span><span class="p">,</span>
 <span class="p">)</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">..abc</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">Model</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
 <span class="c1"># noinspection SpellCheckingInspection</span>
@@ -104,16 +110,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span> <span class="o">=</span> <span class="n">mapper</span></div>
 
 <div class="viewcode-block" id="GenericTypeProjector.from_model"><a class="viewcode-back" href="../../../../../api/minos.common.model.types.generics.html#minos.common.model.types.generics.GenericTypeProjector.from_model">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_model</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">type_</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GenericTypeProjector</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">from_model</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Model</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">Model</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">GenericTypeProjector</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Build a new instance from model.</span>
 
-<span class="sd">        :param type_: The model class.</span>
+<span class="sd">        :param model: The model class.</span>
 <span class="sd">        :return: A ``GenericTypeProjector`` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># noinspection PyUnresolvedReferences</span>
-        <span class="n">generics_</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">type_</span><span class="o">.</span><span class="n">type_hints_parameters</span><span class="p">,</span> <span class="n">get_args</span><span class="p">(</span><span class="n">type_</span><span class="p">)))</span>
-        <span class="c1"># noinspection PyUnresolvedReferences</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">type_</span><span class="o">.</span><span class="n">type_hints</span><span class="p">,</span> <span class="n">generics_</span><span class="p">)</span></div>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">generics_</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">type_hints_parameters</span><span class="p">,</span> <span class="n">get_args</span><span class="p">(</span><span class="n">model</span><span class="p">)))</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">type_hints</span><span class="p">,</span> <span class="n">generics_</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="GenericTypeProjector.build"><a class="viewcode-back" href="../../../../../api/minos.common.model.types.generics.html#minos.common.model.types.generics.GenericTypeProjector.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Builder a projection of type vars values.</span>
@@ -122,16 +128,16 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_hints</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
 
-    <span class="k">def</span> <span class="nf">_build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">unpack_typevar</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">type_</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">type_</span><span class="p">,</span> <span class="n">unpack_typevar</span><span class="p">(</span><span class="n">type_</span><span class="p">))</span>
 
-        <span class="n">origin</span> <span class="o">=</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">origin</span> <span class="o">=</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">type_</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">origin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">value</span>
+            <span class="k">return</span> <span class="n">type_</span>
 
         <span class="c1"># noinspection PyUnresolvedReferences</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="n">origin</span><span class="p">)[</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">get_args</span><span class="p">(</span><span class="n">value</span><span class="p">))]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="n">origin</span><span class="p">)[</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">get_args</span><span class="p">(</span><span class="n">type_</span><span class="p">))]</span></div>
 </pre></div>
 
            </div>

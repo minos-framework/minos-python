@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.common.model.declarative &mdash; Minos Microservice Common 0.5.2 documentation</title>
+  <title>minos.common.model.declarative &mdash; Minos Microservice Common 0.5.3 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Common
           </a>
               <div class="version">
-                0.5.2
+                0.5.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -78,6 +78,9 @@
 <span class="p">)</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">lru_cache</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">zip_longest</span><span class="p">,</span>
 <span class="p">)</span>
@@ -85,7 +88,6 @@
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">Iterator</span><span class="p">,</span>
     <span class="n">Optional</span><span class="p">,</span>
-    <span class="n">Type</span><span class="p">,</span>
     <span class="n">TypeVar</span><span class="p">,</span>
     <span class="n">get_type_hints</span><span class="p">,</span>
 <span class="p">)</span>
@@ -118,7 +120,7 @@
 
     <span class="c1"># noinspection PyUnusedLocal</span>
 <div class="viewcode-block" id="DeclarativeModel.from_model_type"><a class="viewcode-back" href="../../../../api/minos.common.model.declarative.html#minos.common.model.declarative.DeclarativeModel.from_model_type">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_model_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">model_type</span><span class="p">:</span> <span class="n">ModelType</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">from_model_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">model_type</span><span class="p">:</span> <span class="n">ModelType</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Build a ``DeclarativeModel`` from a ``ModelType``.</span>
 
 <span class="sd">        :param model_type: ``ModelType`` object containing the model structure.</span>
@@ -151,7 +153,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">self_or_cls</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__mro__</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-            <span class="n">list_fields</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)}</span>
+            <span class="n">list_fields</span> <span class="o">=</span> <span class="n">_get_class_type_hints</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
             <span class="n">type_hints</span> <span class="o">|=</span> <span class="n">list_fields</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The obtained type hints are: </span><span class="si">{</span><span class="n">type_hints</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -162,6 +164,11 @@
 
         <span class="n">type_hints</span> <span class="o">|=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_type_hints</span><span class="p">()</span>
         <span class="k">yield from</span> <span class="n">type_hints</span><span class="o">.</span><span class="n">items</span><span class="p">()</span></div>
+
+
+<span class="nd">@lru_cache</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">_get_class_type_hints</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)}</span>
 
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">DeclarativeModel</span><span class="p">)</span>

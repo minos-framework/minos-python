@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.common.model.serializers.avro.data.decoder &mdash; Minos Microservice Common 0.5.2 documentation</title>
+  <title>minos.common.model.serializers.avro.data.decoder &mdash; Minos Microservice Common 0.5.3 documentation</title>
       <link rel="stylesheet" href="../../../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../../../index.html" class="icon icon-home"> Minos Microservice Common
           </a>
               <div class="version">
-                0.5.2
+                0.5.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../../../search.html" method="get">
@@ -331,11 +331,18 @@
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-                <span class="n">decoded_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">type_</span><span class="o">.</span><span class="n">type_hints</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                <span class="n">decoded_data</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">field_name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="n">field_type</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">field_name</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">field_type</span> <span class="ow">in</span> <span class="n">type_</span><span class="o">.</span><span class="n">type_hints</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">data</span>
+                <span class="p">}</span>
                 <span class="k">return</span> <span class="n">type_</span><span class="p">(</span><span class="o">**</span><span class="n">decoded_data</span><span class="p">,</span> <span class="n">additional_type_hints</span><span class="o">=</span><span class="n">type_</span><span class="o">.</span><span class="n">type_hints</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-            <span class="n">decoded_data</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">zip_longest</span><span class="p">((</span><span class="n">data</span><span class="p">,),</span> <span class="n">type_</span><span class="o">.</span><span class="n">type_hints</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+            <span class="n">decoded_data</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="n">field_type</span><span class="p">,</span> <span class="n">field_value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">field_value</span><span class="p">,</span> <span class="n">field_type</span> <span class="ow">in</span> <span class="n">zip_longest</span><span class="p">((</span><span class="n">data</span><span class="p">,),</span> <span class="n">type_</span><span class="o">.</span><span class="n">type_hints</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="p">)</span>
             <span class="k">return</span> <span class="n">type_</span><span class="p">(</span><span class="o">*</span><span class="n">decoded_data</span><span class="p">,</span> <span class="n">additional_type_hints</span><span class="o">=</span><span class="n">type_</span><span class="o">.</span><span class="n">type_hints</span><span class="p">)</span>
 
         <span class="k">raise</span> <span class="n">DataDecoderTypeException</span><span class="p">(</span><span class="n">type_</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.value_objects &mdash; Minos Microservice Aggregate 0.5.2 documentation</title>
+  <title>minos.aggregate.value_objects &mdash; Minos Microservice Aggregate 0.5.3 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.5.2
+                0.5.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -98,11 +98,8 @@
 <div class="viewcode-block" id="ValueObject"><a class="viewcode-back" href="../../../api/minos.aggregate.value_objects.html#minos.aggregate.value_objects.ValueObject">[docs]</a><span class="k">class</span> <span class="nc">ValueObject</span><span class="p">(</span><span class="n">DeclarativeModel</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Value Object class.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
-            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ValueObjectException</span><span class="p">(</span><span class="s2">&quot;modification of an immutable value object not allowed&quot;</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ValueObjectException</span><span class="p">(</span><span class="s2">&quot;modification of an immutable value object not allowed&quot;</span><span class="p">)</span></div>
 
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Model</span><span class="p">)</span>

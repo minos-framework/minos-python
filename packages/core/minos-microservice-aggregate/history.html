@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>History &mdash; Minos Microservice Aggregate 0.5.2 documentation</title>
+  <title>History &mdash; Minos Microservice Aggregate 0.5.3 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <a href="index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.5.2
+                0.5.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -60,6 +60,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#id10">0.5.0 (2022-02-03)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id11">0.5.1 (2022-02-03)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id12">0.5.2 (2022-02-08)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id13">0.5.3 (2022-03-04)</a></li>
 </ul>
 </li>
 </ul>
@@ -189,6 +190,15 @@
 <li><p>Rename <code class="docutils literal notranslate"><span class="pre">SnapshotService</span></code> command topics to avoid collisions with application-level topics.</p></li>
 <li><p>Rename <code class="docutils literal notranslate"><span class="pre">TransactionService</span></code> command topics to avoid collisions with application-level topics.</p></li>
 <li><p>Minor changes.</p></li>
+</ul>
+</section>
+<section id="id13">
+<h2>0.5.3 (2022-03-04)<a class="headerlink" href="#id13" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">RefException</span></code> to be raised when some reference cannot be resolved.</p></li>
+<li><p>Improve attribute and item accessors of <code class="docutils literal notranslate"><span class="pre">Ref</span></code>, <code class="docutils literal notranslate"><span class="pre">Event</span></code> and <code class="docutils literal notranslate"><span class="pre">FieldDiffContainer</span></code></p></li>
+<li><p>Deprecate <code class="docutils literal notranslate"><span class="pre">Event.get_one</span></code> in favor of <code class="docutils literal notranslate"><span class="pre">Event.get_field</span></code>.</p></li>
+<li><p>Deprecate <code class="docutils literal notranslate"><span class="pre">Event.get_all</span></code> in favor of <code class="docutils literal notranslate"><span class="pre">Event.get_fields</span></code>.</p></li>
 </ul>
 </section>
 </section>
