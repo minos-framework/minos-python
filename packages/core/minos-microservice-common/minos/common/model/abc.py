@@ -236,7 +236,7 @@ class Model(Mapping):
             raise KeyError(f"{type(self).__name__!r} does not contain the {item!r} field.")
 
     def __setattr__(self, key: str, value: Any) -> None:
-        if key.startswith("_") or key in dir(self):
+        if key.startswith("_"):
             object.__setattr__(self, key, value)
             return
 
@@ -246,7 +246,7 @@ class Model(Mapping):
             raise AttributeError(str(exc))
 
     def __getattr__(self, item: str) -> Any:
-        if item.startswith("_") or item in dir(self):
+        if item.startswith("_"):
             raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
 
         try:

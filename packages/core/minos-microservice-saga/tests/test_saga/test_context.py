@@ -1,5 +1,6 @@
 import unittest
 from collections.abc import (
+    Callable,
     MutableMapping,
 )
 
@@ -36,8 +37,8 @@ class TestSagaContext(unittest.TestCase):
     def test_setter_reserved_word(self):
         context = SagaContext()
         context.items = "bar"
-        self.assertEqual("bar", context.items)
-        self.assertNotIn("bar", context.fields)
+        self.assertIsInstance(context.items, Callable)
+        self.assertEqual("bar", context["items"])
 
     def test_deleter(self):
         context = SagaContext(one=1)
@@ -54,8 +55,8 @@ class TestSagaContext(unittest.TestCase):
     def test_deleter_reserved_word(self):
         context = SagaContext()
         context["items"] = "foo"
-        with self.assertRaises(AttributeError):
-            del context.items
+        del context.items
+        self.assertIsInstance(context.items, Callable)
         self.assertEqual("foo", context.fields["items"].value)
 
     def test_deleter_raises(self):

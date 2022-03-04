@@ -69,8 +69,8 @@ class TestDeclarativeModel(unittest.TestCase):
     def test_setattr_reserved_word(self):
         model = ReservedWordUser("foo")
         model.items = "bar"
-        self.assertEqual("bar", model.items)
-        self.assertNotEqual("bar", model.fields["items"].value)
+        self.assertIsInstance(model.items, Callable)
+        self.assertEqual("bar", model.fields["items"].value)
 
     def test_setattr_raises(self):
         model = Customer(123)
