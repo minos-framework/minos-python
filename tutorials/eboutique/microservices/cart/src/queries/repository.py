@@ -44,7 +44,7 @@ class CartQueryRepository(MinosSetup):
         self.session.add(cart)
         self.session.commit()
 
-    def add_item(self, cart_uuid: str, product: dict, item: dict):
+    def add_item(self, cart_uuid: str, item: dict, product: dict):
         cart_obj = self.session.query(Cart).filter(Cart.uuid == cart_uuid).first()
         if cart_obj is not None:
             # check if the product already exist
