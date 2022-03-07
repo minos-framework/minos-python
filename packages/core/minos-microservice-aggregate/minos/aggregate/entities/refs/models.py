@@ -64,6 +64,9 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
             if item == "uuid":
                 return self.uuid
 
+            if not self.resolved:
+                raise KeyError(f"The reference is not resolved: {self!r}")
+
             try:
                 return self.data[item]
             except Exception:
@@ -88,6 +91,9 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
         except AttributeError as exc:
             if item == "data":
                 raise exc
+
+            if not self.resolved:
+                raise AttributeError(f"The reference is not resolved: {self!r}")
 
             try:
                 return getattr(self.data, item)
@@ -218,7 +224,10 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
 
         :return: ``True`` if resolved or ``False`` otherwise.
         """
-        return not isinstance(self.data, UUID)
+        try:
+            return not isinstance(self.data, UUID)
+        except AttributeError:
+            return False
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.data!r})"

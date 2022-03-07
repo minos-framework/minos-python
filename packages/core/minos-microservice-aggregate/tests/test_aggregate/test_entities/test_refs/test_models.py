@@ -68,6 +68,13 @@ class TestRef(MinosTestCase):
 
         self.assertEqual(uuid, value.uuid)
 
+    def test_uuid_getattr_raises(self):
+        uuid = uuid4()
+        value = Ref(uuid)
+
+        with self.assertRaises(AttributeError):
+            value.color
+
     def test_uuid_setattr(self):
         uuid_1 = uuid4()
         uuid_2 = uuid4()
@@ -83,11 +90,12 @@ class TestRef(MinosTestCase):
 
         self.assertEqual(uuid, value["uuid"])
 
-    def test_model_getitem_raises(self):
-        value = Ref(Bar(uuid4(), 1))
+    def test_uuid_getitem_raises(self):
+        uuid = uuid4()
+        value = Ref(uuid)
 
         with self.assertRaises(KeyError):
-            value["year"]
+            value["color"]
 
     def test_uuid_setitem(self):
         uuid_1 = uuid4()
@@ -147,6 +155,12 @@ class TestRef(MinosTestCase):
         value = Ref(Bar(uuid4(), 1))
 
         self.assertEqual(1, value["age"])
+
+    def test_model_getitem_raises(self):
+        value = Ref(Bar(uuid4(), 1))
+
+        with self.assertRaises(KeyError):
+            value["year"]
 
     def test_model_setitem(self):
         value = Ref(Bar(uuid4(), 1))
