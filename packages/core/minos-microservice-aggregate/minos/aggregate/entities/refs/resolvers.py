@@ -10,6 +10,7 @@ from itertools import (
 )
 from typing import (
     Any,
+    Union,
 )
 from uuid import (
     UUID,
@@ -69,13 +70,12 @@ class RefResolver:
         return RefInjector(data, recovered).build()
 
     async def _query(self, references: dict[str, set[UUID]]) -> dict[UUID, Model]:
+        messages = (
+            BrokerMessageV1(self.build_topic_name(name), BrokerMessageV1Payload({"uuids": uuids}))
+            for name, uuids in references.items()
+        )
         async with self.broker_pool.acquire() as broker:
-            futures = (
-                broker.send(
-                    BrokerMessageV1(f"_Get{simplified_name}Snapshots", BrokerMessageV1Payload({"uuids": uuids}))
-                )
-                for simplified_name, uuids in references.items()
-            )
+            futures = (broker.send(message) for message in messages)
             await gather(*futures)
 
             return {model.uuid: model for model in await self._get_response(broker, len(references))}
@@ -89,3 +89,14 @@ class RefResolver:
             messages.append(message)
 
         return chain(*(message.content for message in messages))
+
+    @staticmethod
+    def build_topic_name(entity: Union[type, str]) -> str:
+        """Build the topic name based on the name of the entity.
+
+        :param entity: The name of the entity to be resolved.
+        :return: The topic name.
+        """
+        if isinstance(entity, type):
+            entity = entity.__name__
+        return f"_Get{entity}Snapshots"
