@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     Any,
     Generic,
@@ -15,11 +16,6 @@ from uuid import (
     SafeUUID,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     DataDecoder,
     DataEncoder,
@@ -29,17 +25,12 @@ from minos.common import (
     SchemaDecoder,
     SchemaEncoder,
 )
-from minos.networks import (
-    BrokerClient,
-    BrokerClientPool,
-    BrokerMessageV1,
-    BrokerMessageV1Payload,
-)
 
 from ...contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
 
+logger = logging.getLogger(__name__)
 MT = TypeVar("MT", bound=Model)
 
 
@@ -48,21 +39,66 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
 
     data: Union[MT, UUID]
 
-    @inject
-    def __init__(self, data: Union[MT, UUID], *args, broker_pool: BrokerClientPool = Provide["broker_pool"], **kwargs):
+    def __init__(self, data: Union[MT, UUID], *args, **kwargs):
         if not isinstance(data, UUID) and not hasattr(data, "uuid"):
             raise ValueError(f"data must be an {UUID!r} instance or have 'uuid' as one of its fields")
         DeclarativeModel.__init__(self, data, *args, **kwargs)
 
-        self._broker_pool = broker_pool
+    def __setitem__(self, key: str, value: Any) -> None:
+        try:
+            return super().__setitem__(key, value)
+        except KeyError as exc:
+            if key == "uuid":
+                self.data = value
+                return
+
+            try:
+                self.data[key] = value
+            except Exception:
+                raise exc
+
+    def __getitem__(self, item: str) -> Any:
+        try:
+            return super().__getitem__(item)
+        except KeyError as exc:
+            if item == "uuid":
+                return self.uuid
+
+            if not self.resolved:
+                raise KeyError(f"The reference is not resolved: {self!r}")
+
+            try:
+                return self.data[item]
+            except Exception:
+                raise exc
+
+    def __setattr__(self, key: str, value: Any) -> None:
+        try:
+            return super().__setattr__(key, value)
+        except AttributeError as exc:
+            if key == "uuid":
+                self.data = value
+                return
+
+            try:
+                setattr(self.data, key, value)
+            except Exception:
+                raise exc
 
     def __getattr__(self, item: str) -> Any:
         try:
             return super().__getattr__(item)
         except AttributeError as exc:
-            if item != "data":
+            if item == "data":
+                raise exc
+
+            if not self.resolved:
+                raise AttributeError(f"The reference is not resolved: {self!r}")
+
+            try:
                 return getattr(self.data, item)
-            raise exc
+            except Exception:
+                raise exc
 
     @property
     def int(self) -> int:
@@ -146,6 +182,14 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
             return self.data
         return self.data.uuid
 
+    @uuid.setter
+    def uuid(self, value: UUID) -> None:
+        """Set the uuid that identifies the ``Model``.
+
+        :return: This method does not return anything.
+        """
+        raise RuntimeError("The 'uuid' must be set through the '__setattr__' method.")  # pragma: no cover
+
     @property
     def data_cls(self) -> Optional[type]:
         """Get data class if available.
@@ -168,17 +212,11 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
         if not force and self.resolved:
             return
 
-        name = self.data_cls.__name__
+        from .resolvers import (
+            RefResolver,
+        )
 
-        message = BrokerMessageV1(f"Get{name}", BrokerMessageV1Payload({"uuid": self.uuid}))
-        async with self._broker_pool.acquire() as broker:
-            await broker.send(message)
-            self.data = await self._get_response(broker)
-
-    @staticmethod
-    async def _get_response(broker: BrokerClient, **kwargs) -> MT:
-        message = await broker.receive(**kwargs)
-        return message.content
+        self.data = await RefResolver(**kwargs).resolve(self)
 
     @property
     def resolved(self) -> bool:
@@ -186,4 +224,10 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
 
         :return: ``True`` if resolved or ``False`` otherwise.
         """
-        return not isinstance(self.data, UUID)
+        try:
+            return not isinstance(self.data, UUID)
+        except AttributeError:
+            return False
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.data!r})"

@@ -1,6 +1,6 @@
 __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
-__version__ = "0.5.2"
+__version__ = "0.5.3"
 
 from .builders import (
     Builder,

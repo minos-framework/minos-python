@@ -1,0 +1,33 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Run Tests with Coverage
+      shell: poetry run coverage run -m pytest
+      args:
+        chdir: ../
+      register: results
+
+    - debug: var=results.stdout_lines
+
+    - debug: var=results.stderr_lines
+
+    - name: Generate Coverage Report
+      shell: poetry run coverage report -m
+      args:
+        chdir: ../
+      register: results
+
+    - debug: var=results.stdout_lines
+
+    - debug: var=results.stderr_lines
+
+    - name: Generate Coverage XML
+      shell: poetry run coverage xml
+      args:
+        chdir: ../
+      register: results
+
+    - debug: var=results.stdout_lines
+
+    - debug: var=results.stderr_lines
