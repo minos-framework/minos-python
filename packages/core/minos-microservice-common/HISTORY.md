@@ -285,3 +285,10 @@ History
 
 * Add `query_repository` section to `MinosConfig`.
 * Minor changes.
+
+0.5.3 (2022-03-04)
+------------------
+
+* Big performance improvement related with a caching layer over type hint comparisons at `TypeHintComparator`.
+* Improve attribute and item accessors of `Model`.
+* Fix bug related with casting from `dict` to `Model` instances on field setters.
