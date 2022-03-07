@@ -43,3 +43,10 @@ repos:
                 name: Check minos-broker-kafka
                 files: ^packages/plugins/minos-broker-kafka/
                 language: system
+
+            -   id: tutorial-eboutique
+                pass_filenames: false
+                entry: make --directory=tutorials/eboutique check
+                name: Check tutorial eboutique
+                files: ^tutorials/eboutique/
+                language: system

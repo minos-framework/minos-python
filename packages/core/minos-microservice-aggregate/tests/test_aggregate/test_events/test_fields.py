@@ -226,6 +226,10 @@ class TestFieldDiffContainerAccessors(unittest.TestCase):
         expected = [IncrementalFieldDiff("seats", int, 1, Action.CREATE)]
         self.assertEqual(expected, observed)
 
+    def test_get_item_raises(self):
+        with self.assertRaises(KeyError):
+            self.fields_diff["something"]
+
     def test_get_one_single(self):
         observed = self.fields_diff.get_one("color")
         expected = FieldDiff("color", str, "red")

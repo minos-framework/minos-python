@@ -194,7 +194,7 @@ class PeriodicTask:
                 if isawaitable(response):
                     await response
         except ResponseException as exc:
-            logger.warning(f"Raised an application exception: {exc!s}")
+            logger.error(f"Raised an application exception: {exc!s}")
         except Exception as exc:
             logger.exception(f"Raised a system exception: {exc!r}")
         finally:
