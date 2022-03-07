@@ -1,0 +1,9 @@
+discovery:
+  host: 0.0.0.0
+  port: 5566
+  path: ""
+  endpoints: []
+  db:
+    host: localhost
+    port: 6379
+    password:
