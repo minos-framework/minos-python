@@ -9,6 +9,7 @@ from uuid import (
 )
 
 from minos.aggregate import (
+    RefResolver,
     RootEntity,
     SnapshotService,
 )
@@ -43,26 +44,11 @@ class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
 
     def test_get_enroute(self):
         expected = {
-            "__get_one__": {BrokerCommandEnrouteDecorator("_GetOrderSnapshot")},
-            "__get_many__": {BrokerCommandEnrouteDecorator("_GetOrderSnapshots")},
+            "__get_many__": {BrokerCommandEnrouteDecorator(RefResolver.build_topic_name("Order"))},
             "__synchronize__": {PeriodicEventEnrouteDecorator("* * * * *")},
         }
         observed = SnapshotService.__get_enroute__(self.config)
         self.assertEqual(expected, observed)
-
-    async def test_get(self):
-        uuid = uuid4()
-        expected = Agg(uuid)
-        with patch.object(RootEntity, "get", return_value=expected):
-            response = await self.service.__get_one__(InMemoryRequest({"uuid": uuid}))
-        self.assertEqual(expected, await response.content())
-
-    async def test_get_raises(self):
-        with self.assertRaises(ResponseException):
-            await self.service.__get_one__(InMemoryRequest())
-        with patch.object(RootEntity, "get", side_effect=ValueError):
-            with self.assertRaises(ResponseException):
-                await self.service.__get_one__(InMemoryRequest({"uuid": uuid4()}))
 
     async def test_get_many(self):
         uuids = [uuid4(), uuid4()]

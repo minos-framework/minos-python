@@ -62,6 +62,18 @@ class TestRefResolver(MinosTestCase):
         with self.assertRaises(RefException):
             await self.resolver.resolve(self.value)
 
+    def test_build_topic_name_str(self):
+        expected = "_GetBarSnapshots"
+        observed = RefResolver.build_topic_name("Bar")
+
+        self.assertEqual(observed, expected)
+
+    def test_build_topic_name_type(self):
+        expected = "_GetBarSnapshots"
+        observed = RefResolver.build_topic_name(Bar)
+
+        self.assertEqual(observed, expected)
+
 
 if __name__ == "__main__":
     unittest.main()

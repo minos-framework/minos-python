@@ -16,11 +16,6 @@ from uuid import (
     SafeUUID,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     DataDecoder,
     DataEncoder,
@@ -30,18 +25,9 @@ from minos.common import (
     SchemaDecoder,
     SchemaEncoder,
 )
-from minos.networks import (
-    BrokerClient,
-    BrokerClientPool,
-    BrokerMessageV1,
-    BrokerMessageV1Payload,
-)
 
 from ...contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
-)
-from ...exceptions import (
-    RefException,
 )
 
 logger = logging.getLogger(__name__)
@@ -53,13 +39,10 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
 
     data: Union[MT, UUID]
 
-    @inject
-    def __init__(self, data: Union[MT, UUID], *args, broker_pool: BrokerClientPool = Provide["broker_pool"], **kwargs):
+    def __init__(self, data: Union[MT, UUID], *args, **kwargs):
         if not isinstance(data, UUID) and not hasattr(data, "uuid"):
             raise ValueError(f"data must be an {UUID!r} instance or have 'uuid' as one of its fields")
         DeclarativeModel.__init__(self, data, *args, **kwargs)
-
-        self._broker_pool = broker_pool
 
     def __setitem__(self, key: str, value: Any) -> None:
         try:
@@ -223,19 +206,11 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
         if not force and self.resolved:
             return
 
-        name = self.data_cls.__name__
+        from .resolvers import (
+            RefResolver,
+        )
 
-        message = BrokerMessageV1(f"Get{name}", BrokerMessageV1Payload({"uuid": self.uuid}))
-        async with self._broker_pool.acquire() as broker:
-            await broker.send(message)
-            self.data = await self._get_response(broker)
-
-    @staticmethod
-    async def _get_response(broker: BrokerClient, **kwargs) -> MT:
-        message = await broker.receive(**kwargs)
-        if not message.ok:
-            raise RefException(f"The received message is not ok: {message!r}")
-        return message.content
+        self.data = await RefResolver(**kwargs).resolve(self)
 
     @property
     def resolved(self) -> bool:
@@ -244,3 +219,6 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
         :return: ``True`` if resolved or ``False`` otherwise.
         """
         return not isinstance(self.data, UUID)
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.data!r})"
