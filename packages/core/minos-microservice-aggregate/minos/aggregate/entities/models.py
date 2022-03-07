@@ -349,7 +349,7 @@ class RootEntity(Entity):
             version=event.version,
             created_at=event.created_at,
             updated_at=event.created_at,
-            **event.get_all(),
+            **event.get_fields(),
             **kwargs,
         )
 

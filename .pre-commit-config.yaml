@@ -50,3 +50,10 @@ repos:
                 name: Check minos-discovery-minos
                 files: ^packages/plugins/minos-discovery-minos/
                 language: system
+
+            -   id: tutorial-eboutique
+                pass_filenames: false
+                entry: make --directory=tutorials/eboutique check
+                name: Check tutorial eboutique
+                files: ^tutorials/eboutique/
+                language: system

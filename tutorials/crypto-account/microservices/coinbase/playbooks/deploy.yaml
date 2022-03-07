@@ -1,0 +1,6 @@
+- name: Create Database
+  import_playbook: create-database.yaml
+- name: Create Query Database
+  import_playbook: create-database.yaml
+- name: Lock Dependencies
+  import_playbook: lock.yaml

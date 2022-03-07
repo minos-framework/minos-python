@@ -256,11 +256,18 @@ class AvroDataDecoder(DataDecoder):
 
         if isinstance(data, dict):
             with suppress(Exception):
-                decoded_data = {n: self._build(t, data.get(n, None), **kwargs) for n, t in type_.type_hints.items()}
+                decoded_data = {
+                    field_name: self._build(field_type, data[field_name], **kwargs)
+                    for field_name, field_type in type_.type_hints.items()
+                    if field_name in data
+                }
                 return type_(**decoded_data, additional_type_hints=type_.type_hints)
 
         with suppress(Exception):
-            decoded_data = (self._build(t, d, **kwargs) for d, t in zip_longest((data,), type_.type_hints.values()))
+            decoded_data = (
+                self._build(field_type, field_value, **kwargs)
+                for field_value, field_type in zip_longest((data,), type_.type_hints.values())
+            )
             return type_(*decoded_data, additional_type_hints=type_.type_hints)
 
         raise DataDecoderTypeException(type_, data)

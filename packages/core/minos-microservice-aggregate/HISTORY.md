@@ -77,3 +77,19 @@
 * Rename `SnapshotService` command topics to avoid collisions with application-level topics. 
 * Rename `TransactionService` command topics to avoid collisions with application-level topics. 
 * Minor changes.
+
+0.5.3 (2022-03-04)
+------------------
+
+* Add `RefException` to be raised when some reference cannot be resolved.
+* Improve attribute and item accessors of `Ref`, `Event` and `FieldDiffContainer`
+* Deprecate `Event.get_one` in favor of `Event.get_field`.
+* Deprecate `Event.get_all` in favor of `Event.get_fields`.
+
+0.5.4 (2022-03-07)
+------------------
+
+* Fix bug related with `Ref.resolve`.
+* Add `RefResolver.build_topic_name` static method.
+* Remove `SnapshotService.__get_one__` method.
+* Minor changes.

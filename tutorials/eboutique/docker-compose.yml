@@ -1,0 +1,91 @@
+version: '3.9'
+x-microservice-environment: &microservice-environment
+  - MINOS_BROKER_QUEUE_HOST=postgres
+  - MINOS_BROKER_HOST=kafka
+  - MINOS_REPOSITORY_HOST=postgres
+  - MINOS_SNAPSHOT_HOST=postgres
+  - MINOS_DISCOVERY_HOST=discovery
+x-microservice-depends-on: &microservice-depends-on
+  - postgres
+  - kafka
+  - discovery
+volumes:
+  postgres: {}
+  zookeeper: {}
+  kafka: {}
+  redis: {}
+services:
+  product:
+    restart: always
+    build:
+      context: microservices/product
+      target: production
+    environment: *microservice-environment
+    depends_on: *microservice-depends-on
+  cart:
+    restart: always
+    build:
+      context: microservices/cart
+      target: production
+    environment: *microservice-environment
+    depends_on: *microservice-depends-on
+  postgres:
+    restart: always
+    build: external/postgres
+    command: postgres -c 'max_connections=200'
+    ports:
+    - '5432:5432'
+    volumes:
+    - postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=minos
+      - POSTGRES_PASSWORD=min0s
+  zookeeper:
+    restart: always
+    image: digitalwonderland/zookeeper:latest
+    volumes:
+    - zookeeper:/var/lib/zookeeper
+  kafka:
+    restart: always
+    image: wurstmeister/kafka:latest
+    ports:
+    - '9092'
+    depends_on:
+    - zookeeper
+    volumes:
+    - kafka:/kafka/kafka-logs
+    environment:
+      KAFKA_LOG_DIRS: /kafka/kafka-logs
+      KAFKA_DELETE_TOPIC_ENABLE: 'true'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+  apigateway:
+    restart: always
+    build: external/apigateway
+    ports:
+    - '5566:5566'
+    depends_on:
+    - discovery
+    environment:
+      PYTHONPATH: /api_gateway
+      DISCOVERY_SERVICE_HOST: discovery
+      API_GATEWAY_DISCOVERY_HOST: discovery
+  discovery:
+    restart: always
+    build: external/discovery
+    ports:
+    - '5567'
+    depends_on:
+    - redis
+    environment:
+      DISCOVERY_SERVICE_DB_HOST: redis
+  redis:
+    image: docker.io/bitnami/redis:6.2
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    ports:
+      - '6379'
+    volumes:
+      - 'redis:/bitnami/redis/data'
