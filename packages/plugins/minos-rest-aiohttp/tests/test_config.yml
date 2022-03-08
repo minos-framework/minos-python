@@ -2,8 +2,8 @@ service:
     name: Order
     aggregate: tests.utils.Order
 services:
-    - tests.services.commands.CommandService
-    - tests.services.queries.QueryService
+    - tests.utils.FakeCommandService
+    - tests.utils.FakeQueryService
 rest:
     host: localhost
     port: 8080

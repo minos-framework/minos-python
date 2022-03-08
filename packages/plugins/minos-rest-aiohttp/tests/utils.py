@@ -35,6 +35,11 @@ from minos.common import (
     DeclarativeModel,
     MinosAvroProtocol,
 )
+from minos.networks import (
+    Request,
+    Response,
+    enroute,
+)
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
@@ -49,6 +54,37 @@ class FakeModel(DeclarativeModel):
     def __lt__(self, other: Any) -> bool:
         # noinspection PyBroadException
         return isinstance(other, type(self)) and self.data < other.data
+
+
+class FakeCommandService:
+    """For testng purposes."""
+
+    # noinspection PyUnusedLocal
+    @enroute.rest.command(url="/order", method="GET")
+    def get_order_rest(self, request: Request) -> Response:
+        """For testng purposes."""
+
+        return Response("get_order")
+
+    @enroute.broker.command("GetOrder")
+    def get_order_command(self, request: Request) -> Response:
+        """For testng purposes."""
+        return Response("get_order_command")
+
+
+class FakeQueryService:
+    """For testng purposes."""
+
+    # noinspection PyUnusedLocal
+    @enroute.rest.query(url="/ticket", method="POST")
+    def add_ticket(self, request: Request) -> Response:
+        """For testng purposes."""
+        return Response("ticket_added")
+
+    # noinspection PyUnusedLocal
+    @enroute.broker.event("TicketAdded")
+    def ticket_added(self, request: Request):
+        """For testng purposes."""
 
 
 def json_mocked_request(data: Any, **kwargs) -> web.Request:
