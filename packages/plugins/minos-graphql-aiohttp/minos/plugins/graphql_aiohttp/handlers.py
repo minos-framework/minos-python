@@ -33,10 +33,9 @@ from minos.networks import (
     ResponseException,
 )
 
-from minos.plugins.graphql_aiohttp.handlers.graphiql import GraphiqlHandler
-from minos.plugins.graphql_aiohttp.handlers.graphql import GraphqlHandler
-from .graphql_example import (
-    schema,
+from .handlers import (
+    GraphiqlHandler,
+    GraphqlHandler
 )
 from .requests import (
     RestRequest,

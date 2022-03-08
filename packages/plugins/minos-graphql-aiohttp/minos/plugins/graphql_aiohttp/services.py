@@ -6,12 +6,10 @@ from aiohttp import (
 from aiomisc.service.aiohttp import (
     AIOHTTPService,
 )
-
-from .graphql_example import (
-    schema,
+from .handlers import (
+    GraphiqlHandler,
+    GraphqlHandler
 )
-from .handlers.graphiql import GraphiqlHandler
-from .handlers.graphql import GraphqlHandler
 
 
 class RestService(AIOHTTPService):
