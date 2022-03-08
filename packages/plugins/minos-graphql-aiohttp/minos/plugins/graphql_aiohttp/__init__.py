@@ -5,9 +5,6 @@ __version__ = "0.6.0"
 from .exceptions import (
     RestResponseException,
 )
-from .handlers import (
-    RestHandler,
-)
 from .requests import (
     RestRequest,
 )
