@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 import logging
+import traceback
 from functools import (
     cached_property,
     wraps,
@@ -146,10 +147,12 @@ class RestHandler(MinosSetup):
                 return web.Response(body=content, content_type=content_type, status=status)
 
             except ResponseException as exc:
-                logger.warning(f"Raised an application exception: {exc!s}")
-                return web.Response(text=str(exc), status=exc.status)
-            except Exception as exc:
-                logger.exception(f"Raised a system exception: {exc!r}")
+                tb = traceback.format_exc()
+                logger.error(f"Raised an application exception:\n {tb}")
+                return web.Response(text=tb, status=exc.status)
+            except Exception:
+                tb = traceback.format_exc()
+                logger.exception(f"Raised a system exception:\n {tb}")
                 raise web.HTTPInternalServerError()
             finally:
                 REQUEST_USER_CONTEXT_VAR.reset(token)

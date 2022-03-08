@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from functools import (
+    lru_cache,
+)
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -9,6 +12,7 @@ from typing import (
     NamedTuple,
     Optional,
     Type,
+    Union,
 )
 
 from ...exceptions import (
@@ -46,11 +50,12 @@ class ModelType(type):
         :param kwargs: Type hints of the new type as named parameters.
         :return: A ``ModelType`` instance.
         """
-        if type_hints_ is not None and len(kwargs):
-            raise ValueError("Type hints can be passed in a dictionary or as named parameters, but not both.")
-
         if type_hints_ is None:
-            type_hints_ = kwargs
+            type_hints_ = tuple(kwargs.items())
+        else:
+            if len(kwargs):
+                raise ValueError("Type hints can be passed in a dictionary or as named parameters, but not both.")
+            type_hints_ = tuple(type_hints_.items())
 
         if namespace_ is None:
             try:
@@ -59,7 +64,12 @@ class ModelType(type):
                 namespace_ = str()
 
         # noinspection PyTypeChecker
-        return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_})
+        return mcs._build(name_, type_hints_, namespace_)
+
+    @classmethod
+    @lru_cache()
+    def _build(mcs, name_: str, type_hints_: tuple[tuple[str, type], ...], namespace_: Optional[str]):
+        return mcs(name_, tuple(), {"type_hints": dict(type_hints_), "namespace": namespace_})
 
     @classmethod
     def from_typed_dict(mcs, typed_dict) -> ModelType:
@@ -71,13 +81,14 @@ class ModelType(type):
         return mcs.build(typed_dict.__name__, typed_dict.__annotations__)
 
     @staticmethod
-    def from_model(type_) -> ModelType:
+    def from_model(model: Union[Model, type[Model]]) -> ModelType:
         """Build a new instance from model class.
 
-        :param type_: The model class.
+        :param model: The model class.
         :return: A new ``ModelType`` instance.
         """
-        return ModelType.build(name_=type_.classname, type_hints_=GenericTypeProjector.from_model(type_).build())
+        # noinspection PyTypeChecker
+        return ModelType.build(name_=model.classname, type_hints_=GenericTypeProjector.from_model(model).build())
 
     def __call__(cls, *args, **kwargs) -> Model:
         return cls.model_cls.from_model_type(cls, *args, **kwargs)
