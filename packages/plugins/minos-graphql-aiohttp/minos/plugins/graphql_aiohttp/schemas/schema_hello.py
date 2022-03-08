@@ -7,10 +7,10 @@ class Query(ObjectType):
     goodbye = String()
 
     def resolve_hello(root, info, name):
-        return f'Hello {name}!'
+        return f"Hello {name}!"
 
     def resolve_goodbye(root, info):
-        return 'See ya!'
+        return "See ya!"
 
 
 schema = Schema(query=Query)

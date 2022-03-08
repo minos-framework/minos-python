@@ -7,4 +7,4 @@ class AllQuery(
     # Schema2,
     # Schema3
 ):
-    '''AllQuery'''
+    """AllQuery"""

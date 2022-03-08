@@ -1,6 +1,6 @@
 from .graphql import (
     GraphqlHandler,
 )
-from  .graphiql import (
+from .graphiql import (
     GraphiqlHandler,
 )

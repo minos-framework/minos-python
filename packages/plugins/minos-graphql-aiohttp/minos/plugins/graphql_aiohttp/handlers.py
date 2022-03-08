@@ -33,10 +33,7 @@ from minos.networks import (
     ResponseException,
 )
 
-from .handlers import (
-    GraphiqlHandler,
-    GraphqlHandler
-)
+from .handlers import GraphiqlHandler, GraphqlHandler
 from .requests import (
     RestRequest,
 )
@@ -129,15 +126,15 @@ class RestHandler(MinosSetup):
     """
 
     def register_handlers(self, app: web.Application):
-        routes = [(r'/graphql', GraphqlHandler)]
+        routes = [(r"/graphql", GraphqlHandler)]
 
         # if self.dev:
-        routes += [(r'/graphiql', GraphiqlHandler)]
+        routes += [(r"/graphiql", GraphiqlHandler)]
 
         app.router.add_routes([web.view(route[0], route[1]) for route in routes])
 
     async def initialize_jinja2(self, app: web.Application):
-        aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('./templates'))
+        aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader("./templates"))
 
     @staticmethod
     def get_callback(
