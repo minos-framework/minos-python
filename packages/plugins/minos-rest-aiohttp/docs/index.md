@@ -1,5 +1,4 @@
-Welcome to Minos Rest Aiohttp's documentation!
-======================================
+# Welcome to Minos Rest AIOHTTP's documentation!
 
 .. toctree::
    :maxdepth: 2
@@ -11,8 +10,7 @@ Welcome to Minos Rest Aiohttp's documentation!
    authors
    history
 
-Indices and tables
-====================
+# Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

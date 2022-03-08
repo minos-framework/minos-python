@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "minos-rest-aiohttp"
-version = "0.6.0"
+version = "0.0.0"
 description = "The rest plugin of the Minos Framework."
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
-homepage = "http://www.minos.run/"
+homepage = "https://www.minos.run/"
 authors = ["Minos Framework Devs <hey@minos.run>"]
 license = "MIT"
 classifiers = [

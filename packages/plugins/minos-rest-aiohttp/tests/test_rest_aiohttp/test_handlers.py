@@ -29,12 +29,10 @@ from minos.plugins.rest_aiohttp import (
     RestResponse,
     RestResponseException,
 )
-from tests.test_plugins.test_rest_aiohttp.utils import (
-    json_mocked_request,
-    mocked_request,
-)
 from tests.utils import (
     BASE_PATH,
+    json_mocked_request,
+    mocked_request,
 )
 
 APPLICATION_JSON = "application/json"

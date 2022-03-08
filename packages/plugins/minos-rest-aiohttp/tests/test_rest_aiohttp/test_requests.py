@@ -22,16 +22,14 @@ from minos.plugins.rest_aiohttp import (
     RestRequest,
     RestResponse,
 )
-from tests.test_plugins.test_rest_aiohttp.utils import (
+from tests.utils import (
+    FakeModel,
     avro_mocked_request,
     bytes_mocked_request,
     form_mocked_request,
     json_mocked_request,
     mocked_request,
     text_mocked_request,
-)
-from tests.utils import (
-    FakeModel,
 )
 
 APPLICATION_JSON = "application/json"
