@@ -1,5 +1,8 @@
 import aiohttp_jinja2
-from .abc import BaseHandler
+
+from .abc import (
+    BaseHandler,
+)
 
 
 class GraphiqlHandler(BaseHandler):

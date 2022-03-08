@@ -6,7 +6,11 @@ from aiohttp import (
 from aiomisc.service.aiohttp import (
     AIOHTTPService,
 )
-from .handlers import GraphiqlHandler, GraphqlHandler
+
+from .handlers import (
+    GraphiqlHandler,
+    GraphqlHandler,
+)
 
 
 class RestService(AIOHTTPService):

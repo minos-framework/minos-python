@@ -1,4 +1,6 @@
-from schemas.schema_hello import Query
+from schemas.schema_hello import (
+    Query,
+)
 
 
 class AllQuery(

@@ -1,7 +1,12 @@
 import graphene
 
-from .abc import GQLBaseHandler
-from minos.plugins.graphql_aiohttp.schema import AllQuery
+from minos.plugins.graphql_aiohttp.schema import (
+    AllQuery,
+)
+
+from .abc import (
+    GQLBaseHandler,
+)
 
 
 class GraphqlHandler(GQLBaseHandler):

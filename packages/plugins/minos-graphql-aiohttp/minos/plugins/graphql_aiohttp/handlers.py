@@ -33,7 +33,10 @@ from minos.networks import (
     ResponseException,
 )
 
-from .handlers import GraphiqlHandler, GraphqlHandler
+from .handlers import (
+    GraphiqlHandler,
+    GraphqlHandler,
+)
 from .requests import (
     RestRequest,
 )

@@ -1,9 +1,12 @@
 import asyncio
+import json
 import logging
 import urllib
-import json
+
 import aiohttp
-from aiohttp import web
+from aiohttp import (
+    web,
+)
 
 # from graphql.execution.executors.asyncio import AsyncioExecutor
 

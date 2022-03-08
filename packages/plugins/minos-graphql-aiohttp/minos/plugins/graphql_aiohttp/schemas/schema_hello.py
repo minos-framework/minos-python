@@ -1,4 +1,8 @@
-from graphene import ObjectType, String, Schema
+from graphene import (
+    ObjectType,
+    Schema,
+    String,
+)
 
 
 class Query(ObjectType):
