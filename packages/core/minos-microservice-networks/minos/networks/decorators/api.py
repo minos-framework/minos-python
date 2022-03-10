@@ -59,7 +59,7 @@ class EnrouteType(type):
 
     def __getattr__(cls, item: str) -> SubEnroute:
         for module in get_internal_modules():
-            if hasattr(module, "_register_enroute"):
+            with suppress(AttributeError):
                 # noinspection PyProtectedMember
                 module._register_enroute()
         with suppress(AttributeError):
