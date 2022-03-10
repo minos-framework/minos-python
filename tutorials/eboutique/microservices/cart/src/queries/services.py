@@ -25,6 +25,7 @@ from minos.networks import (
 
 logger = logging.getLogger(__name__)
 
+
 class CartQueryService(QueryService):
     """CartQueryService class."""
 
@@ -75,4 +76,6 @@ class CartQueryService(QueryService):
         items = event.get_all()
         await items["products"][0]["product"].resolve()
 
-        self.repository.add_item(cart_uuid=cart_uuid, item=items["products"][0], product=items["products"][0]["product"])
+        self.repository.add_item(
+            cart_uuid=cart_uuid, item=items["products"][0], product=items["products"][0]["product"]
+        )
