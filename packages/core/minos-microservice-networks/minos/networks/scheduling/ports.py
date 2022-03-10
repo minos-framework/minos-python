@@ -1,12 +1,12 @@
 import logging
 
-from aiomisc import (
-    Service,
-)
 from cached_property import (
     cached_property,
 )
 
+from ..ports import (
+    Port,
+)
 from .schedulers import (
     PeriodicTaskScheduler,
 )
@@ -14,7 +14,7 @@ from .schedulers import (
 logger = logging.getLogger(__name__)
 
 
-class PeriodicTaskSchedulerService(Service):
+class PeriodicTaskSchedulerPort(Port):
     """Task Scheduler Service class."""
 
     def __init__(self, **kwargs):

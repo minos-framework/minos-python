@@ -3,25 +3,22 @@ from unittest.mock import (
     AsyncMock,
 )
 
-from aiomisc import (
-    Service,
-)
-
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
     BrokerHandler,
-    BrokerHandlerService,
+    BrokerHandlerPort,
     InMemoryBrokerPublisher,
     InMemoryBrokerSubscriberBuilder,
+    Port,
 )
 from tests.utils import (
     BASE_PATH,
 )
 
 
-class TestBrokerHandlerService(PostgresAsyncTestCase):
+class TestBrokerHandlerPort(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -30,17 +27,17 @@ class TestBrokerHandlerService(PostgresAsyncTestCase):
         self.subscriber_builder = InMemoryBrokerSubscriberBuilder()
 
     def test_is_instance(self):
-        service = BrokerHandlerService(config=self.config, publisher=self.publisher)
-        self.assertIsInstance(service, Service)
+        service = BrokerHandlerPort(config=self.config, publisher=self.publisher)
+        self.assertIsInstance(service, Port)
 
     def test_handler(self):
-        service = BrokerHandlerService(
+        service = BrokerHandlerPort(
             config=self.config, publisher=self.publisher, subscriber_builder=self.subscriber_builder
         )
         self.assertIsInstance(service.handler, BrokerHandler)
 
     async def test_start_stop(self):
-        service = BrokerHandlerService(
+        service = BrokerHandlerPort(
             config=self.config, publisher=self.publisher, subscriber_builder=self.subscriber_builder
         )
 

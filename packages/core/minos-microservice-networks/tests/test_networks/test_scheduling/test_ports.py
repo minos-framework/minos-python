@@ -3,35 +3,32 @@ from unittest.mock import (
     AsyncMock,
 )
 
-from aiomisc import (
-    Service,
-)
-
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
     PeriodicTaskScheduler,
-    PeriodicTaskSchedulerService,
+    PeriodicTaskSchedulerPort,
+    Port,
 )
 from tests.utils import (
     BASE_PATH,
 )
 
 
-class TestPeriodicTaskSchedulerService(PostgresAsyncTestCase):
+class TestPeriodicTaskSchedulerPort(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_is_instance(self):
-        service = PeriodicTaskSchedulerService(config=self.config)
-        self.assertIsInstance(service, Service)
+        service = PeriodicTaskSchedulerPort(config=self.config)
+        self.assertIsInstance(service, Port)
 
     def test_dispatcher(self):
-        service = PeriodicTaskSchedulerService(config=self.config)
+        service = PeriodicTaskSchedulerPort(config=self.config)
         self.assertIsInstance(service.scheduler, PeriodicTaskScheduler)
 
     async def test_start_stop(self):
-        service = PeriodicTaskSchedulerService(config=self.config)
+        service = PeriodicTaskSchedulerPort(config=self.config)
 
         setup_mock = AsyncMock()
         destroy_mock = AsyncMock()
