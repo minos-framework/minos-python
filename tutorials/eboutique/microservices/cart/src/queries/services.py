@@ -1,3 +1,6 @@
+import logging
+from logging import Logger
+
 from dependency_injector.wiring import (
     Provide,
 )
@@ -20,6 +23,7 @@ from minos.networks import (
     enroute,
 )
 
+logger = logging.getLogger(__name__)
 
 class CartQueryService(QueryService):
     """CartQueryService class."""
@@ -69,5 +73,6 @@ class CartQueryService(QueryService):
 
         cart_uuid = event["uuid"]
         items = event.get_all()
-        product = await items["products"][0]["product"].resolve()
-        self.repository.add_item(cart_uuid=cart_uuid, item=items["products"][0], product=product)
+        await items["products"][0]["product"].resolve()
+
+        self.repository.add_item(cart_uuid=cart_uuid, item=items["products"][0], product=items["products"][0]["product"])
