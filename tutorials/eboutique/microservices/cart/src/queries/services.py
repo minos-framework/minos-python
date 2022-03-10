@@ -1,5 +1,7 @@
 import logging
-from logging import Logger
+from logging import (
+    Logger,
+)
 
 from dependency_injector.wiring import (
     Provide,
