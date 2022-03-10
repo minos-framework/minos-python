@@ -104,6 +104,14 @@ class EnrouteBuilder:
         # noinspection PyTypeChecker
         return self._build("get_periodic_event", **kwargs)
 
+    def get_all(self, **kwargs) -> dict[EnrouteDecorator, Handler]:
+        """Get the rest actions for commands and queries.
+
+        :return: A dictionary with decorator classes as keys and callable actions as values.
+        """
+        # noinspection PyTypeChecker
+        return self._build("get_all", **kwargs)
+
     def _build(self, method_name: str, **kwargs) -> dict[EnrouteDecorator, Handler]:
         def _flatten(decorator: EnrouteDecorator, fns: set[Handler]) -> Handler:
             if len(fns) == 1:

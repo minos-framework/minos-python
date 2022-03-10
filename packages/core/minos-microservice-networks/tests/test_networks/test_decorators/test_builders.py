@@ -1,4 +1,7 @@
 import unittest
+from collections.abc import (
+    Callable,
+)
 
 from minos.common import (
     classname,
@@ -110,6 +113,23 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
         expected = None
         observed = await handlers[BrokerCommandEnrouteDecorator("DeleteTicket")](self.request)
         self.assertEqual(expected, observed)
+
+    async def test_get_all(self):
+        expected = {
+            BrokerCommandEnrouteDecorator("DeleteTicket"),
+            BrokerCommandEnrouteDecorator("AddTicket"),
+            BrokerCommandEnrouteDecorator("CreateTicket"),
+            BrokerEventEnrouteDecorator("TicketAdded"),
+            BrokerQueryEnrouteDecorator("GetTickets"),
+            RestCommandEnrouteDecorator("orders/", "DELETE"),
+            RestCommandEnrouteDecorator("orders/", "GET"),
+            RestQueryEnrouteDecorator("tickets/", "GET"),
+            PeriodicEventEnrouteDecorator("@daily"),
+        }
+
+        observed = self.builder.get_all()
+        self.assertEqual(expected, set(observed.keys()))
+        self.assertTrue(all(isinstance(o, Callable) for o in observed.values()))
 
     def test_raises_duplicated_command(self):
         class _WrongService:
