@@ -13,7 +13,7 @@ from .exceptions import (
 
 
 # noinspection SpellCheckingInspection
-def import_module(module_name: str) -> Union[type, Callable]:
+def import_module(module_name: str) -> Union[type, Callable, ModuleType]:
     """Import the given module from a package"""
     parts = module_name.rsplit(".", 1)
 
@@ -41,3 +41,24 @@ def classname(cls: Union[type, Callable]) -> str:
         return cls.__name__
     # noinspection PyUnresolvedReferences
     return f"{cls.__module__}.{cls.__qualname__}"
+
+
+def get_internal_modules() -> list[ModuleType]:
+    """Get the list of internal ``minos`` modules.
+
+    :return: A list of modules.
+    """
+    import pkgutil
+
+    modules = list()
+
+    import minos
+    for loader, module_name, _ in pkgutil.iter_modules(minos.__path__):
+        module = importlib.import_module(f"minos.{module_name}")
+        modules.append(module)
+
+    import minos.plugins as minos_plugins
+    for loader, module_name, _ in pkgutil.iter_modules(minos.plugins.__path__):
+        module = importlib.import_module(f"minos.plugins.{module_name}")
+        modules.append(module)
+    return modules

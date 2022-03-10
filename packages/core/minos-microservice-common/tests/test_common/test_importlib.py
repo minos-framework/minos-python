@@ -3,7 +3,7 @@ import unittest
 from minos.common import (
     MinosImportException,
     classname,
-    import_module,
+    import_module, get_internal_modules,
 )
 
 
@@ -26,6 +26,12 @@ class TestImportlib(unittest.TestCase):
     def test_classname(self):
         self.assertEqual("builtins.int", classname(int))
         self.assertEqual("minos.common.exceptions.MinosImportException", classname(MinosImportException))
+
+    def test_get_internal_modules(self):
+        from minos import common
+
+        observed = get_internal_modules()
+        self.assertIn(common, observed)
 
 
 if __name__ == "__main__":
