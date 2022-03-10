@@ -1,4 +1,5 @@
 import importlib
+import pkgutil
 from types import (
     ModuleType,
 )
@@ -48,17 +49,17 @@ def get_internal_modules() -> list[ModuleType]:
 
     :return: A list of modules.
     """
-    import pkgutil
+    return _import_submodules("minos") + _import_submodules("minos.plugins")
+
+
+def _import_submodules(prefix: str) -> list[ModuleType]:
+    try:
+        base = importlib.import_module(prefix)
+    except ModuleNotFoundError:
+        return list()
 
     modules = list()
-
-    import minos
-    for loader, module_name, _ in pkgutil.iter_modules(minos.__path__):
-        module = importlib.import_module(f"minos.{module_name}")
-        modules.append(module)
-
-    import minos.plugins as minos_plugins
-    for loader, module_name, _ in pkgutil.iter_modules(minos.plugins.__path__):
-        module = importlib.import_module(f"minos.plugins.{module_name}")
+    for loader, module_name, _ in pkgutil.iter_modules(base.__path__):
+        module = importlib.import_module(f"{prefix}.{module_name}")
         modules.append(module)
     return modules

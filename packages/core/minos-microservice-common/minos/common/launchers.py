@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import logging
-import pkgutil
-import re
-import sys
 from asyncio import (
     AbstractEventLoop,
 )

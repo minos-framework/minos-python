@@ -51,8 +51,8 @@ from .exceptions import (
 )
 from .importlib import (
     classname,
-    import_module,
     get_internal_modules,
+    import_module,
 )
 from .injectors import (
     DependencyInjector,

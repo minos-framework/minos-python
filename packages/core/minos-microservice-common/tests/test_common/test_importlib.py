@@ -3,7 +3,8 @@ import unittest
 from minos.common import (
     MinosImportException,
     classname,
-    import_module, get_internal_modules,
+    get_internal_modules,
+    import_module,
 )
 
 
@@ -28,7 +29,9 @@ class TestImportlib(unittest.TestCase):
         self.assertEqual("minos.common.exceptions.MinosImportException", classname(MinosImportException))
 
     def test_get_internal_modules(self):
-        from minos import common
+        from minos import (
+            common,
+        )
 
         observed = get_internal_modules()
         self.assertIn(common, observed)
