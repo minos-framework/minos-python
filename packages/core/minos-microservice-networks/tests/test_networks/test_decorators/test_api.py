@@ -40,6 +40,17 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
         decorator = enroute.periodic.event("0 */2 * * *")
         self.assertEqual(PeriodicEventEnrouteDecorator("0 */2 * * *"), decorator)
 
+    def test_not_found(self):
+        with self.assertRaises(AttributeError):
+            enroute.foo.command()
+
+    def test_register(self):
+        enroute._register_sub_enroute("foo", "bar")
+        self.assertEqual("bar", enroute.foo)
+        enroute._unregister_sub_enroute("foo")
+        with self.assertRaises(AttributeError):
+            enroute.foo
+
 
 if __name__ == "__main__":
     unittest.main()
