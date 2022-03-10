@@ -1,31 +1,17 @@
-from abc import (
-    ABC,
-)
 from typing import (
     Final,
-    Iterable,
 )
 
-from .abc import (
-    EnrouteDecorator,
-)
-from .kinds import (
+from ..kinds import (
     EnrouteDecoratorKind,
 )
+from .abc import (
+    HttpEnrouteDecorator,
+)
 
 
-class RestEnrouteDecorator(EnrouteDecorator, ABC):
+class RestEnrouteDecorator(HttpEnrouteDecorator):
     """Rest Enroute class"""
-
-    def __init__(self, url: str, method: str):
-        self.url = url
-        self.method = method
-
-    def __iter__(self) -> Iterable:
-        yield from (
-            self.url,
-            self.method,
-        )
 
 
 class RestCommandEnrouteDecorator(RestEnrouteDecorator):

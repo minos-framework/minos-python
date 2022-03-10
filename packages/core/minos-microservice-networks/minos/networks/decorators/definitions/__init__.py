@@ -10,15 +10,16 @@ from .broker import (
 from .checkers import (
     CheckDecorator,
 )
+from .http import (
+    HttpEnrouteDecorator,
+    RestCommandEnrouteDecorator,
+    RestEnrouteDecorator,
+    RestQueryEnrouteDecorator,
+)
 from .kinds import (
     EnrouteDecoratorKind,
 )
 from .periodic import (
     PeriodicEnrouteDecorator,
     PeriodicEventEnrouteDecorator,
-)
-from .rest import (
-    RestCommandEnrouteDecorator,
-    RestEnrouteDecorator,
-    RestQueryEnrouteDecorator,
 )
