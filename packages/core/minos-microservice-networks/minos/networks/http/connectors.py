@@ -53,12 +53,8 @@ class HttpConnector(ABC, MinosSetup):
 
     async def _setup(self) -> None:
         await super()._setup()
-        self._mount_routes()
+        self.mount_routes()
         await self._start()
-
-    def _mount_routes(self):
-        for decorator, callback in self.routes.items():
-            self.mount_route(decorator.path, decorator.method, callback)
 
     async def _destroy(self) -> None:
         await self._stop()
@@ -71,6 +67,14 @@ class HttpConnector(ABC, MinosSetup):
     @abstractmethod
     async def _stop(self) -> None:
         raise NotImplementedError
+
+    def mount_routes(self) -> None:
+        """Mount the routes given by the adapter.
+
+        :return: This method does not return anything.
+        """
+        for decorator, callback in self.routes.items():
+            self.mount_route(decorator.path, decorator.method, callback)
 
     def mount_route(self, path: str, method: str, callback: Callable[[Request], Optional[Response]]):
         """Mount a new route on the application.

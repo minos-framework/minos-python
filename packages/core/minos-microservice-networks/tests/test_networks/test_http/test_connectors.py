@@ -59,6 +59,17 @@ class TestHttpConnector(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([call(FakeService.create_ticket)], adapt_mock.call_args_list)
         self.assertEqual([call("/path/to/callback", "POST", _fn)], mount_mock.call_args_list)
 
+    def test_mount_routes(self):
+        mount_mock = MagicMock()
+        self.connector.mount_route = mount_mock
+
+        self.connector.mount_routes()
+
+        self.assertEqual(
+            [call(decorator.path, decorator.method, callback) for decorator, callback in self.connector.routes.items()],
+            mount_mock.call_args_list
+        )
+
     async def test_setup_destroy(self):
         star_mock = AsyncMock()
         stop_mock = AsyncMock()
@@ -66,13 +77,11 @@ class TestHttpConnector(unittest.IsolatedAsyncioTestCase):
 
         self.connector._start = star_mock
         self.connector._stop = stop_mock
-        self.connector.mount_route = mount_mock
+        self.connector.mount_routes = mount_mock
 
         await self.connector.setup()
 
-        self.assertEqual(
-            [call(d.path, d.method, c) for d, c in self.connector.routes.items()], mount_mock.call_args_list
-        )
+        self.assertEqual([call()], mount_mock.call_args_list)
         self.assertEqual([call()], star_mock.call_args_list)
         self.assertEqual([], stop_mock.call_args_list)
 
