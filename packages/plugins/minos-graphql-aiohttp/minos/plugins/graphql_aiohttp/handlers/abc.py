@@ -1,11 +1,12 @@
-import asyncio
 import logging
 import urllib
 import json
 import aiohttp
 from aiohttp import web
-#from graphql.execution.executors.asyncio import AsyncioExecutor
-
+from graphql import graphql
+from minos.plugins.graphql_aiohttp.star_wars_example import (
+    star_wars_schema,
+)
 
 class BaseHandler(web.View):
 
@@ -42,14 +43,10 @@ class GQLBaseHandler(BaseHandler):
             'GraphQL result data: %s errors: %s',
             result.data,
             result.errors,
-            #result.invalid,
         )
 
         if result and result.errors:
             status = 500
-
-            #ex = ExecutionError(errors=result.errors)
-            #logging.debug('GraphQL Error: %s', ex)
 
         errors = result.errors
 
@@ -57,27 +54,23 @@ class GQLBaseHandler(BaseHandler):
             errors = []
 
         return web.json_response(
-            {'data': result.data, 'errors': [str(err) for err in errors]},
+            {'data': result.data, 'errors': [err.message for err in errors]},
             status=status,
             headers={'Access-Control-Allow-Origin': '*'},
         )
 
     async def execute_graphql(self):
         graphql_req = await self.graphql_request
-        logging.debug('graphql request: %s', graphql_req)
         context_value = graphql_req.get('context', {})
         variables = graphql_req.get('variables', {})
 
         context_value['application'] = self.app
-
-        #executor = AsyncioExecutor(loop=asyncio.get_event_loop())
-        result = self.schema.execute(
-            graphql_req['query'],
-            #executor=executor,
-            #return_promise=True,
-            context_value=context_value,
-            variable_values=variables,
-        )
+        source = graphql_req['query']
+        result = await graphql(schema=star_wars_schema,
+                               source=source,
+                               context_value=context_value,
+                               variable_values=variables,
+                               )
 
         ref = self.request.headers.get('referer')
         url_path = ''
