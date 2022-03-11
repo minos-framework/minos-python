@@ -1,6 +1,8 @@
 service:
     name: Order
     aggregate: tests.utils.Order
+routers:
+    - minos.networks.RestHttpRouter
 services:
     - tests.utils.FakeCommandService
     - tests.utils.FakeQueryService

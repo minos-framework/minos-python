@@ -25,9 +25,9 @@ from minos.networks import (
     Response,
 )
 from minos.plugins.rest_aiohttp import (
-    RestHandler,
-    RestResponse,
-    RestResponseException,
+    AioHttpConnector,
+    AioHttpResponse,
+    AioHttpResponseException,
 )
 from tests.utils import (
     BASE_PATH,
@@ -41,11 +41,11 @@ APPLICATION_JSON = "application/json"
 class _Cls:
     @staticmethod
     async def _fn(request: Request) -> Response:
-        return RestResponse(await request.content())
+        return AioHttpResponse(await request.content())
 
     @staticmethod
     async def _fn_status(request: Request) -> Response:
-        return RestResponse(status=await request.content())
+        return AioHttpResponse(status=await request.content())
 
     @staticmethod
     async def _fn_none(request: Request):
@@ -53,40 +53,33 @@ class _Cls:
 
     @staticmethod
     async def _fn_raises_response(request: Request) -> Response:
-        raise RestResponseException("")
+        raise AioHttpResponseException("")
 
     @staticmethod
     async def _fn_raises_exception(request: Request) -> Response:
         raise ValueError
 
 
-class TestRestHandler(PostgresAsyncTestCase):
+@unittest.skip
+class TestAioHttpConnector(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
-        self.handler = RestHandler.from_config(config=self.config)
-
-    def test_from_config(self):
-        self.assertIsInstance(self.handler, RestHandler)
-        self.assertEqual({("/order", "GET"), ("/ticket", "POST")}, set(self.handler.endpoints.keys()))
-
-    def test_from_config_raises(self):
-        with self.assertRaises(Exception):
-            RestHandler.from_config()
+        self.connector = AioHttpConnector.from_config(config=self.config)
 
     def test_get_app(self):
-        self.assertIsInstance(self.handler.get_app(), web.Application)
+        self.assertIsInstance(self.connector._app, web.Application)
 
     async def test_get_callback(self):
-        handler = self.handler.get_callback(_Cls._fn)
+        handler = self.connector._adapt_callback(_Cls._fn)
         response = await handler(json_mocked_request({"foo": "bar"}))
         self.assertIsInstance(response, web.Response)
         self.assertEqual(orjson.dumps({"foo": "bar"}), response.body)
         self.assertEqual(APPLICATION_JSON, response.content_type)
 
     async def test_get_callback_status(self):
-        handler = self.handler.get_callback(_Cls._fn_status)
+        handler = self.connector._adapt_callback(_Cls._fn_status)
         response = await handler(json_mocked_request(203))
         self.assertIsInstance(response, web.Response)
         self.assertEqual(None, response.body)
@@ -94,19 +87,19 @@ class TestRestHandler(PostgresAsyncTestCase):
         self.assertEqual(203, response.status)
 
     async def test_get_callback_none(self):
-        handler = self.handler.get_callback(_Cls._fn_none)
+        handler = self.connector._adapt_callback(_Cls._fn_none)
         response = await handler(mocked_request())
         self.assertIsInstance(response, web.Response)
         self.assertEqual(None, response.text)
         self.assertEqual(APPLICATION_JSON, response.content_type)
 
     async def test_get_callback_raises_response(self):
-        handler = self.handler.get_callback(_Cls._fn_raises_response)
+        handler = self.connector._adapt_callback(_Cls._fn_raises_response)
         response = await handler(json_mocked_request({"foo": "bar"}))
         self.assertEqual(400, response.status)
 
     async def test_get_callback_raises_exception(self):
-        handler = self.handler.get_callback(_Cls._fn_raises_exception)
+        handler = self.connector._adapt_callback(_Cls._fn_raises_exception)
         with self.assertRaises(HTTPInternalServerError):
             await handler(json_mocked_request({"foo": "bar"}))
 
@@ -119,7 +112,7 @@ class TestRestHandler(PostgresAsyncTestCase):
 
         mock = AsyncMock(side_effect=_fn)
 
-        handler = self.handler.get_callback(mock)
+        handler = self.connector._adapt_callback(mock)
         await handler(json_mocked_request({"foo": "bar"}, user=user))
 
         self.assertEqual(1, mock.call_count)

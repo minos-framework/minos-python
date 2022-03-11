@@ -60,7 +60,7 @@ class FakeCommandService:
     """For testng purposes."""
 
     # noinspection PyUnusedLocal
-    @enroute.rest.command(url="/order", method="GET")
+    @enroute.rest.command(path="/order", method="GET")
     def get_order_rest(self, request: Request) -> Response:
         """For testng purposes."""
 
@@ -76,7 +76,7 @@ class FakeQueryService:
     """For testng purposes."""
 
     # noinspection PyUnusedLocal
-    @enroute.rest.query(url="/ticket", method="POST")
+    @enroute.rest.query(path="/ticket", method="POST")
     def add_ticket(self, request: Request) -> Response:
         """For testng purposes."""
         return Response("ticket_added")
