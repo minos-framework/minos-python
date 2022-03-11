@@ -88,7 +88,7 @@ class HttpConnector(ABC, MinosSetup):
         self._mount_route(path, method, adapted_callback)
 
     @abstractmethod
-    def _mount_route(self, path: str, method: str, adapted_callback: Callable):
+    def _mount_route(self, path: str, method: str, adapted_callback: Callable) -> None:
         raise NotImplementedError
 
     @abstractmethod

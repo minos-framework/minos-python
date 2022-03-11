@@ -9,6 +9,9 @@ from functools import (
 from inspect import (
     isawaitable,
 )
+from socket import (
+    socket,
+)
 from typing import (
     Callable,
     Optional,
@@ -17,10 +20,7 @@ from typing import (
 
 from aiohttp import (
     web,
-)
-from aiohttp.web_runner import (
-    AppRunner,
-    SockSite,
+    web_runner,
 )
 from aiomisc import (
     bind_socket,
@@ -46,25 +46,57 @@ logger = logging.getLogger(__name__)
 
 
 class AioHttpConnector(HttpConnector):
-    """TODO"""
+    """AioHttp Connector class."""
 
-    def __init__(self, *args, shutdown_timeout: int = 6, **kwargs):
+    def __init__(self, *args, shutdown_timeout: float = 6, **kwargs):
         super().__init__(*args, **kwargs)
-        self.socket = bind_socket(address=self._host, port=self._port, proto_name="http")
 
-        self.shutdown_timeout = shutdown_timeout
-        self.runner = None
-        self.site = None
+        self._shutdown_timeout = shutdown_timeout
+        self._socket = None
+        self._runner = None
+        self._site = None
+
+    @property
+    def shutdown_timeout(self) -> float:
+        """Get the shutdown timeout.
+
+        :return: A ``float`` value.
+        """
+        return self._shutdown_timeout
+
+    @property
+    def runner(self) -> Optional[web_runner.AppRunner]:
+        """Get the application runner.
+
+        :return: An ``AppRunner`` instance or ``None``.
+        """
+        return self._runner
+
+    @property
+    def socket(self) -> Optional[socket]:
+        """Get the socket.
+
+        :return: A ``socket`` value or ``None``.
+        """
+        return self._socket
+
+    @property
+    def site(self) -> Optional[web_runner.SockSite]:
+        """Get the application site.
+
+        :return: A ``SockSite`` instance or ``None``.
+        """
+        return self._site
 
     @cached_property
     def application(self) -> web.Application:
-        """TODO
+        """Get the application.
 
-        :return: TODO
+        :return: An ``Application`` instance.
         """
         return web.Application()
 
-    def _mount_route(self, path: str, method: str, adapted_callback: Callable):
+    def _mount_route(self, path: str, method: str, adapted_callback: Callable) -> None:
         self.application.router.add_route(method, path, adapted_callback)
 
     def _adapt_callback(
@@ -111,16 +143,22 @@ class AioHttpConnector(HttpConnector):
         return _wrapper
 
     async def _start(self) -> None:
-        self.runner = AppRunner(self.application)
-        await self.runner.setup()
+        self._runner = web_runner.AppRunner(self.application)
+        await self._runner.setup()
 
-        self.site = SockSite(self.runner, self.socket, shutdown_timeout=self.shutdown_timeout)
-        await self.site.start()
+        self._socket = bind_socket(address=self._host, port=self._port, proto_name="http")
+        self._site = web_runner.SockSite(self._runner, self._socket, shutdown_timeout=self._shutdown_timeout)
+        await self._site.start()
 
     async def _stop(self, exception: Exception = None) -> None:
-        try:
-            if self.site:
-                await self.site.stop()
-        finally:
-            if hasattr(self, "runner"):
-                await self.runner.cleanup()
+        if self._site is not None:
+            await self._site.stop()
+            self._site = None
+
+        if self._socket is not None:
+            self._socket.close()
+            self._socket = None
+
+        if self._runner is not None:
+            await self._runner.cleanup()
+            self._runner = None

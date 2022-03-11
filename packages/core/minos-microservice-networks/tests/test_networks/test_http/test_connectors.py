@@ -67,7 +67,7 @@ class TestHttpConnector(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(
             [call(decorator.path, decorator.method, callback) for decorator, callback in self.connector.routes.items()],
-            mount_mock.call_args_list
+            mount_mock.call_args_list,
         )
 
     async def test_setup_destroy(self):
