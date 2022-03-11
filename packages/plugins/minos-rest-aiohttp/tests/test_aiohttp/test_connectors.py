@@ -24,7 +24,7 @@ from minos.networks import (
     Request,
     Response,
 )
-from minos.plugins.rest_aiohttp import (
+from minos.plugins.aiohttp import (
     AioHttpConnector,
     AioHttpResponse,
     AioHttpResponseException,

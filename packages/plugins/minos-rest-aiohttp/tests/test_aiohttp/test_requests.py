@@ -19,7 +19,7 @@ from minos.networks import (
     Response,
     ResponseException,
 )
-from minos.plugins.rest_aiohttp import (
+from minos.plugins.aiohttp import (
     AioHttpRequest,
     AioHttpResponse,
     AioHttpResponseException,
