@@ -5,12 +5,12 @@ from sqlalchemy import (
     String,
     Text,
 )
+from sqlalchemy.dialects.postgresql import UUID as UUID_PG
 from sqlalchemy.orm import (
     backref,
     declarative_base,
     relationship,
 )
-from sqlalchemy.dialects.postgresql import UUID as UUID_PG
 
 Base = declarative_base()
 
@@ -30,7 +30,7 @@ class CartItem(Base):
     quantity = Column(Integer)
     cart_id = Column(Integer, ForeignKey("cart.id"))
     cart = relationship("Cart", backref=backref("items"))
-    product_id = Column(Integer, ForeignKey('product.id'))
+    product_id = Column(Integer, ForeignKey("product.id"))
     product = relationship("Product", backref=backref("items"))
 
 

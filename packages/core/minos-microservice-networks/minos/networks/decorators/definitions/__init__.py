@@ -10,9 +10,11 @@ from .broker import (
 from .checkers import (
     CheckDecorator,
 )
-from .graphql import (
-    GraphqlEnrouteDecorator,
-    GraphqlQueryEnrouteDecorator,
+from .http import (
+    HttpEnrouteDecorator,
+    RestCommandEnrouteDecorator,
+    RestEnrouteDecorator,
+    RestQueryEnrouteDecorator,
 )
 from .kinds import (
     EnrouteDecoratorKind,
@@ -20,9 +22,4 @@ from .kinds import (
 from .periodic import (
     PeriodicEnrouteDecorator,
     PeriodicEventEnrouteDecorator,
-)
-from .rest import (
-    RestCommandEnrouteDecorator,
-    RestEnrouteDecorator,
-    RestQueryEnrouteDecorator,
 )

@@ -1,3 +1,6 @@
+from collections.abc import (
+    Awaitable,
+)
 from datetime import (
     timedelta,
 )
@@ -11,6 +14,7 @@ from typing import (
     Any,
     Callable,
     Optional,
+    Union,
 )
 
 from minos.common import (
@@ -18,6 +22,7 @@ from minos.common import (
 )
 from minos.networks import (
     EnrouteDecorator,
+    HttpConnector,
     Request,
     Response,
     WrappedRequest,
@@ -104,7 +109,7 @@ class FakeService:
         return Response(f"({await response.content()})")
 
     # noinspection PyUnusedLocal
-    @enroute.rest.command(url="orders/", method="GET")
+    @enroute.rest.command(path="orders/", method="GET")
     @enroute.broker.command(topic="CreateTicket")
     @enroute.broker.command(topic="AddTicket")
     def create_ticket(self, request: Request) -> Response:
@@ -121,7 +126,7 @@ class FakeService:
 
     # noinspection PyUnusedLocal
     @classmethod
-    @enroute.rest.command(url="orders/", method="DELETE")
+    @enroute.rest.command(path="orders/", method="DELETE")
     @enroute.broker.command(topic="DeleteTicket")
     def delete_ticket(cls, request: Request) -> None:
         """For testing purposes."""
@@ -132,7 +137,7 @@ class FakeService:
     def check_classmethod(cls, request: Request) -> bool:
         return True
 
-    @enroute.rest.query(url="tickets/", method="GET")
+    @enroute.rest.query(path="tickets/", method="GET")
     @enroute.broker.query(topic="GetTickets")
     async def get_tickets(self, request: Request) -> Response:
         """For testing purposes."""
@@ -188,4 +193,22 @@ class FakeServiceWithGetEnroute:
         return {"create_foo": {enroute.broker.command(topic="CreateFoo")}}
 
     def create_foo(self, request: Request) -> Response:
+        """For testing purposes."""
+
+
+class FakeHttpConnector(HttpConnector):
+    """For testing purposes."""
+
+    def _mount_route(self, path: str, method: str, adapted_callback: Callable):
+        """For testing purposes."""
+
+    def _adapt_callback(
+        self, callback: Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
+    ) -> Callable:
+        """For testing purposes."""
+
+    async def _start(self) -> None:
+        """For testing purposes."""
+
+    async def _stop(self) -> None:
         """For testing purposes."""

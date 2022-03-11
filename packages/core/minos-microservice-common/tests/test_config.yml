@@ -33,6 +33,9 @@ broker:
         port: 5432
         records: 10
         retry: 2
+routers:
+    - path.to.MyRouter1
+    - path.to.MyRouter2
 services:
     - tests.services.OrderService
     - tests.services.OrderQueryService

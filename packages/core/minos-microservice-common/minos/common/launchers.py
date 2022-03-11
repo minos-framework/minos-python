@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import logging
-import pkgutil
-import re
-import sys
 from asyncio import (
     AbstractEventLoop,
 )
@@ -46,6 +43,7 @@ from .configuration import (
     MinosConfig,
 )
 from .importlib import (
+    get_internal_modules,
     import_module,
 )
 from .injectors import (
@@ -184,11 +182,7 @@ class EntrypointLauncher(MinosSetup):
 
     @property
     def _internal_modules(self) -> list[ModuleType]:
-        import minos
-
-        for loader, module_name, _ in pkgutil.iter_modules(minos.__path__):
-            loader.find_module(module_name).load_module(module_name)
-        return [v for k, v in sys.modules.items() if re.fullmatch(r"minos\.\w+", k)]
+        return get_internal_modules()
 
     async def _destroy(self) -> None:
         """Unwire the injected dependencies and destroys it.

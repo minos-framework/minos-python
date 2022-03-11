@@ -38,9 +38,9 @@ class DependencyInjector:
 
     @cached_property
     def injections(self) -> dict[str, MinosSetup]:
-        """Get the injections dictionary.
+        """Get the injections' dictionary.
 
-        :return: A dict of injections..
+        :return: A dict of injections.
         """
         injections = dict()
 
@@ -53,7 +53,10 @@ class DependencyInjector:
             return raw
 
         for key, value in self._raw_injections.items():
-            injections[key] = _fn(value)
+            try:
+                injections[key] = _fn(value)
+            except Exception as exc:
+                raise ValueError(f"An exception was raised while building injections: {exc!r}")
 
         return injections
 
@@ -77,7 +80,7 @@ class DependencyInjector:
 
     @cached_property
     def container(self) -> containers.Container:
-        """Get the dependencies container.
+        """Get the dependencies' container.
 
         :return: A ``Container`` instance.
         """

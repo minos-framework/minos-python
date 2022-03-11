@@ -1,3 +1,6 @@
+from .ports import (
+    PeriodicTaskSchedulerPort,
+)
 from .requests import (
     ScheduledRequest,
     ScheduledRequestContent,
@@ -6,7 +9,4 @@ from .requests import (
 from .schedulers import (
     PeriodicTask,
     PeriodicTaskScheduler,
-)
-from .services import (
-    PeriodicTaskSchedulerService,
 )

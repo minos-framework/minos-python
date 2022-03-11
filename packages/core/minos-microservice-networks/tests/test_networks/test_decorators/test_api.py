@@ -14,11 +14,11 @@ from minos.networks import (
 
 class TestEnroute(unittest.IsolatedAsyncioTestCase):
     def test_rest_command(self):
-        decorator = enroute.rest.command(url="tickets/", method="GET")
+        decorator = enroute.rest.command(path="tickets/", method="GET")
         self.assertEqual(RestCommandEnrouteDecorator("tickets/", "GET"), decorator)
 
     def test_rest_query(self):
-        decorator = enroute.rest.query(url="tickets/", method="GET")
+        decorator = enroute.rest.query(path="tickets/", method="GET")
         self.assertEqual(RestQueryEnrouteDecorator("tickets/", "GET"), decorator)
 
     def test_graphql(self):
@@ -44,6 +44,17 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
     def test_periodic_command_decorators(self):
         decorator = enroute.periodic.event("0 */2 * * *")
         self.assertEqual(PeriodicEventEnrouteDecorator("0 */2 * * *"), decorator)
+
+    def test_not_found(self):
+        with self.assertRaises(AttributeError):
+            enroute.foo.command()
+
+    def test_register(self):
+        enroute._register_sub_enroute("foo", "bar")
+        self.assertEqual("bar", enroute.foo)
+        enroute._unregister_sub_enroute("foo")
+        with self.assertRaises(AttributeError):
+            enroute.foo
 
 
 if __name__ == "__main__":

@@ -1,0 +1,41 @@
+service:
+    name: Order
+    aggregate: tests.utils.Order
+routers:
+    - minos.networks.RestHttpRouter
+services:
+    - tests.utils.FakeCommandService
+    - tests.utils.FakeQueryService
+rest:
+    host: localhost
+    port: 8080
+repository:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+snapshot:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+broker:
+  host: localhost
+  port: 9092
+  queue:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+    records: 10
+    retry: 2
+saga:
+    storage:
+        path: "./order.lmdb"
+discovery:
+    client: minos.networks.InMemoryDiscoveryClient
+    host: discovery-service
+    port: 8080

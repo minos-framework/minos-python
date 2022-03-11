@@ -1,4 +1,5 @@
 import importlib
+import pkgutil
 from types import (
     ModuleType,
 )
@@ -13,7 +14,7 @@ from .exceptions import (
 
 
 # noinspection SpellCheckingInspection
-def import_module(module_name: str) -> Union[type, Callable]:
+def import_module(module_name: str) -> Union[type, Callable, ModuleType]:
     """Import the given module from a package"""
     parts = module_name.rsplit(".", 1)
 
@@ -41,3 +42,24 @@ def classname(cls: Union[type, Callable]) -> str:
         return cls.__name__
     # noinspection PyUnresolvedReferences
     return f"{cls.__module__}.{cls.__qualname__}"
+
+
+def get_internal_modules() -> list[ModuleType]:
+    """Get the list of internal ``minos`` modules.
+
+    :return: A list of modules.
+    """
+    return _import_submodules("minos") + _import_submodules("minos.plugins")
+
+
+def _import_submodules(prefix: str) -> list[ModuleType]:
+    try:
+        base = importlib.import_module(prefix)
+    except ModuleNotFoundError:
+        return list()
+
+    modules = list()
+    for loader, module_name, _ in pkgutil.iter_modules(base.__path__):
+        module = importlib.import_module(f"{prefix}.{module_name}")
+        modules.append(module)
+    return modules

@@ -1,6 +1,6 @@
 __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
-__version__ = "0.5.2"
+__version__ = "0.5.3"
 
 from .configuration import (
     BROKER,
@@ -51,6 +51,7 @@ from .exceptions import (
 )
 from .importlib import (
     classname,
+    get_internal_modules,
     import_module,
 )
 from .injectors import (

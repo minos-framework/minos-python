@@ -44,9 +44,9 @@ repos:
                 files: ^packages/plugins/minos-broker-kafka/
                 language: system
 
-            -   id: tutorial-eboutique
+            -   id: minos-http-aiohttp-check
                 pass_filenames: false
-                entry: make --directory=tutorials/eboutique check
-                name: Check tutorial eboutique
-                files: ^tutorials/eboutique/
+                entry: make --directory=packages/plugins/minos-http-aiohttp check
+                name: Check minos-http-aiohttp
+                files: ^packages/plugins/minos-http-aiohttp/
                 language: system
