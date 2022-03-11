@@ -13,11 +13,11 @@ from minos.networks import (
 
 class TestEnroute(unittest.IsolatedAsyncioTestCase):
     def test_rest_command(self):
-        decorator = enroute.rest.command(url="tickets/", method="GET")
+        decorator = enroute.rest.command(path="tickets/", method="GET")
         self.assertEqual(RestCommandEnrouteDecorator("tickets/", "GET"), decorator)
 
     def test_rest_query(self):
-        decorator = enroute.rest.query(url="tickets/", method="GET")
+        decorator = enroute.rest.query(path="tickets/", method="GET")
         self.assertEqual(RestQueryEnrouteDecorator("tickets/", "GET"), decorator)
 
     def test_rest_event_raises(self):

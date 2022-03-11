@@ -86,6 +86,13 @@ from .exceptions import (
     NotSatisfiedCheckerException,
     RequestException,
 )
+from .http import (
+    HttpAdapter,
+    HttpApplication,
+    HttpPort,
+    HttpRequest,
+    HttpResponse,
+)
 from .ports import (
     Port,
 )

@@ -6,7 +6,9 @@ from abc import (
     ABC,
 )
 from typing import (
+    Any,
     Callable,
+    Optional,
 )
 
 from minos.common import (
@@ -14,6 +16,9 @@ from minos.common import (
     MinosSetup,
 )
 
+from . import (
+    HttpEnrouteDecorator,
+)
 from .decorators import (
     EnrouteBuilder,
     EnrouteDecorator,
@@ -23,8 +28,12 @@ from .decorators import (
 class Router(MinosSetup, ABC):
     """Router base class."""
 
-    def __init__(self, routes: dict[EnrouteDecorator, Callable], **kwargs):
+    def __init__(self, routes: Optional[dict[EnrouteDecorator, Callable]] = None, **kwargs):
         super().__init__(**kwargs)
+
+        if routes is None:
+            routes = dict()
+
         self._routes = routes
 
     @classmethod
@@ -46,9 +55,24 @@ class Router(MinosSetup, ABC):
         """
         return self._routes
 
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+
+        if self._routes.keys() != other._routes.keys():
+            return False
+
+        for key in self._routes:
+            if self._routes[key].__qualname__ != other._routes[key].__qualname__:
+                return False
+
+        return True
+
 
 class HttpRouter(Router, ABC):
     """Http Router base class."""
+
+    routes: dict[HttpEnrouteDecorator, Callable]
 
 
 class RestHttpRouter(HttpRouter):

@@ -30,10 +30,30 @@ class TestRouter(unittest.TestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(Router, ABC))
 
-    def test_routes(self):
+    def test_constructor(self):
         builder = EnrouteBuilder(*self.config.services, middleware=self.config.middleware)
         router = _Router.from_config(self.config)
         self.assertEqual(builder.get_all().keys(), router.routes.keys())
+
+    def test_constructor_empty(self):
+        router = _Router()
+        self.assertEqual(dict(), router.routes)
+
+    def test_eq(self):
+        def _fn():
+            pass
+
+        router = _Router.from_config(self.config)
+        router_eq = _Router.from_config(self.config)
+        router_ne1 = _Router()
+        router_ne2 = _Router.from_config(self.config)
+        router_ne2.routes[next(iter(router_ne2.routes.keys()))] = _fn
+        router_ne3 = 1234
+
+        self.assertEqual(router_eq, router)
+        self.assertNotEqual(router_ne1, router)
+        self.assertNotEqual(router_ne2, router)
+        self.assertNotEqual(router_ne3, router)
 
 
 class TestHttpRouter(unittest.TestCase):

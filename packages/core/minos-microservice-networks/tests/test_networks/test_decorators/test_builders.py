@@ -133,11 +133,11 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
 
     def test_raises_duplicated_command(self):
         class _WrongService:
-            @enroute.rest.command(url="orders/", method="GET")
+            @enroute.rest.command(path="orders/", method="GET")
             def _fn1(self, request):
                 return Response("bar")
 
-            @enroute.rest.command(url="orders/", method="GET")
+            @enroute.rest.command(path="orders/", method="GET")
             def _fn2(self, request):
                 return Response("bar")
 
@@ -147,11 +147,11 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
 
     def test_raises_duplicated_command_query(self):
         class _WrongService:
-            @enroute.rest.command(url="orders/", method="GET")
+            @enroute.rest.command(path="orders/", method="GET")
             def _fn1(self, request):
                 return Response("bar")
 
-            @enroute.rest.query(url="orders/", method="GET")
+            @enroute.rest.query(path="orders/", method="GET")
             def _fn2(self, request):
                 return Response("bar")
 

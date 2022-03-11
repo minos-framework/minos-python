@@ -6,7 +6,7 @@ from minos.networks import (
 
 
 class QueryService:
-    @enroute.rest.query(url="/ticket", method="POST")
+    @enroute.rest.query(path="/ticket", method="POST")
     def add_ticket(self, request: Request) -> Response:
         return Response("ticket_added")
 
