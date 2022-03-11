@@ -22,7 +22,7 @@ from minos.common import (
 )
 from minos.networks import (
     EnrouteDecorator,
-    HttpApplication,
+    HttpConnector,
     Request,
     Response,
     WrappedRequest,
@@ -184,7 +184,7 @@ class FakeServiceWithGetEnroute:
         """For testing purposes."""
 
 
-class FakeHttpApplication(HttpApplication):
+class FakeHttpConnector(HttpConnector):
     """For testing purposes."""
 
     def _mount_route(self, path: str, method: str, adapted_callback: Callable):

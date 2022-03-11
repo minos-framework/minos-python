@@ -69,7 +69,7 @@ class TestAioHttpConnector(PostgresAsyncTestCase):
         self.connector = AioHttpConnector.from_config(config=self.config)
 
     def test_get_app(self):
-        self.assertIsInstance(self.connector._app, web.Application)
+        self.assertIsInstance(self.connector.application, web.Application)
 
     async def test_get_callback(self):
         handler = self.connector._adapt_callback(_Cls._fn)

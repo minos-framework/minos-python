@@ -31,7 +31,7 @@ from cached_property import (
 
 from minos.networks import (
     REQUEST_USER_CONTEXT_VAR,
-    HttpApplication,
+    HttpConnector,
     Request,
     Response,
     ResponseException,
@@ -45,7 +45,7 @@ from .requests import (
 logger = logging.getLogger(__name__)
 
 
-class AioHttpConnector(HttpApplication):
+class AioHttpConnector(HttpConnector):
     """TODO"""
 
     def __init__(self, *args, shutdown_timeout: int = 6, **kwargs):
@@ -57,11 +57,15 @@ class AioHttpConnector(HttpApplication):
         self.site = None
 
     @cached_property
-    def _app(self) -> web.Application:
+    def application(self) -> web.Application:
+        """TODO
+
+        :return: TODO
+        """
         return web.Application()
 
     def _mount_route(self, path: str, method: str, adapted_callback: Callable):
-        self._app.router.add_route(method, path, adapted_callback)
+        self.application.router.add_route(method, path, adapted_callback)
 
     def _adapt_callback(
         self, callback: Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
@@ -107,7 +111,7 @@ class AioHttpConnector(HttpApplication):
         return _wrapper
 
     async def _start(self) -> None:
-        self.runner = AppRunner(self._app)
+        self.runner = AppRunner(self.application)
         await self.runner.setup()
 
         self.site = SockSite(self.runner, self.socket, shutdown_timeout=self.shutdown_timeout)

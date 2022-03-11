@@ -1,8 +1,8 @@
 from .adapters import (
     HttpAdapter,
 )
-from .applications import (
-    HttpApplication,
+from .connectors import (
+    HttpConnector,
 )
 from .ports import (
     HttpPort,

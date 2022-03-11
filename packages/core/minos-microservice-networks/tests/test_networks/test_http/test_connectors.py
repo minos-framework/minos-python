@@ -13,7 +13,7 @@ from minos.common import (
 )
 from minos.networks import (
     HttpAdapter,
-    HttpApplication,
+    HttpConnector,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -28,9 +28,9 @@ class TestHttpApplication(unittest.IsolatedAsyncioTestCase):
         self.application = FakeHttpApplication.from_config(CONFIG_FILE_PATH)
 
     def test_abstract(self):
-        self.assertTrue(issubclass(HttpApplication, (ABC, MinosSetup)))
+        self.assertTrue(issubclass(HttpConnector, (ABC, MinosSetup)))
         # noinspection PyUnresolvedReferences
-        self.assertEqual({"_mount_route", "_adapt_callback", "_start", "_stop"}, HttpApplication.__abstractmethods__)
+        self.assertEqual({"_mount_route", "_adapt_callback", "_start", "_stop"}, HttpConnector.__abstractmethods__)
 
     def test_host(self):
         self.assertEqual("localhost", self.application.host)

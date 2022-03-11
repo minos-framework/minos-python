@@ -34,7 +34,7 @@ from .adapters import (
 _Callback = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
 
 
-class HttpApplication(ABC, MinosSetup):
+class HttpConnector(ABC, MinosSetup):
     """Http Application base class."""
 
     def __init__(self, host: str, port: int, adapter: HttpAdapter, **kwargs):
@@ -45,7 +45,7 @@ class HttpApplication(ABC, MinosSetup):
         self._adapter = adapter
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> HttpApplication:
+    def _from_config(cls, config: MinosConfig, **kwargs) -> HttpConnector:
         host = config.rest.host
         port = config.rest.port
         adapter = HttpAdapter.from_config(config)

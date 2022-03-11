@@ -88,7 +88,7 @@ from .exceptions import (
 )
 from .http import (
     HttpAdapter,
-    HttpApplication,
+    HttpConnector,
     HttpPort,
     HttpRequest,
     HttpResponse,

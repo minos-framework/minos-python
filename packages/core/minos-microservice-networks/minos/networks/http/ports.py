@@ -22,8 +22,8 @@ from minos.common import (
 from ..ports import (
     Port,
 )
-from .applications import (
-    HttpApplication,
+from .connectors import (
+    HttpConnector,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ class HttpPort(Port):
         await self.application.destroy()
 
     @cached_property
-    def application(self) -> HttpApplication:
+    def application(self) -> HttpConnector:
         """Get the service handler.
 
         :return: A ``Handler`` instance.
@@ -62,12 +62,12 @@ class HttpPort(Port):
     @staticmethod
     @inject
     def _get_application(
-        application: Optional[HttpApplication] = None,
-        http_application: Optional[HttpApplication] = Provide["http_application"],
+        application: Optional[HttpConnector] = None,
+        http_application: Optional[HttpConnector] = Provide["http_application"],
         **kwargs,
-    ) -> HttpApplication:
+    ) -> HttpConnector:
         if application is None:
             application = http_application
         if application is None or isinstance(application, Provide):
-            raise NotProvidedException(f"A {HttpApplication!r} must be provided.")
+            raise NotProvidedException(f"A {HttpConnector!r} must be provided.")
         return application
