@@ -2,7 +2,7 @@
   <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
 </p>
 
-## minos-graphql-aiohttp
+## minos-router-graphql
 
 [![PyPI Latest Release](https://img.shields.io/pypi/v/minos-broker-kafka.svg)](https://pypi.org/project/minos-broker-kafka/)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/minos-framework/minos-python/pages%20build%20and%20deployment?label=docs)](https://minos-framework.github.io/minos-python)
