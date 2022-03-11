@@ -21,10 +21,6 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
         decorator = enroute.rest.query(path="tickets/", method="GET")
         self.assertEqual(RestQueryEnrouteDecorator("tickets/", "GET"), decorator)
 
-    def test_graphql(self):
-        decorator = enroute.graphql(url="graphql/", method="POST")
-        self.assertEqual(GraphqlQueryEnrouteDecorator("graphql/", "POST"), decorator)
-
     def test_rest_event_raises(self):
         with self.assertRaises(AttributeError):
             enroute.rest.event("CreateTicket")

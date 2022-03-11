@@ -174,18 +174,6 @@ class FakeService:
         """For testing purposes."""
         return Response("bar")
 
-    @enroute.graphql(url="graphql/", method="GET")
-    def graphql_handler(self):
-        return
-
-    @enroute.graphql(url="graphql-2/", method="GET")
-    def graphql_handler2(self):
-        return
-
-    @enroute.graphql(url="graphql-3/", method="POST")
-    def graphql_handler3(self):
-        return
-
 
 class FakeServiceWithGetEnroute:
     @staticmethod

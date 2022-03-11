@@ -55,8 +55,6 @@ from .decorators import (
     EnrouteBuilder,
     EnrouteDecorator,
     EnrouteDecoratorKind,
-    GraphqlEnrouteDecorator,
-    GraphqlQueryEnrouteDecorator,
     Handler,
     HandlerMeta,
     HandlerWrapper,

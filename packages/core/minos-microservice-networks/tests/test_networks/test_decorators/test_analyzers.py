@@ -42,9 +42,6 @@ class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
             },
             "send_newsletter": {PeriodicEventEnrouteDecorator("@daily")},
             "check_inactive_users": {PeriodicEventEnrouteDecorator("@daily")},
-            "graphql_handler": {GraphqlQueryEnrouteDecorator("graphql/", "GET")},
-            "graphql_handler2": {GraphqlQueryEnrouteDecorator("graphql-2/", "GET")},
-            "graphql_handler3": {GraphqlQueryEnrouteDecorator("graphql-3/", "POST")},
         }
 
         self.assertEqual(expected, observed)
@@ -57,18 +54,6 @@ class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
             "get_tickets": {RestQueryEnrouteDecorator("tickets/", "GET")},
             "create_ticket": {RestCommandEnrouteDecorator("orders/", "GET")},
             "delete_ticket": {RestCommandEnrouteDecorator("orders/", "DELETE")},
-        }
-
-        self.assertEqual(expected, observed)
-
-    def test_get_graphql(self):
-        analyzer = EnrouteAnalyzer(FakeService)
-
-        observed = analyzer.get_graphql()
-        expected = {
-            "graphql_handler": {GraphqlQueryEnrouteDecorator("graphql/", "GET")},
-            "graphql_handler2": {GraphqlQueryEnrouteDecorator("graphql-2/", "GET")},
-            "graphql_handler3": {GraphqlQueryEnrouteDecorator("graphql-3/", "POST")},
         }
 
         self.assertEqual(expected, observed)
