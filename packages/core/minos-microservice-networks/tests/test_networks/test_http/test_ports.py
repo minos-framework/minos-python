@@ -12,13 +12,13 @@ from minos.networks import (
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
-    FakeHttpconnector,
+    FakeHttpConnector,
 )
 
 
 class TestHttpPort(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.connector = FakeHttpconnector.from_config(CONFIG_FILE_PATH)
+        self.connector = FakeHttpConnector.from_config(CONFIG_FILE_PATH)
 
     def test_is_instance(self):
         service = HttpPort(connector=self.connector)
