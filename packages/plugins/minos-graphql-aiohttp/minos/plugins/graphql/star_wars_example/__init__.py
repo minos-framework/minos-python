@@ -5,4 +5,3 @@ __version__ = "0.6.0"
 from .schema import (
     star_wars_schema,
 )
-

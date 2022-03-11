@@ -5,7 +5,13 @@ data from a backend service rather than from hardcoded JSON objects in a more co
 demo.
 """
 
-from typing import Awaitable, Collection, Dict, Iterator, Optional
+from typing import (
+    Awaitable,
+    Collection,
+    Dict,
+    Iterator,
+    Optional,
+)
 
 __all__ = ["get_droid", "get_friends", "get_hero", "get_human", "get_secret_backstory"]
 
@@ -76,9 +82,7 @@ leia = Human(
     homePlanet="Alderaan",
 )
 
-tarkin = Human(
-    id="1004", name="Wilhuff Tarkin", friends=["1001"], appearsIn=[4], homePlanet=None
-)
+tarkin = Human(id="1004", name="Wilhuff Tarkin", friends=["1001"], appearsIn=[4], homePlanet=None)
 
 human_data: Dict[str, Human] = {
     "1000": luke,

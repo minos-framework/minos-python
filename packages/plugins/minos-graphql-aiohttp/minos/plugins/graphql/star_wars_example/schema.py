@@ -99,21 +99,14 @@ droid_type: GraphQLObjectType
 character_interface: GraphQLInterfaceType = GraphQLInterfaceType(
     "Character",
     lambda: {
-        "id": GraphQLField(
-            GraphQLNonNull(GraphQLString), description="The id of the character."
-        ),
+        "id": GraphQLField(GraphQLNonNull(GraphQLString), description="The id of the character."),
         "name": GraphQLField(GraphQLString, description="The name of the character."),
         "friends": GraphQLField(
             GraphQLList(character_interface),
-            description="The friends of the character,"
-            " or an empty list if they have none.",
+            description="The friends of the character," " or an empty list if they have none.",
         ),
-        "appearsIn": GraphQLField(
-            GraphQLList(episode_enum), description="Which movies they appear in."
-        ),
-        "secretBackstory": GraphQLField(
-            GraphQLString, description="All secrets about their past."
-        ),
+        "appearsIn": GraphQLField(GraphQLList(episode_enum), description="Which movies they appear in."),
+        "secretBackstory": GraphQLField(GraphQLString, description="All secrets about their past."),
     },
     resolve_type=lambda character, _info, _type: {
         "Human": human_type.name,
@@ -136,19 +129,14 @@ character_interface: GraphQLInterfaceType = GraphQLInterfaceType(
 human_type = GraphQLObjectType(
     "Human",
     lambda: {
-        "id": GraphQLField(
-            GraphQLNonNull(GraphQLString), description="The id of the human."
-        ),
+        "id": GraphQLField(GraphQLNonNull(GraphQLString), description="The id of the human."),
         "name": GraphQLField(GraphQLString, description="The name of the human."),
         "friends": GraphQLField(
             GraphQLList(character_interface),
-            description="The friends of the human,"
-            " or an empty list if they have none.",
+            description="The friends of the human," " or an empty list if they have none.",
             resolve=lambda human, _info: get_friends(human),
         ),
-        "appearsIn": GraphQLField(
-            GraphQLList(episode_enum), description="Which movies they appear in."
-        ),
+        "appearsIn": GraphQLField(GraphQLList(episode_enum), description="Which movies they appear in."),
         "homePlanet": GraphQLField(
             GraphQLString,
             description="The home planet of the human, or null if unknown.",
@@ -178,27 +166,20 @@ human_type = GraphQLObjectType(
 droid_type = GraphQLObjectType(
     "Droid",
     lambda: {
-        "id": GraphQLField(
-            GraphQLNonNull(GraphQLString), description="The id of the droid."
-        ),
+        "id": GraphQLField(GraphQLNonNull(GraphQLString), description="The id of the droid."),
         "name": GraphQLField(GraphQLString, description="The name of the droid."),
         "friends": GraphQLField(
             GraphQLList(character_interface),
-            description="The friends of the droid,"
-            " or an empty list if they have none.",
+            description="The friends of the droid," " or an empty list if they have none.",
             resolve=lambda droid, _info: get_friends(droid),
         ),
-        "appearsIn": GraphQLField(
-            GraphQLList(episode_enum), description="Which movies they appear in."
-        ),
+        "appearsIn": GraphQLField(GraphQLList(episode_enum), description="Which movies they appear in."),
         "secretBackstory": GraphQLField(
             GraphQLString,
             resolve=lambda droid, _info: get_secret_backstory(droid),
             description="Construction date and the name of the designer.",
         ),
-        "primaryFunction": GraphQLField(
-            GraphQLString, description="The primary function of the droid."
-        ),
+        "primaryFunction": GraphQLField(GraphQLString, description="The primary function of the droid."),
     },
     interfaces=[character_interface],
     description="A mechanical creature in the Star Wars universe.",
@@ -235,20 +216,12 @@ query_type = GraphQLObjectType(
         ),
         "human": GraphQLField(
             human_type,
-            args={
-                "id": GraphQLArgument(
-                    GraphQLNonNull(GraphQLString), description="id of the human"
-                )
-            },
+            args={"id": GraphQLArgument(GraphQLNonNull(GraphQLString), description="id of the human")},
             resolve=lambda _source, _info, id: get_human(id),
         ),
         "droid": GraphQLField(
             droid_type,
-            args={
-                "id": GraphQLArgument(
-                    GraphQLNonNull(GraphQLString), description="id of the droid"
-                )
-            },
+            args={"id": GraphQLArgument(GraphQLNonNull(GraphQLString), description="id of the droid")},
             resolve=lambda _source, _info, id: get_droid(id),
         ),
     },
@@ -257,16 +230,10 @@ query_type = GraphQLObjectType(
 
 async def resolve_hello(obj, info):
     await asyncio.sleep(3)
-    return 'world'
+    return "world"
 
-mutation_type = GraphQLObjectType(
-    "Mutation",
-    fields={
-            'hello': GraphQLField(
-                GraphQLString,
-                resolve=resolve_hello)
-        }
-)
+
+mutation_type = GraphQLObjectType("Mutation", fields={"hello": GraphQLField(GraphQLString, resolve=resolve_hello)})
 
 # Finally, we construct our schema (whose starting query type is the query
 # type we defined above) and export it.
