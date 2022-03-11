@@ -22,11 +22,12 @@ from cached_property import (
 from ..requests import (
     Request,
     Response,
+    ResponseException,
 )
 
 
 class HttpRequest(Request, ABC):
-    """Rest Request class."""
+    """Http Request class."""
 
     @cached_property
     def user(self) -> Optional[UUID]:
@@ -91,7 +92,7 @@ class HttpRequest(Request, ABC):
 
 
 class HttpResponse(Response, ABC):
-    """Rest Response class."""
+    """Http Response class."""
 
     def __init__(self, *args, content_type: str = "application/json", **kwargs):
         super().__init__(*args, **kwargs)
@@ -119,3 +120,7 @@ class HttpResponse(Response, ABC):
             return cls()
 
         return cls(response._data)
+
+
+class HttpResponseException(ResponseException):
+    """Http Response Exception class."""

@@ -14,7 +14,7 @@ minos-microservice-saga = { path = "packages/core/minos-microservice-saga", deve
 minos-microservice-cqrs = { path = "packages/core/minos-microservice-cqrs", develop = true }
 minos-broker-kafka = { path = "packages/plugins/minos-broker-kafka", develop = true }
 minos-discovery-minos = { path = "packages/plugins/minos-discovery-minos", develop = true }
-minos-rest-aiohttp = { path = "packages/plugins/minos-rest-aiohttp", develop = true }
+minos-http-aiohttp = { path = "packages/plugins/minos-http-aiohttp", develop = true }
 
 [tool.poetry.dev-dependencies]
 black = "^22.1"

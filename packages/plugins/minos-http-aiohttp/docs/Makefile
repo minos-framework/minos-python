@@ -4,7 +4,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = python -msphinx
-SPHINXPROJ    = minos-rest-aiohttp
+SPHINXPROJ    = minos-http-aiohttp
 SOURCEDIR     = .
 BUILDDIR      = _build
 

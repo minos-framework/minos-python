@@ -92,6 +92,7 @@ from .http import (
     HttpPort,
     HttpRequest,
     HttpResponse,
+    HttpResponseException,
 )
 from .ports import (
     Port,

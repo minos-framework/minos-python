@@ -49,13 +49,13 @@ from minos.common import (
 from minos.networks import (
     HttpRequest,
     HttpResponse,
+    HttpResponseException,
     NotHasParamsException,
-    ResponseException,
 )
 
 
 class AioHttpRequest(HttpRequest):
-    """Rest Request class."""
+    """Aiohttp Request class."""
 
     __slots__ = "raw"
 
@@ -247,7 +247,7 @@ class AioHttpRequest(HttpRequest):
 
 
 class AioHttpResponse(HttpResponse):
-    """Rest Response class."""
+    """Aiohttp Response class."""
 
     # noinspection PyUnusedLocal
     async def content(self, **kwargs) -> Optional[bytes]:
@@ -312,5 +312,5 @@ class AioHttpResponse(HttpResponse):
         return AvroDataEncoder(self._data).build()
 
 
-class AioHttpResponseException(ResponseException):
-    """Aiohttp Rest Response Exception class."""
+class AioHttpResponseException(HttpResponseException):
+    """Aiohttp Response Exception class."""

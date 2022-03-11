@@ -2,9 +2,9 @@
   <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
 </p>
 
-## minos-rest-aiohttp
+## minos-http-aiohttp
 
-[![PyPI Latest Release](https://img.shields.io/pypi/v/minos-rest-aiohttp.svg)](https://pypi.org/project/minos-rest-aiohttp/)
+[![PyPI Latest Release](https://img.shields.io/pypi/v/minos-http-aiohttp.svg)](https://pypi.org/project/minos-http-aiohttp/)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/minos-framework/minos-python/pages%20build%20and%20deployment?label=docs)](https://minos-framework.github.io/minos-python)
 [![License](https://img.shields.io/github/license/minos-framework/minos-python.svg)](https://github.com/minos-framework/minos-python/blob/main/LICENSE)
 [![Coverage](https://codecov.io/github/minos-framework/minos-python/coverage.svg?branch=main)](https://codecov.io/gh/minos-framework/minos-python)

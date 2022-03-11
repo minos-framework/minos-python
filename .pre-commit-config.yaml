@@ -44,9 +44,9 @@ repos:
                 files: ^packages/plugins/minos-broker-kafka/
                 language: system
 
-            -   id: minos-rest-aiohttp-check
+            -   id: minos-http-aiohttp-check
                 pass_filenames: false
-                entry: make --directory=packages/plugins/minos-rest-aiohttp check
-                name: Check minos-rest-aiohttp
-                files: ^packages/plugins/minos-rest-aiohttp/
+                entry: make --directory=packages/plugins/minos-http-aiohttp check
+                name: Check minos-http-aiohttp
+                files: ^packages/plugins/minos-http-aiohttp/
                 language: system

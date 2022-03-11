@@ -14,8 +14,10 @@ from uuid import (
 from minos.networks import (
     HttpRequest,
     HttpResponse,
+    HttpResponseException,
     Request,
     Response,
+    ResponseException,
 )
 
 
@@ -120,6 +122,11 @@ class TestHttpResponse(unittest.IsolatedAsyncioTestCase):
         observed = _HttpResponse.from_response(response)
         self.assertEqual("application/json", observed.content_type)
         self.assertEqual(None, await observed.content())
+
+
+class TestHttpResponseException(unittest.TestCase):
+    def test_is_subclass(self):
+        self.assertTrue(issubclass(HttpResponseException, ResponseException))
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-name: "Test: minos-rest-aiohttp"
+name: "Test: minos-http-aiohttp"
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
       - '*.*.x'
   pull_request:
     paths:
-      - 'packages/plugins/minos-rest-aiohttp/**'
+      - 'packages/plugins/minos-http-aiohttp/**'
       - 'packages/core/minos-microservice-networks/**'
       - 'packages/core/minos-microservice-common/**'
 
@@ -17,7 +17,7 @@ jobs:
     container: python:3.9-buster
     defaults:
       run:
-        working-directory: packages/plugins/minos-rest-aiohttp
+        working-directory: packages/plugins/minos-http-aiohttp
 
     services:
       postgres:
@@ -56,7 +56,7 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./packages/plugins/minos-rest-aiohttp/coverage.xml
+          files: ./packages/plugins/minos-http-aiohttp/coverage.xml
           fail_ci_if_error: true
 
       - name: Generate documentation

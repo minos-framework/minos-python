@@ -58,7 +58,7 @@ source_suffix = [".rst", ".md"]
 master_doc = "index"
 
 # General information about the project.
-project = "Minos Rest Aiohttp"
+project = "Minos Aiohttp"
 copyright = "2021, Clariteia"
 author = "Clariteia Devs"
 
@@ -147,7 +147,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass
 # [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "minos.tex", "Minos Rest Aiohttp Documentation", "Clariteia Devs", "manual"),
+    (master_doc, "minos.tex", "Minos Aiohttp Documentation", "Clariteia Devs", "manual"),
 ]
 
 
@@ -155,7 +155,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "minos", "Minos Rest Aiohttp Documentation", [author], 1)]
+man_pages = [(master_doc, "minos", "Minos Aiohttp Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------
@@ -167,7 +167,7 @@ texinfo_documents = [
     (
         master_doc,
         "minos",
-        "Minos Rest Aiohttp Documentation",
+        "Minos Aiohttp Documentation",
         author,
         "minos",
         "One line description of project.",

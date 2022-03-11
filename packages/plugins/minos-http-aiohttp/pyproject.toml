@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "minos-rest-aiohttp"
+name = "minos-http-aiohttp"
 version = "0.0.0"
-description = "The rest plugin of the Minos Framework."
+description = "The aiohttp plugin of the Minos Framework."
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
 homepage = "https://www.minos.run/"

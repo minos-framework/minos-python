@@ -12,41 +12,41 @@ from minos.networks import (
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
-    FakeHttpApplication,
+    FakeHttpconnector,
 )
 
 
 class TestHttpPort(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.application = FakeHttpApplication.from_config(CONFIG_FILE_PATH)
+        self.connector = FakeHttpconnector.from_config(CONFIG_FILE_PATH)
 
     def test_is_instance(self):
-        service = HttpPort(application=self.application)
+        service = HttpPort(connector=self.connector)
         self.assertIsInstance(service, Port)
 
-    def test_application(self):
-        service = HttpPort(application=self.application)
-        self.assertEqual(service.application, self.application)
+    def test_connector(self):
+        service = HttpPort(connector=self.connector)
+        self.assertEqual(service.connector, self.connector)
 
-    def test_http_application(self):
-        service = HttpPort(http_application=self.application)
-        self.assertEqual(service.application, self.application)
+    def test_http_connector(self):
+        service = HttpPort(http_connector=self.connector)
+        self.assertEqual(service.connector, self.connector)
 
-    def test_missing_application(self):
+    def test_missing_connector(self):
         service = HttpPort()
         with self.assertRaises(NotProvidedException):
-            service.application
+            service.connector
 
     async def test_start_stop(self):
-        service = HttpPort(application=self.application)
+        service = HttpPort(connector=self.connector)
 
         setup_mock = AsyncMock()
         destroy_mock = AsyncMock()
         start_mock = AsyncMock()
         stop_mock = AsyncMock()
 
-        service.application.setup = setup_mock
-        service.application.destroy = destroy_mock
+        service.connector.setup = setup_mock
+        service.connector.destroy = destroy_mock
 
         await service.start()
 

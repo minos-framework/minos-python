@@ -14,10 +14,10 @@ from minos.common import (
     classname,
 )
 from minos.networks import (
+    HttpResponseException,
     NotHasContentException,
     NotHasParamsException,
     Response,
-    ResponseException,
 )
 from minos.plugins.aiohttp import (
     AioHttpRequest,
@@ -439,7 +439,7 @@ class TestAioHttpResponse(unittest.IsolatedAsyncioTestCase):
 
 class TestAioHttpResponseException(unittest.TestCase):
     def test_is_subclass(self):
-        self.assertTrue(issubclass(AioHttpResponseException, ResponseException))
+        self.assertTrue(issubclass(AioHttpResponseException, HttpResponseException))
 
 
 if __name__ == "__main__":

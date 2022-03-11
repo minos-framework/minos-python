@@ -20,7 +20,7 @@ speedups = ["aiodns", "brotli", "cchardet"]
 
 [[package]]
 name = "aiomisc"
-version = "15.6.8"
+version = "15.7.2"
 description = "aiomisc - miscellaneous utils for asyncio"
 category = "main"
 optional = false
@@ -997,8 +997,8 @@ aiohttp = [
     {file = "aiohttp-3.8.1.tar.gz", hash = "sha256:fc5471e1a54de15ef71c1bc6ebe80d4dc681ea600e68bfd1cbce40427f0b7578"},
 ]
 aiomisc = [
-    {file = "aiomisc-15.6.8-py3-none-any.whl", hash = "sha256:b65f7f8e50d9791bbb745253e814862880b8a35bf21e4eea545ada9daf89836c"},
-    {file = "aiomisc-15.6.8.tar.gz", hash = "sha256:09024d1f544de98b152dad8f7eb7d02c64457aaaaf03bd6c76a20b73328a3a74"},
+    {file = "aiomisc-15.7.2-py3-none-any.whl", hash = "sha256:e0b00145866b5c258a23e2c270bee2910f2562b078f6159d786a522699e8cfeb"},
+    {file = "aiomisc-15.7.2.tar.gz", hash = "sha256:fcc4517fa49056ec11ecd3ec5d341c554914c0a2d295c127b70583bab1ecab5b"},
 ]
 aiopg = [
     {file = "aiopg-1.3.3-py3-none-any.whl", hash = "sha256:2842dd8741460eeef940032dcb577bfba4d4115205dd82a73ce13b3271f5bf0a"},

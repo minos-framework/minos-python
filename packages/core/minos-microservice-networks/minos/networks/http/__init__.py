@@ -10,4 +10,5 @@ from .ports import (
 from .requests import (
     HttpRequest,
     HttpResponse,
+    HttpResponseException,
 )

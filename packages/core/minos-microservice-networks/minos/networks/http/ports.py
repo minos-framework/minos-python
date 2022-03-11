@@ -41,7 +41,7 @@ class HttpPort(Port):
 
         :return: This method does not return anything.
         """
-        await self.application.setup()
+        await self.connector.setup()
 
     async def stop(self, err: Exception = None) -> None:
         """Stop the service execution.
@@ -49,25 +49,25 @@ class HttpPort(Port):
         :param err: Optional exception that stopped the execution.
         :return: This method does not return anything.
         """
-        await self.application.destroy()
+        await self.connector.destroy()
 
     @cached_property
-    def application(self) -> HttpConnector:
-        """Get the service handler.
+    def connector(self) -> HttpConnector:
+        """Get the port connector.
 
-        :return: A ``Handler`` instance.
+        :return: A ``HttpConnector`` instance.
         """
-        return self._get_application(**self._init_kwargs)
+        return self._get_connector(**self._init_kwargs)
 
     @staticmethod
     @inject
-    def _get_application(
-        application: Optional[HttpConnector] = None,
-        http_application: Optional[HttpConnector] = Provide["http_application"],
+    def _get_connector(
+        connector: Optional[HttpConnector] = None,
+        http_connector: Optional[HttpConnector] = Provide["http_connector"],
         **kwargs,
     ) -> HttpConnector:
-        if application is None:
-            application = http_application
-        if application is None or isinstance(application, Provide):
+        if connector is None:
+            connector = http_connector
+        if connector is None or isinstance(connector, Provide):
             raise NotProvidedException(f"A {HttpConnector!r} must be provided.")
-        return application
+        return connector
