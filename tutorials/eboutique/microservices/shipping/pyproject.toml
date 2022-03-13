@@ -15,6 +15,11 @@ minos-microservice-cqrs = "^0.5.0"
 minos-broker-kafka = "^0.5.0"
 minos-discovery-minos = "^0.5.0"
 typer = "^0.3.2"
+SQLAlchemy = "^1.4.31"
+requests = "^2.27.1"
+haversine = "^2.5.1"
+geopy = "^2.2.0"
+nominatim = "^0.1"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"
