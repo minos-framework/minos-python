@@ -13,16 +13,29 @@ from minos.networks import (
     EnrouteDecoratorKind,
     enroute,
 )
+from collections.abc import (
+    Collection,
+)
+from collections import (
+    defaultdict,
+)
 
 
 class GraphQlEnrouteDecorator(EnrouteDecorator, ABC):
     """GraphQl Enroute class"""
 
-    def __init__(self, topic: str):
-        self.topic = topic
+    def __init__(self, name: str, argument, output):
+        self.name = name
+        self.argument = argument
+        self.output = output
 
     def __iter__(self) -> Iterable:
-        yield from (self.topic,)
+        yield from (self.name,)
+
+    def _validate_not_redefined(self, decorators: Collection[EnrouteDecorator]) -> None:
+        mapper = defaultdict(set)
+        for decorator in decorators:
+            mapper[tuple(decorator)].add(decorator)
 
 
 class GraphQlCommandEnrouteDecorator(GraphQlEnrouteDecorator):

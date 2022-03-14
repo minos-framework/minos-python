@@ -6,6 +6,7 @@ from typing import (
     Callable,
 )
 
+from graphql import GraphQLSchema
 from minos.common import (
     MinosConfig,
 )
@@ -15,47 +16,32 @@ from minos.networks import (
     HttpRequest,
     HttpResponse,
     HttpRouter,
-)
-
-from .decorators import (
-    GraphQlEnrouteDecorator,
+    EnrouteDecoratorKind,
 )
 
 
 class GraphQlHttpRouter(HttpRouter):
     """TODO"""
 
-    def __init__(self, schema, *args, **kwargs):
+    def __init__(self, schema: GraphQLSchema, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._schema = schema
 
-    @staticmethod
-    def _from_config(config: MinosConfig, **kwargs) -> dict[(str, str), Callable]:
+    @classmethod
+    def _from_config(cls, config: MinosConfig, **kwargs) -> GraphQlHttpRouter:
         builder = EnrouteBuilder(*config.services, middleware=config.middleware)
         routes = builder.get_all(config=config, **kwargs)
 
-        graphql_routes = {
-            GraphQlEnrouteDecorator(
-                "CreateProduct", request=GraphQLField(GraphQLObjectType), response=GraphQLField(GraphQLObjectType)
-            ): "fn1",
-            GraphQlEnrouteDecorator(
-                "UpdateProduct", request=GraphQLField(GraphQLObjectType), response=GraphQLField(GraphQLObjectType)
-            ): "fn2",
-        }
+        queries = []
+        mutations = []
+        for route in routes:
+            if route.KIND == EnrouteDecoratorKind.Query:
+                queries.append(route)
 
-        schema = GraphQLSchema(
-            query=GraphQLObjectType(
-                name="RootQueryType",
-                fields={
-                    "CreateProduct": GraphQLField(
-                        GraphQLString, args=GraphQLField(GraphQLObjectType), response=GraphQLField(GraphQLObjectType)
-                    ),
-                    "UpdateProduct": GraphQLField(
-                        GraphQLString, args=GraphQLField(GraphQLObjectType), response=GraphQLField(GraphQLObjectType)
-                    ),
-                },
-            )
-        )
+            if route.KIND == EnrouteDecoratorKind.Command:
+                mutations.append(route)
+        from minos.plugins.graphql import GraphQLSchemaBuilder
+        schema = GraphQLSchemaBuilder.build(queries=queries, mutations=mutations)
 
         return cls(schema)
 

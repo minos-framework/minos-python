@@ -8,6 +8,7 @@ from typing import (
     Any,
 )
 
+from graphql import GraphQLObjectType, GraphQLField, GraphQLString, GraphQLArgument
 from minos.common import (
     DeclarativeModel,
 )
@@ -35,24 +36,30 @@ class FakeModel(DeclarativeModel):
 class FakeCommandService:
     """For testng purposes."""
 
-    # noinspection PyUnusedLocal
-    @enroute.rest.command(url="/order", method="GET")
-    def get_order_rest(self, request: Request) -> Response:
-        """For testng purposes."""
-
-        return Response("get_order")
-
-    @enroute.broker.command("GetOrder")
+    #@enroute.broker.command("GetOrder")
     def get_order_command(self, request: Request) -> Response:
         """For testng purposes."""
         return Response("get_order_command")
-
+    """
     @enroute.graphql.command(
-        "create_product",
-        # args={"request": GraphQLArgument(GraphQlObject({"name": GraphQLString, "surname": GraphQLString}))},
-        # response=GrapqlUUID
+        args={"request": GraphQLArgument(GraphQlObject({"name": GraphQLString, "surname": GraphQLString}))},
+        response=GrapqlUUID
     )
+    """
     def get_hero(self, request: Request) -> Response:
         """For testng purposes."""
         uuid = request.content()
         return Response(uuid)
+
+
+
+class FakeQueryService:
+    """For testng purposes."""
+
+    # noinspection PyUnusedLocal
+    @enroute.graphql.query(name="order", argument=GraphQLField(GraphQLString), output=GraphQLString)
+    def get_order(self, request: Request):
+        """For testng purposes."""
+
+        return "eu38hj32-889283-j2jjb5kl"
+

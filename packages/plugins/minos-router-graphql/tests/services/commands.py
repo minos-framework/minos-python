@@ -1,3 +1,4 @@
+from graphql import GraphQLField, GraphQLString
 from minos.networks import (
     BrokerResponse,
     Request,
@@ -7,30 +8,14 @@ from minos.networks import (
 
 
 class CommandService:
-    @enroute.rest.command(url="/order", method="GET")
-    def get_order_rest(self, request: Request) -> Response:
-        return Response("get_order")
+    @enroute.graphql.command(name="order-command", argument=GraphQLField(GraphQLString), output=GraphQLString)
+    def create_order(self, request: Request):
+        """For testng purposes."""
 
-    @enroute.broker.command("GetOrder")
-    def get_order_command(self, request: Request) -> Response:
-        return BrokerResponse("get_order")
+        return "eu38hj32-889283-j2jjb5kl"
 
-    @enroute.broker.command("AddOrder")
-    def add_order(self, request: Request) -> Response:
-        return BrokerResponse("add_order")
+    @enroute.graphql.command(name="ticket-command", argument=GraphQLField(GraphQLString), output=GraphQLString)
+    def create_ticket(self, request: Request):
+        """For testng purposes."""
 
-    @enroute.broker.command("DeleteOrder")
-    def delete_order(self, request: Request) -> Response:
-        return BrokerResponse("delete_order")
-
-    @enroute.broker.command("UpdateOrder")
-    def update_order(self, request: Request) -> Response:
-        return BrokerResponse("update_order")
-
-    @enroute.broker.event("TicketAdded")
-    def ticket_added(self, request: Request) -> str:
-        return "command_service_ticket_added"
-
-    @enroute.periodic.event("@daily")
-    def recompute_something(self, request: Request) -> None:
-        """For testing purposes."""
+        return "zdw4gg4g-gser44gkl-jh4j3h4h"

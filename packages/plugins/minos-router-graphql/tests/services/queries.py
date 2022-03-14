@@ -1,3 +1,4 @@
+from graphql import GraphQLField, GraphQLString
 from minos.networks import (
     Request,
     Response,
@@ -6,14 +7,14 @@ from minos.networks import (
 
 
 class QueryService:
-    @enroute.rest.query(url="/ticket", method="POST")
-    def add_ticket(self, request: Request) -> Response:
-        return Response("ticket_added")
+    @enroute.graphql.query(name="order-query", argument=GraphQLField(GraphQLString), output=GraphQLString)
+    def get_order(self, request: Request):
+        """For testng purposes."""
 
-    @enroute.broker.event("TicketAdded")
-    def ticket_added(self, request: Request):
-        return "query_service_ticket_added"
+        return "eu38hj32-889283-j2jjb5kl"
 
-    @enroute.broker.event("TicketDeleted")
-    def ticket_deleted(self, request: Request):
-        return "ticket_deleted"
+    @enroute.graphql.query(name="ticket-query", argument=GraphQLField(GraphQLString), output=GraphQLString)
+    def get_ticket(self, request: Request):
+        """For testng purposes."""
+
+        return "zdw4gg4g-gser44gkl-jh4j3h4h"

@@ -2,7 +2,7 @@ from aiohttp import (
     web,
 )
 
-from minos.plugins.graphql_aiohttp.services import (
+from minos.plugins.graphql.services import (
     RestService,
 )
 
