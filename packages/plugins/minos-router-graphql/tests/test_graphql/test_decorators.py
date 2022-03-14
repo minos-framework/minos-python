@@ -11,14 +11,10 @@ from minos.common import (
 from minos.networks import (
     EnrouteAnalyzer,
 )
-from minos.plugins.graphql import (
-    GraphQlEnroute,
-)
 from minos.plugins.graphql.decorators import (
     GraphQlQueryEnrouteDecorator,
 )
 from tests.utils import (
-    FakeCommandService,
     FakeQueryService,
 )
 

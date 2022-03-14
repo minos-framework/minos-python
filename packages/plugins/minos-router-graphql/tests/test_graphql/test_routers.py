@@ -2,14 +2,12 @@ import unittest
 
 from graphql import (
     GraphQLSchema,
-    validate_schema,
 )
 
 from minos.common import (
     MinosConfig,
 )
 from minos.plugins.graphql import (
-    GraphQlEnroute,
     GraphQlHttpRouter,
 )
 from tests.utils import (

@@ -14,7 +14,6 @@ from minos.networks import (
     Response,
 )
 from minos.plugins.graphql import (
-    GraphQlEnroute,
     GraphQlHttpRouter,
     GraphQLSchemaBuilder,
 )

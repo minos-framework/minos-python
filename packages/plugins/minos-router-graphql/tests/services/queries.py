@@ -1,5 +1,4 @@
 from graphql import (
-    GraphQLField,
     GraphQLString,
 )
 

@@ -1,11 +1,7 @@
 from abc import (
     ABC,
 )
-from collections import (
-    defaultdict,
-)
 from collections.abc import (
-    Collection,
     Iterable,
 )
 from typing import (
