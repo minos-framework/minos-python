@@ -25,14 +25,18 @@ from .configuration import (
 from .exceptions import (
     NotProvidedException,
 )
+from .object import (
+    Object,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class MinosSetup:
+class MinosSetup(Object):
     """Minos setup base class."""
 
     def __init__(self, *args, already_setup: bool = False, **kwargs):
+        super().__init__(**kwargs)
         self._already_setup = already_setup
 
     @property
