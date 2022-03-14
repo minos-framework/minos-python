@@ -13,7 +13,8 @@ from graphql import (
     GraphQLArgument,
     GraphQLField,
     GraphQLObjectType,
-    GraphQLSchema, GraphQLString,
+    GraphQLSchema,
+    GraphQLString,
 )
 
 from minos.networks import (
@@ -60,11 +61,9 @@ class GraphQLSchemaBuilder:
             if route.KIND == EnrouteDecoratorKind.Query:
                 fields[route.name] = cls._build_field(route, callback)
 
-        result = GraphQLObjectType("Query", fields={
-            'hello': GraphQLField(
-                GraphQLString,
-                resolve=lambda obj, info: 'world')
-        })
+        result = GraphQLObjectType(
+            "Query", fields={"hello": GraphQLField(GraphQLString, resolve=lambda obj, info: "world")}
+        )
         if len(fields) > 0:
             result = GraphQLObjectType("Query", fields=fields)
 
