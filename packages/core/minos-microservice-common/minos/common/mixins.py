@@ -68,7 +68,7 @@ class CircuitBreakerMixin(Generic[E], Object):
             except CircuitBroken:
                 await sleep(self._circuit_breaker_broken_timeout)
             except self._circuit_breaker_exceptions as exc:
-                logger.warning(f"A kafka exception was raised: {exc!r}")
+                logger.warning(f"An exception was raised: {exc!r}")
                 await sleep(self._circuit_breaker_exception_timeout)
 
     @property
