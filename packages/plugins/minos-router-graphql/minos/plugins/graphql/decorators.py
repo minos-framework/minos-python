@@ -1,7 +1,11 @@
 from abc import (
     ABC,
 )
+from collections import (
+    defaultdict,
+)
 from collections.abc import (
+    Collection,
     Iterable,
 )
 from typing import (
@@ -12,12 +16,6 @@ from minos.networks import (
     EnrouteDecorator,
     EnrouteDecoratorKind,
     enroute,
-)
-from collections.abc import (
-    Collection,
-)
-from collections import (
-    defaultdict,
 )
 
 
@@ -31,11 +29,6 @@ class GraphQlEnrouteDecorator(EnrouteDecorator, ABC):
 
     def __iter__(self) -> Iterable:
         yield from (self.name,)
-
-    def _validate_not_redefined(self, decorators: Collection[EnrouteDecorator]) -> None:
-        mapper = defaultdict(set)
-        for decorator in decorators:
-            mapper[tuple(decorator)].add(decorator)
 
 
 class GraphQlCommandEnrouteDecorator(GraphQlEnrouteDecorator):

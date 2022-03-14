@@ -8,7 +8,13 @@ from typing import (
     Any,
 )
 
-from graphql import GraphQLObjectType, GraphQLField, GraphQLString, GraphQLArgument
+from graphql import (
+    GraphQLArgument,
+    GraphQLField,
+    GraphQLObjectType,
+    GraphQLString,
+)
+
 from minos.common import (
     DeclarativeModel,
 )
@@ -36,21 +42,22 @@ class FakeModel(DeclarativeModel):
 class FakeCommandService:
     """For testng purposes."""
 
-    #@enroute.broker.command("GetOrder")
+    # @enroute.broker.command("GetOrder")
     def get_order_command(self, request: Request) -> Response:
         """For testng purposes."""
         return Response("get_order_command")
+
     """
     @enroute.graphql.command(
         args={"request": GraphQLArgument(GraphQlObject({"name": GraphQLString, "surname": GraphQLString}))},
         response=GrapqlUUID
     )
     """
+
     def get_hero(self, request: Request) -> Response:
         """For testng purposes."""
         uuid = request.content()
         return Response(uuid)
-
 
 
 class FakeQueryService:
@@ -62,4 +69,3 @@ class FakeQueryService:
         """For testng purposes."""
 
         return "eu38hj32-889283-j2jjb5kl"
-

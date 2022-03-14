@@ -2,11 +2,23 @@ from __future__ import (
     annotations,
 )
 
-from graphql import GraphQLSchema, GraphQLObjectType, GraphQLField
+from functools import (
+    wraps,
+)
+from inspect import (
+    isawaitable,
+)
 
-from minos.plugins.graphql.decorators import (
-    GraphQlQueryEnrouteDecorator,
-    GraphQlCommandEnrouteDecorator,
+from graphql import (
+    GraphQLArgument,
+    GraphQLField,
+    GraphQLObjectType,
+    GraphQLSchema,
+)
+
+from minos.networks import (
+    EnrouteDecoratorKind,
+    InMemoryRequest,
 )
 
 
@@ -15,30 +27,60 @@ class GraphQLSchemaBuilder:
         self.schema = GraphQLSchema(**kwargs)
 
     @classmethod
-    def build(cls, queries: list, mutations: list) -> GraphQLSchema:
-        params = dict()
-        if len(queries) > 0:
-            params["query"] = GraphQLSchemaBuilder._build_queries(queries)
-        if len(mutations) > 0:
-            params["mutation"] = GraphQLSchemaBuilder._build_mutations(mutations)
-        return cls(**params).schema
+    def build(cls, routes) -> GraphQLSchema:
+        schema_args = cls._build(routes)
+        return cls(**schema_args).schema
 
     @classmethod
-    def _build_queries(cls, queries):
-        fields = {item.name: cls._build_query(item) for item in queries}
+    def _build(cls, routes) -> dict:
+        query = cls._build_queries(routes)
+        mutation = cls._build_mutations(routes)
 
-        return GraphQLObjectType("Query", fields=fields)
+        return {"query": query, "mutation": mutation}
 
     @staticmethod
-    def _build_query(item: GraphQlQueryEnrouteDecorator):
-        return {item.name: GraphQLField(item.argument, resolve=item)}
+    def adapt_callback(callback):
+        @wraps(callback)
+        async def _wrapper(_source, _info, request):
+            request = InMemoryRequest(request)
+
+            response = callback(request)
+            if isawaitable(response):
+                response = await response
+
+            return await response.content()
+
+        return _wrapper
 
     @classmethod
-    def _build_mutations(cls, mutations):
-        fields = {item.name: cls._build_mutation(item) for item in mutations}
+    def _build_queries(cls, routes):
+        fields = dict()
+        for route, callback in routes.items():
+            callback = cls.adapt_callback(callback)
+            if route.KIND == EnrouteDecoratorKind.Query:
+                fields[route.name] = cls._build_field(route, callback)
 
-        return GraphQLObjectType("Mutation", fields=fields)
+        result = None
+        if len(fields) > 0:
+            result = GraphQLObjectType("Query", fields=fields)
+
+        return result
+
+    @classmethod
+    def _build_mutations(cls, routes):
+        fields = dict()
+        for route, callback in routes.items():
+            callback = cls.adapt_callback(callback)
+
+            if route.KIND == EnrouteDecoratorKind.Command:
+                fields[route.name] = cls._build_field(route, callback)
+
+        result = None
+        if len(fields) > 0:
+            result = GraphQLObjectType("Mutation", fields=fields)
+
+        return result
 
     @staticmethod
-    def _build_mutation(item: GraphQlCommandEnrouteDecorator):
-        return {item.name: GraphQLField(item.argument, resolve=item)}
+    def _build_field(item, callback):
+        return GraphQLField(item.output, args={"request": GraphQLArgument(item.argument)}, resolve=callback)

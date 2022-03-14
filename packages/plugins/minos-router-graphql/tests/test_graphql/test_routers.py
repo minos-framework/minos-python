@@ -1,7 +1,13 @@
 import unittest
 
-from minos.common import MinosConfig
+from graphql import (
+    validate_schema,
+    GraphQLSchema,
+)
 
+from minos.common import (
+    MinosConfig,
+)
 from minos.plugins.graphql import (
     GraphQlEnroute,
     GraphQlHttpRouter,
@@ -9,19 +15,18 @@ from minos.plugins.graphql import (
 from tests.utils import (
     BASE_PATH,
 )
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
 
 
 class TestSomething(unittest.TestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
     _config = MinosConfig(CONFIG_FILE_PATH)
 
-    def test_true(self):
+    def test_from_config(self):
         router = GraphQlHttpRouter.from_config(config=self._config)
-        self.assertTrue(GraphQlEnroute)
+
+        self.assertIsInstance(router._schema, GraphQLSchema)
+        self.assertIsInstance(router, GraphQlHttpRouter)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
