@@ -11,7 +11,6 @@ from tests.utils import (
 
 
 class TestCheckoutQueryService(unittest.IsolatedAsyncioTestCase):
-
     def setUp(self) -> None:
         self.injector = build_dependency_injector()
 
@@ -26,5 +25,5 @@ class TestCheckoutQueryService(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(service, CheckoutQueryService)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
