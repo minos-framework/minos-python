@@ -1,0 +1,59 @@
+service:
+  name: shipping
+  aggregate: src.aggregates.Shipping
+  injections:
+    lock_pool: minos.common.PostgreSqlLockPool
+    postgresql_pool: minos.common.PostgreSqlPool
+    broker_publisher: minos.plugins.kafka.InMemoryQueuedKafkaBrokerPublisher
+    broker_subscriber_builder: minos.plugins.kafka.InMemoryQueuedKafkaBrokerSubscriberBuilder
+    broker_pool: minos.networks.BrokerClientPool
+    transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
+    event_repository: minos.aggregate.PostgreSqlEventRepository
+    snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
+    saga_manager: minos.saga.SagaManager
+    discovery: minos.networks.DiscoveryConnector
+  services:
+    - minos.networks.BrokerHandlerService
+    - minos.networks.RestService
+    - minos.networks.PeriodicTaskSchedulerService
+middleware:
+  - minos.saga.transactional_command
+services:
+  - minos.aggregate.TransactionService
+  - minos.aggregate.SnapshotService
+  - minos.saga.SagaService
+  - src.queries.ShippingQueryService
+  - src.commands.ShippingCommandService
+rest:
+  host: 0.0.0.0
+  port: 8080
+broker:
+  host: localhost
+  port: 9092
+  queue:
+    database: shipping_db
+    user: postgres
+    password: ""
+    host: localhost
+    port: 5432
+    records: 1000
+    retry: 2
+repository:
+  database: shipping_db
+  user: postgres
+  password: ""
+  host: localhost
+  port: 5432
+snapshot:
+  database: shipping_db
+  user: postgres
+  password: ""
+  host: localhost
+  port: 5432
+saga:
+  storage:
+    path: ./shipping.lmdb
+discovery:
+  client: minos.plugins.minos_discovery.MinosDiscoveryClient
+  host: localhost
+  port: 5567
