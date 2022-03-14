@@ -19,18 +19,6 @@ yarl = ">=1.0,<2.0"
 speedups = ["aiodns", "brotli", "cchardet"]
 
 [[package]]
-name = "aiohttp-jinja2"
-version = "1.5"
-description = "jinja2 template renderer for aiohttp.web (http server for asyncio)"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.dependencies]
-aiohttp = ">=3.6.3"
-jinja2 = ">=3.0.0"
-
-[[package]]
 name = "aiomisc"
 version = "15.7.2"
 description = "aiomisc - miscellaneous utils for asyncio"
@@ -392,7 +380,7 @@ plugins = ["setuptools"]
 name = "jinja2"
 version = "3.0.3"
 description = "A very fast and expressive template engine."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 
@@ -426,7 +414,7 @@ mistune = "0.8.4"
 name = "markupsafe"
 version = "2.1.0"
 description = "Safely add untrusted strings to HTML/XML markup."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 
@@ -939,7 +927,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "e7b55f719918838ac8d73e1ee1cf1df328f9c6d62e7bb835c897f447c755a214"
+content-hash = "3a311fef55d0ee3f97b74f9ef3d732eda18f8d20bc86df62882b3de3a81a6cba"
 
 [metadata.files]
 aiohttp = [
@@ -1015,10 +1003,6 @@ aiohttp = [
     {file = "aiohttp-3.8.1-cp39-cp39-win32.whl", hash = "sha256:7187a76598bdb895af0adbd2fb7474d7f6025d170bc0a1130242da817ce9e7d1"},
     {file = "aiohttp-3.8.1-cp39-cp39-win_amd64.whl", hash = "sha256:1c182cb873bc91b411e184dab7a2b664d4fea2743df0e4d57402f7f3fa644bac"},
     {file = "aiohttp-3.8.1.tar.gz", hash = "sha256:fc5471e1a54de15ef71c1bc6ebe80d4dc681ea600e68bfd1cbce40427f0b7578"},
-]
-aiohttp-jinja2 = [
-    {file = "aiohttp-jinja2-1.5.tar.gz", hash = "sha256:7c3ba5eac060b691f4e50534af2d79fca2a75712ebd2b25e6fcb1295859f910b"},
-    {file = "aiohttp_jinja2-1.5-py3-none-any.whl", hash = "sha256:b55c0ed167b0cc4b6d6a50fb2299a44beb5dc4aec9df21305b91a5484694cf74"},
 ]
 aiomisc = [
     {file = "aiomisc-15.7.2-py3-none-any.whl", hash = "sha256:e0b00145866b5c258a23e2c270bee2910f2562b078f6159d786a522699e8cfeb"},
