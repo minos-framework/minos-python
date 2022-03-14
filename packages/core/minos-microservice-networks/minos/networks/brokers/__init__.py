@@ -50,6 +50,7 @@ from .subscribers import (
     InMemoryBrokerSubscriberQueue,
     InMemoryBrokerSubscriberQueueBuilder,
     PostgreSqlBrokerSubscriberDuplicateDetector,
+    PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory,
     PostgreSqlBrokerSubscriberQueue,
     PostgreSqlBrokerSubscriberQueueBuilder,
     PostgreSqlBrokerSubscriberQueueQueryFactory,

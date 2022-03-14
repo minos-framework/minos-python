@@ -20,13 +20,13 @@ from ....messages import (
 
 
 class BrokerSubscriberDuplicateDetector(ABC, SetupMixin):
-    """TODO"""
+    """Broker Subscriber Duplicate Detector class."""
 
     async def is_valid(self, message: BrokerMessage) -> bool:
-        """TODO
+        """Check if the given message is valid.
 
-        :param message: TODO
-        :return: TODO
+        :param message: The message to be checked.
+        :return: ``True`` if it is valid or ``False`` otherwise.
         """
         return await self._is_valid(message.topic, message.identifier)
 
