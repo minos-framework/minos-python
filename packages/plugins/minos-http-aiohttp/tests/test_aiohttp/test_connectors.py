@@ -16,9 +16,6 @@ from aiohttp import (
 from aiohttp.test_utils import (
     AioHTTPTestCase,
 )
-from aiohttp.web_exceptions import (
-    HTTPInternalServerError,
-)
 from orjson import (
     orjson,
 )
@@ -38,8 +35,6 @@ from tests.utils import (
     json_mocked_request,
     mocked_request,
 )
-
-APPLICATION_JSON = "application/json"
 
 
 class _Cls:
@@ -84,36 +79,36 @@ class TestAioHttpConnector(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(self.connector.application, web.Application)
 
     async def test_get_callback(self):
-        handler = self.connector._adapt_callback(_Cls._fn)
+        handler = self.connector.adapt_callback(_Cls._fn)
         response = await handler(json_mocked_request({"foo": "bar"}))
         self.assertIsInstance(response, web.Response)
         self.assertEqual(orjson.dumps({"foo": "bar"}), response.body)
-        self.assertEqual(APPLICATION_JSON, response.content_type)
+        self.assertEqual("application/json", response.content_type)
 
     async def test_get_callback_status(self):
-        handler = self.connector._adapt_callback(_Cls._fn_status)
+        handler = self.connector.adapt_callback(_Cls._fn_status)
         response = await handler(json_mocked_request(203))
         self.assertIsInstance(response, web.Response)
         self.assertEqual(None, response.body)
-        self.assertEqual(APPLICATION_JSON, response.content_type)
+        self.assertEqual("application/json", response.content_type)
         self.assertEqual(203, response.status)
 
     async def test_get_callback_none(self):
-        handler = self.connector._adapt_callback(_Cls._fn_none)
+        handler = self.connector.adapt_callback(_Cls._fn_none)
         response = await handler(mocked_request())
         self.assertIsInstance(response, web.Response)
         self.assertEqual(None, response.text)
-        self.assertEqual(APPLICATION_JSON, response.content_type)
+        self.assertEqual("application/json", response.content_type)
 
     async def test_get_callback_raises_response(self):
-        handler = self.connector._adapt_callback(_Cls._fn_raises_response)
+        handler = self.connector.adapt_callback(_Cls._fn_raises_response)
         response = await handler(json_mocked_request({"foo": "bar"}))
         self.assertEqual(400, response.status)
 
     async def test_get_callback_raises_exception(self):
-        handler = self.connector._adapt_callback(_Cls._fn_raises_exception)
-        with self.assertRaises(HTTPInternalServerError):
-            await handler(json_mocked_request({"foo": "bar"}))
+        handler = self.connector.adapt_callback(_Cls._fn_raises_exception)
+        response = await handler(json_mocked_request({"foo": "bar"}))
+        self.assertEqual(500, response.status)
 
     async def test_get_callback_with_user(self):
         user = uuid4()
@@ -124,7 +119,7 @@ class TestAioHttpConnector(unittest.IsolatedAsyncioTestCase):
 
         mock = AsyncMock(side_effect=_fn)
 
-        handler = self.connector._adapt_callback(mock)
+        handler = self.connector.adapt_callback(mock)
         await handler(json_mocked_request({"foo": "bar"}, user=user))
 
         self.assertEqual(1, mock.call_count)
@@ -146,6 +141,7 @@ class TestAioHttpConnector(unittest.IsolatedAsyncioTestCase):
 
 class TestAioHttpConnectorApplication(AioHTTPTestCase):
     async def get_application(self) -> web.Application:
+        """For testing purposes."""
         connector = AioHttpConnector.from_config(CONFIG_FILE_PATH)
         connector.mount_routes()
         return connector.application

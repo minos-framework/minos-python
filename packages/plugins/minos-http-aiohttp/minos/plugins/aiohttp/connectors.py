@@ -1,21 +1,12 @@
 import logging
-import traceback
 from collections.abc import (
-    Awaitable,
-)
-from functools import (
-    wraps,
-)
-from inspect import (
-    isawaitable,
+    Callable,
 )
 from socket import (
     socket,
 )
 from typing import (
-    Callable,
     Optional,
-    Union,
 )
 
 from aiohttp import (
@@ -30,11 +21,9 @@ from cached_property import (
 )
 
 from minos.networks import (
-    REQUEST_USER_CONTEXT_VAR,
     HttpConnector,
     Request,
     Response,
-    ResponseException,
 )
 
 from .requests import (
@@ -45,7 +34,7 @@ from .requests import (
 logger = logging.getLogger(__name__)
 
 
-class AioHttpConnector(HttpConnector):
+class AioHttpConnector(HttpConnector[web.Request, web.Response]):
     """AioHttp Connector class."""
 
     def __init__(self, *args, shutdown_timeout: float = 6, **kwargs):
@@ -99,48 +88,21 @@ class AioHttpConnector(HttpConnector):
     def _mount_route(self, path: str, method: str, adapted_callback: Callable) -> None:
         self.application.router.add_route(method, path, adapted_callback)
 
-    def _adapt_callback(
-        self, callback: Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
-    ) -> Callable[[web.Request], Awaitable[web.Response]]:
-        """Get the handler function to be used by the ``aiohttp`` Controller.
+    async def _build_request(self, request: web.Request) -> Request:
+        return AioHttpRequest(request)
 
-        :param callback: The action function.
-        :return: A wrapper function around the given one that is compatible with the ``aiohttp`` Controller.
-        """
+    async def _build_response(self, response: Optional[Response]) -> web.Response:
+        if not isinstance(response, AioHttpResponse):
+            response = AioHttpResponse.from_response(response)
 
-        @wraps(callback)
-        async def _wrapper(request: web.Request) -> web.Response:
-            logger.info(f"Dispatching '{request!s}' from '{request.remote!s}'...")
+        content = await response.content()
+        content_type = response.content_type
+        status = response.status
 
-            request = AioHttpRequest(request)
-            token = REQUEST_USER_CONTEXT_VAR.set(request.user)
+        return web.Response(body=content, content_type=content_type, status=status)
 
-            try:
-                response = callback(request)
-                if isawaitable(response):
-                    response = await response
-
-                if not isinstance(response, AioHttpResponse):
-                    response = AioHttpResponse.from_response(response)
-
-                content = await response.content()
-                content_type = response.content_type
-                status = response.status
-
-                return web.Response(body=content, content_type=content_type, status=status)
-
-            except ResponseException as exc:
-                tb = traceback.format_exc()
-                logger.error(f"Raised an application exception:\n {tb}")
-                return web.Response(text=tb, status=exc.status)
-            except Exception:
-                tb = traceback.format_exc()
-                logger.exception(f"Raised a system exception:\n {tb}")
-                raise web.HTTPInternalServerError()
-            finally:
-                REQUEST_USER_CONTEXT_VAR.reset(token)
-
-        return _wrapper
+    async def _build_error_response(self, message: str, status: int) -> web.Response:
+        return web.Response(text=message, status=status)
 
     async def _start(self) -> None:
         self._runner = web_runner.AppRunner(self.application)

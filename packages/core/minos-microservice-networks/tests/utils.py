@@ -184,15 +184,19 @@ class FakeServiceWithGetEnroute:
         """For testing purposes."""
 
 
-class FakeHttpConnector(HttpConnector):
+class FakeHttpConnector(HttpConnector[Any, Any]):
     """For testing purposes."""
 
     def _mount_route(self, path: str, method: str, adapted_callback: Callable):
         """For testing purposes."""
 
-    def _adapt_callback(
-        self, callback: Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
-    ) -> Callable:
+    async def _build_request(self, request: Any) -> Request:
+        """For testing purposes."""
+
+    async def _build_response(self, response: Optional[Response]) -> Any:
+        """For testing purposes."""
+
+    async def _build_error_response(self, message: str, status: int) -> Any:
         """For testing purposes."""
 
     async def _start(self) -> None:
