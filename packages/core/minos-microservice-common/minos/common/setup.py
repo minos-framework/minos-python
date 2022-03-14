@@ -25,14 +25,18 @@ from .configuration import (
 from .exceptions import (
     NotProvidedException,
 )
+from .object import (
+    Object,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class MinosSetup:
-    """Minos setup base class."""
+class SetupMixin(Object):
+    """Setup Mixin class."""
 
     def __init__(self, *args, already_setup: bool = False, **kwargs):
+        super().__init__(**kwargs)
         self._already_setup = already_setup
 
     @property
@@ -118,4 +122,12 @@ class MinosSetup:
             )
 
 
-S = TypeVar("S", bound=MinosSetup)
+S = TypeVar("S", bound=SetupMixin)
+
+
+class MinosSetup(SetupMixin):
+    """Minos Setup class."""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{MinosSetup!r} has been deprecated. User {SetupMixin} instead.", DeprecationWarning)
+        super().__init__(*args, **kwargs)

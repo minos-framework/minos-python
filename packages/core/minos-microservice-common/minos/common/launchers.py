@@ -52,7 +52,7 @@ from .injectors import (
     DependencyInjector,
 )
 from .setup import (
-    MinosSetup,
+    SetupMixin,
 )
 
 logger = logging.getLogger(__name__)
@@ -66,13 +66,13 @@ def _create_loop() -> AbstractEventLoop:  # pragma: no cover
     return create_default_event_loop()[0]
 
 
-class EntrypointLauncher(MinosSetup):
+class EntrypointLauncher(SetupMixin):
     """EntryPoint Launcher class."""
 
     def __init__(
         self,
         config: MinosConfig,
-        injections: dict[str, Union[MinosSetup, Type[MinosSetup], str]],
+        injections: dict[str, Union[SetupMixin, Type[SetupMixin], str]],
         services: list[Union[Service, Type[Service], str]],
         log_level: Union[int, str] = logging.INFO,
         log_format: Union[str, LogFormat] = "color",

@@ -2,6 +2,9 @@ __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
 __version__ = "0.5.3"
 
+from .builders import (
+    Builder,
+)
 from .configuration import (
     BROKER,
     DISCOVERY,
@@ -67,6 +70,9 @@ from .meta import (
     property_or_classproperty,
     self_or_classmethod,
 )
+from .mixins import (
+    CircuitBreakerMixin,
+)
 from .model import (
     AvroDataDecoder,
     AvroDataEncoder,
@@ -92,6 +98,9 @@ from .model import (
     TypeHintComparator,
     is_model_type,
 )
+from .object import (
+    Object,
+)
 from .pools import (
     MinosPool,
 )
@@ -104,6 +113,7 @@ from .protocol import (
 )
 from .setup import (
     MinosSetup,
+    SetupMixin,
 )
 from .storage import (
     MinosStorage,

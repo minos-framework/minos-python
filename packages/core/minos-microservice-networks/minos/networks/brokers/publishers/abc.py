@@ -5,7 +5,7 @@ from abc import (
 )
 
 from minos.common import (
-    MinosSetup,
+    SetupMixin,
 )
 
 from ..messages import (
@@ -15,7 +15,7 @@ from ..messages import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerPublisher(ABC, MinosSetup):
+class BrokerPublisher(ABC, SetupMixin):
     """Broker Publisher class."""
 
     async def send(self, message: BrokerMessage) -> None:
