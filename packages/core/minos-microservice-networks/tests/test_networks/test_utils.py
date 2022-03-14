@@ -11,7 +11,7 @@ from typing import (
 
 from minos.common import (
     MinosConfig,
-    MinosSetup,
+    SetupMixin,
 )
 from minos.networks import (
     Builder,
@@ -51,7 +51,7 @@ class TestUtils(unittest.IsolatedAsyncioTestCase):
 
 class TestBuilder(unittest.TestCase):
     def test_abstract(self):
-        self.assertTrue(issubclass(Builder, (ABC, MinosSetup)))
+        self.assertTrue(issubclass(Builder, (ABC, SetupMixin)))
         # noinspection PyUnresolvedReferences
         self.assertEqual({"build"}, Builder.__abstractmethods__)
 

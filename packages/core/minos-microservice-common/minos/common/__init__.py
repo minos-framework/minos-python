@@ -110,6 +110,7 @@ from .protocol import (
 )
 from .setup import (
     MinosSetup,
+    SetupMixin,
 )
 from .storage import (
     MinosStorage,

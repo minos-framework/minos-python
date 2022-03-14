@@ -19,7 +19,7 @@ from typing import (
 
 from minos.common import (
     MinosConfig,
-    MinosSetup,
+    SetupMixin,
 )
 
 
@@ -70,7 +70,7 @@ async def consume_queue(queue, max_count: int) -> None:
 Instance = TypeVar("Instance")
 
 
-class Builder(MinosSetup, ABC, Generic[Instance]):  # FIXME: This class should be part of `minos.common` or similar.
+class Builder(SetupMixin, ABC, Generic[Instance]):  # FIXME: This class should be part of `minos.common` or similar.
     """Builder class."""
 
     def __init__(self, *args, **kwargs):

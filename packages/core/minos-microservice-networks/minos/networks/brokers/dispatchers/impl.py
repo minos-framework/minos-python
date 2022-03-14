@@ -25,8 +25,8 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     MinosConfig,
-    MinosSetup,
     NotProvidedException,
+    SetupMixin,
 )
 
 from ...decorators import (
@@ -59,7 +59,7 @@ from .requests import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerDispatcher(MinosSetup):
+class BrokerDispatcher(SetupMixin):
     """Broker Dispatcher class."""
 
     def __init__(self, actions: dict[str, Optional[Callable]], publisher: BrokerPublisher, **kwargs):
