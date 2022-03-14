@@ -1,3 +1,14 @@
+import os.path as op
+import urllib.request
+from datetime import (
+    date,
+)
+
+from currency_converter import (
+    ECB_URL,
+    CurrencyConverter,
+)
+
 from minos.cqrs import (
     CommandService,
 )
@@ -7,10 +18,6 @@ from minos.networks import (
     ResponseException,
     enroute,
 )
-import os.path as op
-from datetime import date
-from currency_converter import ECB_URL, CurrencyConverter
-import urllib.request
 
 
 class CurrencyCommandService(CommandService):

@@ -1,7 +1,6 @@
-from .services import (
-    WalletQueryService,
-)
-
 from .repository import (
     WalletQueryServiceRepository,
+)
+from .services import (
+    WalletQueryService,
 )
