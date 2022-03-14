@@ -1,8 +1,8 @@
 import unittest
 
 from graphql import (
-    validate_schema,
     GraphQLSchema,
+    validate_schema,
 )
 
 from minos.common import (

@@ -1,24 +1,27 @@
 import unittest
 
 from graphql import (
+    GraphQLString,
     graphql_sync,
     validate_schema,
-    GraphQLString,
+)
+
+from minos.common import (
+    MinosConfig,
 )
 from minos.networks import (
     Request,
     Response,
-)
-from minos.common import (
-    MinosConfig,
 )
 from minos.plugins.graphql import (
     GraphQlEnroute,
     GraphQlHttpRouter,
     GraphQLSchemaBuilder,
 )
-from minos.plugins.graphql.decorators import GraphQlCommandEnrouteDecorator, GraphQlQueryEnrouteDecorator
-
+from minos.plugins.graphql.decorators import (
+    GraphQlCommandEnrouteDecorator,
+    GraphQlQueryEnrouteDecorator,
+)
 from tests.utils import (
     BASE_PATH,
 )
