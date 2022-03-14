@@ -12,7 +12,7 @@ from typing import (
 
 from minos.common import (
     MinosConfig,
-    MinosSetup,
+    SetupMixin,
     import_module,
 )
 
@@ -29,8 +29,8 @@ from ..routers import (
 logger = logging.getLogger(__name__)
 
 
-class HttpAdapter(MinosSetup):
-    """Rest Handler class."""
+class HttpAdapter(SetupMixin):
+    """Http Adapter class."""
 
     def __init__(self, routers: list[HttpRouter], **kwargs):
         super().__init__(**kwargs)

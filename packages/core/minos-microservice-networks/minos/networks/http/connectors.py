@@ -27,7 +27,7 @@ from typing import (
 
 from minos.common import (
     MinosConfig,
-    MinosSetup,
+    SetupMixin,
 )
 
 from ..decorators import (
@@ -51,7 +51,7 @@ RawResponse = TypeVar("RawResponse")
 logger = logging.getLogger(__name__)
 
 
-class HttpConnector(ABC, MinosSetup, Generic[RawRequest, RawResponse]):
+class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
     """Http Application base class."""
 
     def __init__(self, host: str, port: int, adapter: HttpAdapter, **kwargs):
