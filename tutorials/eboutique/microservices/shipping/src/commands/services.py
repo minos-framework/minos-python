@@ -1,4 +1,8 @@
 import haversine as haversine
+from geopy.geocoders import (
+    Nominatim,
+)
+
 from minos.cqrs import (
     CommandService,
 )
@@ -8,8 +12,6 @@ from minos.networks import (
     ResponseException,
     enroute,
 )
-
-from geopy.geocoders import Nominatim
 
 
 class ShippingCommandService(CommandService):
