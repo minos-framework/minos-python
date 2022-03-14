@@ -1,23 +1,27 @@
 import unittest
 
 from graphql import (
+    GraphQLString,
     graphql_sync,
-    validate_schema, GraphQLString,
+    validate_schema,
+)
+
+from minos.common import (
+    MinosConfig,
 )
 from minos.networks import (
     Request,
     Response,
-)
-from minos.common import (
-    MinosConfig,
 )
 from minos.plugins.graphql import (
     GraphQlEnroute,
     GraphQlHttpRouter,
     GraphQLSchemaBuilder,
 )
-from minos.plugins.graphql.decorators import GraphQlCommandEnrouteDecorator, GraphQlQueryEnrouteDecorator
-
+from minos.plugins.graphql.decorators import (
+    GraphQlCommandEnrouteDecorator,
+    GraphQlQueryEnrouteDecorator,
+)
 from tests.utils import (
     BASE_PATH,
 )
@@ -33,12 +37,17 @@ class TestSomething(unittest.TestCase):
 
     def test_build(self):
         routes = {
-            GraphQlCommandEnrouteDecorator(name="order_command", argument=GraphQLString,
-                                           output=GraphQLString): callback_fn,
-            GraphQlCommandEnrouteDecorator(name="ticket_command", argument=GraphQLString,
-                                           output=GraphQLString): callback_fn,
+            GraphQlCommandEnrouteDecorator(
+                name="order_command", argument=GraphQLString, output=GraphQLString
+            ): callback_fn,
+            GraphQlCommandEnrouteDecorator(
+                name="ticket_command", argument=GraphQLString, output=GraphQLString
+            ): callback_fn,
             GraphQlQueryEnrouteDecorator(name="order_query", argument=GraphQLString, output=GraphQLString): callback_fn,
-            GraphQlQueryEnrouteDecorator(name="ticket_query", argument=GraphQLString, output=GraphQLString): callback_fn}
+            GraphQlQueryEnrouteDecorator(
+                name="ticket_query", argument=GraphQLString, output=GraphQLString
+            ): callback_fn,
+        }
 
         schema = GraphQLSchemaBuilder.build(routes=routes)
 
@@ -49,7 +58,10 @@ class TestSomething(unittest.TestCase):
     def test_build_only_queries(self):
         routes = {
             GraphQlQueryEnrouteDecorator(name="order_query", argument=GraphQLString, output=GraphQLString): callback_fn,
-            GraphQlQueryEnrouteDecorator(name="ticket_query", argument=GraphQLString, output=GraphQLString): callback_fn}
+            GraphQlQueryEnrouteDecorator(
+                name="ticket_query", argument=GraphQLString, output=GraphQLString
+            ): callback_fn,
+        }
 
         schema = GraphQLSchemaBuilder.build(routes=routes)
 
@@ -59,10 +71,13 @@ class TestSomething(unittest.TestCase):
 
     def test_build_only_commands(self):
         routes = {
-            GraphQlCommandEnrouteDecorator(name="order_command", argument=GraphQLString,
-                                           output=GraphQLString): callback_fn,
-            GraphQlCommandEnrouteDecorator(name="ticket_command", argument=GraphQLString,
-                                           output=GraphQLString): callback_fn}
+            GraphQlCommandEnrouteDecorator(
+                name="order_command", argument=GraphQLString, output=GraphQLString
+            ): callback_fn,
+            GraphQlCommandEnrouteDecorator(
+                name="ticket_command", argument=GraphQLString, output=GraphQLString
+            ): callback_fn,
+        }
 
         schema = GraphQLSchemaBuilder.build(routes=routes)
 
@@ -79,7 +94,8 @@ class TestSomething(unittest.TestCase):
 
     def test_query(self):
         routes = {
-            GraphQlQueryEnrouteDecorator(name="order_query", argument=GraphQLString, output=GraphQLString): callback_fn}
+            GraphQlQueryEnrouteDecorator(name="order_query", argument=GraphQLString, output=GraphQLString): callback_fn
+        }
 
         schema = GraphQLSchemaBuilder.build(routes=routes)
 
