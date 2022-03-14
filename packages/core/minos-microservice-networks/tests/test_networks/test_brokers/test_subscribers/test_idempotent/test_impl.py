@@ -33,29 +33,29 @@ class TestIdempotentBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
     async def test_setup_destroy(self):
         impl_setup_mock = AsyncMock()
         impl_destroy_mock = AsyncMock()
-        queue_setup_mock = AsyncMock()
-        queue_destroy_mock = AsyncMock()
+        duplicate_detector_setup_mock = AsyncMock()
+        duplicate_detector_destroy_mock = AsyncMock()
 
         self.impl.setup = impl_setup_mock
         self.impl.destroy = impl_destroy_mock
-        self.duplicate_detector.setup = queue_setup_mock
-        self.duplicate_detector.destroy = queue_destroy_mock
+        self.duplicate_detector.setup = duplicate_detector_setup_mock
+        self.duplicate_detector.destroy = duplicate_detector_destroy_mock
 
         async with IdempotentBrokerSubscriber(self.impl, self.duplicate_detector):
             self.assertEqual(1, impl_setup_mock.call_count)
             self.assertEqual(0, impl_destroy_mock.call_count)
-            self.assertEqual(1, queue_setup_mock.call_count)
-            self.assertEqual(0, queue_destroy_mock.call_count)
+            self.assertEqual(1, duplicate_detector_setup_mock.call_count)
+            self.assertEqual(0, duplicate_detector_destroy_mock.call_count)
 
             impl_setup_mock.reset_mock()
             impl_destroy_mock.reset_mock()
-            queue_setup_mock.reset_mock()
-            queue_destroy_mock.reset_mock()
+            duplicate_detector_setup_mock.reset_mock()
+            duplicate_detector_destroy_mock.reset_mock()
 
         self.assertEqual(0, impl_setup_mock.call_count)
         self.assertEqual(1, impl_destroy_mock.call_count)
-        self.assertEqual(0, queue_setup_mock.call_count)
-        self.assertEqual(1, queue_destroy_mock.call_count)
+        self.assertEqual(0, duplicate_detector_setup_mock.call_count)
+        self.assertEqual(1, duplicate_detector_destroy_mock.call_count)
 
     async def test_receive(self):
         one = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
