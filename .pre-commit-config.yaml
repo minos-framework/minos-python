@@ -50,3 +50,10 @@ repos:
                 name: Check minos-http-aiohttp
                 files: ^packages/plugins/minos-http-aiohttp/
                 language: system
+
+            -   id: minos-discovery-minos-check
+                pass_filenames: false
+                entry: make --directory=packages/plugins/minos-discovery-minos check
+                name: Check minos-discovery-minos
+                files: ^packages/plugins/minos-discovery-minos/
+                language: system

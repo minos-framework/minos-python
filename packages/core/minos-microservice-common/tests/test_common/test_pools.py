@@ -1,8 +1,5 @@
 import typing as t
 import unittest
-from abc import (
-    ABC,
-)
 from asyncio import (
     gather,
     sleep,
@@ -20,7 +17,7 @@ from aiomisc.pool import (
 
 from minos.common import (
     MinosPool,
-    MinosSetup,
+    SetupMixin,
 )
 
 
@@ -40,7 +37,7 @@ class _Pool(MinosPool):
 
 class TestMinosPool(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
-        self.assertTrue(issubclass(MinosPool, (ABC, MinosSetup, PoolBase)))
+        self.assertTrue(issubclass(MinosPool, (SetupMixin, PoolBase)))
         # noinspection PyUnresolvedReferences
         self.assertEqual({"_destroy_instance", "_create_instance"}, MinosPool.__abstractmethods__)
 

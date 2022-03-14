@@ -6,6 +6,8 @@ from unittest.mock import (
     patch,
 )
 
+import uvloop
+
 from minos.common import (
     EntrypointLauncher,
     classname,
@@ -131,6 +133,12 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
         self.assertEqual(1, mock_entrypoint.call_count)
         self.assertEqual(1, mock_loop.call_count)
+
+
+class TestEntryPointLauncherLoop(unittest.TestCase):
+    def test_loop(self):
+        launcher = EntrypointLauncher.from_config(BASE_PATH / "test_config.yml")
+        self.assertIsInstance(launcher.loop, uvloop.Loop)
 
 
 if __name__ == "__main__":

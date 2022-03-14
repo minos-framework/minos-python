@@ -20,7 +20,7 @@ from typing import (
 from minos.common import (
     MinosConfig,
     MinosImportException,
-    MinosSetup,
+    SetupMixin,
     import_module,
 )
 
@@ -40,7 +40,7 @@ from .clients import (
 logger = logging.getLogger(__name__)
 
 
-class DiscoveryConnector(MinosSetup):
+class DiscoveryConnector(SetupMixin):
     """Discovery Connector class."""
 
     def __init__(self, client, name: str, host: str, port: int, endpoints: list[dict[str, Any]], *args, **kwargs):

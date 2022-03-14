@@ -15,8 +15,8 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     MinosConfig,
-    MinosSetup,
     NotProvidedException,
+    SetupMixin,
 )
 
 from .entities import (
@@ -35,7 +35,7 @@ from .transactions import (
 RT = TypeVar("RT", bound=RootEntity)
 
 
-class Aggregate(Generic[RT], MinosSetup):
+class Aggregate(Generic[RT], SetupMixin):
     """Base Service class"""
 
     transaction_repository: TransactionRepository
