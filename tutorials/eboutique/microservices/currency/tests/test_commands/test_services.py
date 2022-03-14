@@ -39,6 +39,7 @@ class TestCurrencyCommandService(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(response, Response)
 
         observed = await response.content()
+
         self.assertEqual(observed['currency'], 'USD')
 
 if __name__ == '__main__':
