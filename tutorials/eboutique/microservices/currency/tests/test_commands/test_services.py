@@ -2,7 +2,8 @@ import sys
 import unittest
 
 from src import (
-    ShippingCommandService,
+    Currency,
+    CurrencyCommandService,
 )
 
 from minos.networks import (
@@ -14,7 +15,8 @@ from tests.utils import (
 )
 
 
-class TestShippingCommandService(unittest.IsolatedAsyncioTestCase):
+class TestCurrencyCommandService(unittest.IsolatedAsyncioTestCase):
+
     def setUp(self) -> None:
         self.injector = build_dependency_injector()
 
@@ -25,21 +27,19 @@ class TestShippingCommandService(unittest.IsolatedAsyncioTestCase):
         await self.injector.unwire()
 
     def test_constructor(self):
-        service = ShippingCommandService()
-        self.assertIsInstance(service, ShippingCommandService)
+        service = CurrencyCommandService()
+        self.assertIsInstance(service, CurrencyCommandService)
 
-    async def test_create_shipping_quote(self):
-        service = ShippingCommandService()
+    async def test_create_currency_quote(self):
+        service = CurrencyCommandService()
 
-        request = InMemoryRequest({"destination": "Paris", "items": 3})
-        response = await service.create_shipping(request)
+        request = InMemoryRequest({"quantity": 100.0, "from": "EUR", "to": "USD"})
+        response = await service.create_currency(request)
 
         self.assertIsInstance(response, Response)
 
         observed = await response.content()
-        self.assertEqual(1052, observed['distance'])
-        self.assertEqual(11, observed['quote'])
+        self.assertEqual(observed['currency'], 'USD')
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

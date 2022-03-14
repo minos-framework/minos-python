@@ -8,8 +8,8 @@ discovery_database: redis
 discovery_deploy: self-hosted
 postgres_deploy: self-hosted
 project_deploy: docker-compose
-project_description: This is an Online Boutique with Minos Microservices
-project_name: eboutique
+project_description: A Microservice example for stock options
+project_name: stock-wallet
 project_version: 0.1.0
 redis_deploy: self-hosted
 template_name: project-init
