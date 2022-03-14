@@ -123,3 +123,11 @@ class SetupMixin(Object):
 
 
 S = TypeVar("S", bound=SetupMixin)
+
+
+class MinosSetup(SetupMixin):
+    """Minos Setup class."""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{MinosSetup!r} has been deprecated. User {SetupMixin} instead.", DeprecationWarning)
+        super().__init__(*args, **kwargs)

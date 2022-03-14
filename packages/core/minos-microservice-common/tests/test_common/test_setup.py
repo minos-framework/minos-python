@@ -1,9 +1,11 @@
 import sys
 import unittest
+import warnings
 
 from minos.common import (
     DependencyInjector,
     MinosConfig,
+    MinosSetup,
     NotProvidedException,
     Object,
     SetupMixin,
@@ -85,6 +87,17 @@ class TestSetupMixin(unittest.IsolatedAsyncioTestCase):
         instance = _SetupMixin(already_setup=True)
         with self.assertWarns(ResourceWarning):
             del instance
+
+
+class TestMinosSetup(unittest.TestCase):
+    def test_is_subclass(self):
+        self.assertTrue(issubclass(MinosSetup, SetupMixin))
+
+    def test_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            setup = MinosSetup()
+            self.assertIsInstance(setup, SetupMixin)
 
 
 class _SetupMixin(SetupMixin):

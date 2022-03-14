@@ -109,6 +109,7 @@ from .protocol import (
     MinosJsonBinaryProtocol,
 )
 from .setup import (
+    MinosSetup,
     SetupMixin,
 )
 from .storage import (
