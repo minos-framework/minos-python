@@ -8,6 +8,8 @@ from .detectors import (
     BrokerSubscriberDuplicateDetector,
 )
 
+_sentinel = object()
+
 
 class IdempotentBrokerSubscriber(BrokerSubscriber):
     """TODO"""
@@ -26,7 +28,7 @@ class IdempotentBrokerSubscriber(BrokerSubscriber):
         await super()._destroy()
 
     async def _receive(self) -> BrokerMessage:
-        message = None
-        while message is None or not self.duplicates_detector.is_valid(message):
+        message = _sentinel
+        while message is _sentinel or not self.duplicates_detector.is_valid(message):
             message = await self.impl.receive()
         return message
