@@ -11,7 +11,7 @@ from uuid import (
 )
 
 from minos.common import (
-    MinosSetup,
+    SetupMixin,
 )
 
 from ....messages import (
@@ -19,7 +19,7 @@ from ....messages import (
 )
 
 
-class BrokerSubscriberDuplicateDetector(ABC, MinosSetup):
+class BrokerSubscriberDuplicateDetector(ABC, SetupMixin):
     """TODO"""
 
     async def is_valid(self, message: BrokerMessage) -> bool:
