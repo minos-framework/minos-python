@@ -124,16 +124,18 @@ class TestAioHttpConnector(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(1, mock.call_count)
 
-    async def test_setup_destroy(self):
+    async def test_start_stop(self):
         self.assertIsNone(self.connector.socket)
         self.assertIsNone(self.connector.runner)
         self.assertIsNone(self.connector.site)
 
-        async with self.connector:
+        try:
+            await self.connector.start()
             self.assertIsInstance(self.connector.socket, socket)
             self.assertIsInstance(self.connector.runner, web_runner.AppRunner)
             self.assertIsInstance(self.connector.site, web_runner.SockSite)
-
+        finally:
+            await self.connector.stop()
         self.assertIsNone(self.connector.socket)
         self.assertIsNone(self.connector.runner)
         self.assertIsNone(self.connector.site)
@@ -146,7 +148,7 @@ class TestAioHttpConnectorApplication(AioHTTPTestCase):
         connector.mount_routes()
         return connector.application
 
-    async def test_setup_destroy(self):
+    async def test_application(self):
         url = "/order"
         resp = await self.client.request("GET", url)
         assert resp.status == 200
