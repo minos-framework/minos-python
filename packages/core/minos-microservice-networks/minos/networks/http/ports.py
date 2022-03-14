@@ -42,6 +42,7 @@ class HttpPort(Port):
         :return: This method does not return anything.
         """
         await self.connector.setup()
+        await self.connector.start()
 
     async def stop(self, err: Exception = None) -> None:
         """Stop the service execution.
@@ -49,6 +50,7 @@ class HttpPort(Port):
         :param err: Optional exception that stopped the execution.
         :return: This method does not return anything.
         """
+        await self.connector.stop()
         await self.connector.destroy()
 
     @cached_property

@@ -4,11 +4,15 @@ from __future__ import (
 
 from abc import (
     ABC,
+    abstractmethod,
 )
 from typing import (
     Any,
     Callable,
-    Optional,
+)
+
+from cached_property import (
+    cached_property,
 )
 
 from minos.common import (
@@ -16,54 +20,58 @@ from minos.common import (
     MinosSetup,
 )
 
-from . import (
-    HttpEnrouteDecorator,
-)
 from .decorators import (
+    BrokerEnrouteDecorator,
     EnrouteBuilder,
     EnrouteDecorator,
+    HttpEnrouteDecorator,
+    PeriodicEnrouteDecorator,
 )
 
 
 class Router(MinosSetup, ABC):
     """Router base class."""
 
-    def __init__(self, routes: Optional[dict[EnrouteDecorator, Callable]] = None, **kwargs):
+    def __init__(self, config: MinosConfig, **kwargs):
         super().__init__(**kwargs)
 
-        if routes is None:
-            routes = dict()
-
-        self._routes = routes
+        self._config = config
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> Router:
-        routes = cls._routes_from_config(config)
-        return cls(routes)
+        return cls(config)
 
-    @staticmethod
-    def _routes_from_config(config: MinosConfig, **kwargs) -> dict[(str, str), Callable]:
-        builder = EnrouteBuilder(*config.services, middleware=config.middleware)
-        routes = builder.get_all(config=config, **kwargs)
-        return routes
-
-    @property
+    @cached_property
     def routes(self) -> dict[EnrouteDecorator, Callable]:
         """Get the routes stored on the router.
 
         :return: A dict with decorators as keys and callbacks as values.
         """
-        return self._routes
+        return self._build_routes()
+
+    def _build_routes(self) -> dict[EnrouteDecorator, Callable]:
+        routes = self._get_all_routes()
+        routes = self._filter_routes(routes)
+        return routes
+
+    def _get_all_routes(self) -> dict[EnrouteDecorator, Callable]:
+        builder = EnrouteBuilder(*self._config.services, middleware=self._config.middleware)
+        routes = builder.get_all(config=self._config)
+        return routes
+
+    @abstractmethod
+    def _filter_routes(self, routes: dict[EnrouteDecorator, Callable]) -> dict[EnrouteDecorator, Callable]:
+        raise NotImplementedError
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, type(self)):
             return False
 
-        if self._routes.keys() != other._routes.keys():
+        if self.routes.keys() != other.routes.keys():
             return False
 
-        for key in self._routes:
-            if self._routes[key].__qualname__ != other._routes[key].__qualname__:
+        for key in self.routes:
+            if self.routes[key].__qualname__ != other.routes[key].__qualname__:
                 return False
 
         return True
@@ -78,28 +86,32 @@ class HttpRouter(Router, ABC):
 class RestHttpRouter(HttpRouter):
     """Rest Http Router class."""
 
-    @classmethod
-    def _routes_from_config(cls, config: MinosConfig, **kwargs) -> dict[(str, str), Callable]:
-        builder = EnrouteBuilder(*config.services, middleware=config.middleware)
-        routes = builder.get_rest_command_query(config=config, **kwargs)
+    def _filter_routes(self, routes: dict[EnrouteDecorator, Callable]) -> dict[EnrouteDecorator, Callable]:
+        routes = {
+            decorator: callback for decorator, callback in routes.items() if isinstance(decorator, HttpEnrouteDecorator)
+        }
         return routes
 
 
 class BrokerRouter(Router):
     """Broker Router class."""
 
-    @staticmethod
-    def _routes_from_config(config: MinosConfig, **kwargs) -> dict[(str, str), Callable]:
-        builder = EnrouteBuilder(*config.services, middleware=config.middleware)
-        routes = builder.get_broker_command_query_event(config=config, **kwargs)
+    def _filter_routes(self, routes: dict[EnrouteDecorator, Callable]) -> dict[EnrouteDecorator, Callable]:
+        routes = {
+            decorator: callback
+            for decorator, callback in routes.items()
+            if isinstance(decorator, BrokerEnrouteDecorator)
+        }
         return routes
 
 
 class PeriodicRouter(Router):
     """Periodic Router class."""
 
-    @staticmethod
-    def _routes_from_config(config: MinosConfig, **kwargs) -> dict[(str, str), Callable]:
-        builder = EnrouteBuilder(*config.services, middleware=config.middleware)
-        routes = builder.get_periodic_event(config=config, **kwargs)
+    def _filter_routes(self, routes: dict[EnrouteDecorator, Callable]) -> dict[EnrouteDecorator, Callable]:
+        routes = {
+            decorator: callback
+            for decorator, callback in routes.items()
+            if isinstance(decorator, PeriodicEnrouteDecorator)
+        }
         return routes

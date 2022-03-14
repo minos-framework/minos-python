@@ -133,7 +133,7 @@ class TestHttpConnector(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([], self.response_mock.call_args_list)
         self.assertEqual([call("error", 500)], self.error_response_mock.call_args_list)
 
-    async def test_setup_destroy(self):
+    async def test_start_stop(self):
         star_mock = AsyncMock()
         stop_mock = AsyncMock()
         mount_mock = MagicMock()
@@ -142,7 +142,7 @@ class TestHttpConnector(unittest.IsolatedAsyncioTestCase):
         self.connector._stop = stop_mock
         self.connector.mount_routes = mount_mock
 
-        await self.connector.setup()
+        await self.connector.start()
 
         self.assertEqual([call()], mount_mock.call_args_list)
         self.assertEqual([call()], star_mock.call_args_list)
@@ -152,7 +152,7 @@ class TestHttpConnector(unittest.IsolatedAsyncioTestCase):
         star_mock.reset_mock()
         stop_mock.reset_mock()
 
-        await self.connector.destroy()
+        await self.connector.stop()
 
         self.assertEqual([], mount_mock.call_args_list)
         self.assertEqual([], star_mock.call_args_list)

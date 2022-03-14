@@ -68,14 +68,21 @@ class HttpConnector(ABC, MinosSetup, Generic[RawRequest, RawResponse]):
         adapter = HttpAdapter.from_config(config)
         return cls(host, port, adapter)
 
-    async def _setup(self) -> None:
-        await super()._setup()
+    async def start(self) -> None:
+        """Start the connector.
+
+        :return: This method does not return anything.
+        """
+
         self.mount_routes()
         await self._start()
 
-    async def _destroy(self) -> None:
+    async def stop(self) -> None:
+        """Stop the connector.
+
+        :return: This method does not return anything.
+        """
         await self._stop()
-        await super()._destroy()
 
     @abstractmethod
     async def _start(self) -> None:

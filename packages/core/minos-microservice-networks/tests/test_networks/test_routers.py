@@ -2,6 +2,9 @@ import unittest
 from abc import (
     ABC,
 )
+from typing import (
+    Callable,
+)
 
 from minos.common import (
     MinosConfig,
@@ -9,6 +12,7 @@ from minos.common import (
 from minos.networks import (
     BrokerRouter,
     EnrouteBuilder,
+    EnrouteDecorator,
     HttpRouter,
     PeriodicRouter,
     RestHttpRouter,
@@ -21,6 +25,9 @@ from tests.utils import (
 
 class _Router(Router):
     """For testing purposes."""
+
+    def _filter_routes(self, routes: dict[EnrouteDecorator, Callable]) -> dict[EnrouteDecorator, Callable]:
+        return routes
 
 
 class TestRouter(unittest.TestCase):
@@ -35,17 +42,14 @@ class TestRouter(unittest.TestCase):
         router = _Router.from_config(self.config)
         self.assertEqual(builder.get_all().keys(), router.routes.keys())
 
-    def test_constructor_empty(self):
-        router = _Router()
-        self.assertEqual(dict(), router.routes)
-
     def test_eq(self):
         def _fn():
             pass
 
         router = _Router.from_config(self.config)
         router_eq = _Router.from_config(self.config)
-        router_ne1 = _Router()
+        router_ne1 = _Router.from_config(self.config)
+        router_ne1.routes.clear()
         router_ne2 = _Router.from_config(self.config)
         router_ne2.routes[next(iter(router_ne2.routes.keys()))] = _fn
         router_ne3 = 1234
