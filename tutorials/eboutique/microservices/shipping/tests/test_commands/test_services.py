@@ -2,7 +2,6 @@ import sys
 import unittest
 
 from src import (
-    Shipping,
     ShippingCommandService,
 )
 
@@ -16,7 +15,6 @@ from tests.utils import (
 
 
 class TestShippingCommandService(unittest.IsolatedAsyncioTestCase):
-
     def setUp(self) -> None:
         self.injector = build_dependency_injector()
 
@@ -30,16 +28,18 @@ class TestShippingCommandService(unittest.IsolatedAsyncioTestCase):
         service = ShippingCommandService()
         self.assertIsInstance(service, ShippingCommandService)
 
-    async def test_create_shipping(self):
+    async def test_create_shipping_quote(self):
         service = ShippingCommandService()
 
-        request = InMemoryRequest({'destination': 'Paris', 'items': 3})
+        request = InMemoryRequest({"destination": "Paris", "items": 3})
         response = await service.create_shipping(request)
 
         self.assertIsInstance(response, Response)
 
         observed = await response.content()
+        self.assertEqual(1052, observed["distance"])
+        self.assertEqual(11, observed["quote"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
