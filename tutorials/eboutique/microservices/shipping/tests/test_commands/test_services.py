@@ -37,8 +37,8 @@ class TestShippingCommandService(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(response, Response)
 
         observed = await response.content()
-        self.assertEqual(1052, observed['distance'])
-        self.assertEqual(11, observed['quote'])
+        self.assertEqual(1052, observed["distance"])
+        self.assertEqual(11, observed["quote"])
 
 
 if __name__ == "__main__":

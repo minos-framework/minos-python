@@ -11,7 +11,6 @@ from tests.utils import (
 
 
 class TestWallet(unittest.IsolatedAsyncioTestCase):
-
     def setUp(self) -> None:
         self.injector = build_dependency_injector()
 
@@ -26,5 +25,5 @@ class TestWallet(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(obj, Wallet)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

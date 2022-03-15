@@ -16,7 +16,6 @@ from tests.utils import (
 
 
 class TestCurrencyCommandService(unittest.IsolatedAsyncioTestCase):
-
     def setUp(self) -> None:
         self.injector = build_dependency_injector()
 
@@ -40,7 +39,8 @@ class TestCurrencyCommandService(unittest.IsolatedAsyncioTestCase):
 
         observed = await response.content()
 
-        self.assertEqual(observed['currency'], 'USD')
+        self.assertEqual(observed["currency"], "USD")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
