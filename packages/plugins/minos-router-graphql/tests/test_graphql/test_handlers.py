@@ -13,6 +13,7 @@ from minos.networks import (
     InMemoryRequest,
     Request,
     Response,
+    ResponseException,
 )
 from minos.plugins.graphql import (
     GraphQLSchemaBuilder,
@@ -40,6 +41,10 @@ async def resolve_ticket(request: Request):
     return Response(3)
 
 
+async def resolve_ticket_raises(request: Request):
+    raise ResponseException("Some error.", status=403)
+
+
 class TestGraphQlHttpRouter(unittest.IsolatedAsyncioTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
     _config = MinosConfig(CONFIG_FILE_PATH)
@@ -58,7 +63,23 @@ class TestGraphQlHttpRouter(unittest.IsolatedAsyncioTestCase):
 
         result = await handler.execute_operation(request)
 
+        self.assertEqual(200, result.status)
         self.assertDictEqual(await result.content(), {"data": {"order_query": "ticket #4"}, "errors": []})
+
+    async def test_execute_operation_raises(self):
+        routes = {
+            GraphQlQueryEnrouteDecorator(name="ticket_query", output=GraphQLString): resolve_ticket_raises,
+        }
+
+        schema = GraphQLSchemaBuilder.build(routes=routes)
+
+        handler = GraphQlHandler(schema)
+
+        request = InMemoryRequest(content="{ ticket_query }")
+
+        result = await handler.execute_operation(request)
+
+        self.assertEqual(403, result.status)
 
     async def test_execute_wrong_operation(self):
         routes = {
@@ -76,6 +97,7 @@ class TestGraphQlHttpRouter(unittest.IsolatedAsyncioTestCase):
 
         content = await result.content()
 
+        self.assertEqual(400, result.status)
         self.assertNotEqual(content["errors"], [])
 
     async def test_schema(self):
@@ -92,6 +114,7 @@ class TestGraphQlHttpRouter(unittest.IsolatedAsyncioTestCase):
 
         result = await handler.get_schema(request)
 
+        self.assertEqual(200, result.status)
         self.assertIsInstance(await result.content(), str)
         self.assertMultiLineEqual(
             await result.content(), "type Query {\n  order_query: String\n  ticket_query: String\n}"
@@ -122,6 +145,7 @@ class TestGraphQlHttpRouter(unittest.IsolatedAsyncioTestCase):
 
         content = await result.content()
 
+        self.assertEqual(200, result.status)
         self.assertDictEqual({"order_query": 3}, content["data"])
         self.assertEqual([], content["errors"])
 
@@ -154,6 +178,7 @@ class TestGraphQlHttpRouter(unittest.IsolatedAsyncioTestCase):
 
         content = await result.content()
 
+        self.assertEqual(200, result.status)
         self.assertDictEqual(
             {"order_query": {"id": "3", "firstName": "Jack", "lastName": "Johnson", "tweets": 563, "verified": True}},
             content["data"],
@@ -189,6 +214,7 @@ class TestGraphQlHttpRouter(unittest.IsolatedAsyncioTestCase):
 
         content = await result.content()
 
+        self.assertEqual(200, result.status)
         self.assertDictEqual(
             {
                 "createUser": {
