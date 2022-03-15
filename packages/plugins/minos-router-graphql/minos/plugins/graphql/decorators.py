@@ -6,6 +6,7 @@ from collections.abc import (
 )
 from typing import (
     Final,
+    Optional,
 )
 
 from minos.networks import (
@@ -18,7 +19,7 @@ from minos.networks import (
 class GraphQlEnrouteDecorator(EnrouteDecorator, ABC):
     """GraphQl Enroute class"""
 
-    def __init__(self, name: str, argument, output):
+    def __init__(self, name: str, output, argument: Optional = None):
         self.name = name
         self.argument = argument
         self.output = output

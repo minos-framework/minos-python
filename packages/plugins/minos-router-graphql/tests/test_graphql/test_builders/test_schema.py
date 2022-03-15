@@ -67,6 +67,18 @@ class TestSchemaBuilder(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(list(), errors)
 
+    def test_build_queries_without_arguments(self):
+        routes = {
+            GraphQlQueryEnrouteDecorator(name="order_query", output=GraphQLString): callback_fn,
+            GraphQlQueryEnrouteDecorator(name="ticket_query", output=GraphQLString): callback_fn,
+        }
+
+        schema = GraphQLSchemaBuilder.build(routes=routes)
+
+        errors = validate_schema(schema)
+
+        self.assertEqual(list(), errors)
+
     def test_build_only_commands(self):
         routes = {
             GraphQlCommandEnrouteDecorator(
@@ -83,10 +95,34 @@ class TestSchemaBuilder(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(list(), errors)
 
+    def test_build_commands_without_arguments(self):
+        routes = {
+            GraphQlCommandEnrouteDecorator(name="order_command", output=GraphQLString): callback_fn,
+            GraphQlCommandEnrouteDecorator(name="ticket_command", output=GraphQLString): callback_fn,
+        }
+
+        schema = GraphQLSchemaBuilder.build(routes=routes)
+
+        errors = validate_schema(schema)
+
+        self.assertEqual(list(), errors)
+
     async def test_query(self):
         routes = {
             GraphQlQueryEnrouteDecorator(name="order_query", argument=GraphQLString, output=GraphQLString): callback_fn
         }
+
+        schema = GraphQLSchemaBuilder.build(routes=routes)
+
+        source = "{ order_query }"
+
+        result = await graphql(schema, source)
+
+        self.assertEqual({"order_query": "ticket #4"}, result.data)
+        self.assertEqual(None, result.errors)
+
+    async def test_query_without_arguments(self):
+        routes = {GraphQlQueryEnrouteDecorator(name="order_query", output=GraphQLString): callback_fn}
 
         schema = GraphQLSchemaBuilder.build(routes=routes)
 

@@ -1,4 +1,5 @@
 from graphql import (
+    GraphQLSchema,
     graphql,
     print_schema,
 )
@@ -12,7 +13,7 @@ from minos.networks import (
 class GraphQlHandler:
     """TODO"""
 
-    def __init__(self, schema):
+    def __init__(self, schema: GraphQLSchema):
         self._schema = schema
 
     async def execute_operation(self, request: HttpRequest) -> HttpResponse:

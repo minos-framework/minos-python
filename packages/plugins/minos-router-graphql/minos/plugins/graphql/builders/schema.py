@@ -94,4 +94,7 @@ class GraphQLSchemaBuilder:
 
     @staticmethod
     def _build_field(item, callback):
-        return GraphQLField(item.output, args={"request": GraphQLArgument(item.argument)}, resolve=callback)
+        args = None
+        if item.argument is not None:
+            args = {"request": GraphQLArgument(item.argument)}
+        return GraphQLField(item.output, args=args, resolve=callback)
