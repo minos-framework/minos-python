@@ -29,6 +29,7 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     NULL_UUID,
+    Injectable,
     Lock,
     MinosPool,
     NotProvidedException,
@@ -68,6 +69,7 @@ from ..models import (
 )
 
 
+@Injectable("event_repository")
 class EventRepository(ABC, SetupMixin):
     """Base event repository class in ``minos``."""
 

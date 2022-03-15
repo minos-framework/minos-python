@@ -19,6 +19,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
+    Injectable,
     Lock,
     MinosPool,
     NotProvidedException,
@@ -34,6 +35,7 @@ from ..entries import (
 )
 
 
+@Injectable("transaction_repository")
 class TransactionRepository(ABC, SetupMixin):
     """Transaction Repository base class."""
 

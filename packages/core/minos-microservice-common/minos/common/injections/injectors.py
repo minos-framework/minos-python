@@ -6,6 +6,7 @@ from asyncio import (
     gather,
 )
 from typing import (
+    TYPE_CHECKING,
     Type,
     Union,
 )
@@ -18,15 +19,17 @@ from dependency_injector import (
     providers,
 )
 
-from minos.common.configuration import (
-    Config,
-)
-from minos.common.importlib import (
+from ..importlib import (
     import_module,
 )
-from minos.common.setup import (
-    SetupMixin,
-)
+
+if TYPE_CHECKING:
+    from ..configuration import (
+        Config,
+    )
+    from ..setup import (
+        SetupMixin,
+    )
 
 
 class DependencyInjector:

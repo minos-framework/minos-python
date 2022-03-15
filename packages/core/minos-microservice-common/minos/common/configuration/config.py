@@ -21,6 +21,9 @@ import yaml
 from ..exceptions import (
     MinosConfigException,
 )
+from ..injections import (
+    Injectable,
+)
 
 BROKER = namedtuple("Broker", "host port queue")
 QUEUE = namedtuple("Queue", "database user password host port records retry")
@@ -113,6 +116,7 @@ class MinosConfigAbstract(abc.ABC):
         raise NotImplementedError
 
 
+@Injectable("config")
 class Config(MinosConfigAbstract):
     """
     A Minos configuration provides information on the connection points available at that service.
