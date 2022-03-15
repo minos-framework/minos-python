@@ -3,8 +3,8 @@ import unittest
 import warnings
 
 from minos.common import (
-    DependencyInjector,
     Config,
+    DependencyInjector,
     MinosSetup,
     NotProvidedException,
     Object,
