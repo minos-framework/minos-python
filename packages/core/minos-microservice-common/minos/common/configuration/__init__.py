@@ -8,6 +8,7 @@ from .config import (
     SERVICE,
     SNAPSHOT,
     STORAGE,
+    Config,
     MinosConfig,
     MinosConfigAbstract,
 )

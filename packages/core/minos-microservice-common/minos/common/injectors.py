@@ -19,7 +19,7 @@ from dependency_injector import (
 )
 
 from .configuration import (
-    MinosConfig,
+    Config,
 )
 from .importlib import (
     import_module,
@@ -32,7 +32,7 @@ from .setup import (
 class DependencyInjector:
     """Async wrapper of ``dependency_injector.containers.Container``."""
 
-    def __init__(self, config: MinosConfig, **kwargs: Union[SetupMixin, Type[SetupMixin], str]):
+    def __init__(self, config: Config, **kwargs: Union[SetupMixin, Type[SetupMixin], str]):
         self.config = config
         self._raw_injections = kwargs
 

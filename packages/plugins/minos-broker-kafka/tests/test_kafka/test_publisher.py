@@ -14,7 +14,7 @@ from kafka.errors import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerMessage,
@@ -39,7 +39,7 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(issubclass(KafkaBrokerPublisher, BrokerPublisher))
 
     def test_from_config(self):
-        config = MinosConfig(CONFIG_FILE_PATH)
+        config = Config(CONFIG_FILE_PATH)
         publisher = KafkaBrokerPublisher.from_config(config)
 
         self.assertIsInstance(publisher, KafkaBrokerPublisher)

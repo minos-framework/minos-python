@@ -23,7 +23,7 @@ from minos.aggregate import (
 )
 from minos.common import (
     Lock,
-    MinosConfig,
+    Config,
     MinosModel,
     MinosPool,
     SetupMixin,
@@ -48,7 +48,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.config = MinosConfig(BASE_PATH / "config.yml")
+        self.config = Config(BASE_PATH / "config.yml")
 
         self.broker_publisher = InMemoryBrokerPublisher()
         self.broker_pool = BrokerClientPool.from_config(CONFIG_FILE_PATH)

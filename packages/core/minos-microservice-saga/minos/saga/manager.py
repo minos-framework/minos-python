@@ -24,7 +24,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     NotProvidedException,
     SetupMixin,
 )
@@ -77,7 +77,7 @@ class SagaManager(SetupMixin):
         self.broker_pool = broker_pool
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
+    def _from_config(cls, *args, config: Config, **kwargs) -> SagaManager:
         """Build an instance from config.
 
         :param args: Additional positional arguments.

@@ -5,7 +5,7 @@ from aiohttp.test_utils import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     RestService,
@@ -22,7 +22,7 @@ class TestRestService(AioHTTPTestCase):
         """
         Override the get_app method to return your application.
         """
-        config = MinosConfig(self.CONFIG_FILE_PATH)
+        config = Config(self.CONFIG_FILE_PATH)
         rest_interface = RestService(config=config)
 
         return await rest_interface.create_application()

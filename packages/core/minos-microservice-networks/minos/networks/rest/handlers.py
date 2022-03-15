@@ -23,7 +23,7 @@ from aiohttp import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     SetupMixin,
 )
 
@@ -60,7 +60,7 @@ class RestHandler(SetupMixin):
         return self._endpoints
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestHandler:
+    def _from_config(cls, *args, config: Config, **kwargs) -> RestHandler:
         host = config.rest.host
         port = config.rest.port
         endpoints = cls._endpoints_from_config(config)
@@ -68,7 +68,7 @@ class RestHandler(SetupMixin):
         return cls(host=host, port=port, endpoints=endpoints, **kwargs)
 
     @staticmethod
-    def _endpoints_from_config(config: MinosConfig, **kwargs) -> dict[(str, str), Callable]:
+    def _endpoints_from_config(config: Config, **kwargs) -> dict[(str, str), Callable]:
         builder = EnrouteBuilder(*config.services, middleware=config.middleware)
         decorators = builder.get_rest_command_query(config=config, **kwargs)
         endpoints = {(decorator.url, decorator.method): fn for decorator, fn in decorators.items()}

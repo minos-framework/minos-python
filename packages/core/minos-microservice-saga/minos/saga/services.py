@@ -4,7 +4,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerRequest,
@@ -26,7 +26,7 @@ class SagaService:
         self.saga_manager = saga_manager
 
     @classmethod
-    def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
+    def __get_enroute__(cls, config: Config) -> dict[str, set[EnrouteDecorator]]:
         return {cls.__reply__.__name__: {enroute.broker.command(f"{config.service.name}Reply")}}
 
     async def __reply__(self, request: BrokerRequest) -> None:

@@ -22,7 +22,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     NotProvidedException,
     SetupMixin,
 )
@@ -54,7 +54,7 @@ class BrokerHandler(SetupMixin):
         self._concurrency = concurrency
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerHandler:
+    def _from_config(cls, config: Config, **kwargs) -> BrokerHandler:
         dispatcher = cls._get_dispatcher(config, **kwargs)
         subscriber = cls._get_subscriber(config, topics=set(dispatcher.actions.keys()), **kwargs)
 
@@ -63,7 +63,7 @@ class BrokerHandler(SetupMixin):
     @staticmethod
     @inject
     def _get_dispatcher(
-        config: MinosConfig,
+        config: Config,
         dispatcher: Optional[BrokerDispatcher] = None,
         broker_dispatcher: Optional[BrokerDispatcher] = Provide["broker_dispatcher"],
         **kwargs,
@@ -77,7 +77,7 @@ class BrokerHandler(SetupMixin):
     @staticmethod
     @inject
     def _get_subscriber(
-        config: MinosConfig,
+        config: Config,
         topics: Iterable[str],
         subscriber: Optional[BrokerSubscriber] = None,
         broker_subscriber: Optional[BrokerSubscriber] = Provide["broker_subscriber"],

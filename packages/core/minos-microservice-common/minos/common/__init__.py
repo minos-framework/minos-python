@@ -15,6 +15,7 @@ from .configuration import (
     SERVICE,
     SNAPSHOT,
     STORAGE,
+    Config,
     MinosConfig,
     MinosConfigAbstract,
 )

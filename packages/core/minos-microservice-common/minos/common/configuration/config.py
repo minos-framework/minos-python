@@ -4,6 +4,7 @@ from __future__ import (
 
 import abc
 import os
+import warnings
 from collections import (
     namedtuple,
 )
@@ -112,7 +113,7 @@ class MinosConfigAbstract(abc.ABC):
         raise NotImplementedError
 
 
-class MinosConfig(MinosConfigAbstract):
+class Config(MinosConfigAbstract):
     """
     A Minos configuration provides information on the connection points available at that service.
     It consists of the following parts:
@@ -309,3 +310,11 @@ class MinosConfig(MinosConfigAbstract):
         host = self._get("discovery.host")
         port = self._get("discovery.port")
         return DISCOVERY(client=client, host=host, port=port)
+
+
+class MinosConfig(Config):
+    """MinosConfig class."""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{MinosConfig!r} has been deprecated. Use {Config} instead.", DeprecationWarning)
+        super().__init__(*args, **kwargs)

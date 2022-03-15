@@ -15,7 +15,7 @@ from uuid import (
 import aiopg
 
 from .configuration import (
-    MinosConfig,
+    Config,
 )
 
 
@@ -24,7 +24,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
 
     def setUp(self) -> None:
         self._uuid = uuid4()
-        self._config = MinosConfig(self.CONFIG_FILE_PATH)
+        self._config = Config(self.CONFIG_FILE_PATH)
 
         self._meta_repository_db = self._config.repository._asdict()
 
@@ -40,7 +40,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         self.broker_queue_db = self._meta_broker_queue_db | self._test_db
         self.snapshot_db = self._meta_snapshot_db | self._test_db
 
-        self.config = MinosConfig(
+        self.config = Config(
             self.CONFIG_FILE_PATH,
             repository_database=self.repository_db["database"],
             repository_user=self.repository_db["user"],

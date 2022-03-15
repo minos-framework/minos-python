@@ -19,7 +19,7 @@ from aiokafka import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerMessage,
@@ -40,7 +40,7 @@ class PostgreSqlQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
     """PostgreSql Queued Kafka Broker Publisher class."""
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlQueuedKafkaBrokerPublisher:
+    def _from_config(cls, config: Config, **kwargs) -> PostgreSqlQueuedKafkaBrokerPublisher:
         impl = KafkaBrokerPublisher.from_config(config, **kwargs)
         queue = PostgreSqlBrokerPublisherQueue.from_config(config, **kwargs)
         return cls(impl, queue, **kwargs)
@@ -50,7 +50,7 @@ class InMemoryQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
     """In Memory Queued Kafka Broker Publisher class."""
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> InMemoryQueuedKafkaBrokerPublisher:
+    def _from_config(cls, config: Config, **kwargs) -> InMemoryQueuedKafkaBrokerPublisher:
         impl = KafkaBrokerPublisher.from_config(config, **kwargs)
         queue = InMemoryBrokerPublisherQueue.from_config(config, **kwargs)
         return cls(impl, queue, **kwargs)
@@ -68,7 +68,7 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
         self._client = None
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> KafkaBrokerPublisher:
+    def _from_config(cls, config: Config, **kwargs) -> KafkaBrokerPublisher:
         kwargs["broker_host"] = config.broker.host
         kwargs["broker_port"] = config.broker.port
         # noinspection PyProtectedMember
