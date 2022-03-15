@@ -2,7 +2,7 @@ import unittest
 
 from graphql import (
     GraphQLString,
-    graphql_sync,
+    graphql,
     validate_schema,
 )
 
@@ -14,7 +14,6 @@ from minos.networks import (
     Response,
 )
 from minos.plugins.graphql import (
-    GraphQlHttpRouter,
     GraphQLSchemaBuilder,
 )
 from minos.plugins.graphql.decorators import (
@@ -30,7 +29,7 @@ async def callback_fn(request: Request):
     return Response("ticket #4")
 
 
-class TestSomething(unittest.TestCase):
+class TestSchemaBuilder(unittest.IsolatedAsyncioTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
     _config = MinosConfig(CONFIG_FILE_PATH)
 
@@ -52,7 +51,7 @@ class TestSomething(unittest.TestCase):
 
         errors = validate_schema(schema)
 
-        self.assertEqual(errors, [])
+        self.assertEqual(list(), errors)
 
     def test_build_only_queries(self):
         routes = {
@@ -66,7 +65,7 @@ class TestSomething(unittest.TestCase):
 
         errors = validate_schema(schema)
 
-        self.assertEqual(errors, [])
+        self.assertEqual(list(), errors)
 
     def test_build_only_commands(self):
         routes = {
@@ -82,16 +81,9 @@ class TestSomething(unittest.TestCase):
 
         errors = validate_schema(schema)
 
-        self.assertEqual(errors, [])
+        self.assertEqual(list(), errors)
 
-    def test_schema_valid(self):
-        router = GraphQlHttpRouter.from_config(config=self._config)
-
-        errors = validate_schema(router._schema)
-
-        self.assertEqual(errors, [])
-
-    def test_query(self):
+    async def test_query(self):
         routes = {
             GraphQlQueryEnrouteDecorator(name="order_query", argument=GraphQLString, output=GraphQLString): callback_fn
         }
@@ -100,9 +92,10 @@ class TestSomething(unittest.TestCase):
 
         source = "{ order_query }"
 
-        result = graphql_sync(schema, source)
+        result = await graphql(schema, source)
 
-        self.assertEqual(result.errors, [])
+        self.assertEqual({"order_query": "ticket #4"}, result.data)
+        self.assertEqual(None, result.errors)
 
 
 if __name__ == "__main__":

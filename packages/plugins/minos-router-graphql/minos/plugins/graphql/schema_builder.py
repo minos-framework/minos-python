@@ -8,6 +8,9 @@ from functools import (
 from inspect import (
     isawaitable,
 )
+from typing import (
+    Any,
+)
 
 from graphql import (
     GraphQLArgument,
@@ -42,8 +45,8 @@ class GraphQLSchemaBuilder:
     @staticmethod
     def adapt_callback(callback):
         @wraps(callback)
-        async def _wrapper(_source, _info, request):
-            request = InMemoryRequest(request)
+        async def _wrapper(_source, _info, raw: Any = None):
+            request = InMemoryRequest(raw)
 
             response = callback(request)
             if isawaitable(response):
