@@ -10,9 +10,6 @@ from unittest.mock import (
 from aiokafka import (
     AIOKafkaConsumer,
 )
-from aiomisc.circuit_breaker import (
-    CircuitBreakerStates,
-)
 from kafka import (
     KafkaAdminClient,
 )
@@ -78,7 +75,7 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
         stop_mock = AsyncMock(side_effect=publisher.client.stop)
 
         async def _fn():
-            if publisher.circuit_breaker.state == CircuitBreakerStates.RECOVERING:
+            if publisher.is_circuit_breaker_recovering:
                 raise ValueError()
             raise KafkaConnectionError()
 
