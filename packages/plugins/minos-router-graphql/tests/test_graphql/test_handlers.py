@@ -1,18 +1,8 @@
-import json
 import unittest
-from typing import (
-    NamedTuple,
-    Optional,
-)
 
 from graphql import (
-    GraphQLArgument,
-    GraphQLBoolean,
-    GraphQLField,
-    GraphQLID,
     GraphQLInt,
     GraphQLNonNull,
-    GraphQLObjectType,
     GraphQLString,
 )
 
@@ -28,6 +18,7 @@ from minos.plugins.graphql import (
     GraphQLSchemaBuilder,
 )
 from minos.plugins.graphql.decorators import (
+    GraphQlCommandEnrouteDecorator,
     GraphQlQueryEnrouteDecorator,
 )
 from minos.plugins.graphql.handlers import (
@@ -38,33 +29,15 @@ from tests.test_graphql.test_builders.test_schema import (
 )
 from tests.utils import (
     BASE_PATH,
+    resolve_create_user,
+    resolve_user,
+    user_input_type,
+    user_type,
 )
-
-
-class User(NamedTuple):
-    """A simple user object class."""
-
-    firstName: str
-    lastName: str
-    tweets: Optional[int]
-    id: Optional[str] = None
-    verified: bool = False
 
 
 async def resolve_ticket(request: Request):
     return Response(3)
-
-
-user_type = GraphQLObjectType(
-    "UserType",
-    {
-        "id": GraphQLField(GraphQLNonNull(GraphQLID)),
-        "firstName": GraphQLField(GraphQLNonNull(GraphQLString)),
-        "lastName": GraphQLField(GraphQLNonNull(GraphQLString)),
-        "tweets": GraphQLField(GraphQLInt),
-        "verified": GraphQLField(GraphQLNonNull(GraphQLBoolean)),
-    },
-)
 
 
 class TestGraphQlHttpRouter(unittest.IsolatedAsyncioTestCase):
@@ -103,7 +76,7 @@ class TestGraphQlHttpRouter(unittest.IsolatedAsyncioTestCase):
 
         content = await result.content()
 
-        self.assertNotEquals(content["errors"], [])
+        self.assertNotEqual(content["errors"], [])
 
     async def test_schema(self):
         routes = {
@@ -124,11 +97,9 @@ class TestGraphQlHttpRouter(unittest.IsolatedAsyncioTestCase):
             await result.content(), "type Query {\n  order_query: String\n  ticket_query: String\n}"
         )
 
-    async def operation_with_variables(self):
+    async def test_query_with_variables(self):
         routes = {
-            GraphQlQueryEnrouteDecorator(
-                name="order_query", argument=GraphQLArgument(GraphQLID), output=user_type
-            ): callback_fn
+            GraphQlQueryEnrouteDecorator(name="order_query", argument=GraphQLInt, output=GraphQLInt): resolve_ticket
         }
 
         schema = GraphQLSchemaBuilder.build(routes=routes)
@@ -136,9 +107,39 @@ class TestGraphQlHttpRouter(unittest.IsolatedAsyncioTestCase):
         handler = GraphQlHandler(schema)
 
         query = """
-                            query ($userId: ID!) {
-                                User(id: $userId) {
-                                    id, firstName, lastName, tweets, verified
+                            query ($userId: Int!) {
+                                order_query(request: $userId)
+                            }
+                            """
+
+        variables = {"userId": 3}
+
+        content = {"query": query, "variables": variables}
+
+        request = InMemoryRequest(content=content)
+
+        result = await handler.execute_operation(request)
+
+        content = await result.content()
+
+        self.assertDictEqual({"order_query": 3}, content["data"])
+        self.assertEqual([], content["errors"])
+
+    async def test_query_with_variables_return_user(self):
+        routes = {GraphQlQueryEnrouteDecorator(name="order_query", argument=GraphQLInt, output=user_type): resolve_user}
+
+        schema = GraphQLSchemaBuilder.build(routes=routes)
+
+        handler = GraphQlHandler(schema)
+
+        query = """
+                            query ($userId: Int!) {
+                                order_query(request: $userId) {
+                                    id
+                                    firstName
+                                    lastName
+                                    tweets
+                                    verified
                                 }
                             }
                             """
@@ -147,14 +148,60 @@ class TestGraphQlHttpRouter(unittest.IsolatedAsyncioTestCase):
 
         content = {"query": query, "variables": variables}
 
-        request = InMemoryRequest(content=json.dumps(content))
+        request = InMemoryRequest(content=content)
 
-        result = await handler.get_schema(request)
+        result = await handler.execute_operation(request)
 
-        self.assertIsInstance(await result.content(), str)
-        self.assertMultiLineEqual(
-            await result.content(), "type Query {\n  order_query: String\n  ticket_query: String\n}"
+        content = await result.content()
+
+        self.assertDictEqual(
+            {"order_query": {"id": "3", "firstName": "Jack", "lastName": "Johnson", "tweets": 563, "verified": True}},
+            content["data"],
         )
+        self.assertEqual([], content["errors"])
+
+    async def test_mutation(self):
+        routes = {
+            GraphQlCommandEnrouteDecorator(
+                name="createUser", argument=GraphQLNonNull(user_input_type), output=user_type
+            ): resolve_create_user
+        }
+
+        schema = GraphQLSchemaBuilder.build(routes=routes)
+
+        handler = GraphQlHandler(schema)
+
+        query = """
+                    mutation ($userData: UserInputType!) {
+                        createUser(request: $userData) {
+                            id, firstName, lastName, tweets, verified
+                        }
+                    }
+                    """
+
+        variables = {"userData": dict(firstName="John", lastName="Doe", tweets=42, verified=True)}
+
+        content = {"query": query, "variables": variables}
+
+        request = InMemoryRequest(content=content)
+
+        result = await handler.execute_operation(request)
+
+        content = await result.content()
+
+        self.assertDictEqual(
+            {
+                "createUser": {
+                    "id": "4kjjj43-l23k4l3-325kgaa2",
+                    "firstName": "John",
+                    "lastName": "Doe",
+                    "tweets": 42,
+                    "verified": True,
+                }
+            },
+            content["data"],
+        )
+        self.assertEqual([], content["errors"])
 
 
 if __name__ == "__main__":

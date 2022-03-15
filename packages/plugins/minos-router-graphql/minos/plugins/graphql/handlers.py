@@ -19,15 +19,29 @@ class GraphQlHandler:
     async def execute_operation(self, request: HttpRequest) -> HttpResponse:
         """TODO"""
 
-        source = await request.content()
+        content = await request.content()
 
-        result = await graphql(schema=self._schema, source=source)
+        source = dict()
+        variables = dict()
+
+        if type(content) == str:
+            source = content
+
+        if type(content) == dict:
+            if "query" in content:
+                source = content["query"]
+
+            if "variables" in content:
+                variables = content["variables"]
+
+        result = await graphql(schema=self._schema, source=source, variable_values=variables)
+
         errors = result.errors
         if errors is None:
             errors = list()
 
         if len(errors):
-            status = 500
+            status = 400
         else:
             status = 200
 

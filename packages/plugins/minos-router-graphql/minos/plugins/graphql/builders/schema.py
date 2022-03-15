@@ -50,8 +50,8 @@ class GraphQLSchemaBuilder:
         """TODO"""
 
         @wraps(callback)
-        async def _wrapper(_source, _info, raw: Any = None):
-            request = InMemoryRequest(raw)
+        async def _wrapper(_source, _info, request: Any = None):
+            request = InMemoryRequest(request)
 
             response = callback(request)
             if isawaitable(response):

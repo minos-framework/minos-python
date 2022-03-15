@@ -1,6 +1,7 @@
 import unittest
 
 from graphql import (
+    GraphQLID,
     GraphQLString,
     graphql,
     validate_schema,
@@ -22,6 +23,7 @@ from minos.plugins.graphql.decorators import (
 )
 from tests.utils import (
     BASE_PATH,
+    user_type,
 )
 
 
@@ -132,6 +134,15 @@ class TestSchemaBuilder(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual({"order_query": "ticket #4"}, result.data)
         self.assertEqual(None, result.errors)
+
+    async def test_schema(self):
+        routes = {GraphQlQueryEnrouteDecorator(name="order_query", argument=GraphQLID, output=user_type): callback_fn}
+
+        schema = GraphQLSchemaBuilder.build(routes=routes)
+
+        errors = validate_schema(schema)
+
+        self.assertEqual(list(), errors)
 
 
 if __name__ == "__main__":

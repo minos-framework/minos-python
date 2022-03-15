@@ -6,11 +6,19 @@ from pathlib import (
 )
 from typing import (
     Any,
+    NamedTuple,
+    Optional,
 )
 
 from graphql import (
     GraphQLArgument,
+    GraphQLBoolean,
     GraphQLField,
+    GraphQLID,
+    GraphQLInputField,
+    GraphQLInputObjectType,
+    GraphQLInt,
+    GraphQLNonNull,
     GraphQLObjectType,
     GraphQLString,
 )
@@ -69,3 +77,53 @@ class FakeQueryService:
         """For testng purposes."""
 
         return "eu38hj32-889283-j2jjb5kl"
+
+
+user_type = GraphQLObjectType(
+    "UserType",
+    {
+        "id": GraphQLField(GraphQLNonNull(GraphQLID)),
+        "firstName": GraphQLField(GraphQLNonNull(GraphQLString)),
+        "lastName": GraphQLField(GraphQLNonNull(GraphQLString)),
+        "tweets": GraphQLField(GraphQLInt),
+        "verified": GraphQLField(GraphQLNonNull(GraphQLBoolean)),
+    },
+)
+
+user_input_type = GraphQLInputObjectType(
+    "UserInputType",
+    {
+        "firstName": GraphQLInputField(GraphQLNonNull(GraphQLString)),
+        "lastName": GraphQLInputField(GraphQLNonNull(GraphQLString)),
+        "tweets": GraphQLInputField(GraphQLInt),
+        "verified": GraphQLInputField(GraphQLBoolean),
+    },
+)
+
+
+class User(NamedTuple):
+    """A simple user object class."""
+
+    firstName: str
+    lastName: str
+    tweets: Optional[int]
+    id: Optional[str] = None
+    verified: bool = False
+
+
+async def resolve_user(request: Request):
+    id = await request.content()
+    return Response(User(firstName="Jack", lastName="Johnson", tweets=563, id=str(id), verified=True))
+
+
+async def resolve_create_user(request: Request):
+    params = await request.content()
+    return Response(
+        User(
+            firstName=params["firstName"],
+            lastName=params["lastName"],
+            tweets=params["tweets"],
+            id="4kjjj43-l23k4l3-325kgaa2",
+            verified=params["verified"],
+        )
+    )
