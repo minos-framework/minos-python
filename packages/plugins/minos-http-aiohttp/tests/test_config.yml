@@ -7,7 +7,7 @@ services:
     - tests.utils.FakeCommandService
     - tests.utils.FakeQueryService
 rest:
-    host: localhost
+    host: 0.0.0.0
     port: 7689
 repository:
     database: order_db
