@@ -1,7 +1,4 @@
 import unittest
-from socket import (
-    socket,
-)
 from unittest.mock import (
     AsyncMock,
 )
@@ -69,9 +66,6 @@ class TestAioHttpConnector(unittest.IsolatedAsyncioTestCase):
     def test_runner(self):
         self.assertEqual(None, self.connector.runner)
 
-    def test_socket(self):
-        self.assertEqual(None, self.connector.socket)
-
     def test_site(self):
         self.assertEqual(None, self.connector.site)
 
@@ -125,18 +119,15 @@ class TestAioHttpConnector(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(1, mock.call_count)
 
     async def test_start_stop(self):
-        self.assertIsNone(self.connector.socket)
         self.assertIsNone(self.connector.runner)
         self.assertIsNone(self.connector.site)
 
         try:
             await self.connector.start()
-            self.assertIsInstance(self.connector.socket, socket)
             self.assertIsInstance(self.connector.runner, web_runner.AppRunner)
-            self.assertIsInstance(self.connector.site, web_runner.SockSite)
+            self.assertIsInstance(self.connector.site, web_runner.TCPSite)
         finally:
             await self.connector.stop()
-        self.assertIsNone(self.connector.socket)
         self.assertIsNone(self.connector.runner)
         self.assertIsNone(self.connector.site)
 

@@ -5,10 +5,10 @@ from unittest.mock import (
 
 from minos.common import (
     NotProvidedException,
+    Port,
 )
 from minos.networks import (
     HttpPort,
-    Port,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,

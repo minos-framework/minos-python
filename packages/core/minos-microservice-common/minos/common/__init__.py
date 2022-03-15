@@ -105,6 +105,9 @@ from .object import (
 from .pools import (
     MinosPool,
 )
+from .ports import (
+    Port,
+)
 from .protocol import (
     MinosAvroDatabaseProtocol,
     MinosAvroMessageProtocol,

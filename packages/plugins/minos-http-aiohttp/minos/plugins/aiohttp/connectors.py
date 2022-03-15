@@ -2,9 +2,6 @@ import logging
 from collections.abc import (
     Callable,
 )
-from socket import (
-    socket,
-)
 from typing import (
     Optional,
 )
@@ -12,9 +9,6 @@ from typing import (
 from aiohttp import (
     web,
     web_runner,
-)
-from aiomisc import (
-    bind_socket,
 )
 from cached_property import (
     cached_property,
@@ -41,7 +35,6 @@ class AioHttpConnector(HttpConnector[web.Request, web.Response]):
         super().__init__(*args, **kwargs)
 
         self._shutdown_timeout = shutdown_timeout
-        self._socket = None
         self._runner = None
         self._site = None
 
@@ -62,15 +55,7 @@ class AioHttpConnector(HttpConnector[web.Request, web.Response]):
         return self._runner
 
     @property
-    def socket(self) -> Optional[socket]:
-        """Get the socket.
-
-        :return: A ``socket`` value or ``None``.
-        """
-        return self._socket
-
-    @property
-    def site(self) -> Optional[web_runner.SockSite]:
+    def site(self) -> Optional[web_runner.TCPSite]:
         """Get the application site.
 
         :return: A ``SockSite`` instance or ``None``.
@@ -108,18 +93,15 @@ class AioHttpConnector(HttpConnector[web.Request, web.Response]):
         self._runner = web_runner.AppRunner(self.application)
         await self._runner.setup()
 
-        self._socket = bind_socket(address=self._host, port=self._port, proto_name="http")
-        self._site = web_runner.SockSite(self._runner, self._socket, shutdown_timeout=self._shutdown_timeout)
+        self._site = web_runner.TCPSite(
+            self._runner, host=self._host, port=self._port, shutdown_timeout=self._shutdown_timeout
+        )
         await self._site.start()
 
     async def _stop(self, exception: Exception = None) -> None:
         if self._site is not None:
             await self._site.stop()
             self._site = None
-
-        if self._socket is not None:
-            self._socket.close()
-            self._socket = None
 
         if self._runner is not None:
             await self._runner.cleanup()

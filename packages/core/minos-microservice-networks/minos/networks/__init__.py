@@ -93,9 +93,6 @@ from .http import (
     HttpResponse,
     HttpResponseException,
 )
-from .ports import (
-    Port,
-)
 from .requests import (
     REQUEST_USER_CONTEXT_VAR,
     InMemoryRequest,
