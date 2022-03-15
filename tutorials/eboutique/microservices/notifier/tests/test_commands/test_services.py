@@ -16,7 +16,6 @@ from tests.utils import (
 
 
 class TestNotifierCommandService(unittest.IsolatedAsyncioTestCase):
-
     def setUp(self) -> None:
         self.injector = build_dependency_injector()
 
@@ -44,8 +43,9 @@ class TestNotifierCommandService(unittest.IsolatedAsyncioTestCase):
           </body>
         </html>
         """
-        request = InMemoryRequest({"to": "cingusoft@gmail.com", "subject": "Test Email", "text": text_message,
-                                   "html": html_message})
+        request = InMemoryRequest(
+            {"to": "cingusoft@gmail.com", "subject": "Test Email", "text": text_message, "html": html_message}
+        )
         response = await service.send_notification_email(request)
 
         self.assertIsInstance(response, Response)
@@ -53,5 +53,5 @@ class TestNotifierCommandService(unittest.IsolatedAsyncioTestCase):
         observed = await response.content()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

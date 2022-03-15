@@ -1,7 +1,6 @@
-from .services import (
-    NotifierQueryService,
-)
-
 from .repository import (
     NotifierQueryServiceRepository,
+)
+from .services import (
+    NotifierQueryService,
 )

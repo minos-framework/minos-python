@@ -1,5 +1,11 @@
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import smtplib
+import ssl
+from email.mime.multipart import (
+    MIMEMultipart,
+)
+from email.mime.text import (
+    MIMEText,
+)
 
 from minos.cqrs import (
     CommandService,
@@ -10,8 +16,6 @@ from minos.networks import (
     ResponseException,
     enroute,
 )
-
-import ssl, smtplib
 
 
 class NotifierCommandService(CommandService):
@@ -30,15 +34,15 @@ class NotifierCommandService(CommandService):
             content = await request.content()  # get the request payload
             email_from = "andrea@clariteia.com"
             password = "khegjvbpqfrrlvgd"
-            email_to = content['to']
+            email_to = content["to"]
             message = MIMEMultipart("alternative")
-            message["Subject"] = content['subject']
+            message["Subject"] = content["subject"]
             message["From"] = email_from
             message["To"] = email_to
             text_part = ""
             if "text" in content:
-                text_part = MIMEText(content['text'], "plain")
-            html_part = MIMEText(content['html'], "html")
+                text_part = MIMEText(content["text"], "plain")
+            html_part = MIMEText(content["html"], "html")
             message.attach(text_part)
             message.attach(html_part)
             context = ssl.create_default_context()
