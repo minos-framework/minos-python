@@ -17,7 +17,7 @@ from uuid import (
 )
 
 from minos.common import (
-    MinosSetup,
+    SetupMixin,
 )
 
 from ..queries import (
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     )
 
 
-class SnapshotRepository(ABC, MinosSetup):
+class SnapshotRepository(ABC, SetupMixin):
     """Base Snapshot class.
 
     The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository

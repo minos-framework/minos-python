@@ -33,8 +33,8 @@ from minos.aggregate import (
 )
 from minos.common import (
     NULL_UUID,
-    MinosSetup,
     NotProvidedException,
+    SetupMixin,
     current_datetime,
 )
 from minos.networks import (
@@ -68,7 +68,7 @@ class TestEventRepository(MinosTestCase):
         self.event_repository = _EventRepository()
 
     def test_subclass(self):
-        self.assertTrue(issubclass(EventRepository, (ABC, MinosSetup)))
+        self.assertTrue(issubclass(EventRepository, (ABC, SetupMixin)))
 
     def test_abstract(self):
         # noinspection PyUnresolvedReferences

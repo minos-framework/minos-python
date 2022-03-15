@@ -7,7 +7,9 @@ from minos.networks import (
     HttpAdapter,
     HttpRouter,
     MinosRedefinedEnrouteDecoratorException,
-    RestHttpRouter,
+)
+from tests.test_networks.test_routers import (
+    _Router,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -41,7 +43,7 @@ class TestHttpAdapter(unittest.TestCase):
 
     def test_eq(self):
         another_eq = HttpAdapter.from_config(self.config)
-        another_ne = HttpAdapter([RestHttpRouter()])
+        another_ne = HttpAdapter([_Router.from_config(self.config)])
 
         self.assertEqual(another_eq, self.adapter)
         self.assertNotEqual(another_ne, self.adapter)
