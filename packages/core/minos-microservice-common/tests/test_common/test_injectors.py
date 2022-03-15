@@ -10,8 +10,8 @@ from dependency_injector.containers import (
 )
 
 from minos.common import (
-    DependencyInjector,
     Config,
+    DependencyInjector,
     classname,
 )
 from tests.utils import (

@@ -22,8 +22,8 @@ from minos.aggregate import (
     InMemoryTransactionRepository,
 )
 from minos.common import (
-    Lock,
     Config,
+    Lock,
     MinosModel,
     MinosPool,
     SetupMixin,
