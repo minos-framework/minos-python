@@ -39,6 +39,6 @@ class ShippingCommandService(CommandService):
             if items_count > 2:
                 # on that case we put a surcharge of 10 euros
                 price_total += 10
-            return Response({"quote": price_total})
+            return Response({"quote": price_total, "distance": round(km_distance)})
         except Exception as exc:
             raise ResponseException(f"An error occurred during the Query process: {exc}")

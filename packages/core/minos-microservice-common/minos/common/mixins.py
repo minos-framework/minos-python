@@ -20,6 +20,9 @@ from aiomisc import (
     CircuitBreaker,
     CircuitBroken,
 )
+from aiomisc.circuit_breaker import (
+    CircuitBreakerStates,
+)
 
 from .object import (
     Object,
@@ -86,6 +89,30 @@ class CircuitBreakerMixin(Generic[E], Object):
         :return: A ``CircuitBreaker`` instance.
         """
         return self._circuit_breaker
+
+    @property
+    def is_circuit_breaker_passing(self) -> bool:
+        """Check if circuit breaker is passing.
+
+        :return: A ``bool`` instance.
+        """
+        return self._circuit_breaker.state == CircuitBreakerStates.PASSING
+
+    @property
+    def is_circuit_breaker_broken(self) -> bool:
+        """Check if circuit breaker is passing.
+
+        :return: A ``bool`` instance.
+        """
+        return self._circuit_breaker.state == CircuitBreakerStates.BROKEN
+
+    @property
+    def is_circuit_breaker_recovering(self) -> bool:
+        """Check if circuit breaker is passing.
+
+        :return: A ``bool`` instance.
+        """
+        return self._circuit_breaker.state == CircuitBreakerStates.RECOVERING
 
     @property
     def circuit_breaker_exceptions(self) -> tuple[type[Exception]]:

@@ -2,7 +2,6 @@ import sys
 import unittest
 
 from src import (
-    Shipping,
     ShippingCommandService,
 )
 
@@ -29,7 +28,7 @@ class TestShippingCommandService(unittest.IsolatedAsyncioTestCase):
         service = ShippingCommandService()
         self.assertIsInstance(service, ShippingCommandService)
 
-    async def test_create_shipping(self):
+    async def test_create_shipping_quote(self):
         service = ShippingCommandService()
 
         request = InMemoryRequest({"destination": "Paris", "items": 3})
@@ -38,6 +37,8 @@ class TestShippingCommandService(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(response, Response)
 
         observed = await response.content()
+        self.assertEqual(1052, observed["distance"])
+        self.assertEqual(11, observed["quote"])
 
 
 if __name__ == "__main__":

@@ -35,6 +35,7 @@ minos-microservice-aggregate = "^0.5.2"
 minos-microservice-common = "^0.5.0"
 minos-microservice-networks = "^0.5.0"
 dependency-injector = "^4.32.2"
+cached-property = "^1.5.2"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }
