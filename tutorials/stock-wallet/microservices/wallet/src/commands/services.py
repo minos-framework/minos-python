@@ -16,8 +16,8 @@ from ..aggregates import (
 class WalletCommandService(CommandService):
     """WalletCommandService class."""
 
-    @enroute.rest.command("/wallets", "POST")
-    @enroute.broker.command("CreateWallet")
+    @enroute.rest.command("/wallet/ticker", "POST")
+    @enroute.broker.command("AddTickerToWallet")
     async def create_wallet(self, request: Request) -> Response:
         """Create a new ``Wallet`` instance.
 
@@ -25,7 +25,8 @@ class WalletCommandService(CommandService):
         :return: A ``Response`` instance.
         """
         try:
-            uuid = await WalletAggregate.create()
+            content = await request.content()
+            uuid = await WalletAggregate.create(content['tinker'])
             return Response({"uuid": uuid})
         except Exception as exc:
             raise ResponseException(f"An error occurred during Wallet creation: {exc}")
