@@ -50,3 +50,10 @@ repos:
                 name: Check minos-http-aiohttp
                 files: ^packages/plugins/minos-http-aiohttp/
                 language: system
+
+            -   id: minos-router-graphql-check
+                pass_filenames: false
+                entry: make --directory=packages/plugins/minos-router-graphql check
+                name: Check minos-router-graphql
+                files: ^packages/plugins/minos-router-graphql/
+                language: system
