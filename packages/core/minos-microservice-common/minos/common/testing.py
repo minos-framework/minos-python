@@ -14,7 +14,7 @@ from uuid import (
 
 import aiopg
 
-from .configuration import (
+from .config import (
     Config,
 )
 

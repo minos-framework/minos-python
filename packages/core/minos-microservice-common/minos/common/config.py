@@ -2,7 +2,6 @@ from __future__ import (
     annotations,
 )
 
-import abc
 import os
 import warnings
 from collections import (
@@ -13,7 +12,6 @@ from pathlib import (
 )
 from typing import (
     Any,
-    Union,
 )
 
 import yaml
@@ -92,28 +90,7 @@ _PARAMETERIZED_MAPPER = {
 }
 
 
-class MinosConfigAbstract(abc.ABC):
-    """Minos abstract config class."""
-
-    __slots__ = "_services", "_path"
-
-    def __init__(self, path: Union[Path, str]):
-        if isinstance(path, str):
-            path = Path(path)
-        self._services = {}
-        self._path = path
-        self._load(path)
-
-    @abc.abstractmethod
-    def _load(self, path: Path) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def _get(self, key: str, **kwargs: Any):
-        raise NotImplementedError
-
-
-class Config(MinosConfigAbstract):
+class Config:
     """
     A Minos configuration provides information on the connection points available at that service.
     It consists of the following parts:
@@ -127,10 +104,16 @@ class Config(MinosConfigAbstract):
     - Sagas it takes part on.
     """
 
-    __slots__ = ("_data", "_with_environment", "_parameterized")
+    __slots__ = ("_path", "_data", "_with_environment", "_parameterized")
 
     def __init__(self, path: Path | str, with_environment: bool = True, **kwargs):
-        super().__init__(path)
+        super().__init__()
+        if isinstance(path, str):
+            path = Path(path)
+
+        self._path = path
+        self._load(path)
+
         self._with_environment = with_environment
         self._parameterized = kwargs
 

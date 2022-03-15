@@ -17,7 +17,6 @@ from .config import (
     STORAGE,
     Config,
     MinosConfig,
-    MinosConfigAbstract,
 )
 from .database import (
     PostgreSqlLock,
