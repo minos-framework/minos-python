@@ -1,4 +1,4 @@
-# Welcome to Minos Rest AIOHTTP's documentation!
+# Welcome to Minos AIOHTTP's documentation!
 
 .. toctree::
    :maxdepth: 2
@@ -6,7 +6,7 @@
    readme
    runthetests
    usage
-   api/minos
+   api/minos.plugins
    authors
    history
 

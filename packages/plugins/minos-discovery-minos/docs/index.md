@@ -6,7 +6,7 @@
    readme
    runthetests
    usage
-   api/minos
+   api/minos.plugins
    authors
    history
 
