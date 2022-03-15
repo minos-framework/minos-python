@@ -14,7 +14,7 @@ class NotifierQueryServiceRepository(MinosSetup):
         Base.metadata.create_all(self.engine)
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> NotifierQueryRepository:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs):
         return cls(*args, **(config.query_repository._asdict()) | kwargs)
 
     @property

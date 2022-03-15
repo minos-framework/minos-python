@@ -30,23 +30,27 @@ class TestNotifierCommandService(unittest.IsolatedAsyncioTestCase):
         service = NotifierCommandService()
         self.assertIsInstance(service, NotifierCommandService)
 
-    async def test_create_notifier(self):
+    async def test_send_notification(self):
         service = NotifierCommandService()
-
-        request = InMemoryRequest({})
-        response = await service.create_notifier(request)
+        text_message = """\
+        This is a test message from Minos
+        """
+        html_message = """\
+        <html>
+          <body>
+            <p>Hi,<br>
+               This is a test message from <a href="https://github.com/minos-framework/minos-python">Minos</a>
+            </p>
+          </body>
+        </html>
+        """
+        request = InMemoryRequest({"to": "cingusoft@gmail.com", "subject": "Test Email", "text": text_message,
+                                   "html": html_message})
+        response = await service.send_notification_email(request)
 
         self.assertIsInstance(response, Response)
 
         observed = await response.content()
-        expected = Notifier(
-            created_at=observed.created_at,
-            updated_at=observed.updated_at,
-            uuid=observed.uuid,
-            version=observed.version,
-        )
-
-        self.assertEqual(expected, observed)
 
 
 if __name__ == '__main__':
