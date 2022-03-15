@@ -93,6 +93,7 @@ _PARAMETERIZED_MAPPER = {
     "discovery.port": "minos_discovery_port",
 }
 
+
 @Injectable("config")
 class Config:
     """

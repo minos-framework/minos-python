@@ -19,15 +19,12 @@ from dependency_injector import (
     providers,
 )
 
-from ..config import (
-    Config,
-)
-from .importlib import (
+from ..importlib import (
     import_module,
 )
 
 if TYPE_CHECKING:
-    from ..configuration import (
+    from ..config import (
         Config,
     )
     from ..setup import (
