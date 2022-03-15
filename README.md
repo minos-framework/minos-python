@@ -1156,6 +1156,7 @@ The plugin packages provide connectors to external technologies like brokers, di
 
 * [minos-broker-kafka](https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-kafka): The `kafka` plugin package.
 * [minos-discovery-minos](https://minos-framework.github.io/minos-python/packages/plugins/minos-discovery-minos): The `minos-discovery` plugin package.
+* [minos-discovery-minos](https://minos-framework.github.io/minos-python/packages/plugins/minos-http-aiohttp): The `aiohttp` plugin package.
 
 ## Source Code
 
