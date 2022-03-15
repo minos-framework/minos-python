@@ -33,6 +33,9 @@ include = [
 python = "^3.9"
 minos-microservice-common = "^0.5.0"
 minos-microservice-networks = "^0.5.0"
+dependency-injector = "^4.38.0"
+cached-property = "^1.5.2"
+psycopg2-binary = "^2.9.3"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }
