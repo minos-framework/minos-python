@@ -94,7 +94,12 @@ class AioHttpConnector(HttpConnector[web.Request, web.Response]):
         await self._runner.setup()
 
         self._site = web_runner.TCPSite(
-            self._runner, host=self._host, port=self._port, shutdown_timeout=self._shutdown_timeout
+            runner=self._runner,
+            host=self._host,
+            port=self._port,
+            reuse_address=True,
+            reuse_port=False,
+            shutdown_timeout=self._shutdown_timeout,
         )
         await self._site.start()
 
