@@ -2,8 +2,8 @@ from __future__ import (
     annotations,
 )
 
-import abc
 import os
+import warnings
 from collections import (
     namedtuple,
 )
@@ -12,12 +12,11 @@ from pathlib import (
 )
 from typing import (
     Any,
-    Union,
 )
 
 import yaml
 
-from ..exceptions import (
+from minos.common.exceptions import (
     MinosConfigException,
 )
 
@@ -91,28 +90,7 @@ _PARAMETERIZED_MAPPER = {
 }
 
 
-class MinosConfigAbstract(abc.ABC):
-    """Minos abstract config class."""
-
-    __slots__ = "_services", "_path"
-
-    def __init__(self, path: Union[Path, str]):
-        if isinstance(path, str):
-            path = Path(path)
-        self._services = {}
-        self._path = path
-        self._load(path)
-
-    @abc.abstractmethod
-    def _load(self, path: Path) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def _get(self, key: str, **kwargs: Any):
-        raise NotImplementedError
-
-
-class MinosConfig(MinosConfigAbstract):
+class Config:
     """
     A Minos configuration provides information on the connection points available at that service.
     It consists of the following parts:
@@ -126,10 +104,16 @@ class MinosConfig(MinosConfigAbstract):
     - Sagas it takes part on.
     """
 
-    __slots__ = ("_data", "_with_environment", "_parameterized")
+    __slots__ = ("_path", "_data", "_with_environment", "_parameterized")
 
     def __init__(self, path: Path | str, with_environment: bool = True, **kwargs):
-        super().__init__(path)
+        super().__init__()
+        if isinstance(path, str):
+            path = Path(path)
+
+        self._path = path
+        self._load(path)
+
         self._with_environment = with_environment
         self._parameterized = kwargs
 
@@ -309,3 +293,11 @@ class MinosConfig(MinosConfigAbstract):
         host = self._get("discovery.host")
         port = self._get("discovery.port")
         return DISCOVERY(client=client, host=host, port=port)
+
+
+class MinosConfig(Config):
+    """MinosConfig class."""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{MinosConfig!r} has been deprecated. Use {Config} instead.", DeprecationWarning)
+        super().__init__(*args, **kwargs)

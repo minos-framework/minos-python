@@ -1,29 +1,31 @@
 import unittest
+import warnings
 from unittest.mock import (
     patch,
 )
 
 from minos.common import (
+    Config,
     MinosConfig,
     MinosConfigException,
 )
 from tests.utils import (
     BASE_PATH,
+    CONFIG_FILE_PATH,
 )
 
 
-class TestMinosConfig(unittest.TestCase):
+class TestConfig(unittest.TestCase):
     def setUp(self) -> None:
-        self.config_file_path = BASE_PATH / "test_config.yml"
-        self.config = MinosConfig(path=self.config_file_path)
+        self.config = Config(path=CONFIG_FILE_PATH)
 
     def test_config_ini_fail(self):
         with self.assertRaises(MinosConfigException):
-            MinosConfig(path=BASE_PATH / "test_fail_config.yaml")
+            Config(path=BASE_PATH / "test_fail_config.yaml")
 
     def test_cast_path(self):
         config_path = self.config._path
-        self.assertEqual(self.config_file_path, config_path)
+        self.assertEqual(CONFIG_FILE_PATH, config_path)
 
     def test_config_service(self):
         service = self.config.service
@@ -39,7 +41,7 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(8900, rest.port)
 
     def test_config_events_queue_database(self):
-        config = MinosConfig(path=self.config_file_path, with_environment=False)
+        config = Config(path=CONFIG_FILE_PATH, with_environment=False)
         broker = config.broker
         queue = broker.queue
         self.assertEqual("order_db", queue.database)
@@ -54,24 +56,24 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(["tests.services.OrderService", "tests.services.OrderQueryService"], self.config.services)
 
     def test_services_not_defined(self):
-        with patch("minos.common.MinosConfig._get", side_effect=MinosConfigException("")):
+        with patch.object(Config, "_get", side_effect=MinosConfigException("")):
             self.assertEqual([], self.config.services)
 
     def test_middleware(self):
         self.assertEqual(["tests.middleware.performance_tracking"], self.config.middleware)
 
     def test_middleware_not_defined(self):
-        with patch("minos.common.MinosConfig._get", side_effect=MinosConfigException("")):
+        with patch.object(Config, "_get", side_effect=MinosConfigException("")):
             self.assertEqual([], self.config.middleware)
 
     def test_config_saga_storage(self):
-        config = MinosConfig(path=self.config_file_path, with_environment=False)
+        config = Config(path=CONFIG_FILE_PATH, with_environment=False)
         saga = config.saga
         storage = saga.storage
         self.assertEqual(BASE_PATH / "order.lmdb", storage.path)
 
     def test_config_repository(self):
-        config = MinosConfig(path=self.config_file_path, with_environment=False)
+        config = Config(path=CONFIG_FILE_PATH, with_environment=False)
         repository = config.repository
         self.assertEqual("order_db", repository.database)
         self.assertEqual("minos", repository.user)
@@ -80,7 +82,7 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(5432, repository.port)
 
     def test_config_query_repository(self):
-        config = MinosConfig(path=self.config_file_path, with_environment=False)
+        config = Config(path=CONFIG_FILE_PATH, with_environment=False)
         query_repository = config.query_repository
         self.assertEqual("order_query_db", query_repository.database)
         self.assertEqual("minos", query_repository.user)
@@ -89,7 +91,7 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(5432, query_repository.port)
 
     def test_config_snapshot(self):
-        config = MinosConfig(path=self.config_file_path, with_environment=False)
+        config = Config(path=CONFIG_FILE_PATH, with_environment=False)
         snapshot = config.snapshot
         self.assertEqual("order_db", snapshot.database)
         self.assertEqual("minos", snapshot.user)
@@ -98,11 +100,22 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(5432, snapshot.port)
 
     def test_config_discovery(self):
-        config = MinosConfig(path=self.config_file_path, with_environment=False)
+        config = Config(path=CONFIG_FILE_PATH, with_environment=False)
         discovery = config.discovery
         self.assertEqual("minos", discovery.client)
         self.assertEqual("localhost", discovery.host)
         self.assertEqual(8080, discovery.port)
+
+
+class TestMinosConfig(unittest.TestCase):
+    def test_is_subclass(self):
+        self.assertTrue(issubclass(MinosConfig, Config))
+
+    def test_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            config = MinosConfig(CONFIG_FILE_PATH)
+            self.assertIsInstance(config, Config)
 
 
 if __name__ == "__main__":

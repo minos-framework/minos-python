@@ -15,7 +15,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     NotProvidedException,
 )
 from minos.networks import (
@@ -110,5 +110,5 @@ class RequestExecutor(Executor):
             raise ExecutorException(exc)
 
     @inject
-    def _get_default_reply_topic(self, config: MinosConfig = Provide["config"]) -> str:
+    def _get_default_reply_topic(self, config: Config = Provide["config"]) -> str:
         return f"{config.service.name}Reply"

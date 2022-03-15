@@ -19,8 +19,8 @@ from dependency_injector.wiring import (
     inject,
 )
 
-from .configuration import (
-    MinosConfig,
+from .config import (
+    Config,
 )
 from .exceptions import (
     NotProvidedException,
@@ -56,7 +56,7 @@ class SetupMixin(Object):
         return not self._already_setup
 
     @classmethod
-    def from_config(cls: Type[S], config: Optional[Union[MinosConfig, Path]] = None, **kwargs) -> S:
+    def from_config(cls: Type[S], config: Optional[Union[Config, Path]] = None, **kwargs) -> S:
         """Build a new instance from config.
 
         :param config: Config instance. If `None` is provided, default config is chosen.
@@ -66,20 +66,20 @@ class SetupMixin(Object):
         if config is None:
             config = cls._get_config()
         elif isinstance(config, Path):
-            config = MinosConfig(config)
+            config = Config(config)
 
         logger.info(f"Building a {cls.__name__!r} instance from config...")
         return cls._from_config(config=config, **kwargs)
 
     @staticmethod
     @inject
-    def _get_config(config: MinosConfig = Provide["config"]) -> MinosConfig:
+    def _get_config(config: Config = Provide["config"]) -> Config:
         if isinstance(config, Provide):
             raise NotProvidedException("The config object must be provided.")
         return config
 
     @classmethod
-    def _from_config(cls: Type[S], config: MinosConfig, **kwargs) -> S:
+    def _from_config(cls: Type[S], config: Config, **kwargs) -> S:
         return cls(**kwargs)
 
     async def __aenter__(self: S) -> S:

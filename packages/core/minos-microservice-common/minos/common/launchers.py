@@ -42,8 +42,8 @@ from cached_property import (
     cached_property,
 )
 
-from .configuration import (
-    MinosConfig,
+from .config import (
+    Config,
 )
 from .importlib import (
     import_module,
@@ -71,7 +71,7 @@ class EntrypointLauncher(SetupMixin):
 
     def __init__(
         self,
-        config: MinosConfig,
+        config: Config,
         injections: dict[str, Union[SetupMixin, Type[SetupMixin], str]],
         services: list[Union[Service, Type[Service], str]],
         log_level: Union[int, str] = logging.INFO,
@@ -104,7 +104,7 @@ class EntrypointLauncher(SetupMixin):
         self._external_packages = external_packages
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EntrypointLauncher:
+    def _from_config(cls, *args, config: Config, **kwargs) -> EntrypointLauncher:
         if "injections" not in kwargs:
             kwargs["injections"] = config.service.injections
         if "services" not in kwargs:

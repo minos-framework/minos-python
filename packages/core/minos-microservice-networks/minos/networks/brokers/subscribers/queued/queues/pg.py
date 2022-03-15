@@ -17,7 +17,7 @@ from psycopg2.sql import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 
 from ....collections import (
@@ -130,7 +130,7 @@ class PostgreSqlBrokerSubscriberQueueQueryFactory(PostgreSqlBrokerQueueQueryFact
 class PostgreSqlBrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder):
     """PostgreSql Broker Subscriber Queue Builder class."""
 
-    def with_config(self, config: MinosConfig):
+    def with_config(self, config: Config):
         """Set config.
 
         :param config: The config to be set.

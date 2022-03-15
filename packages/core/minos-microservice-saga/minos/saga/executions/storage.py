@@ -11,7 +11,7 @@ from uuid import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     MinosJsonBinaryProtocol,
     MinosStorage,
     MinosStorageLmdb,
@@ -39,7 +39,7 @@ class SagaExecutionStorage:
         self._storage = storage_cls.build(protocol=protocol, **kwargs)
 
     @classmethod
-    def from_config(cls, config: MinosConfig, **kwargs) -> SagaExecutionStorage:
+    def from_config(cls, config: Config, **kwargs) -> SagaExecutionStorage:
         """Build an instance from config.
 
         :param config: Config instance.
