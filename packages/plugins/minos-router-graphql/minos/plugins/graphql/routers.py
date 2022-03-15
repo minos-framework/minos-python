@@ -12,11 +12,11 @@ from minos.networks import (
     HttpRouter,
 )
 
+from .builders import (
+    GraphQLSchemaBuilder,
+)
 from .handlers import (
     GraphQlHandler,
-)
-from .schema_builder import (
-    GraphQLSchemaBuilder,
 )
 
 

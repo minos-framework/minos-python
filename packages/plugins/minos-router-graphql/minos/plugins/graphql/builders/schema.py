@@ -27,11 +27,14 @@ from minos.networks import (
 
 
 class GraphQLSchemaBuilder:
+    """TODO"""
+
     def __init__(self, *args, **kwargs):
         self.schema = GraphQLSchema(**kwargs)
 
     @classmethod
     def build(cls, routes) -> GraphQLSchema:
+        """TODO"""
         schema_args = cls._build(routes)
         return cls(**schema_args).schema
 
@@ -44,6 +47,8 @@ class GraphQLSchemaBuilder:
 
     @staticmethod
     def adapt_callback(callback):
+        """TODO"""
+
         @wraps(callback)
         async def _wrapper(_source, _info, raw: Any = None):
             request = InMemoryRequest(raw)
