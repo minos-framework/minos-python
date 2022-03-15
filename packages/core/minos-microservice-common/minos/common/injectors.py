@@ -18,7 +18,7 @@ from dependency_injector import (
     providers,
 )
 
-from .configuration import (
+from .config import (
     Config,
 )
 from .importlib import (

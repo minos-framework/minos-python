@@ -42,7 +42,7 @@ from cached_property import (
     cached_property,
 )
 
-from .configuration import (
+from .config import (
     Config,
 )
 from .importlib import (

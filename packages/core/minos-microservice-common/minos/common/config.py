@@ -18,7 +18,7 @@ from typing import (
 
 import yaml
 
-from ..exceptions import (
+from minos.common.exceptions import (
     MinosConfigException,
 )
 

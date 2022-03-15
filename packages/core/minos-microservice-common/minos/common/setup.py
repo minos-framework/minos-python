@@ -19,7 +19,7 @@ from dependency_injector.wiring import (
     inject,
 )
 
-from .configuration import (
+from .config import (
     Config,
 )
 from .exceptions import (
