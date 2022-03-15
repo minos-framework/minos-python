@@ -48,7 +48,7 @@ from .configuration import (
 from .importlib import (
     import_module,
 )
-from .injectors import (
+from .injections import (
     DependencyInjector,
 )
 from .setup import (

@@ -57,7 +57,7 @@ from .importlib import (
     classname,
     import_module,
 )
-from .injectors import (
+from .injections import (
     DependencyInjector,
 )
 from .launchers import (

@@ -18,13 +18,13 @@ from dependency_injector import (
     providers,
 )
 
-from .configuration import (
+from minos.common.configuration import (
     Config,
 )
-from .importlib import (
+from minos.common.importlib import (
     import_module,
 )
-from .setup import (
+from minos.common.setup import (
     SetupMixin,
 )
 
