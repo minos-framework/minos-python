@@ -19,7 +19,8 @@ import yaml
 from minos.common.exceptions import (
     MinosConfigException,
 )
-from ..injections import (
+
+from .injections import (
     Injectable,
 )
 
