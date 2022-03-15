@@ -12,7 +12,7 @@ from tests.utils import (
 )
 
 
-class TestMinosConfigWithEnvironment(unittest.TestCase):
+class TestConfigWithEnvironment(unittest.TestCase):
     def setUp(self) -> None:
         self.config_file_path = BASE_PATH / "test_config.yml"
         self.config = Config(path=self.config_file_path)

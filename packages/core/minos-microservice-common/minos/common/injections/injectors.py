@@ -19,7 +19,10 @@ from dependency_injector import (
     providers,
 )
 
-from ..importlib import (
+from ..config import (
+    Config,
+)
+from .importlib import (
     import_module,
 )
 

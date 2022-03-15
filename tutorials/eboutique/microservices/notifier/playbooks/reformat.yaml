@@ -1,0 +1,23 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Format Code
+      shell: poetry run black --line-length 120 src tests
+      args:
+        chdir: ../
+      register: results
+
+    - debug: var=results.stdout_lines
+
+    - debug: var=results.stderr_lines
+
+    - name: Sort Imports
+      shell: poetry run isort src tests
+      args:
+        chdir: ../
+      register: results
+
+    - debug: var=results.stdout_lines
+
+    - debug: var=results.stderr_lines

@@ -19,7 +19,7 @@ from dependency_injector.wiring import (
     inject,
 )
 
-from .configuration import (
+from .config import (
     Config,
 )
 from .exceptions import (
@@ -129,5 +129,5 @@ class MinosSetup(SetupMixin):
     """Minos Setup class."""
 
     def __init__(self, *args, **kwargs):
-        warnings.warn(f"{MinosSetup!r} has been deprecated. User {SetupMixin} instead.", DeprecationWarning)
+        warnings.warn(f"{MinosSetup!r} has been deprecated. Use {SetupMixin} instead.", DeprecationWarning)
         super().__init__(*args, **kwargs)

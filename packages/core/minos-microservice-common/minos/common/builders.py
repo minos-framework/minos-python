@@ -12,7 +12,7 @@ from typing import (
     TypeVar,
 )
 
-from .configuration import (
+from .config import (
     Config,
 )
 from .setup import (

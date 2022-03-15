@@ -5,7 +5,7 @@ __version__ = "0.5.3"
 from .builders import (
     Builder,
 )
-from .configuration import (
+from .config import (
     BROKER,
     DISCOVERY,
     QUEUE,
@@ -17,7 +17,6 @@ from .configuration import (
     STORAGE,
     Config,
     MinosConfig,
-    MinosConfigAbstract,
 )
 from .database import (
     PostgreSqlLock,

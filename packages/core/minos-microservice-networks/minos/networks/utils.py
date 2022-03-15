@@ -63,5 +63,5 @@ class Builder(CommonBuilder, ABC):
     """Builder class."""
 
     def __init__(self, *args, **kwargs):
-        warnings.warn(f"{Builder!r} has been deprecated. User {CommonBuilder} instead.", DeprecationWarning)
+        warnings.warn(f"{Builder!r} has been deprecated. Use {CommonBuilder} instead.", DeprecationWarning)
         super().__init__(*args, **kwargs)
