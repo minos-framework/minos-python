@@ -7,9 +7,6 @@ from unittest.mock import (
 from aiohttp import (
     ClientResponseError,
 )
-from aiomisc.circuit_breaker import (
-    CircuitBreakerStates,
-)
 
 from minos.plugins.minos_discovery import (
     MinosDiscoveryClient,
@@ -54,7 +51,7 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
     @patch("aiohttp.ClientSession.post")
     async def test_subscribe_raises(self, mock):
         async def _fn_failure(*args, **kwargs):
-            if self.client.circuit_breaker.state == CircuitBreakerStates.RECOVERING:
+            if self.client.is_circuit_breaker_recovering:
                 return _Response(True)
             return _Response(False)
 
@@ -75,7 +72,7 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
     @patch("aiohttp.ClientSession.delete")
     async def test_unsubscribe_raises(self, mock):
         async def _fn_failure(*args, **kwargs):
-            if self.client.circuit_breaker.state == CircuitBreakerStates.RECOVERING:
+            if self.client.is_circuit_breaker_recovering:
                 return _Response(True)
             return _Response(False)
 
