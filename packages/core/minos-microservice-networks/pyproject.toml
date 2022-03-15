@@ -35,7 +35,6 @@ minos-microservice-common = "^0.5.0"
 aiopg = "^1.2.1"
 dependency-injector = "^4.32.2"
 crontab = "^0.23.0"
-orjson = "^3.6.5"
 psycopg2 = "^2.9.3"
 
 [tool.poetry.dev-dependencies]

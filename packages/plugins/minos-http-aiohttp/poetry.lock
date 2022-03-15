@@ -932,7 +932,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "667d78cd825d71a8594620e744e46538e03ca0c8a87deb7dd6632a0f643673e3"
+content-hash = "055bc64b3a92b87737feef2a1bbef011b75da0188e210fabc26a1abdca2097a5"
 
 [metadata.files]
 aiohttp = [
