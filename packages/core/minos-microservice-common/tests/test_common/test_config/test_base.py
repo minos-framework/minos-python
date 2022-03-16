@@ -63,7 +63,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(["path.to.MyRouter1", "path.to.MyRouter2"], self.config.routers)
 
     def test_routers_not_defined(self):
-        with patch("minos.common.MinosConfig._get", side_effect=MinosConfigException("")):
+        with patch.object(Config, "_get", side_effect=MinosConfigException("")):
             self.assertEqual([], self.config.routers)
 
     def test_middleware(self):
