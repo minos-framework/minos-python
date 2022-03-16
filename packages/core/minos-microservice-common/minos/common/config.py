@@ -213,6 +213,17 @@ class Config:
             return list()
 
     @property
+    def routers(self) -> list[str]:
+        """Get the routers.
+
+        :return: A list containing the router class names as string values.
+        """
+        try:
+            return self._get("routers")
+        except MinosConfigException:
+            return list()
+
+    @property
     def middleware(self) -> list[str]:
         """Get the commands config.
 

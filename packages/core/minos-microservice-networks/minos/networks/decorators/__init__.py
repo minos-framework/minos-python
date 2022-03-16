@@ -23,6 +23,7 @@ from .definitions import (
     CheckDecorator,
     EnrouteDecorator,
     EnrouteDecoratorKind,
+    HttpEnrouteDecorator,
     PeriodicEnrouteDecorator,
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,

@@ -9,7 +9,7 @@ from .brokers import (
     BrokerClientPool,
     BrokerDispatcher,
     BrokerHandler,
-    BrokerHandlerService,
+    BrokerHandlerPort,
     BrokerMessage,
     BrokerMessageV1,
     BrokerMessageV1Payload,
@@ -63,6 +63,7 @@ from .decorators import (
     Handler,
     HandlerMeta,
     HandlerWrapper,
+    HttpEnrouteDecorator,
     PeriodicEnrouteDecorator,
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
@@ -74,7 +75,6 @@ from .discovery import (
     DiscoveryClient,
     DiscoveryConnector,
     InMemoryDiscoveryClient,
-    KongDiscoveryClient,
 )
 from .exceptions import (
     MinosActionNotFoundException,
@@ -90,6 +90,14 @@ from .exceptions import (
     NotSatisfiedCheckerException,
     RequestException,
 )
+from .http import (
+    HttpAdapter,
+    HttpConnector,
+    HttpPort,
+    HttpRequest,
+    HttpResponse,
+    HttpResponseException,
+)
 from .requests import (
     REQUEST_USER_CONTEXT_VAR,
     InMemoryRequest,
@@ -98,20 +106,23 @@ from .requests import (
     ResponseException,
     WrappedRequest,
 )
-from .rest import (
-    RestHandler,
-    RestRequest,
-    RestResponse,
-    RestResponseException,
-    RestService,
+from .routers import (
+    BrokerRouter,
+    HttpRouter,
+    PeriodicRouter,
+    RestHttpRouter,
+    Router,
 )
 from .scheduling import (
     PeriodicTask,
     PeriodicTaskScheduler,
-    PeriodicTaskSchedulerService,
+    PeriodicTaskSchedulerPort,
     ScheduledRequest,
     ScheduledRequestContent,
     ScheduledResponseException,
+)
+from .system import (
+    SystemService,
 )
 from .utils import (
     Builder,

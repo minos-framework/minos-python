@@ -1,4 +1,7 @@
 import unittest
+from collections.abc import (
+    Callable,
+)
 
 from minos.common import (
     classname,
@@ -111,13 +114,30 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
         observed = await handlers[BrokerCommandEnrouteDecorator("DeleteTicket")](self.request)
         self.assertEqual(expected, observed)
 
+    async def test_get_all(self):
+        expected = {
+            BrokerCommandEnrouteDecorator("DeleteTicket"),
+            BrokerCommandEnrouteDecorator("AddTicket"),
+            BrokerCommandEnrouteDecorator("CreateTicket"),
+            BrokerEventEnrouteDecorator("TicketAdded"),
+            BrokerQueryEnrouteDecorator("GetTickets"),
+            RestCommandEnrouteDecorator("orders/", "DELETE"),
+            RestCommandEnrouteDecorator("orders/", "GET"),
+            RestQueryEnrouteDecorator("tickets/", "GET"),
+            PeriodicEventEnrouteDecorator("@daily"),
+        }
+
+        observed = self.builder.get_all()
+        self.assertEqual(expected, set(observed.keys()))
+        self.assertTrue(all(isinstance(o, Callable) for o in observed.values()))
+
     def test_raises_duplicated_command(self):
         class _WrongService:
-            @enroute.rest.command(url="orders/", method="GET")
+            @enroute.rest.command(path="orders/", method="GET")
             def _fn1(self, request):
                 return Response("bar")
 
-            @enroute.rest.command(url="orders/", method="GET")
+            @enroute.rest.command(path="orders/", method="GET")
             def _fn2(self, request):
                 return Response("bar")
 
@@ -127,11 +147,11 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
 
     def test_raises_duplicated_command_query(self):
         class _WrongService:
-            @enroute.rest.command(url="orders/", method="GET")
+            @enroute.rest.command(path="orders/", method="GET")
             def _fn1(self, request):
                 return Response("bar")
 
-            @enroute.rest.query(url="orders/", method="GET")
+            @enroute.rest.query(path="orders/", method="GET")
             def _fn2(self, request):
                 return Response("bar")
 
