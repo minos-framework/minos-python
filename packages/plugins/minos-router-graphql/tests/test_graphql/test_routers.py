@@ -1,7 +1,7 @@
 import unittest
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     HttpEnrouteDecorator,
@@ -16,7 +16,7 @@ from tests.utils import (
 
 class TestGraphQlHttpRouter(unittest.TestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
-    _config = MinosConfig(CONFIG_FILE_PATH)
+    _config = Config(CONFIG_FILE_PATH)
 
     def test_from_config(self):
         router = GraphQlHttpRouter.from_config(self._config)

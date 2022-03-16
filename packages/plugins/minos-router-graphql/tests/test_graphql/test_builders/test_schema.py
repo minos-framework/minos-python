@@ -8,7 +8,7 @@ from graphql import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     Request,
@@ -33,7 +33,7 @@ async def callback_fn(request: Request):
 
 class TestGraphQLSchemaBuilder(unittest.IsolatedAsyncioTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
-    _config = MinosConfig(CONFIG_FILE_PATH)
+    _config = Config(CONFIG_FILE_PATH)
 
     def test_build(self):
         routes = {
