@@ -32,20 +32,30 @@ class TestWalletCommandService(unittest.IsolatedAsyncioTestCase):
     async def test_create_wallet(self):
         service = WalletCommandService()
 
-        request = InMemoryRequest({})
+        request = InMemoryRequest({'name': "Personal Wallet"})
         response = await service.create_wallet(request)
 
         self.assertIsInstance(response, Response)
 
         observed = await response.content()
-        expected = Wallet(
-            created_at=observed.created_at,
-            updated_at=observed.updated_at,
-            uuid=observed.uuid,
-            version=observed.version,
-        )
 
-        self.assertEqual(expected, observed)
+        self.assertEqual('Personal Wallet', observed['name'])
+
+    async def test_add_ticker(self):
+        service = WalletCommandService()
+
+        request = InMemoryRequest({'name': "Ticker Wallet Test"})
+        response = await service.create_wallet(request)
+        self.assertIsInstance(response, Response)
+        observed = await response.content()
+        self.assertEqual('Ticker Wallet Test', observed['name'])
+        wallet_uuid = observed['uuid']
+        ticker = 'AAPL'
+        ticker_request = InMemoryRequest({'wallet': wallet_uuid, 'ticker': ticker})
+        ticker_response = await service.add_ticker(ticker_request)
+        self.assertIsInstance(ticker_response, Response)
+        ticker_observed = await ticker_response.content()
+        self.assertEqual('AAPL', ticker_observed['ticker'])
 
 
 if __name__ == "__main__":

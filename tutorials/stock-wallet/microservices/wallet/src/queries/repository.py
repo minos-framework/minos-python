@@ -4,8 +4,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import (
     sessionmaker,
 )
+
 from src.queries.models import (
-    Base,
+    Base, Wallet, Ticker
 )
 
 from minos.common import (
@@ -24,9 +25,40 @@ class WalletQueryServiceRepository(MinosSetup):
         Base.metadata.create_all(self.engine)
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> WalletQueryRepository:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs):
         return cls(*args, **(config.query_repository._asdict()) | kwargs)
 
     @property
     def session(self):
         return self.session
+
+    def create_wallet(self, name: str, uuid: str):
+        wallet = Wallet()
+        wallet.name = name
+        wallet.uuid = uuid
+        self.session.add(wallet)
+        self.session.commit()
+        return wallet.id
+
+    def get_wallets(self):
+        wallets_query = self.session.query(Wallet).all()
+        wallets = []
+        for wallet in wallets_query:
+            wallets.append({
+                'name': wallet.name,
+                'uuid': wallet.uuid
+            })
+        return wallets
+
+    def get_tickers(self, wallet_uuid):
+        wallet = self.session.query(Wallet).filter(Wallet.uuid == wallet_uuid).first()
+        tickers_query = self.session.query(Ticker).filter(Ticker.wallet == wallet).all()
+        tickers = []
+        for ticker in tickers_query:
+            tickers.append({
+                'ticker': ticker.ticker,
+                'uuid': ticker.uuid,
+                'is_crypto': ticker.is_crypto,
+                'latest_value': ticker.latest_value
+            })
+        return tickers
