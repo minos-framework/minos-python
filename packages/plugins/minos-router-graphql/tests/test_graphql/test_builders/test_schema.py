@@ -31,7 +31,7 @@ async def callback_fn(request: Request):
     return Response("ticket #4")
 
 
-class TestSchemaBuilder(unittest.IsolatedAsyncioTestCase):
+class TestGraphQLSchemaBuilder(unittest.IsolatedAsyncioTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
     _config = MinosConfig(CONFIG_FILE_PATH)
 

@@ -45,7 +45,7 @@ async def resolve_ticket_raises(request: Request):
     raise ResponseException("Some error.", status=403)
 
 
-class TestGraphQlHttpRouter(unittest.IsolatedAsyncioTestCase):
+class TestGraphQlHandler(unittest.IsolatedAsyncioTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
     _config = MinosConfig(CONFIG_FILE_PATH)
 

@@ -21,7 +21,7 @@ from .handlers import (
 
 
 class GraphQlHttpRouter(HttpRouter):
-    """TODO"""
+    """GraphQl Http Router class."""
 
     def _filter_routes(self, routes: dict[EnrouteDecorator, Callable]) -> dict[EnrouteDecorator, Callable]:
         schema = GraphQLSchemaBuilder.build(routes)

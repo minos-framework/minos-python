@@ -19,7 +19,7 @@ from tests.utils import (
 )
 
 
-class TestSomething(unittest.TestCase):
+class TestGraphQlEnrouteDecorator(unittest.TestCase):
     def test_decorated_str(self):
         analyzer = EnrouteAnalyzer(classname(FakeQueryService))
         self.assertEqual(FakeQueryService, analyzer.decorated)

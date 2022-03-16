@@ -17,7 +17,7 @@ from minos.networks import (
 
 
 class GraphQlEnrouteDecorator(EnrouteDecorator, ABC):
-    """GraphQl Enroute class"""
+    """GraphQl Enroute Decorator class"""
 
     def __init__(self, name: str, output, argument: Optional = None):
         self.name = name
@@ -29,13 +29,13 @@ class GraphQlEnrouteDecorator(EnrouteDecorator, ABC):
 
 
 class GraphQlCommandEnrouteDecorator(GraphQlEnrouteDecorator):
-    """GraphQl Command Enroute class"""
+    """GraphQl Command Enroute Decorator class"""
 
     KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Command
 
 
 class GraphQlQueryEnrouteDecorator(GraphQlEnrouteDecorator):
-    """GraphQl Query Enroute class"""
+    """GraphQl Query Enroute Decorator class"""
 
     KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Query
 
@@ -48,6 +48,6 @@ class GraphQlEnroute:
 
     @classmethod
     def register(cls):
-        """TODO"""
+        """Register the graphql sub-enroute."""
         # noinspection PyProtectedMember
         enroute._register_sub_enroute("graphql", cls)
