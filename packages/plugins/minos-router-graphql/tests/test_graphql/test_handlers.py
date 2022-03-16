@@ -39,6 +39,10 @@ async def resolve_ticket(request: Request):
     return Response(3)
 
 
+async def resolve_simple_query(request: Request):
+    return Response("ABCD")
+
+
 async def resolve_ticket_raises(request: Request):
     raise ResponseException("Some error.", status=403)
 
@@ -145,6 +149,29 @@ class TestGraphQlHandler(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(200, result.status)
         self.assertDictEqual({"order_query": 3}, content["data"])
+        self.assertEqual([], content["errors"])
+
+    async def test_simple_query(self):
+        routes = {GraphQlQueryEnrouteDecorator(name="SimpleQuery", output=GraphQLString): resolve_simple_query}
+
+        schema = GraphQLSchemaBuilder.build(routes=routes)
+
+        handler = GraphQlHandler(schema)
+
+        query = """
+                            { SimpleQuery }
+                            """
+
+        content = {"query": query}
+
+        request = InMemoryRequest(content=content)
+
+        result = await handler.execute_operation(request)
+
+        content = await result.content()
+
+        self.assertEqual(200, result.status)
+        self.assertDictEqual({"SimpleQuery": "ABCD"}, content["data"])
         self.assertEqual([], content["errors"])
 
     async def test_query_with_variables_return_user(self):

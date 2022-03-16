@@ -1,4 +1,5 @@
-# Welcome to Minos Router GraphQl's documentation!
+# GraphQL plugin form Minos framework!
+This plugin integrates the official graphql-core library.
 
 .. toctree::
    :maxdepth: 2
