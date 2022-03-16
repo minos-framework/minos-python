@@ -14,7 +14,7 @@ from .dispatchers import (
 )
 from .handlers import (
     BrokerHandler,
-    BrokerHandlerService,
+    BrokerHandlerPort,
 )
 from .messages import (
     REQUEST_HEADERS_CONTEXT_VAR,

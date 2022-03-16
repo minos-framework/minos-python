@@ -29,9 +29,14 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         injector = DependencyInjector(self.config, [classname(FakeLockPool)])
         self.assertIsInstance(injector.lock_pool, FakeLockPool)
 
-    def test_lock_pool(self):
+    def test_from_type(self):
         injector = DependencyInjector(self.config, [FakeLockPool])
         self.assertIsInstance(injector.lock_pool, FakeLockPool)
+
+    def test_raises_building(self):
+        injector = DependencyInjector(self.config, ["path.to.LockPool"])
+        with self.assertRaises(ValueError):
+            injector.injections
 
     def test_raises_attribute_error(self):
         injector = DependencyInjector(self.config)

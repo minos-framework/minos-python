@@ -59,6 +59,13 @@ class TestConfig(unittest.TestCase):
         with patch.object(Config, "_get", side_effect=MinosConfigException("")):
             self.assertEqual([], self.config.services)
 
+    def test_routers(self):
+        self.assertEqual(["path.to.MyRouter1", "path.to.MyRouter2"], self.config.routers)
+
+    def test_routers_not_defined(self):
+        with patch.object(Config, "_get", side_effect=MinosConfigException("")):
+            self.assertEqual([], self.config.routers)
+
     def test_middleware(self):
         self.assertEqual(["tests.middleware.performance_tracking"], self.config.middleware)
 

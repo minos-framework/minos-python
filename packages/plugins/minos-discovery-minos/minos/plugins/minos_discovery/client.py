@@ -28,13 +28,7 @@ class MinosDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
         super().__init__(*args, circuit_breaker_exceptions=(ClientResponseError, *circuit_breaker_exceptions), **kwargs)
 
     async def subscribe(
-        self,
-        host: str,
-        port: int,
-        name: str,
-        endpoints: list[dict[str, str]],
-        retry_tries: int = 3,
-        retry_delay: float = 5,
+        self, host: str, port: int, name: str, endpoints: list[dict[str, str]], *args, **kwargs
     ) -> None:
         """Perform the subscription query.
 
@@ -42,8 +36,8 @@ class MinosDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
         :param port: The port of the microservice to be subscribed.
         :param name: The name of the microservice to be subscribed.
         :param endpoints: List of endpoints exposed by the microservice.
-        :param retry_tries: Number of attempts before raising a failure exception.
-        :param retry_delay: Seconds to wait between attempts.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
         endpoint = f"{self.route}/microservices/{name}"
@@ -64,12 +58,12 @@ class MinosDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
             async with session.post(endpoint, json=service_metadata) as response:
                 response.raise_for_status()
 
-    async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> None:
+    async def unsubscribe(self, name: str, *args, **kwargs) -> None:
         """Perform the unsubscription query.
 
         :param name: The name of the microservice to be unsubscribed.
-        :param retry_tries: Number of attempts before raising a failure exception.
-        :param retry_delay: Seconds to wait between attempts.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
         endpoint = f"{self.route}/microservices/{name}"

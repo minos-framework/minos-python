@@ -44,9 +44,9 @@ class DependencyInjector:
 
     @cached_property
     def injections(self) -> dict[str, SetupMixin]:
-        """Get the injections dictionary.
+        """Get the injections' dictionary.
 
-        :return: A dict of injections..
+        :return: A dict of injections.
         """
         injections = dict()
 
@@ -59,7 +59,10 @@ class DependencyInjector:
             return raw
 
         for value in self._raw_injections:
-            value = _fn(value)
+            try:
+                value = _fn(value)
+            except Exception as exc:
+                raise ValueError(f"An exception was raised while building injections: {exc!r}")
             key = value._injectable_name
             injections[key] = value
 
@@ -85,7 +88,7 @@ class DependencyInjector:
 
     @cached_property
     def container(self) -> containers.Container:
-        """Get the dependencies container.
+        """Get the dependencies' container.
 
         :return: A ``Container`` instance.
         """

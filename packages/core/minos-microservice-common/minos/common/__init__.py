@@ -54,6 +54,7 @@ from .exceptions import (
 )
 from .importlib import (
     classname,
+    get_internal_modules,
     import_module,
 )
 from .injections import (
@@ -105,6 +106,9 @@ from .object import (
 )
 from .pools import (
     MinosPool,
+)
+from .ports import (
+    Port,
 )
 from .protocol import (
     MinosAvroDatabaseProtocol,
