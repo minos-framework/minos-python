@@ -73,9 +73,6 @@ from .meta import (
     property_or_classproperty,
     self_or_classmethod,
 )
-from .mixins import (
-    CircuitBreakerMixin,
-)
 from .model import (
     AvroDataDecoder,
     AvroDataEncoder,
@@ -116,6 +113,9 @@ from .protocol import (
     MinosAvroProtocol,
     MinosBinaryProtocol,
     MinosJsonBinaryProtocol,
+)
+from .retries import (
+    CircuitBreakerMixin,
 )
 from .setup import (
     MinosSetup,
