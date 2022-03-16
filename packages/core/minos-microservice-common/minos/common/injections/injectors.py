@@ -35,9 +35,11 @@ if TYPE_CHECKING:
 class DependencyInjector:
     """Async wrapper of ``dependency_injector.containers.Container``."""
 
-    def __init__(self, config: Config, **kwargs: Union[SetupMixin, Type[SetupMixin], str]):
+    def __init__(self, config: Config, injections = None):
+        if injections is None:
+            injections = list()
         self.config = config
-        self._raw_injections = kwargs
+        self._raw_injections = injections
 
     @cached_property
     def injections(self) -> dict[str, SetupMixin]:
@@ -55,8 +57,10 @@ class DependencyInjector:
                 return raw.from_config(self.config, **injections)
             return raw
 
-        for key, value in self._raw_injections.items():
-            injections[key] = _fn(value)
+        for value in self._raw_injections:
+            value = _fn(value)
+            key = value._injectable_name
+            injections[key] = value
 
         return injections
 

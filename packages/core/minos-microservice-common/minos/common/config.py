@@ -164,11 +164,11 @@ class Config:
         )
 
     @property
-    def _service_injections(self) -> dict[str, str]:
+    def _service_injections(self) -> list[str]:
         try:
             return self._get("service.injections")
         except MinosConfigException:
-            return dict()
+            return list()
 
     @property
     def _service_services(self) -> list[str]:
