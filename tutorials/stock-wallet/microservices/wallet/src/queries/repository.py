@@ -4,9 +4,10 @@ from sqlalchemy import (
 from sqlalchemy.orm import (
     sessionmaker,
 )
-
 from src.queries.models import (
-    Base, Wallet, Ticker
+    Base,
+    Ticker,
+    Wallet,
 )
 
 from minos.common import (
@@ -44,10 +45,7 @@ class WalletQueryServiceRepository(MinosSetup):
         wallets_query = self.session.query(Wallet).all()
         wallets = []
         for wallet in wallets_query:
-            wallets.append({
-                'name': wallet.name,
-                'uuid': wallet.uuid
-            })
+            wallets.append({"name": wallet.name, "uuid": wallet.uuid})
         return wallets
 
     def get_tickers(self, wallet_uuid):
@@ -55,10 +53,12 @@ class WalletQueryServiceRepository(MinosSetup):
         tickers_query = self.session.query(Ticker).filter(Ticker.wallet == wallet).all()
         tickers = []
         for ticker in tickers_query:
-            tickers.append({
-                'ticker': ticker.ticker,
-                'uuid': ticker.uuid,
-                'is_crypto': ticker.is_crypto,
-                'latest_value': ticker.latest_value
-            })
+            tickers.append(
+                {
+                    "ticker": ticker.ticker,
+                    "uuid": ticker.uuid,
+                    "is_crypto": ticker.is_crypto,
+                    "latest_value": ticker.latest_value,
+                }
+            )
         return tickers

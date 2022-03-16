@@ -4,7 +4,9 @@ from uuid import (
 
 from minos.aggregate import (
     Aggregate,
-    RootEntity, Entity, EntitySet,
+    Entity,
+    EntitySet,
+    RootEntity,
 )
 
 
@@ -15,6 +17,7 @@ class Ticker(Entity):
 # LTSfWDXx9N2zMRNPyy_r
 class Wallet(RootEntity):
     """Wallet RootEntity class."""
+
     name: str
     tickers: EntitySet[Ticker]
 
