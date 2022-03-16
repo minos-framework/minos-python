@@ -7,7 +7,7 @@ from functools import (
 )
 
 from aiohttp import (
-    ClientResponseError,
+    ClientError,
     ClientSession,
 )
 
@@ -25,7 +25,7 @@ class MinosDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
     """Minos Discovery Client class."""
 
     def __init__(self, *args, circuit_breaker_exceptions: Iterable[type] = tuple(), **kwargs):
-        super().__init__(*args, circuit_breaker_exceptions=(ClientResponseError, *circuit_breaker_exceptions), **kwargs)
+        super().__init__(*args, circuit_breaker_exceptions=(ClientError, *circuit_breaker_exceptions), **kwargs)
 
     async def subscribe(
         self, host: str, port: int, name: str, endpoints: list[dict[str, str]], *args, **kwargs
