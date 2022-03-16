@@ -7,7 +7,7 @@ from minos.networks import (
 
 
 class CommandService:
-    @enroute.rest.command(url="/order", method="GET")
+    @enroute.rest.command(path="/order", method="GET")
     def get_order_rest(self, request: Request) -> Response:
         return Response("get_order")
 
