@@ -6,7 +6,6 @@ from abc import (
     ABC,
 )
 from collections.abc import (
-    Callable,
     Hashable,
 )
 from contextlib import (
