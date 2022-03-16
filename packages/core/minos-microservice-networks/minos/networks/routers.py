@@ -16,7 +16,7 @@ from cached_property import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     SetupMixin,
 )
 
@@ -32,13 +32,13 @@ from .decorators import (
 class Router(ABC, SetupMixin):
     """Router base class."""
 
-    def __init__(self, config: MinosConfig, **kwargs):
+    def __init__(self, config: Config, **kwargs):
         super().__init__(**kwargs)
 
         self._config = config
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> Router:
+    def _from_config(cls, config: Config, **kwargs) -> Router:
         return cls(config)
 
     @cached_property
