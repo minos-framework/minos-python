@@ -29,17 +29,17 @@ class Injectable:
     def __init__(self, name: str):
         self._name = name
 
-    def __call__(self, type_: InputType) -> OutputType:
-        bases = (type_, InjectableMixin)
-        if (generic := self._build_generic(type_)) is not None:
+    def __call__(self, input_type: InputType) -> OutputType:
+        bases = (input_type, InjectableMixin)
+        if (generic := self._build_generic(input_type)) is not None:
             bases = (*bases, generic)
 
-        # noinspection PyTypeChecker
-        type_: OutputType = types.new_class(type_.__name__, bases, {})
+        output_type = types.new_class(input_type.__name__, bases, {})
 
         # noinspection PyProtectedMember
-        type_._set_injectable_name(self._name)
-        return type_
+        output_type._set_injectable_name(self._name)
+
+        return output_type
 
     @staticmethod
     def _build_generic(type_):
