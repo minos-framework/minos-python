@@ -25,10 +25,20 @@ if TYPE_CHECKING:
 
 
 class Injectable:
-    """TODO"""
+    """Injectable decorator."""
 
     def __init__(self, name: str):
+        if not isinstance(name, str):
+            raise ValueError(f"'name' argument must be a {str!r} instance. Obtained: {name}")
         self._name = name
+
+    @property
+    def name(self) -> str:
+        """Get the name.
+
+        :return: A ``str`` value.
+        """
+        return self._name
 
     def __call__(self, input_type: InputType) -> OutputType:
         bases = (input_type, InjectableMixin)

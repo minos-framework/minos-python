@@ -4,16 +4,18 @@ from ..object import (
 
 
 class InjectableMixin(Object):
-    """TODO"""
+    """Injectable Mixin class."""
 
     _injectable_name: str
 
     @classmethod
     def _set_injectable_name(cls, name: str) -> None:
-        """TODO"""
         cls._injectable_name = name
 
     @classmethod
     def get_injectable_name(cls) -> str:
-        """TODO"""
+        """Get the injectable name.
+
+        :return: A ``str`` value.
+        """
         return cls._injectable_name
