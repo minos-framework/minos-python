@@ -17,7 +17,7 @@ from psycopg2.sql import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     PostgreSqlMinosDatabase,
 )
 
@@ -38,7 +38,7 @@ class PostgreSqlBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetec
         self._query_factory = query_factory
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlBrokerSubscriberDuplicateDetector:
+    def _from_config(cls, config: Config, **kwargs) -> PostgreSqlBrokerSubscriberDuplicateDetector:
         # noinspection PyProtectedMember
         return cls(**config.broker.queue._asdict(), **kwargs)
 

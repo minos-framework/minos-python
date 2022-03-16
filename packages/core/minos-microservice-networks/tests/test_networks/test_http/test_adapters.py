@@ -1,7 +1,7 @@
 import unittest
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     HttpAdapter,
@@ -18,7 +18,7 @@ from tests.utils import (
 
 class TestHttpAdapter(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
         self.adapter = HttpAdapter.from_config(self.config)
 
     def test_routers(self):

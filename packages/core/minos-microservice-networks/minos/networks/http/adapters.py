@@ -11,7 +11,7 @@ from typing import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     SetupMixin,
     import_module,
 )
@@ -37,12 +37,12 @@ class HttpAdapter(SetupMixin):
         self._routers = routers
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> HttpAdapter:
+    def _from_config(cls, *args, config: Config, **kwargs) -> HttpAdapter:
         routers = cls._routers_from_config(config)
         return cls(routers=routers, **kwargs)
 
     @staticmethod
-    def _routers_from_config(config: MinosConfig, **kwargs) -> list[HttpRouter]:
+    def _routers_from_config(config: Config, **kwargs) -> list[HttpRouter]:
         classes = config.routers
         classes = tuple((class_ if not isinstance(class_, str) else import_module(class_)) for class_ in classes)
         classes = filter(lambda router: issubclass(router, HttpRouter), classes)

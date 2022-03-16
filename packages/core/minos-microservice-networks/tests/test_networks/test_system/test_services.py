@@ -1,7 +1,7 @@
 import unittest
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     EnrouteAnalyzer,
@@ -19,7 +19,7 @@ from tests.utils import (
 class TestSystemService(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
         self.service = SystemService()
 

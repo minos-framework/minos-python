@@ -7,7 +7,7 @@ from typing import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerRouter,
@@ -32,7 +32,7 @@ class _Router(Router):
 
 class TestRouter(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_is_subclass(self):
         self.assertTrue(issubclass(Router, ABC))
@@ -62,7 +62,7 @@ class TestRouter(unittest.TestCase):
 
 class TestHttpRouter(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_is_subclass(self):
         self.assertTrue(issubclass(HttpRouter, (ABC, Router)))
@@ -70,7 +70,7 @@ class TestHttpRouter(unittest.TestCase):
 
 class TestRestHttpRouter(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_is_subclass(self):
         self.assertTrue(issubclass(RestHttpRouter, Router))
@@ -83,7 +83,7 @@ class TestRestHttpRouter(unittest.TestCase):
 
 class TestBrokerRouter(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_is_subclass(self):
         self.assertTrue(issubclass(BrokerRouter, Router))
@@ -96,7 +96,7 @@ class TestBrokerRouter(unittest.TestCase):
 
 class TestPeriodicRouter(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_is_subclass(self):
         self.assertTrue(issubclass(PeriodicRouter, Router))

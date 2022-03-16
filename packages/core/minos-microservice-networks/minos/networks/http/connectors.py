@@ -26,7 +26,7 @@ from typing import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     SetupMixin,
 )
 
@@ -62,7 +62,7 @@ class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
         self._adapter = adapter
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> HttpConnector:
+    def _from_config(cls, config: Config, **kwargs) -> HttpConnector:
         host = config.rest.host
         port = config.rest.port
         adapter = HttpAdapter.from_config(config)
