@@ -3,13 +3,15 @@ from unittest.mock import (
     AsyncMock,
 )
 
+from minos.common import (
+    Port,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
     PeriodicTaskScheduler,
     PeriodicTaskSchedulerPort,
-    Port,
 )
 from tests.utils import (
     BASE_PATH,

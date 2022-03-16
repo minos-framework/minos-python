@@ -23,18 +23,23 @@ from .brokers import (
     BrokerResponseException,
     BrokerSubscriber,
     BrokerSubscriberBuilder,
+    BrokerSubscriberDuplicateDetector,
     BrokerSubscriberQueue,
     BrokerSubscriberQueueBuilder,
+    IdempotentBrokerSubscriber,
     InMemoryBrokerPublisher,
     InMemoryBrokerPublisherQueue,
     InMemoryBrokerQueue,
     InMemoryBrokerSubscriber,
     InMemoryBrokerSubscriberBuilder,
+    InMemoryBrokerSubscriberDuplicateDetector,
     InMemoryBrokerSubscriberQueue,
     InMemoryBrokerSubscriberQueueBuilder,
     PostgreSqlBrokerPublisherQueue,
     PostgreSqlBrokerPublisherQueueQueryFactory,
     PostgreSqlBrokerQueue,
+    PostgreSqlBrokerSubscriberDuplicateDetector,
+    PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory,
     PostgreSqlBrokerSubscriberQueue,
     PostgreSqlBrokerSubscriberQueueBuilder,
     PostgreSqlBrokerSubscriberQueueQueryFactory,
@@ -70,7 +75,6 @@ from .discovery import (
     DiscoveryClient,
     DiscoveryConnector,
     InMemoryDiscoveryClient,
-    KongDiscoveryClient,
 )
 from .exceptions import (
     MinosActionNotFoundException,
@@ -93,9 +97,6 @@ from .http import (
     HttpRequest,
     HttpResponse,
     HttpResponseException,
-)
-from .ports import (
-    Port,
 )
 from .requests import (
     REQUEST_USER_CONTEXT_VAR,

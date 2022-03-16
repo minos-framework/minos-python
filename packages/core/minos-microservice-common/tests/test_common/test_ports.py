@@ -4,7 +4,7 @@ from aiomisc import (
     Service,
 )
 
-from minos.networks import (
+from minos.common import (
     Port,
 )
 

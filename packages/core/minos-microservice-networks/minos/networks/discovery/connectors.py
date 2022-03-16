@@ -18,7 +18,7 @@ from typing import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     MinosImportException,
     SetupMixin,
     import_module,
@@ -54,7 +54,7 @@ class DiscoveryConnector(SetupMixin):
         self.endpoints = endpoints
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DiscoveryConnector:
+    def _from_config(cls, *args, config: Config, **kwargs) -> DiscoveryConnector:
         client_cls = cls._client_cls_from_config(config)
         client = client_cls(host=config.discovery.host, port=config.discovery.port)
         port = config.rest.port
@@ -65,7 +65,7 @@ class DiscoveryConnector(SetupMixin):
         return cls(client, name, host, port, endpoints, *args, **kwargs)
 
     @staticmethod
-    def _client_cls_from_config(config: MinosConfig) -> Type[DiscoveryClient]:
+    def _client_cls_from_config(config: Config) -> Type[DiscoveryClient]:
         try:
             # noinspection PyTypeChecker
             client_cls: type = import_module(config.discovery.client)
@@ -77,7 +77,7 @@ class DiscoveryConnector(SetupMixin):
         return client_cls
 
     @staticmethod
-    def _endpoints_from_config(config: MinosConfig) -> list[dict[str, Any]]:
+    def _endpoints_from_config(config: Config) -> list[dict[str, Any]]:
         endpoints = list()
         for name in config.services:
             decorators = EnrouteAnalyzer(name, config).get_rest_command_query()

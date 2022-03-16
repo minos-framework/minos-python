@@ -7,8 +7,8 @@ services:
     - tests.utils.FakeCommandService
     - tests.utils.FakeQueryService
 rest:
-    host: localhost
-    port: 8080
+    host: 0.0.0.0
+    port: 7689
 repository:
     database: order_db
     user: minos

@@ -13,7 +13,7 @@ from crontab import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     current_datetime,
 )
 from minos.networks import (
@@ -29,7 +29,7 @@ from tests.utils import (
 
 class TestPeriodicTaskScheduler(unittest.IsolatedAsyncioTestCase):
     def test_from_config(self):
-        config = MinosConfig(BASE_PATH / "test_config.yml")
+        config = Config(BASE_PATH / "test_config.yml")
         scheduler = PeriodicTaskScheduler.from_config(config)
         self.assertEqual(1, len(scheduler.tasks))
         self.assertTrue(all(map(lambda t: isinstance(t, PeriodicTask), scheduler.tasks)))

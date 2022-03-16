@@ -23,7 +23,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     NotProvidedException,
     SetupMixin,
 )
@@ -56,7 +56,7 @@ class BrokerClient(SetupMixin):
         self.subscriber = subscriber
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerClient:
+    def _from_config(cls, config: Config, **kwargs) -> BrokerClient:
         if "topic" not in kwargs:
             kwargs["topic"] = str(uuid4()).replace("-", "")
 
@@ -83,7 +83,7 @@ class BrokerClient(SetupMixin):
     @staticmethod
     @inject
     def _get_subscriber(
-        config: MinosConfig,
+        config: Config,
         topic: str,
         subscriber: Optional[BrokerSubscriber] = None,
         broker_subscriber: Optional[BrokerSubscriber] = Provide["broker_subscriber"],

@@ -9,7 +9,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     current_datetime,
 )
 from minos.networks import (
@@ -45,7 +45,7 @@ class TransactionService:
         self.transaction_repository = transaction_repository
 
     @classmethod
-    def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
+    def __get_enroute__(cls, config: Config) -> dict[str, set[EnrouteDecorator]]:
         service_name = config.service.name
         return {
             cls.__reserve__.__name__: {enroute.broker.command(f"_Reserve{service_name.title()}Transaction")},

@@ -14,7 +14,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     NotProvidedException,
     SetupMixin,
 )
@@ -58,7 +58,7 @@ class Aggregate(Generic[RT], SetupMixin):
         self.snapshot_repository = snapshot_repository
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> Aggregate:
+    def _from_config(cls, config: Config, **kwargs) -> Aggregate:
         kwargs["transaction_repository"] = cls._get_transaction_repository(**kwargs)
         kwargs["event_repository"] = cls._get_event_repository(**kwargs)
         kwargs["snapshot_repository"] = cls._get_snapshot_repository(**kwargs)

@@ -8,7 +8,7 @@ from typing import (
 
 from minos.common import (
     Builder,
-    MinosConfig,
+    Config,
     SetupMixin,
 )
 from tests.utils import (
@@ -46,7 +46,7 @@ class TestBuilder(unittest.TestCase):
         self.assertEqual({"foo": "bar"}, builder.kwargs)
 
     def test_with_config(self):
-        config = MinosConfig(CONFIG_FILE_PATH)
+        config = Config(CONFIG_FILE_PATH)
         builder = _Builder().with_config(config)
         self.assertIsInstance(builder, _Builder)
         self.assertEqual(dict(), builder.kwargs)

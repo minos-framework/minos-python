@@ -10,9 +10,6 @@ from unittest.mock import (
 from aiokafka import (
     AIOKafkaConsumer,
 )
-from aiomisc.circuit_breaker import (
-    CircuitBreakerStates,
-)
 from kafka import (
     KafkaAdminClient,
 )
@@ -21,7 +18,7 @@ from kafka.errors import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -49,7 +46,7 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(issubclass(KafkaBrokerSubscriber, BrokerSubscriber))
 
     async def test_from_config(self):
-        config = MinosConfig(CONFIG_FILE_PATH)
+        config = Config(CONFIG_FILE_PATH)
         async with KafkaBrokerSubscriber.from_config(config, topics={"foo", "bar"}) as subscriber:
             self.assertEqual(config.broker.host, subscriber.broker_host)
             self.assertEqual(config.broker.port, subscriber.broker_port)
@@ -78,7 +75,7 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
         stop_mock = AsyncMock(side_effect=publisher.client.stop)
 
         async def _fn():
-            if publisher.circuit_breaker.state == CircuitBreakerStates.RECOVERING:
+            if publisher.is_circuit_breaker_recovering:
                 raise ValueError()
             raise KafkaConnectionError()
 
@@ -203,7 +200,7 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
 
 class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_with_config(self):
         builder = KafkaBrokerSubscriberBuilder().with_config(self.config)
@@ -227,7 +224,7 @@ class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
 
 class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_build(self):
         builder = PostgreSqlQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
@@ -240,7 +237,7 @@ class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
 
 class TestInMemoryQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_build(self):
         builder = InMemoryQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})

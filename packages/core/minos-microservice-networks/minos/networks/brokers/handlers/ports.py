@@ -4,9 +4,10 @@ from cached_property import (
     cached_property,
 )
 
-from ...ports import (
+from minos.common import (
     Port,
 )
+
 from .impl import (
     BrokerHandler,
 )

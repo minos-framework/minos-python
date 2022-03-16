@@ -3,6 +3,9 @@ from unittest.mock import (
     AsyncMock,
 )
 
+from minos.common import (
+    Port,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -11,7 +14,6 @@ from minos.networks import (
     BrokerHandlerPort,
     InMemoryBrokerPublisher,
     InMemoryBrokerSubscriberBuilder,
-    Port,
 )
 from tests.utils import (
     BASE_PATH,

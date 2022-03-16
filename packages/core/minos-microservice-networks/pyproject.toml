@@ -32,12 +32,10 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.9"
 minos-microservice-common = "^0.5.0"
-aiomisc = ">=14.0.3,<16.0.0"
 aiopg = "^1.2.1"
-aiohttp = "^3.7.4"
 dependency-injector = "^4.32.2"
 crontab = "^0.23.0"
-orjson = "^3.6.5"
+psycopg2-binary = "^2.9.3"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }

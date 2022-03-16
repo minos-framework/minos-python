@@ -17,11 +17,9 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     NotProvidedException,
-)
-
-from ..ports import (
     Port,
 )
+
 from .connectors import (
     HttpConnector,
 )

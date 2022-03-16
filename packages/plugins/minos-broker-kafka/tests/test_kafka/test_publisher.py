@@ -6,15 +6,12 @@ from unittest.mock import (
 from aiokafka import (
     AIOKafkaProducer,
 )
-from aiomisc.circuit_breaker import (
-    CircuitBreakerStates,
-)
 from kafka.errors import (
     KafkaConnectionError,
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerMessage,
@@ -39,7 +36,7 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(issubclass(KafkaBrokerPublisher, BrokerPublisher))
 
     def test_from_config(self):
-        config = MinosConfig(CONFIG_FILE_PATH)
+        config = Config(CONFIG_FILE_PATH)
         publisher = KafkaBrokerPublisher.from_config(config)
 
         self.assertIsInstance(publisher, KafkaBrokerPublisher)
@@ -56,7 +53,7 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         stop_mock = AsyncMock(side_effect=publisher.client.stop)
 
         async def _fn():
-            if publisher.circuit_breaker.state == CircuitBreakerStates.RECOVERING:
+            if publisher.is_circuit_breaker_recovering:
                 raise ValueError()
             raise KafkaConnectionError()
 
@@ -84,7 +81,7 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
 
     async def test_send_without_connection(self):
         async def _fn(*args, **kwargs):
-            if publisher.circuit_breaker.state == CircuitBreakerStates.RECOVERING:
+            if publisher.is_circuit_breaker_recovering:
                 raise ValueError()
             raise KafkaConnectionError()
 

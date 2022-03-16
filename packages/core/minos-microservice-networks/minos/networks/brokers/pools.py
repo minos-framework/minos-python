@@ -13,7 +13,7 @@ from typing import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     MinosPool,
 )
 
@@ -37,7 +37,7 @@ class BrokerClientPool(MinosPool):
         self._instance_kwargs = instance_kwargs
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerClientPool:
+    def _from_config(cls, config: Config, **kwargs) -> BrokerClientPool:
         return cls(kwargs | {"config": config})
 
     async def _create_instance(self) -> BrokerClient:
