@@ -17,6 +17,7 @@ from src import WalletQueryServiceRepository
 
 class WalletQueryService(QueryService):
     """WalletQueryService class."""
+
     repository: WalletQueryServiceRepository = Provide["wallet_repository"]
 
     @enroute.rest.query("/wallets", "GET")
@@ -37,7 +38,7 @@ class WalletQueryService(QueryService):
         :return: A response exception.
         """
         params = await request.params()
-        tickers = self.repository.get_tickers(params['uuid'])
+        tickers = self.repository.get_tickers(params["uuid"])
         raise Response(tickers)
 
     @enroute.broker.event("WalletCreated")
@@ -48,7 +49,7 @@ class WalletQueryService(QueryService):
         :return: This method does not return anything.
         """
         event: Event = await request.content()
-        self.repository.create_wallet(event.get_field('name'), event['uuid'])
+        self.repository.create_wallet(event.get_field("name"), event["uuid"])
 
     @enroute.broker.event("WalletUpdated.tickers.create")
     async def wallet_updated(self, request: Request) -> None:
