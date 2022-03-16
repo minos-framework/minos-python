@@ -60,6 +60,7 @@ from .importlib import (
 from .injections import (
     DependencyInjector,
     Injectable,
+    InjectableMixin,
 )
 from .launchers import (
     EntrypointLauncher,

@@ -25,13 +25,6 @@ from .pools import (
 )
 
 
-@Injectable("lock_pool")
-class LockPool(MinosPool, ABC):
-    """Postgres Locking Pool class."""
-
-    acquire: Callable[[Hashable, ...], Lock]
-
-
 class Lock(AbstractAsyncContextManager):
     """Lock base class."""
 
@@ -52,3 +45,8 @@ class Lock(AbstractAsyncContextManager):
         if not isinstance(self.key, int):
             return hash(self.key)
         return self.key
+
+
+@Injectable("lock_pool")
+class LockPool(MinosPool[Lock], ABC):
+    """Postgres Locking Pool class."""

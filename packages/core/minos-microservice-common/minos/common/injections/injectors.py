@@ -31,12 +31,21 @@ if TYPE_CHECKING:
     from ..setup import (
         SetupMixin,
     )
+    from .mixins import (
+        InjectableMixin,
+    )
+
+    InjectableSetupMixin = Union[SetupMixin, InjectableMixin]
 
 
 class DependencyInjector:
     """Async wrapper of ``dependency_injector.containers.Container``."""
 
-    def __init__(self, config: Config, injections: Optional[list] = None):
+    def __init__(
+        self,
+        config: Config,
+        injections: Optional[list[Union[InjectableSetupMixin, Type[InjectableSetupMixin], str]]] = None,
+    ):
         if injections is None:
             injections = list()
         self.config = config
@@ -50,7 +59,7 @@ class DependencyInjector:
         """
         injections = dict()
 
-        def _fn(raw: Union[SetupMixin, Type[SetupMixin], str]) -> SetupMixin:
+        def _fn(raw: Union[InjectableSetupMixin, Type[InjectableSetupMixin], str]) -> InjectableSetupMixin:
             if isinstance(raw, str):
                 raw = import_module(raw)
             if isinstance(raw, type):
@@ -61,9 +70,9 @@ class DependencyInjector:
         for value in self._raw_injections:
             try:
                 value = _fn(value)
+                key = value.get_injectable_name()
             except Exception as exc:
                 raise ValueError(f"An exception was raised while building injections: {exc!r}")
-            key = value._injectable_name
             injections[key] = value
 
         return injections

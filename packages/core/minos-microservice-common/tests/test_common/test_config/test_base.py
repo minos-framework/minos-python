@@ -6,6 +6,7 @@ from unittest.mock import (
 
 from minos.common import (
     Config,
+    InjectableMixin,
     MinosConfig,
     MinosConfigException,
 )
@@ -22,6 +23,12 @@ class TestConfig(unittest.TestCase):
     def test_config_ini_fail(self):
         with self.assertRaises(MinosConfigException):
             Config(path=BASE_PATH / "test_fail_config.yaml")
+
+    def test_is_subclass(self):
+        self.assertTrue(issubclass(Config, InjectableMixin))
+
+    def test_get_injectable_name(self):
+        self.assertTrue("config", Config.get_injectable_name())
 
     def test_cast_path(self):
         config_path = self.config._path

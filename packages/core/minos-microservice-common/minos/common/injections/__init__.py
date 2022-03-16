@@ -4,3 +4,6 @@ from .decorators import (
 from .injectors import (
     DependencyInjector,
 )
+from .mixins import (
+    InjectableMixin,
+)
