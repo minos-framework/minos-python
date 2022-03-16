@@ -95,3 +95,10 @@ services:
       target: production
     environment: *id001
     depends_on: *id002
+  microservice-notifier:
+    restart: always
+    build:
+      context: microservices/notifier
+      target: production
+    environment: *id001
+    depends_on: *id002

@@ -37,7 +37,7 @@ from kafka.errors import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerMessage,
@@ -76,7 +76,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
         self.remove_topics_on_destroy = remove_topics_on_destroy
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> KafkaBrokerSubscriber:
+    def _from_config(cls, config: Config, **kwargs) -> KafkaBrokerSubscriber:
         # noinspection PyTypeChecker
         return KafkaBrokerSubscriberBuilder.new().with_config(config).with_kwargs(kwargs).build()
 
@@ -158,7 +158,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
 class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
     """Kafka Broker Subscriber Builder class."""
 
-    def with_config(self, config: MinosConfig) -> BrokerSubscriberBuilder:
+    def with_config(self, config: Config) -> BrokerSubscriberBuilder:
         """Set config.
 
         :param config: The config to be set.

@@ -3,8 +3,8 @@ import unittest
 import warnings
 
 from minos.common import (
+    Config,
     DependencyInjector,
-    MinosConfig,
     MinosSetup,
     NotProvidedException,
     Object,
@@ -64,14 +64,14 @@ class TestSetupMixin(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, instance.destroy_calls)
 
     def test_from_config(self):
-        config = MinosConfig(BASE_PATH / "test_config.yml")
+        config = Config(BASE_PATH / "test_config.yml")
         _SetupMixin.from_config(config)
 
     def test_from_config_file_path(self):
         _SetupMixin.from_config(BASE_PATH / "test_config.yml")
 
     async def test_from_config_with_dependency_injection(self):
-        config = MinosConfig(BASE_PATH / "test_config.yml")
+        config = Config(BASE_PATH / "test_config.yml")
         injector = DependencyInjector(config)
         await injector.wire(modules=[sys.modules[__name__]])
 

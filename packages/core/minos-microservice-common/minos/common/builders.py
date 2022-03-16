@@ -12,8 +12,8 @@ from typing import (
     TypeVar,
 )
 
-from .configuration import (
-    MinosConfig,
+from .config import (
+    Config,
 )
 from .setup import (
     SetupMixin,
@@ -54,7 +54,7 @@ class Builder(SetupMixin, ABC, Generic[Instance]):
         return self
 
     # noinspection PyUnusedLocal
-    def with_config(self: B, config: MinosConfig) -> B:
+    def with_config(self: B, config: Config) -> B:
         """Set config.
 
         :param config: The config to be set.

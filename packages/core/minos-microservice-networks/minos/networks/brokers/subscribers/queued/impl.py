@@ -18,7 +18,7 @@ from typing import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 
 from ...messages import (
@@ -91,7 +91,7 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         self.impl_builder = impl_builder
         self.queue_builder = queue_builder
 
-    def with_config(self, config: MinosConfig) -> BrokerSubscriberBuilder:
+    def with_config(self, config: Config) -> BrokerSubscriberBuilder:
         """Set config.
 
         :param config: The config to be set.

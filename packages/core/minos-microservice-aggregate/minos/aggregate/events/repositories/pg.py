@@ -22,7 +22,7 @@ from psycopg2.sql import (
 
 from minos.common import (
     NULL_UUID,
-    MinosConfig,
+    Config,
     PostgreSqlMinosDatabase,
 )
 
@@ -41,7 +41,7 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
     """PostgreSQL-based implementation of the event repository class in ``Minos``."""
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[EventRepository]:
+    def _from_config(cls, *args, config: Config, **kwargs) -> Optional[EventRepository]:
         return cls(*args, **config.repository._asdict(), **kwargs)
 
     async def _setup(self):

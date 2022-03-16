@@ -24,7 +24,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     NotProvidedException,
     SetupMixin,
 )
@@ -68,7 +68,7 @@ class BrokerDispatcher(SetupMixin):
         self._publisher = publisher
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerDispatcher:
+    def _from_config(cls, config: Config, **kwargs) -> BrokerDispatcher:
         kwargs["actions"] = cls._get_actions(config, **kwargs)
         kwargs["publisher"] = cls._get_publisher(**kwargs)
         # noinspection PyProtectedMember
@@ -76,7 +76,7 @@ class BrokerDispatcher(SetupMixin):
 
     @staticmethod
     def _get_actions(
-        config: MinosConfig, handlers: dict[str, Optional[Callable]] = None, **kwargs
+        config: Config, handlers: dict[str, Optional[Callable]] = None, **kwargs
     ) -> dict[str, Callable[[BrokerRequest], Awaitable[Optional[BrokerResponse]]]]:
         if handlers is None:
             builder = EnrouteBuilder(*config.services, middleware=config.middleware)
