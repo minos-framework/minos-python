@@ -7,9 +7,7 @@ from typing import (
     TYPE_CHECKING,
     Generic,
     TypeVar,
-    Union,
-    _GenericAlias,
-    get_args,
+    get_args, get_origin,
 )
 
 from .mixins import (
@@ -19,8 +17,10 @@ from .mixins import (
 if TYPE_CHECKING:
     InputType = TypeVar("InputType", bound=type)
 
-    Output = Union[InputType, InjectableMixin]
-    OutputType = type[Output]
+    class _Output(InputType, InjectableMixin):
+        """For typing purposes only."""
+
+    OutputType = type[_Output]
 
 
 class Injectable:
@@ -34,7 +34,8 @@ class Injectable:
         if (generic := self._build_generic(input_type)) is not None:
             bases = (*bases, generic)
 
-        output_type = types.new_class(input_type.__name__, bases, {})
+        # noinspection PyTypeChecker
+        output_type: OutputType = types.new_class(input_type.__name__, bases, {})
 
         # noinspection PyProtectedMember
         output_type._set_injectable_name(self._name)
@@ -44,12 +45,12 @@ class Injectable:
     @staticmethod
     def _build_generic(type_):
         generic = next(
-            (base for base in getattr(type_, "__orig_bases__", tuple()) if isinstance(base, _GenericAlias)), None
+            (base for base in getattr(type_, "__orig_bases__", tuple()) if get_origin(base) is not None), None
         )
         if generic is None:
             return None
 
-        generics = tuple(a for a in get_args(generic) if isinstance(a, TypeVar))
+        generics = tuple(arg for arg in get_args(generic) if isinstance(arg, TypeVar))
         if not len(generics):
             return None
 

@@ -35,7 +35,8 @@ if TYPE_CHECKING:
         InjectableMixin,
     )
 
-    InjectableSetupMixin = Union[SetupMixin, InjectableMixin]
+    class _InjectableSetupMixin(SetupMixin, InjectableMixin):
+        """For typing purposes only."""
 
 
 class DependencyInjector:
@@ -44,7 +45,7 @@ class DependencyInjector:
     def __init__(
         self,
         config: Config,
-        injections: Optional[list[Union[InjectableSetupMixin, Type[InjectableSetupMixin], str]]] = None,
+        injections: Optional[list[Union[_InjectableSetupMixin, Type[_InjectableSetupMixin], str]]] = None,
     ):
         if injections is None:
             injections = list()
@@ -59,7 +60,7 @@ class DependencyInjector:
         """
         injections = dict()
 
-        def _fn(raw: Union[InjectableSetupMixin, Type[InjectableSetupMixin], str]) -> InjectableSetupMixin:
+        def _fn(raw: Union[_InjectableSetupMixin, Type[_InjectableSetupMixin], str]) -> _InjectableSetupMixin:
             if isinstance(raw, str):
                 raw = import_module(raw)
             if isinstance(raw, type):
