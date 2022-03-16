@@ -23,9 +23,9 @@ from minos.aggregate import (
 )
 from minos.common import (
     Config,
+    DeclarativeModel,
     Lock,
-    MinosModel,
-    MinosPool,
+    LockPool,
     SetupMixin,
 )
 from minos.networks import (
@@ -127,7 +127,7 @@ class FakeLock(Lock):
         return
 
 
-class FakeLockPool(MinosPool):
+class FakeLockPool(LockPool):
     """For testing purposes."""
 
     async def _create_instance(self):
@@ -137,7 +137,7 @@ class FakeLockPool(MinosPool):
         """For testing purposes."""
 
 
-class Foo(MinosModel):
+class Foo(DeclarativeModel):
     """Utility minos model class for testing purposes"""
 
     foo: str
