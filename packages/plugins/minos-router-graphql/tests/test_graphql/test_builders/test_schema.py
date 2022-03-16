@@ -15,9 +15,9 @@ from minos.networks import (
     Response,
 )
 from minos.plugins.graphql import (
-    GraphQLSchemaBuilder,
     GraphQlCommandEnrouteDecorator,
     GraphQlQueryEnrouteDecorator,
+    GraphQLSchemaBuilder,
 )
 from tests.utils import (
     BASE_PATH,

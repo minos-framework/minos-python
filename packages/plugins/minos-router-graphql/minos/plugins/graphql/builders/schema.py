@@ -69,9 +69,7 @@ class GraphQLSchemaBuilder:
             if route.KIND == EnrouteDecoratorKind.Query:
                 fields[route.name] = cls._build_field(route, callback)
 
-        result = GraphQLObjectType(
-            "Query", fields={"dummy": GraphQLString}
-        )
+        result = GraphQLObjectType("Query", fields={"dummy": GraphQLString})
         if len(fields) > 0:
             result = GraphQLObjectType("Query", fields=fields)
 
