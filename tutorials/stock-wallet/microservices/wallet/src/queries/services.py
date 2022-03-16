@@ -1,3 +1,4 @@
+from dependency_injector.wiring import Provide
 from minos.aggregate import (
     Event,
 )
@@ -11,18 +12,33 @@ from minos.networks import (
     enroute,
 )
 
+from src import WalletQueryServiceRepository
+
 
 class WalletQueryService(QueryService):
     """WalletQueryService class."""
+    repository: WalletQueryServiceRepository = Provide["wallet_repository"]
 
     @enroute.rest.query("/wallets", "GET")
-    async def get_wallet(self, request: Request) -> Response:
+    async def get_wallets(self, request: Request) -> Response:
         """Get a Wallet instance.
 
         :param request: A request instance..
         :return: A response exception.
         """
-        raise ResponseException("Not implemented yet!")
+        wallets = self.repository.get_wallets()
+        raise Response(wallets)
+
+    @enroute.rest.query("/wallets/{uuid}/tickers", "GET")
+    async def get_wallets_tickers(self, request: Request) -> Response:
+        """Get a Wallet instance.
+
+        :param request: A request instance..
+        :return: A response exception.
+        """
+        params = await request.params()
+        tickers = self.repository.get_tickers(params['uuid'])
+        raise Response(tickers)
 
     @enroute.broker.event("WalletCreated")
     async def wallet_created(self, request: Request) -> None:
@@ -32,21 +48,11 @@ class WalletQueryService(QueryService):
         :return: This method does not return anything.
         """
         event: Event = await request.content()
-        print(event)
+        self.repository.create_wallet(event.get_field('name'), event['uuid'])
 
-    @enroute.broker.event("WalletUpdated")
+    @enroute.broker.event("WalletUpdated.tickers.create")
     async def wallet_updated(self, request: Request) -> None:
         """Handle the Wallet update events.
-
-        :param request: A request instance containing the aggregate difference.
-        :return: This method does not return anything.
-        """
-        event: Event = await request.content()
-        print(event)
-
-    @enroute.broker.event("WalletDeleted")
-    async def wallet_deleted(self, request: Request) -> None:
-        """Handle the Wallet deletion events.
 
         :param request: A request instance containing the aggregate difference.
         :return: This method does not return anything.
