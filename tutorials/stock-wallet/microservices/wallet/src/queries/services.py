@@ -1,4 +1,10 @@
-from dependency_injector.wiring import Provide
+from dependency_injector.wiring import (
+    Provide,
+)
+from src import (
+    WalletQueryServiceRepository,
+)
+
 from minos.aggregate import (
     Event,
 )
@@ -11,8 +17,6 @@ from minos.networks import (
     ResponseException,
     enroute,
 )
-
-from src import WalletQueryServiceRepository
 
 
 class WalletQueryService(QueryService):

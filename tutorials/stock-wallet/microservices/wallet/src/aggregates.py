@@ -4,9 +4,9 @@ from uuid import (
 
 from minos.aggregate import (
     Aggregate,
-    RootEntity,
     Entity,
     EntitySet,
+    RootEntity,
 )
 
 

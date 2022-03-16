@@ -1,10 +1,18 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, Boolean, DateTime
-from sqlalchemy.orm import (
-    declarative_base,
-    relationship,
-    backref,
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
 )
 from sqlalchemy.dialects.postgresql import UUID as UUID_PG
+from sqlalchemy.orm import (
+    backref,
+    declarative_base,
+    relationship,
+)
 
 Base = declarative_base()
 
