@@ -20,7 +20,7 @@ from tests.utils import (
 )
 
 
-class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
+class TestDependencyInjector(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.config_file_path = BASE_PATH / "test_config.yml"
         self.config = Config(path=str(self.config_file_path))
@@ -32,6 +32,11 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
     def test_from_type(self):
         injector = DependencyInjector(self.config, [FakeLockPool])
         self.assertIsInstance(injector.lock_pool, FakeLockPool)
+
+    def test_from_instance(self):
+        instance = FakeLockPool()
+        injector = DependencyInjector(self.config, [instance])
+        self.assertEqual(instance, injector.lock_pool)
 
     def test_raises_building(self):
         injector = DependencyInjector(self.config, ["path.to.LockPool"])

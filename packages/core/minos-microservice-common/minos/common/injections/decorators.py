@@ -7,7 +7,8 @@ from typing import (
     TYPE_CHECKING,
     Generic,
     TypeVar,
-    get_args, get_origin,
+    get_args,
+    get_origin,
 )
 
 from .mixins import (

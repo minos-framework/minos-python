@@ -65,6 +65,7 @@ _ENVIRONMENT_MAPPER = {
 
 _PARAMETERIZED_MAPPER = {
     "service.name": "service_name",
+    "service.injections": "service_injections",
     "rest.host": "rest_host",
     "rest.port": "rest_port",
     "broker.host": "broker_host",

@@ -38,3 +38,15 @@ class TestConfigParameterized(unittest.TestCase):
         self.assertEqual("some-type", discovery.client)
         self.assertEqual("some-host", discovery.host)
         self.assertEqual(333, discovery.port)
+
+    def test_config_service_injections_list(self):
+        config = Config(path=self.config_file_path, service_injections=["foo", "bar"])
+        self.assertEqual(["foo", "bar"], config.service.injections)
+
+    def test_config_service_injections_dict(self):
+        config = Config(path=self.config_file_path, service_injections={"one": "foo", "two": "bar"})
+        self.assertEqual(["foo", "bar"], config.service.injections)
+
+
+if __name__ == "__main__":
+    unittest.main()

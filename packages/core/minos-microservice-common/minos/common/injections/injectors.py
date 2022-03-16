@@ -35,8 +35,7 @@ if TYPE_CHECKING:
         InjectableMixin,
     )
 
-    class _InjectableSetupMixin(SetupMixin, InjectableMixin):
-        """For typing purposes only."""
+    _InjectableSetupMixin = Union[SetupMixin, InjectableMixin]
 
 
 class DependencyInjector:
