@@ -1,4 +1,12 @@
+from __future__ import (
+    annotations,
+)
+
+from abc import (
+    ABC,
+)
 from collections.abc import (
+    Callable,
     Hashable,
 )
 from contextlib import (
@@ -8,6 +16,20 @@ from contextlib import (
 from cached_property import (
     cached_property,
 )
+
+from .injections import (
+    Injectable,
+)
+from .pools import (
+    MinosPool,
+)
+
+
+@Injectable("lock_pool")
+class LockPool(MinosPool, ABC):
+    """Postgres Locking Pool class."""
+
+    acquire: Callable[[Hashable, ...], Lock]
 
 
 class Lock(AbstractAsyncContextManager):

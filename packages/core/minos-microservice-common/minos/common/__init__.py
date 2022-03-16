@@ -65,6 +65,7 @@ from .launchers import (
 )
 from .locks import (
     Lock,
+    LockPool,
 )
 from .meta import (
     classproperty,

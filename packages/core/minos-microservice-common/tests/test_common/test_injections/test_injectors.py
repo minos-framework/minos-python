@@ -26,16 +26,12 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.config = Config(path=str(self.config_file_path))
 
     def test_from_str(self):
-        injector = DependencyInjector(self.config, lock_pool=classname(FakeLockPool))
+        injector = DependencyInjector(self.config, [classname(FakeLockPool)])
         self.assertIsInstance(injector.lock_pool, FakeLockPool)
 
     def test_lock_pool(self):
-        injector = DependencyInjector(self.config, lock_pool=FakeLockPool)
+        injector = DependencyInjector(self.config, [FakeLockPool])
         self.assertIsInstance(injector.lock_pool, FakeLockPool)
-
-    def test_another(self):
-        injector = DependencyInjector(self.config, foo=1)
-        self.assertEqual(1, injector.foo)
 
     def test_raises_attribute_error(self):
         injector = DependencyInjector(self.config)
@@ -48,11 +44,11 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.config, injector.container.config())
 
     def test_container_lock_pool(self):
-        injector = DependencyInjector(self.config, lock_pool=FakeLockPool)
+        injector = DependencyInjector(self.config, [FakeLockPool])
         self.assertEqual(injector.lock_pool, injector.container.lock_pool())
 
     async def test_wire_unwire(self):
-        injector = DependencyInjector(self.config, lock_pool=FakeLockPool)
+        injector = DependencyInjector(self.config, [FakeLockPool])
 
         mock = MagicMock()
         injector.container.wire = mock

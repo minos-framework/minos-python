@@ -11,7 +11,7 @@ from dependency_injector import (
 
 from minos.common import (
     Lock,
-    MinosPool,
+    LockPool,
 )
 
 BASE_PATH = Path(__file__).parent
@@ -96,7 +96,7 @@ class FakeLock(Lock):
         return
 
 
-class FakeLockPool(MinosPool):
+class FakeLockPool(LockPool):
     """For testing purposes."""
 
     async def _create_instance(self):

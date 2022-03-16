@@ -31,7 +31,7 @@ class TestConfig(unittest.TestCase):
         service = self.config.service
         self.assertEqual("Order", service.name)
         self.assertEqual("src.aggregates.Order", service.aggregate)
-        self.assertEqual(dict(), service.injections)
+        self.assertEqual(list(), service.injections)
         self.assertEqual(list(), service.services)
 
     def test_config_rest(self):

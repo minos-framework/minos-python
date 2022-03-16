@@ -23,6 +23,9 @@ from psycopg2 import (
 from ..injections import (
     Injectable,
 )
+from ..locks import (
+    LockPool,
+)
 from ..pools import (
     MinosPool,
 )
@@ -33,7 +36,7 @@ from .locks import (
 logger = logging.getLogger(__name__)
 
 
-@Injectable("postgres_pool")
+@Injectable("postgresql_pool")
 class PostgreSqlPool(MinosPool[ContextManager]):
     """Postgres Pool class."""
 
@@ -80,8 +83,7 @@ class PostgreSqlPool(MinosPool[ContextManager]):
         return not instance.closed
 
 
-@Injectable("lock_pool")
-class PostgreSqlLockPool(PostgreSqlPool):
+class PostgreSqlLockPool(LockPool, PostgreSqlPool):
     """Postgres Locking Pool class."""
 
     def acquire(self, key: Hashable, *args, **kwargs) -> PostgreSqlLock:

@@ -166,7 +166,9 @@ class Config:
     @property
     def _service_injections(self) -> list[str]:
         try:
-            return self._get("service.injections")
+            injections_dict = self._get("service.injections")
+            injections_list = list(injections_dict.values())
+            return injections_list
         except MinosConfigException:
             return list()
 

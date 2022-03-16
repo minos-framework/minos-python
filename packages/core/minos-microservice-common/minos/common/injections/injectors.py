@@ -7,6 +7,7 @@ from asyncio import (
 )
 from typing import (
     TYPE_CHECKING,
+    Optional,
     Type,
     Union,
 )
@@ -35,7 +36,7 @@ if TYPE_CHECKING:
 class DependencyInjector:
     """Async wrapper of ``dependency_injector.containers.Container``."""
 
-    def __init__(self, config: Config, injections = None):
+    def __init__(self, config: Config, injections: Optional[list] = None):
         if injections is None:
             injections = list()
         self.config = config
