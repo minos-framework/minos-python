@@ -70,7 +70,7 @@ class GraphQLSchemaBuilder:
                 fields[route.name] = cls._build_field(route, callback)
 
         result = GraphQLObjectType(
-            "Query", fields={"hello": GraphQLField(GraphQLString, resolve=lambda obj, info: "world")}
+            "Query", fields={"dummy": GraphQLString}
         )
         if len(fields) > 0:
             result = GraphQLObjectType("Query", fields=fields)

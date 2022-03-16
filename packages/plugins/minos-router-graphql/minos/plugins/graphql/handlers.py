@@ -44,7 +44,7 @@ class GraphQlHandler:
         status = 200
 
         if len(errors):
-            status = 400
+            status = 500
             for error in errors:
                 if isinstance(error.original_error, ResponseException):
                     status = error.original_error.status

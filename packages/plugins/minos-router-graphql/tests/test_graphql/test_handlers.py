@@ -16,14 +16,12 @@ from minos.networks import (
     ResponseException,
 )
 from minos.plugins.graphql import (
+    GraphQlHandler,
     GraphQLSchemaBuilder,
 )
 from minos.plugins.graphql.decorators import (
     GraphQlCommandEnrouteDecorator,
     GraphQlQueryEnrouteDecorator,
-)
-from minos.plugins.graphql.handlers import (
-    GraphQlHandler,
 )
 from tests.test_graphql.test_builders.test_schema import (
     callback_fn,
@@ -97,7 +95,7 @@ class TestGraphQlHandler(unittest.IsolatedAsyncioTestCase):
 
         content = await result.content()
 
-        self.assertEqual(400, result.status)
+        self.assertEqual(500, result.status)
         self.assertNotEqual(content["errors"], [])
 
     async def test_schema(self):

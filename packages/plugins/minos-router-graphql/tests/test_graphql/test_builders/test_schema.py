@@ -16,8 +16,6 @@ from minos.networks import (
 )
 from minos.plugins.graphql import (
     GraphQLSchemaBuilder,
-)
-from minos.plugins.graphql.decorators import (
     GraphQlCommandEnrouteDecorator,
     GraphQlQueryEnrouteDecorator,
 )

@@ -11,7 +11,7 @@ from minos.common import (
 from minos.networks import (
     EnrouteAnalyzer,
 )
-from minos.plugins.graphql.decorators import (
+from minos.plugins.graphql import (
     GraphQlQueryEnrouteDecorator,
 )
 from tests.utils import (
