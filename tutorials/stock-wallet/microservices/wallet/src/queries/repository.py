@@ -50,6 +50,12 @@ class WalletQueryServiceRepository(MinosSetup):
             })
         return wallets
 
+    def add_tickers(self, wallet_uuid: str, ticker: dict):
+        wallet = self.session.query(Wallet).filter(Wallet.uuid == wallet_uuid).first()
+        ticker = Ticker(uuid=ticker['uuid'], ticker=ticker['ticker'], is_crypto=ticker['is_crypto'], wallet=wallet)
+        self.session.add(ticker)
+        self.session.commit()
+
     def get_tickers(self, wallet_uuid):
         wallet = self.session.query(Wallet).filter(Wallet.uuid == wallet_uuid).first()
         tickers_query = self.session.query(Ticker).filter(Ticker.wallet == wallet).all()

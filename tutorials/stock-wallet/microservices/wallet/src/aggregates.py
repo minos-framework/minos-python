@@ -10,6 +10,7 @@ from minos.aggregate import (
 
 class Ticker(Entity):
     ticker: str
+    is_crypto: bool
 
 
 # LTSfWDXx9N2zMRNPyy_r

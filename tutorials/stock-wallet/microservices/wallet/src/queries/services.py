@@ -51,11 +51,12 @@ class WalletQueryService(QueryService):
         self.repository.create_wallet(event.get_field('name'), event['uuid'])
 
     @enroute.broker.event("WalletUpdated.tickers.create")
-    async def wallet_updated(self, request: Request) -> None:
+    async def wallet_add_tickers(self, request: Request) -> None:
         """Handle the Wallet update events.
 
         :param request: A request instance containing the aggregate difference.
         :return: This method does not return anything.
         """
         event: Event = await request.content()
-        print(event)
+        for ticker in event['tickers']:
+            self.repository.add_tickers(event['uuid'], ticker)
