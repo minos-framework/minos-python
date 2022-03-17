@@ -1,8 +1,11 @@
 import sys
 import unittest
 
+from minos.aggregate import Event, Action
+from minos.networks import InMemoryRequest, Response
+
 from src import (
-    WalletQueryService,
+    WalletQueryService, Wallet,
 )
 
 from tests.utils import (
@@ -23,6 +26,18 @@ class TestWalletQueryService(unittest.IsolatedAsyncioTestCase):
     def test_constructor(self):
         service = WalletQueryService()
         self.assertIsInstance(service, WalletQueryService)
+
+    # async def test_query_add_wallet(self):
+    #     service = WalletQueryService()
+    #     self.assertIsInstance(service, WalletQueryService)
+    #     wallet_event = Event.from_root_entity(Wallet(name="Test Wallet"), action=Action.UPDATE)
+    #     wallet_request = InMemoryRequest(wallet_event)
+    #     await service.wallet_created(wallet_request)
+    #     # get the wallets
+    #     response_wallets = await service.get_wallets()
+    #     self.assertIsInstance(response_wallets, Response)
+    #     response_content = await response_wallets.content()
+
 
 
 if __name__ == "__main__":

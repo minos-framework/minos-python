@@ -1,7 +1,7 @@
 from dependency_injector.wiring import (
     Provide,
 )
-from src import (
+from src.queries.repository import (
     WalletQueryServiceRepository,
 )
 
@@ -14,7 +14,6 @@ from minos.cqrs import (
 from minos.networks import (
     Request,
     Response,
-    ResponseException,
     enroute,
 )
 
