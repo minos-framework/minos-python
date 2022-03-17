@@ -1,10 +1,6 @@
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     Config,
+    Inject,
 )
 from minos.networks import (
     BrokerRequest,
@@ -21,8 +17,8 @@ class SagaService:
     """Saga Service class"""
 
     # noinspection PyUnusedLocal
-    @inject
-    def __init__(self, *args, saga_manager: SagaManager = Provide["saga_manager"], **kwargs):
+    @Inject()
+    def __init__(self, *args, saga_manager: SagaManager, **kwargs):
         self.saga_manager = saga_manager
 
     @classmethod
