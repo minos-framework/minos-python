@@ -103,17 +103,19 @@ class Inject:
 
         @wraps(func)
         def _wrapper(*args, **kwargs):
-            for name_ in type_hints_.keys() - kwargs.keys():
-                kwargs[name_] = self._resolve(name_, type_hints_[name_])
+            for name in type_hints_.keys() - kwargs.keys():
+                if type_hints_[name][0] < len(args):
+                    continue
+                kwargs[name] = self._resolve(name, type_hints_[name][1])
             return func(*args, **kwargs)
 
         return _wrapper
 
     # noinspection PyMethodMayBeStatic
-    def _build_type_hints(self, func: Callable) -> dict[str, type]:
+    def _build_type_hints(self, func: Callable) -> dict[str, tuple[int, type]]:
         # TODO: Improve this function.
         type_hints_ = dict()
-        for name, type_ in get_type_hints(func).items():
+        for i, (name, type_) in enumerate(get_type_hints(func).items()):
             if name == "return":
                 continue
             origin_type = get_origin(type_)
@@ -128,7 +130,7 @@ class Inject:
                 continue
             if origin_type is None and not issubclass(type_, InjectableMixin):
                 continue
-            type_hints_[name] = type_
+            type_hints_[name] = (i, type_)
         return type_hints_
 
     def _resolve(self, name: str, type_: type):
