@@ -80,7 +80,7 @@ class Pool(SetupMixin, PoolBase, Generic[P], ABC):
         return True
 
 
-class MinosPool(Pool, ABC):
+class MinosPool(Pool, Generic[P], ABC):
     """MinosPool class."""
 
     def __init__(self, *args, **kwargs):
