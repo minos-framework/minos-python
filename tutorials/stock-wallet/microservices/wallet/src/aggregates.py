@@ -19,7 +19,7 @@ class Ticker(Entity):
 class Wallet(RootEntity):
     """Wallet RootEntity class."""
 
-    name: str
+    wallet_name: str
     tickers: EntitySet[Ticker]
 
 
@@ -29,7 +29,7 @@ class WalletAggregate(Aggregate[Wallet]):
     @staticmethod
     async def create_wallet(ticker_name: str) -> UUID:
         """Create a new instance."""
-        root = await Wallet.create(name=ticker_name, tickers=EntitySet())
+        root = await Wallet.create(wallet_name=ticker_name, tickers=EntitySet())
         return root.uuid
 
     @staticmethod

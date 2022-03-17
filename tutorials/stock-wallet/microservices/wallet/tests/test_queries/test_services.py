@@ -1,11 +1,9 @@
 import sys
 import unittest
 
-from minos.aggregate import Event, Action
-from minos.networks import InMemoryRequest, Response
 
 from src import (
-    WalletQueryService, Wallet,
+    WalletQueryService,
 )
 
 from tests.utils import (

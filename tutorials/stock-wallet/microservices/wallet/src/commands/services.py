@@ -25,8 +25,8 @@ class WalletCommandService(CommandService):
         """
         try:
             content = await request.content()
-            uuid = await WalletAggregate.create_wallet(content["name"])
-            return Response({"uuid": uuid, "name": content["name"]})
+            uuid = await WalletAggregate.create_wallet(content["wallet_name"])
+            return Response({"uuid": uuid, "wallet_name": content["wallet_name"]})
         except Exception as exc:
             raise ResponseException(f"An error occurred during Wallet creation: {exc}")
 
