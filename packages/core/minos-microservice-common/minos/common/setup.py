@@ -8,7 +8,6 @@ from pathlib import (
     Path,
 )
 from typing import (
-    Optional,
     Type,
     TypeVar,
     Union,
@@ -16,9 +15,6 @@ from typing import (
 
 from .config import (
     Config,
-)
-from .exceptions import (
-    NotProvidedException,
 )
 from .injections import (
     Inject,
