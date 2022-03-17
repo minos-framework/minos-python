@@ -159,17 +159,18 @@ class Inject:
             for arg in get_args(type_):
                 if is_type_subclass(arg) and issubclass(arg, InjectableMixin):
                     with suppress(NotProvidedException):
-                        return self._get_one(arg.get_injectable_name())
+                        return self.resolve_by_name(arg.get_injectable_name())
                 elif arg is NoneType:
                     return None
 
             raise NotProvidedException(f"The {type_!r} argument must be injected.")
 
-        return self._get_one(type_.get_injectable_name())
+        return self.resolve_by_name(type_.get_injectable_name())
 
     @staticmethod
     @inject
-    def _get_one(name: str, container: Container = Provide["<container>"]):
+    def resolve_by_name(name: str, container: Container = Provide["<container>"]):
+        """TODO"""
         try:
             return container.providers[name]()
         except Exception:
