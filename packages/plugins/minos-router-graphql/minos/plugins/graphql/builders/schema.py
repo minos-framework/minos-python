@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from collections.abc import (
+    Callable,
+)
 from functools import (
     wraps,
 )
@@ -10,6 +13,9 @@ from inspect import (
 )
 from typing import (
     Any,
+    Awaitable,
+    Optional,
+    Union,
 )
 
 from graphql import (
@@ -23,6 +29,12 @@ from graphql import (
 from minos.networks import (
     EnrouteDecoratorKind,
     InMemoryRequest,
+    Request,
+    Response,
+)
+
+from ..decorators import (
+    GraphQlEnrouteDecorator,
 )
 
 
@@ -33,20 +45,22 @@ class GraphQLSchemaBuilder:
         self.schema = GraphQLSchema(**kwargs)
 
     @classmethod
-    def build(cls, routes) -> GraphQLSchema:
+    def build(cls, routes: dict[GraphQlEnrouteDecorator, Callable]) -> GraphQLSchema:
         """TODO"""
         schema_args = cls._build(routes)
         return cls(**schema_args).schema
 
     @classmethod
-    def _build(cls, routes) -> dict:
+    def _build(cls, routes: dict[GraphQlEnrouteDecorator, Callable]) -> dict[str, Optional[GraphQLObjectType]]:
         query = cls._build_queries(routes)
         mutation = cls._build_mutations(routes)
 
         return {"query": query, "mutation": mutation}
 
     @staticmethod
-    def adapt_callback(callback):
+    def adapt_callback(
+        callback: Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
+    ) -> Callable[[Any, Any, Any], Awaitable[Any]]:
         """TODO"""
 
         @wraps(callback)
@@ -62,21 +76,23 @@ class GraphQLSchemaBuilder:
         return _wrapper
 
     @classmethod
-    def _build_queries(cls, routes):
+    def _build_queries(cls, routes: dict[GraphQlEnrouteDecorator, Callable]) -> GraphQLObjectType:
         fields = dict()
         for route, callback in routes.items():
             callback = cls.adapt_callback(callback)
             if route.KIND == EnrouteDecoratorKind.Query:
                 fields[route.name] = cls._build_field(route, callback)
 
-        result = GraphQLObjectType("Query", fields={"dummy": GraphQLString})
-        if len(fields) > 0:
-            result = GraphQLObjectType("Query", fields=fields)
+        if not len(fields):
+            fields["dummy"] = GraphQLField(
+                type_=GraphQLString,
+                description="Dummy query added to surpass the 'Type Query must define at least one field' constraint."
+            )
 
-        return result
+        return GraphQLObjectType("Query", fields=fields)
 
     @classmethod
-    def _build_mutations(cls, routes):
+    def _build_mutations(cls, routes: dict[GraphQlEnrouteDecorator, Callable]) -> Optional[GraphQLObjectType]:
         fields = dict()
         for route, callback in routes.items():
             callback = cls.adapt_callback(callback)
@@ -84,14 +100,13 @@ class GraphQLSchemaBuilder:
             if route.KIND == EnrouteDecoratorKind.Command:
                 fields[route.name] = cls._build_field(route, callback)
 
-        result = None
-        if len(fields) > 0:
-            result = GraphQLObjectType("Mutation", fields=fields)
+        if not len(fields):
+            return None
 
-        return result
+        return GraphQLObjectType("Mutation", fields=fields)
 
     @staticmethod
-    def _build_field(item, callback):
+    def _build_field(item: GraphQlEnrouteDecorator, callback: Callable) -> GraphQLField:
         args = None
         if item.argument is not None:
             args = {"request": GraphQLArgument(item.argument)}
