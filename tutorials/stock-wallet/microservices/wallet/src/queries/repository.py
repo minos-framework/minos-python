@@ -21,7 +21,7 @@ class WalletQueryServiceRepository(MinosSetup):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.engine = create_engine("postgresql+psycopg2://postgres:@localhost:5432/wallet_query_db".format(**kwargs))
-        self.session = sessionmaker(bind=self.engine)
+        self._session = sessionmaker(bind=self.engine)
 
     async def _setup(self) -> None:
         Base.metadata.create_all(self.engine)
@@ -32,7 +32,7 @@ class WalletQueryServiceRepository(MinosSetup):
 
     @property
     def session(self):
-        return self.session
+        return self._session
 
     def create_wallet(self, name: str, uuid: str):
         wallet = Wallet()
