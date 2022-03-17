@@ -107,7 +107,11 @@ class GraphQLSchemaBuilder:
 
     @staticmethod
     def _build_field(item: GraphQlEnrouteDecorator, callback: Callable) -> GraphQLField:
+        argument = item.argument
+        output = item.output
+
         args = None
-        if item.argument is not None:
-            args = {"request": GraphQLArgument(item.argument)}
-        return GraphQLField(item.output, args=args, resolve=callback)
+        if argument is not None:
+            args = {"request": GraphQLArgument(argument)}
+
+        return GraphQLField(output, args=args, resolve=callback)
