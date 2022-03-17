@@ -2,7 +2,6 @@ from __future__ import (
     annotations,
 )
 
-import sys
 import unittest
 from abc import (
     ABC,
@@ -31,7 +30,6 @@ from minos.aggregate import (
     ValueObjectSet,
 )
 from minos.common import (
-    Config,
     DependencyInjector,
     Lock,
     LockPool,
@@ -75,9 +73,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase, ABC):
                 self.snapshot_repository,
             ],
         )
-        self.injector.wire(
-            modules=[sys.modules["minos.aggregate"], sys.modules["minos.networks"], sys.modules["minos.common"]]
-        )
+        self.injector.wire()
 
     async def asyncSetUp(self):
         await super().asyncSetUp()

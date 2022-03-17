@@ -35,12 +35,9 @@ from tests.model_classes import (
     TextNumber,
     User,
 )
-from tests.utils import (
-    MinosTestCase,
-)
 
 
-class TestAvroDataDecoder(MinosTestCase):
+class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
     def test_model_type(self):
         observed = AvroDataDecoder(ModelType.build("Foo", {"bar": str})).build({"bar": "foobar"})
 
