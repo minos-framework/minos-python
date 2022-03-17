@@ -8,13 +8,9 @@ from typing import (
     get_args,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     Config,
+    Inject,
     NotProvidedException,
     SetupMixin,
 )
@@ -66,31 +62,25 @@ class Aggregate(Generic[RT], SetupMixin):
 
     # noinspection PyUnusedLocal
     @staticmethod
-    @inject
-    def _get_transaction_repository(
-        transaction_repository: TransactionRepository = Provide["transaction_repository"], **kwargs
-    ) -> TransactionRepository:
-        if transaction_repository is None or isinstance(transaction_repository, Provide):
+    @Inject()
+    def _get_transaction_repository(transaction_repository: TransactionRepository, **kwargs) -> TransactionRepository:
+        if transaction_repository is None:
             raise NotProvidedException(f"A {TransactionRepository!r} object must be provided.")
         return transaction_repository
 
     # noinspection PyUnusedLocal
     @staticmethod
-    @inject
-    def _get_event_repository(
-        event_repository: EventRepository = Provide["event_repository"], **kwargs
-    ) -> EventRepository:
-        if event_repository is None or isinstance(event_repository, Provide):
+    @Inject()
+    def _get_event_repository(event_repository: EventRepository, **kwargs) -> EventRepository:
+        if event_repository is None:
             raise NotProvidedException(f"A {EventRepository!r} object must be provided.")
         return event_repository
 
     # noinspection PyUnusedLocal
     @staticmethod
-    @inject
-    def _get_snapshot_repository(
-        snapshot_repository: SnapshotRepository = Provide["snapshot_repository"], **kwargs
-    ) -> SnapshotRepository:
-        if snapshot_repository is None or isinstance(snapshot_repository, Provide):
+    @Inject()
+    def _get_snapshot_repository(snapshot_repository: SnapshotRepository, **kwargs) -> SnapshotRepository:
+        if snapshot_repository is None:
             raise NotProvidedException(f"A {SnapshotRepository!r} object must be provided.")
         return snapshot_repository
 

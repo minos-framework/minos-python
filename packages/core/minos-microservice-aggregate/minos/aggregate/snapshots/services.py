@@ -16,13 +16,10 @@ from uuid import (
 from cached_property import (
     cached_property,
 )
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
 
 from minos.common import (
     Config,
+    Inject,
     ModelType,
     import_module,
 )
@@ -50,12 +47,12 @@ class SnapshotService:
     """Snapshot Service class."""
 
     # noinspection PyUnusedLocal
-    @inject
+    @Inject()
     def __init__(
         self,
         *args,
-        config: Config = Provide["config"],
-        snapshot_repository: SnapshotRepository = Provide["snapshot_repository"],
+        config: Config,
+        snapshot_repository: SnapshotRepository,
         **kwargs,
     ):
         self.config = config
