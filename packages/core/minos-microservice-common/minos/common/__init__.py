@@ -104,6 +104,7 @@ from .object import (
 )
 from .pools import (
     MinosPool,
+    Pool,
 )
 from .ports import (
     Port,

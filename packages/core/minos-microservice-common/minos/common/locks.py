@@ -20,7 +20,7 @@ from .injections import (
     Injectable,
 )
 from .pools import (
-    MinosPool,
+    Pool,
 )
 
 
@@ -47,5 +47,5 @@ class Lock(AbstractAsyncContextManager):
 
 
 @Injectable("lock_pool")
-class LockPool(MinosPool[Lock], ABC):
+class LockPool(Pool[Lock], ABC):
     """Postgres Locking Pool class."""
