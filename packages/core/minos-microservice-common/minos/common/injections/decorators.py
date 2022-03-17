@@ -3,14 +3,40 @@ from __future__ import (
 )
 
 import types
+from collections.abc import (
+    Callable,
+)
+from contextlib import (
+    suppress,
+)
+from functools import (
+    wraps,
+)
 from typing import (
     TYPE_CHECKING,
     Generic,
     TypeVar,
+    Union,
     get_args,
     get_origin,
+    get_type_hints,
 )
 
+from dependency_injector.containers import (
+    Container,
+)
+from dependency_injector.wiring import (
+    Provide,
+    inject,
+)
+
+from ..exceptions import (
+    NotProvidedException,
+)
+from ..model.types import (
+    NoneType,
+    is_type_subclass,
+)
 from .mixins import (
     InjectableMixin,
 )
@@ -67,3 +93,63 @@ class Injectable:
 
         # noinspection PyTypeHints
         return Generic[generics]
+
+
+class Inject:
+    """TODO"""
+
+    def __call__(self, func):
+        type_hints_ = self._build_type_hints(func)
+
+        @wraps(func)
+        def _wrapper(*args, **kwargs):
+            for name_ in type_hints_.keys() - kwargs.keys():
+                kwargs[name_] = self._resolve(name_, type_hints_[name_])
+            return func(*args, **kwargs)
+
+        return _wrapper
+
+    # noinspection PyMethodMayBeStatic
+    def _build_type_hints(self, func: Callable) -> dict[str, type]:
+        # TODO: Improve this function.
+        type_hints_ = dict()
+        for name, type_ in get_type_hints(func).items():
+            if name == "return":
+                continue
+            origin_type = get_origin(type_)
+            if origin_type is Union:
+                some = False
+                for arg in get_args(type_):
+                    if is_type_subclass(arg) and issubclass(arg, InjectableMixin):
+                        some = True
+                if not some:
+                    continue
+            if is_type_subclass(origin_type) and not issubclass(origin_type, InjectableMixin):
+                continue
+            if origin_type is None and not issubclass(type_, InjectableMixin):
+                continue
+            type_hints_[name] = type_
+        return type_hints_
+
+    def _resolve(self, name: str, type_: type):
+        origin_type = get_origin(type_)
+
+        if origin_type is Union:
+            for arg in get_args(type_):
+                if is_type_subclass(arg) and issubclass(arg, InjectableMixin):
+                    with suppress(NotProvidedException):
+                        return self._get_one(arg.get_injectable_name())
+                elif arg is NoneType:
+                    return None
+
+            raise NotProvidedException(f"The {name} argument must be provided.")
+
+        return self._get_one(type_.get_injectable_name())
+
+    @staticmethod
+    @inject
+    def _get_one(name: str, container: Container = Provide["<container>"]):
+        try:
+            return container.providers[name]()
+        except Exception:
+            raise NotProvidedException(f"The {name} injection must be provided.")

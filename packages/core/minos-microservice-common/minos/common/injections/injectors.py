@@ -77,12 +77,20 @@ class DependencyInjector:
 
         return injections
 
-    async def wire(self, *args, **kwargs) -> None:
+    async def wire(self, modules=None, *args, **kwargs) -> None:
         """Connect the configuration.
 
         :return: This method does not return anything.
         """
-        self.container.wire(*args, **kwargs)
+        from . import (
+            decorators,
+        )
+
+        if modules is None:
+            modules = tuple()
+        modules = [*modules, decorators]
+
+        self.container.wire(modules=modules, *args, **kwargs)
 
         await gather(*(injection.setup() for injection in self.injections.values()))
 

@@ -59,6 +59,7 @@ from .importlib import (
 )
 from .injections import (
     DependencyInjector,
+    Inject,
     Injectable,
     InjectableMixin,
 )
