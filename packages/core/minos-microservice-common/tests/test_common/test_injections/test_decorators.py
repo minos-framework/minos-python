@@ -1,7 +1,7 @@
 import unittest
 from typing import (
     Generic,
-    TypeVar,
+    TypeVar, Union,
 )
 
 from minos.common import (
@@ -50,13 +50,23 @@ class TestInjection(unittest.TestCase):
 
 
 @Inject()
-def _get_foo_sync(foo: _Foo) -> _Foo:
+def _get_foo_sync(foo: _Foo = _Foo(12)) -> _Foo:
     return foo
 
 
 @Inject()
 async def _get_foo_async(foo: _Foo) -> _Foo:
     return foo
+
+
+@Inject()
+def _get_bar(bar: Union[_Bar, int]) -> Union[_Bar[int], int]:
+    return bar
+
+
+@Inject()
+def _get_bar_with_default(bar: Union[_Bar, int] = 12) -> Union[_Bar[int], int]:
+    return bar
 
 
 class TestInject(unittest.IsolatedAsyncioTestCase):
@@ -91,6 +101,13 @@ class TestInject(unittest.IsolatedAsyncioTestCase):
     async def test_decorator_async_kwarg(self):
         another = _Foo(56)
         self.assertEqual(another, await _get_foo_async(foo=another))
+
+    def test_decorator_not_provided(self):
+        with self.assertRaises(NotProvidedException):
+            _get_bar()
+
+    def test_decorator_not_provided_with_default(self):
+        self.assertEqual(12, _get_bar_with_default())
 
     def test_resolve_by_name(self):
         self.assertEqual(self.foo, Inject.resolve_by_name("foo"))

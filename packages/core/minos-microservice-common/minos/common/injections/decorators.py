@@ -12,6 +12,7 @@ from contextlib import (
 from functools import (
     wraps,
 )
+from inspect import signature, Parameter
 from typing import (
     TYPE_CHECKING,
     Generic,
@@ -19,7 +20,7 @@ from typing import (
     Union,
     get_args,
     get_origin,
-    get_type_hints,
+    get_type_hints, Any,
 )
 
 from dependency_injector.containers import (
@@ -34,7 +35,6 @@ from ..exceptions import (
     NotProvidedException,
 )
 from ..model.types import (
-    NoneType,
     is_type_subclass,
 )
 from .mixins import (
@@ -44,8 +44,10 @@ from .mixins import (
 if TYPE_CHECKING:
     InputType = TypeVar("InputType", bound=type)
 
+
     class _Output(InputType, InjectableMixin):
         """For typing purposes only."""
+
 
     OutputType = type[_Output]
 
@@ -105,32 +107,38 @@ class Inject:
 
             @wraps(func)
             async def _wrapper(*args, **kwargs):
-                for name in type_hints_.keys() - kwargs.keys():
-                    if type_hints_[name][0] < len(args):
-                        continue
-                    kwargs[name] = self.resolve(type_hints_[name][1])
+                kwargs = self._inject_on_kwargs(type_hints_, args, kwargs)
                 return await func(*args, **kwargs)
 
         else:
-
             @wraps(func)
             def _wrapper(*args, **kwargs):
-                for name in type_hints_.keys() - kwargs.keys():
-                    if type_hints_[name][0] < len(args):
-                        continue
-                    kwargs[name] = self.resolve(type_hints_[name][1])
+                kwargs = self._inject_on_kwargs(type_hints_, args, kwargs)
                 return func(*args, **kwargs)
 
         return _wrapper
 
+    def _inject_on_kwargs(
+        self, type_hints_: dict[str, tuple[int, type[V], bool]], args: tuple[Any], kwargs: dict[str, Any]
+    ) -> dict[str, Any]:
+        for name in type_hints_.keys() - kwargs.keys():
+            if type_hints_[name][0] < len(args):
+                continue
+            try:
+                kwargs[name] = self.resolve(type_hints_[name][1])
+            except NotProvidedException as exc:
+                if not type_hints_[name][2]:
+                    raise exc
+        return kwargs
+
     @staticmethod
-    def _build_type_hints(func) -> dict[str, tuple[int, type[V]]]:
+    def _build_type_hints(func) -> dict[str, tuple[int, type[V], bool]]:
         # TODO: Improve this function.
         type_hints_ = dict()
 
         hints = get_type_hints(func)
 
-        for i, name in enumerate(func.__code__.co_varnames):
+        for i, (name, field) in enumerate(signature(func).parameters.items()):
             if name in ("return", "self", "cls"):
                 continue
             if name not in hints:
@@ -148,7 +156,7 @@ class Inject:
                 continue
             if origin_type is None and not issubclass(type_, InjectableMixin):
                 continue
-            type_hints_[name] = (i, type_)
+            type_hints_[name] = (i, type_, field.default is not Parameter.empty)
         return type_hints_
 
     @classmethod
@@ -162,8 +170,6 @@ class Inject:
                 if is_type_subclass(arg) and issubclass(arg, InjectableMixin):
                     with suppress(NotProvidedException):
                         return cls.resolve_by_name(arg.get_injectable_name())
-                elif arg is NoneType:
-                    return None
 
             raise NotProvidedException(f"The {type_!r} argument must be injected.")
 
