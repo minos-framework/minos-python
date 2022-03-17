@@ -36,7 +36,7 @@ class WalletAggregate(Aggregate[Wallet]):
     async def add_ticker(wallet_uudi: str, ticker_value: str) -> UUID:
         """Create a new instance."""
         wallet = await Wallet.get(wallet_uudi)
-        ticker = Ticker(ticker=ticker_value)
+        ticker = Ticker(ticker=ticker_value, is_crypto=False)
         wallet.tickers.add(ticker)
         await wallet.save()
         return ticker.uuid
