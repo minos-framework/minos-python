@@ -175,6 +175,7 @@ class TestPostgreSqlTransactionRepositorySelect(MinosTestCase, PostgresAsyncTest
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
+        await self.transaction_repository.setup()
         await self._populate()
 
     async def _populate(self):
