@@ -63,5 +63,5 @@ class WalletQueryService(QueryService):
         :return: This method does not return anything.
         """
         event: Event = await request.content()
-        for ticker in event['tickers']:
-            self.repository.add_tickers(event['uuid'], ticker)
+        for ticker in event["tickers"]:
+            self.repository.add_tickers(event["uuid"], ticker)
