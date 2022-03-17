@@ -12,15 +12,19 @@ from contextlib import (
 from functools import (
     wraps,
 )
-from inspect import signature, Parameter
+from inspect import (
+    Parameter,
+    signature,
+)
 from typing import (
     TYPE_CHECKING,
+    Any,
     Generic,
     TypeVar,
     Union,
     get_args,
     get_origin,
-    get_type_hints, Any,
+    get_type_hints,
 )
 
 from dependency_injector.containers import (
@@ -44,10 +48,8 @@ from .mixins import (
 if TYPE_CHECKING:
     InputType = TypeVar("InputType", bound=type)
 
-
     class _Output(InputType, InjectableMixin):
         """For typing purposes only."""
-
 
     OutputType = type[_Output]
 
@@ -111,6 +113,7 @@ class Inject:
                 return await func(*args, **kwargs)
 
         else:
+
             @wraps(func)
             def _wrapper(*args, **kwargs):
                 kwargs = self._inject_on_kwargs(type_hints_, args, kwargs)

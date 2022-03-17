@@ -1,14 +1,16 @@
 import unittest
 from typing import (
     Generic,
-    TypeVar, Union,
+    TypeVar,
+    Union,
 )
 
 from minos.common import (
     DependencyInjector,
     Inject,
     Injectable,
-    InjectableMixin, NotProvidedException,
+    InjectableMixin,
+    NotProvidedException,
 )
 
 K = TypeVar("K")
