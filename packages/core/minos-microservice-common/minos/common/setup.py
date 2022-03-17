@@ -25,7 +25,7 @@ from .object import (
 
 logger = logging.getLogger(__name__)
 
-S = TypeVar("S")
+S = TypeVar("S", bound="SetupMixin")
 
 
 class SetupMixin(Object):
