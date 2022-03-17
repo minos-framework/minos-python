@@ -3,8 +3,8 @@ from __future__ import (
 )
 
 import types
-from collections.abc import (
-    Callable,
+from asyncio import (
+    iscoroutinefunction,
 )
 from contextlib import (
     suppress,
@@ -101,23 +101,40 @@ class Inject:
     def __call__(self, func):
         type_hints_ = self._build_type_hints(func)
 
-        @wraps(func)
-        def _wrapper(*args, **kwargs):
-            for name in type_hints_.keys() - kwargs.keys():
-                if type_hints_[name][0] < len(args):
-                    continue
-                kwargs[name] = self._resolve(name, type_hints_[name][1])
-            return func(*args, **kwargs)
+        if iscoroutinefunction(func):
+
+            @wraps(func)
+            async def _wrapper(*args, **kwargs):
+                for name in type_hints_.keys() - kwargs.keys():
+                    if type_hints_[name][0] < len(args):
+                        continue
+                    kwargs[name] = self.resolve(type_hints_[name][1])
+                return await func(*args, **kwargs)
+
+        else:
+
+            @wraps(func)
+            def _wrapper(*args, **kwargs):
+                for name in type_hints_.keys() - kwargs.keys():
+                    if type_hints_[name][0] < len(args):
+                        continue
+                    kwargs[name] = self.resolve(type_hints_[name][1])
+                return func(*args, **kwargs)
 
         return _wrapper
 
-    # noinspection PyMethodMayBeStatic
-    def _build_type_hints(self, func: Callable) -> dict[str, tuple[int, type]]:
+    def _build_type_hints(self, func) -> dict[str, tuple[int, type[V]]]:
         # TODO: Improve this function.
         type_hints_ = dict()
-        for i, (name, type_) in enumerate(get_type_hints(func).items()):
-            if name == "return":
+
+        hints = get_type_hints(func)
+
+        for i, name in enumerate(func.__code__.co_varnames):
+            if name in ("return", "self", "cls"):
                 continue
+            if name not in hints:
+                continue
+            type_ = hints[name]
             origin_type = get_origin(type_)
             if origin_type is Union:
                 some = False
@@ -133,7 +150,9 @@ class Inject:
             type_hints_[name] = (i, type_)
         return type_hints_
 
-    def _resolve(self, name: str, type_: type):
+    def resolve(self, type_: type[V]) -> V:
+        """TODO"""
+
         origin_type = get_origin(type_)
 
         if origin_type is Union:
@@ -144,7 +163,7 @@ class Inject:
                 elif arg is NoneType:
                     return None
 
-            raise NotProvidedException(f"The {name} argument must be provided.")
+            raise NotProvidedException(f"The {type_!r} argument must be injected.")
 
         return self._get_one(type_.get_injectable_name())
 
@@ -155,3 +174,6 @@ class Inject:
             return container.providers[name]()
         except Exception:
             raise NotProvidedException(f"The {name} injection must be provided.")
+
+
+V = TypeVar("V")
