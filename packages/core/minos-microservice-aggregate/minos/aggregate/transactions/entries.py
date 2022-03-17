@@ -83,7 +83,7 @@ class TransactionEntry:
             )
 
             with suppress(NotProvidedException):
-                event_repository = Inject().resolve(EventRepository)
+                event_repository = Inject.resolve(EventRepository)
 
         if transaction_repository is None:
             from .repositories import (
@@ -91,7 +91,7 @@ class TransactionEntry:
             )
 
             with suppress(NotProvidedException):
-                transaction_repository = Inject().resolve(TransactionRepository)
+                transaction_repository = Inject.resolve(TransactionRepository)
 
         if uuid is None:
             uuid = uuid4()

@@ -47,7 +47,7 @@ class Service(ABC):
             return self._kwargs[item]
 
         with suppress(NotProvidedException):
-            return Inject().resolve_by_name(item)
+            return Inject.resolve_by_name(item)
 
         raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} field.")
 

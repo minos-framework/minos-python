@@ -123,7 +123,8 @@ class Inject:
 
         return _wrapper
 
-    def _build_type_hints(self, func) -> dict[str, tuple[int, type[V]]]:
+    @staticmethod
+    def _build_type_hints(func) -> dict[str, tuple[int, type[V]]]:
         # TODO: Improve this function.
         type_hints_ = dict()
 
@@ -150,7 +151,8 @@ class Inject:
             type_hints_[name] = (i, type_)
         return type_hints_
 
-    def resolve(self, type_: type[V]) -> V:
+    @classmethod
+    def resolve(cls, type_: type[V]) -> V:
         """TODO"""
 
         origin_type = get_origin(type_)
@@ -159,13 +161,13 @@ class Inject:
             for arg in get_args(type_):
                 if is_type_subclass(arg) and issubclass(arg, InjectableMixin):
                     with suppress(NotProvidedException):
-                        return self.resolve_by_name(arg.get_injectable_name())
+                        return cls.resolve_by_name(arg.get_injectable_name())
                 elif arg is NoneType:
                     return None
 
             raise NotProvidedException(f"The {type_!r} argument must be injected.")
 
-        return self.resolve_by_name(type_.get_injectable_name())
+        return cls.resolve_by_name(type_.get_injectable_name())
 
     @staticmethod
     @inject
