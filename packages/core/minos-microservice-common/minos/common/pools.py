@@ -1,4 +1,5 @@
 import logging
+import warnings
 from abc import (
     ABC,
 )
@@ -28,7 +29,7 @@ logger = logging.getLogger(__name__)
 P = TypeVar("P")
 
 
-class MinosPool(SetupMixin, PoolBase, Generic[P], ABC):
+class Pool(SetupMixin, PoolBase, Generic[P], ABC):
     """Base class for Pool implementations in minos"""
 
     def __init__(self, *args, maxsize: int = 10, recycle: Optional[int] = 300, already_setup: bool = True, **kwargs):
@@ -77,3 +78,11 @@ class MinosPool(SetupMixin, PoolBase, Generic[P], ABC):
 
     async def _check_instance(self, instance: P) -> bool:
         return True
+
+
+class MinosPool(Pool, ABC):
+    """MinosPool class."""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{MinosPool!r} has been deprecated. Use {Pool} instead.", DeprecationWarning)
+        super().__init__(*args, **kwargs)

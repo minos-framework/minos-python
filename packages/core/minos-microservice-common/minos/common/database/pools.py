@@ -27,7 +27,7 @@ from ..locks import (
     LockPool,
 )
 from ..pools import (
-    MinosPool,
+    Pool,
 )
 from .locks import (
     PostgreSqlLock,
@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 
 
 @Injectable("postgresql_pool")
-class PostgreSqlPool(MinosPool[ContextManager]):
+class PostgreSqlPool(Pool[ContextManager]):
     """Postgres Pool class."""
 
     def __init__(self, host: str, port: int, database: str, user: str, password: str, *args, **kwargs):
