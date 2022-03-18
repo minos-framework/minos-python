@@ -1,4 +1,9 @@
+from typing import (
+    Any,
+)
+
 from graphql import (
+    ExecutionResult,
     GraphQLSchema,
     graphql,
     print_schema,
@@ -18,25 +23,32 @@ class GraphQlHandler:
         self._schema = schema
 
     async def execute_operation(self, request: Request) -> Response:
-        """Execute incoming request extracting variables and passing to graphql"""
+        """Execute incoming request extracting variables and passing to graphql.
 
+        :param request: The request containing the graphql operation.
+        :return: A response containing the graphql result.
+        """
+        result = await graphql(schema=self._schema, **(await self._build_graphql_arguments(request)))
+        return self._build_response_from_graphql(result)
+
+    @staticmethod
+    async def _build_graphql_arguments(request: Request) -> dict[str, Any]:
         content = await request.content()
-
         source = dict()
         variables = dict()
 
         if isinstance(content, str):
             source = content
-
-        if isinstance(content, dict):
+        elif isinstance(content, dict):
             if "query" in content:
                 source = content["query"]
-
             if "variables" in content:
                 variables = content["variables"]
 
-        result = await graphql(schema=self._schema, source=source, variable_values=variables)
+        return {"source": source, "variable_values": variables}
 
+    @staticmethod
+    def _build_response_from_graphql(result: ExecutionResult) -> Response:
         errors = result.errors
         if errors is None:
             errors = list()
@@ -49,8 +61,14 @@ class GraphQlHandler:
                 if isinstance(error.original_error, ResponseException):
                     status = error.original_error.status
 
-        return Response({"data": result.data, "errors": [err.message for err in errors]}, status=status)
+        content = {"data": result.data, "errors": [err.message for err in errors]}
+
+        return Response(content, status=status)
 
     async def get_schema(self, request: Request) -> Response:
-        """Get schema"""
+        """Get schema
+
+        :param request: An empty request.
+        :return: A Response containing the schema as a string.
+        """
         return Response(print_schema(self._schema))

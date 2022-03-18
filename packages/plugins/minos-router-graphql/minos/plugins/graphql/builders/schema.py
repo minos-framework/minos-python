@@ -44,14 +44,18 @@ from .type import (
 
 
 class GraphQLSchemaBuilder:
-    """TODO"""
+    """GraphQL Schema Builder class."""
 
     def __init__(self, *args, **kwargs):
         self.schema = GraphQLSchema(**kwargs)
 
     @classmethod
     def build(cls, routes: dict[GraphQlEnrouteDecorator, Callable]) -> GraphQLSchema:
-        """TODO"""
+        """Build a new schema from routes.
+
+        :param routes: The routes to build the schema.
+        :return: A ``GraphQLSchema`` instance.
+        """
         schema_args = cls._build(routes)
         return cls(**schema_args).schema
 
@@ -66,7 +70,11 @@ class GraphQLSchemaBuilder:
     def adapt_callback(
         callback: Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
     ) -> Callable[[Any, Any, Any], Awaitable[Any]]:
-        """TODO"""
+        """Adapt a callback from framework's Request-Response to GraphQl structure.
+
+        :param callback: The callback to be adapted.
+        :return: The adapted callback.
+        """
 
         @wraps(callback)
         async def _wrapper(_source, _info, request: Any = None):
