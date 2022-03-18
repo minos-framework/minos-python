@@ -1,4 +1,5 @@
 from .decorators import (
+    Inject,
     Injectable,
 )
 from .injectors import (

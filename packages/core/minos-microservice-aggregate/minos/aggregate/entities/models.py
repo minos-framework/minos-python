@@ -17,15 +17,11 @@ from uuid import (
     uuid4,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     NULL_DATETIME,
     NULL_UUID,
     DeclarativeModel,
+    Inject,
     NotProvidedException,
 )
 
@@ -69,6 +65,9 @@ class ExternalEntity(Entity):
         super().__init__(uuid=uuid, *args, **kwargs)
 
 
+T = TypeVar("T", bound="RootEntity")
+
+
 class RootEntity(Entity):
     """Base Root Entity class."""
 
@@ -76,7 +75,10 @@ class RootEntity(Entity):
     created_at: datetime
     updated_at: datetime
 
-    @inject
+    _event_repository: EventRepository
+    _snapshot_repository: SnapshotRepository
+
+    @Inject()
     def __init__(
         self,
         *args,
@@ -84,46 +86,44 @@ class RootEntity(Entity):
         version: int = 0,
         created_at: datetime = NULL_DATETIME,
         updated_at: datetime = NULL_DATETIME,
-        _event_repository: EventRepository = Provide["event_repository"],
-        _snapshot_repository: SnapshotRepository = Provide["snapshot_repository"],
+        _event_repository: EventRepository,
+        _snapshot_repository: SnapshotRepository,
         **kwargs,
     ):
 
         super().__init__(version, created_at, updated_at, *args, uuid=uuid, **kwargs)
 
-        if _event_repository is None or isinstance(_event_repository, Provide):
+        if _event_repository is None:
             raise NotProvidedException(f"A {EventRepository!r} instance is required.")
-        if _snapshot_repository is None or isinstance(_snapshot_repository, Provide):
+        if _snapshot_repository is None:
             raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
 
         self._event_repository = _event_repository
         self._snapshot_repository = _snapshot_repository
 
     @classmethod
-    @inject
-    async def get(
-        cls: Type[T], uuid: UUID, *, _snapshot_repository: SnapshotRepository = Provide["snapshot_repository"], **kwargs
-    ) -> T:
+    @Inject()
+    async def get(cls: Type[T], uuid: UUID, *, _snapshot_repository: SnapshotRepository, **kwargs) -> T:
         """Get one instance from the database based on its identifier.
 
         :param uuid: The identifier of the instance.
         :param _snapshot_repository: Snapshot to be set to the root entity.
         :return: A ``RootEntity`` instance.
         """
-        if _snapshot_repository is None or isinstance(_snapshot_repository, Provide):
+        if _snapshot_repository is None:
             raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
 
         # noinspection PyTypeChecker
         return await _snapshot_repository.get(cls.classname, uuid, _snapshot_repository=_snapshot_repository, **kwargs)
 
     @classmethod
-    @inject
+    @Inject()
     def get_all(
         cls: Type[T],
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         *,
-        _snapshot_repository: SnapshotRepository = Provide["snapshot_repository"],
+        _snapshot_repository: SnapshotRepository,
         **kwargs,
     ) -> AsyncIterator[T]:
         """Get all instance from the database.
@@ -135,7 +135,7 @@ class RootEntity(Entity):
         :param _snapshot_repository: Snapshot to be set to the root entity.
         :return: A ``RootEntity`` instance.
         """
-        if _snapshot_repository is None or isinstance(_snapshot_repository, Provide):
+        if _snapshot_repository is None:
             raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
 
         # noinspection PyTypeChecker
@@ -144,14 +144,14 @@ class RootEntity(Entity):
         )
 
     @classmethod
-    @inject
+    @Inject()
     def find(
         cls: Type[T],
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         *,
-        _snapshot_repository: SnapshotRepository = Provide["snapshot_repository"],
+        _snapshot_repository: SnapshotRepository,
         **kwargs,
     ) -> AsyncIterator[T]:
         """Find a collection of instances based on a given ``Condition``.
@@ -164,7 +164,7 @@ class RootEntity(Entity):
         :param _snapshot_repository: Snapshot to be set to the instances.
         :return: An asynchronous iterator of ``RootEntity`` instances.
         """
-        if _snapshot_repository is None or isinstance(_snapshot_repository, Provide):
+        if _snapshot_repository is None:
             raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
         # noinspection PyTypeChecker
         return _snapshot_repository.find(
@@ -352,6 +352,3 @@ class RootEntity(Entity):
             **event.get_fields(),
             **kwargs,
         )
-
-
-T = TypeVar("T", bound=RootEntity)

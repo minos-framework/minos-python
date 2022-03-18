@@ -1,12 +1,6 @@
-import sys
 import unittest
 from pathlib import (
     Path,
-)
-
-from dependency_injector import (
-    containers,
-    providers,
 )
 
 from minos.common import (
@@ -16,30 +10,6 @@ from minos.common import (
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
-
-
-class MinosTestCase(unittest.IsolatedAsyncioTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.lock_pool = FakeLockPool()
-        self.container = containers.DynamicContainer()
-        self.container.lock_pool = providers.Object(self.lock_pool)
-        self.container.wire(modules=[sys.modules[__name__]])
-
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-
-        await self.lock_pool.setup()
-
-    async def asyncTearDown(self):
-        await self.lock_pool.destroy()
-
-        await super().asyncTearDown()
-
-    def tearDown(self) -> None:
-        self.container.unwire()
-        super().tearDown()
 
 
 class FakeEntrypoint:

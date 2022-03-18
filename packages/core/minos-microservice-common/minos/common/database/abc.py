@@ -14,11 +14,10 @@ from aiomisc.pool import (
 from aiopg import (
     Cursor,
 )
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
 
+from ..injections import (
+    Inject,
+)
 from ..setup import (
     SetupMixin,
 )
@@ -173,9 +172,9 @@ class PostgreSqlMinosDatabase(SetupMixin):
             self._pool, self._owned_pool = self._build_pool()
         return self._pool
 
-    @inject
-    def _build_pool(self, pool: PostgreSqlPool = Provide["postgresql_pool"]) -> tuple[PostgreSqlPool, bool]:
-        if not isinstance(pool, Provide):
+    @Inject()
+    def _build_pool(self, pool: PostgreSqlPool = None) -> tuple[PostgreSqlPool, bool]:
+        if pool is not None:
             return pool, False
 
         pool = PostgreSqlPool(

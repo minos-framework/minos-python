@@ -17,13 +17,9 @@ from uuid import (
     uuid4,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     Config,
+    Inject,
     NotProvidedException,
     SetupMixin,
 )
@@ -68,27 +64,27 @@ class BrokerClient(SetupMixin):
 
     # noinspection PyUnusedLocal
     @staticmethod
-    @inject
+    @Inject()
     def _get_publisher(
         publisher: Optional[BrokerPublisher] = None,
-        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
+        broker_publisher: Optional[BrokerPublisher] = None,
         **kwargs,
     ) -> BrokerPublisher:
         if publisher is None:
             publisher = broker_publisher
-        if publisher is None or isinstance(publisher, Provide):
+        if publisher is None:
             raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
         return publisher
 
     @staticmethod
-    @inject
+    @Inject()
     def _get_subscriber(
         config: Config,
         topic: str,
         subscriber: Optional[BrokerSubscriber] = None,
-        broker_subscriber: Optional[BrokerSubscriber] = Provide["broker_subscriber"],
+        broker_subscriber: Optional[BrokerSubscriber] = None,
         subscriber_builder: Optional[BrokerSubscriberBuilder] = None,
-        broker_subscriber_builder: Optional[BrokerSubscriberBuilder] = Provide["broker_subscriber_builder"],
+        broker_subscriber_builder: Optional[BrokerSubscriberBuilder] = None,
         **kwargs,
     ) -> BrokerSubscriber:
         if not isinstance(subscriber, BrokerSubscriber):

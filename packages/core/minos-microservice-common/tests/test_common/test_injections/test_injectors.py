@@ -58,17 +58,39 @@ class TestDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(injector.lock_pool, injector.container.lock_pool())
 
     async def test_wire_unwire(self):
+        from minos.common.injections import (
+            decorators,
+        )
+
         injector = DependencyInjector(self.config, [FakeLockPool])
 
         mock = MagicMock()
         injector.container.wire = mock
-        await injector.wire(modules=[sys.modules[__name__]])
+        await injector.wire_and_setup()
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(modules=[sys.modules[__name__]]), mock.call_args)
+        self.assertEqual(call(modules=[decorators]), mock.call_args)
 
         mock = MagicMock()
         injector.container.unwire = mock
-        await injector.unwire()
+        await injector.unwire_and_destroy()
+        self.assertEqual(1, mock.call_count)
+
+    async def test_wire_unwire_with_modules(self):
+        from minos.common.injections import (
+            decorators,
+        )
+
+        injector = DependencyInjector(self.config, [FakeLockPool])
+
+        mock = MagicMock()
+        injector.container.wire = mock
+        await injector.wire_and_setup(modules=[sys.modules[__name__]])
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call(modules=[sys.modules[__name__], decorators]), mock.call_args)
+
+        mock = MagicMock()
+        injector.container.unwire = mock
+        await injector.unwire_and_destroy()
         self.assertEqual(1, mock.call_count)
 
 

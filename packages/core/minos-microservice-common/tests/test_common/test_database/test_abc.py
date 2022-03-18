@@ -33,12 +33,12 @@ class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
 
     async def test_pool_with_dependency_injections(self):
         injector = DependencyInjector(self.config, [PostgreSqlPool])
-        await injector.wire(modules=[sys.modules[__name__]])
+        await injector.wire_and_setup(modules=[sys.modules[__name__]])
 
         async with PostgreSqlMinosDatabase(**self.repository_db) as database:
             self.assertEqual(injector.postgresql_pool, database.pool)
 
-        await injector.unwire()
+        await injector.unwire_and_destroy()
 
     async def test_submit_query(self):
         async with PostgreSqlMinosDatabase(**self.repository_db) as database:

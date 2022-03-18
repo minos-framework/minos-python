@@ -9,11 +9,10 @@ from uuid import (
 from cached_property import (
     cached_property,
 )
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
 
+from minos.common import (
+    Inject,
+)
 from minos.networks import (
     BrokerClient,
     BrokerClientPool,
@@ -34,13 +33,13 @@ class TransactionCommitter:
     """Transaction Committer class."""
 
     # noinspection PyUnusedLocal
-    @inject
+    @Inject()
     def __init__(
         self,
         execution_uuid: UUID,
         executed_steps: list[SagaStepExecution],
-        broker_pool: BrokerClientPool = Provide["broker_pool"],
-        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
+        broker_pool: BrokerClientPool,
+        broker_publisher: BrokerPublisher,
         **kwargs,
     ):
         self.executed_steps = executed_steps

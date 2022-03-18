@@ -81,7 +81,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
     async def test_setup(self):
         mock = AsyncMock()
-        self.launcher.injector.wire = mock
+        self.launcher.injector.wire_and_setup = mock
         await self.launcher.setup()
 
         self.assertEqual(1, mock.call_count)
@@ -102,11 +102,11 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         await self.launcher.destroy()
 
     async def test_destroy(self):
-        self.launcher.injector.wire = AsyncMock()
+        self.launcher.injector.wire_and_setup = AsyncMock()
         await self.launcher.setup()
 
         mock = AsyncMock()
-        self.launcher.injector.unwire = mock
+        self.launcher.injector.unwire_and_destroy = mock
         await self.launcher.destroy()
 
         self.assertEqual(1, mock.call_count)

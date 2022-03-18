@@ -77,23 +77,50 @@ class DependencyInjector:
 
         return injections
 
-    async def wire(self, *args, **kwargs) -> None:
+    async def wire_and_setup(self, *args, **kwargs) -> None:
         """Connect the configuration.
 
         :return: This method does not return anything.
         """
-        self.container.wire(*args, **kwargs)
 
-        await gather(*(injection.setup() for injection in self.injections.values()))
+        self.wire(*args, **kwargs)
+        await self.setup()
 
-    async def unwire(self) -> None:
+    async def unwire_and_destroy(self) -> None:
         """Disconnect the configuration.
 
         :return: This method does not return anything.
         """
-        await gather(*(injection.destroy() for injection in self.injections.values()))
+        await self.destroy()
+        self.unwire()
 
+    def wire(self, modules=None, *args, **kwargs) -> None:
+        """Connect the configuration.
+
+        :return: This method does not return anything.
+        """
+        from . import (
+            decorators,
+        )
+
+        if modules is None:
+            modules = tuple()
+        modules = [*modules, decorators]
+
+        self.container.wire(modules=modules, *args, **kwargs)
+
+    def unwire(self) -> None:
+        """Disconnect the configuration.
+
+        :return: This method does not return anything.
+        """
         self.container.unwire()
+
+    async def setup(self):
+        await gather(*(injection.setup() for injection in self.injections.values()))
+
+    async def destroy(self):
+        await gather(*(injection.destroy() for injection in self.injections.values()))
 
     @cached_property
     def container(self) -> containers.Container:

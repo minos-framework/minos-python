@@ -19,6 +19,9 @@ from minos.common import (
 from minos.cqrs import (
     PreEventHandler,
 )
+from minos.networks import (
+    BrokerClientPool,
+)
 from tests.utils import (
     Bar,
 )
@@ -38,6 +41,8 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
             FieldDiffContainer([FieldDiff("bars", list[Ref[Bar]], [b.uuid for b in self.bars])]),
         )
 
+        self.broker_pool = BrokerClientPool({})
+
     async def test_handle_resolving_dependencies(self):
         value = Event(
             self.uuid,
@@ -49,7 +54,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         )
 
         with patch("minos.aggregate.RefResolver.resolve", return_value=value):
-            observed = await PreEventHandler.handle(self.diff, resolve_references=True)
+            observed = await PreEventHandler.handle(self.diff, resolve_references=True, broker_pool=self.broker_pool)
 
         self.assertEqual(value, observed)
         self.assertEqual(self.bars, [b.data for b in observed["bars"]])
@@ -64,7 +69,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
 
     async def test_handle_raises(self):
         with patch("minos.aggregate.RefResolver.resolve", side_effect=ValueError):
-            observed = await PreEventHandler.handle(self.diff, resolve_references=True)
+            observed = await PreEventHandler.handle(self.diff, resolve_references=True, broker_pool=self.broker_pool)
 
         expected = Event(
             self.uuid,
