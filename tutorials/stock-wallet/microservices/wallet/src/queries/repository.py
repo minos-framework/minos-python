@@ -5,13 +5,15 @@ from sqlalchemy.orm import (
     sessionmaker,
 )
 
-from src.queries.models import (
-    Base, Wallet, Ticker
-)
-
 from minos.common import (
     MinosConfig,
     MinosSetup,
+)
+
+from src.queries.models import (
+    Base,
+    Ticker,
+    Wallet,
 )
 
 
@@ -19,7 +21,7 @@ class WalletQueryServiceRepository(MinosSetup):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.engine = create_engine("postgresql+psycopg2://postgres:@localhost:5432/wallet_query_db".format(**kwargs))
-        self.session = sessionmaker(bind=self.engine)
+        self._session = sessionmaker(bind=self.engine)
 
     async def _setup(self) -> None:
         Base.metadata.create_all(self.engine)
@@ -30,7 +32,7 @@ class WalletQueryServiceRepository(MinosSetup):
 
     @property
     def session(self):
-        return self.session
+        return self._session
 
     def create_wallet(self, name: str, uuid: str):
         wallet = Wallet()
@@ -44,21 +46,26 @@ class WalletQueryServiceRepository(MinosSetup):
         wallets_query = self.session.query(Wallet).all()
         wallets = []
         for wallet in wallets_query:
-            wallets.append({
-                'name': wallet.name,
-                'uuid': wallet.uuid
-            })
+            wallets.append({"name": wallet.name, "uuid": wallet.uuid})
         return wallets
+
+    def add_tickers(self, wallet_uuid: str, ticker: dict):
+        wallet = self.session.query(Wallet).filter(Wallet.uuid == wallet_uuid).first()
+        ticker = Ticker(uuid=ticker["uuid"], ticker=ticker["ticker"], is_crypto=ticker["is_crypto"], wallet=wallet)
+        self.session.add(ticker)
+        self.session.commit()
 
     def get_tickers(self, wallet_uuid):
         wallet = self.session.query(Wallet).filter(Wallet.uuid == wallet_uuid).first()
         tickers_query = self.session.query(Ticker).filter(Ticker.wallet == wallet).all()
         tickers = []
         for ticker in tickers_query:
-            tickers.append({
-                'ticker': ticker.ticker,
-                'uuid': ticker.uuid,
-                'is_crypto': ticker.is_crypto,
-                'latest_value': ticker.latest_value
-            })
+            tickers.append(
+                {
+                    "ticker": ticker.ticker,
+                    "uuid": ticker.uuid,
+                    "is_crypto": ticker.is_crypto,
+                    "latest_value": ticker.latest_value,
+                }
+            )
         return tickers

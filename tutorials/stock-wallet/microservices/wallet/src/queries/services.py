@@ -1,4 +1,10 @@
-from dependency_injector.wiring import Provide
+from dependency_injector.wiring import (
+    Provide,
+)
+from src.queries.repository import (
+    WalletQueryServiceRepository,
+)
+
 from minos.aggregate import (
     Event,
 )
@@ -8,15 +14,13 @@ from minos.cqrs import (
 from minos.networks import (
     Request,
     Response,
-    ResponseException,
     enroute,
 )
-
-from src import WalletQueryServiceRepository
 
 
 class WalletQueryService(QueryService):
     """WalletQueryService class."""
+
     repository: WalletQueryServiceRepository = Provide["wallet_repository"]
 
     @enroute.rest.query("/wallets", "GET")
@@ -37,7 +41,7 @@ class WalletQueryService(QueryService):
         :return: A response exception.
         """
         params = await request.params()
-        tickers = self.repository.get_tickers(params['uuid'])
+        tickers = self.repository.get_tickers(params["uuid"])
         raise Response(tickers)
 
     @enroute.broker.event("WalletCreated")
@@ -48,14 +52,15 @@ class WalletQueryService(QueryService):
         :return: This method does not return anything.
         """
         event: Event = await request.content()
-        self.repository.create_wallet(event.get_field('name'), event['uuid'])
+        self.repository.create_wallet(event.get_field("name"), event["uuid"])
 
     @enroute.broker.event("WalletUpdated.tickers.create")
-    async def wallet_updated(self, request: Request) -> None:
+    async def wallet_add_tickers(self, request: Request) -> None:
         """Handle the Wallet update events.
 
         :param request: A request instance containing the aggregate difference.
         :return: This method does not return anything.
         """
         event: Event = await request.content()
-        print(event)
+        for ticker in event["tickers"]:
+            self.repository.add_tickers(event["uuid"], ticker)
