@@ -4,6 +4,7 @@ __version__ = "0.0.0"
 
 from .builders import (
     GraphQLSchemaBuilder,
+    GraphQlSchemaEncoder,
 )
 from .decorators import (
     GraphQlCommandEnrouteDecorator,

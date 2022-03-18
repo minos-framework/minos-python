@@ -8,7 +8,8 @@ from graphql import (
 )
 
 from minos.common import (
-    Config, ModelType,
+    Config,
+    ModelType,
 )
 from minos.networks import (
     Request,

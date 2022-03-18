@@ -12,7 +12,9 @@ from contextvars import (
 from typing import (
     Any,
     Final,
-    Optional, Generic, TypeVar,
+    Generic,
+    Optional,
+    TypeVar,
 )
 from uuid import (
     UUID,

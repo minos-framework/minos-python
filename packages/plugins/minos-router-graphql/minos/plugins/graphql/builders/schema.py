@@ -15,7 +15,9 @@ from typing import (
     Any,
     Awaitable,
     Optional,
-    Union, get_type_hints, get_args,
+    Union,
+    get_args,
+    get_type_hints,
 )
 
 from graphql import (
@@ -32,10 +34,12 @@ from minos.networks import (
     Request,
     Response,
 )
-from .type import GraphQlSchemaEncoder
 
 from ..decorators import (
     GraphQlEnrouteDecorator,
+)
+from .type import (
+    GraphQlSchemaEncoder,
 )
 
 
@@ -121,8 +125,6 @@ class GraphQLSchemaBuilder:
 
             argument = GraphQlSchemaEncoder().build(argument_hint)
             output = GraphQlSchemaEncoder().build(output_hint)
-
-            print("done")
 
         args = None
         if argument is not None:

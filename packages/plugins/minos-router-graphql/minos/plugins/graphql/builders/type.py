@@ -14,7 +14,6 @@ from enum import (
 )
 from typing import (
     Any,
-    Optional,
     Type,
     Union,
     get_args,
@@ -22,18 +21,18 @@ from typing import (
 )
 from uuid import (
     UUID,
-    uuid4,
 )
 
 from graphql import (
     GraphQLBoolean,
+    GraphQLEnumType,
     GraphQLFloat,
     GraphQLID,
     GraphQLInt,
     GraphQLList,
-    GraphQLObjectType,
-    GraphQLString, GraphQLEnumType,
     GraphQLNonNull,
+    GraphQLObjectType,
+    GraphQLString,
 )
 
 from minos.common import (
@@ -81,50 +80,47 @@ class GraphQlSchemaEncoder(SchemaEncoder):
         alternatives = get_args(type_)
         for alternative_type in alternatives:
             step = self._build(alternative_type, **kwargs)
-            if isinstance(step, list):
-                ans += step
-            else:
-                ans.append(step)
-        return ans
+            ans.append(step)
+        return tuple(ans)
 
     def _build_single(self, type_: type, **kwargs) -> Any:
         if type_ is Any:
-            # FIXME: This is a design decision that must be revisited in the future.
-            return fasdfsa
+            pass  # FIXME: This is a design decision that must be revisited in the future.
 
         if is_type_subclass(type_):
             if issubclass(type_, NoneType):
-                return fasdfsa
-
-            if issubclass(type_, bool):
+                # FIXME: This is a design decision that must be revisited in the future.
                 return GraphQLBoolean
 
+            if issubclass(type_, bool):
+                return GraphQLNonNull(GraphQLBoolean)
+
             if issubclass(type_, int):
-                return GraphQLInt
+                return GraphQLNonNull(GraphQLInt)
 
             if issubclass(type_, float):
-                return GraphQLFloat
+                return GraphQLNonNull(GraphQLFloat)
 
             if issubclass(type_, str):
-                return GraphQLString
+                return GraphQLNonNull(GraphQLString)
 
             if issubclass(type_, bytes):
-                return fasdfsa
+                return GraphQLNonNull(GraphQLString)
 
             if issubclass(type_, datetime):
-                return fasdfsa
+                return GraphQLNonNull(GraphQLString)
 
             if issubclass(type_, timedelta):
-                return fasdfsa
+                return GraphQLNonNull(GraphQLString)
 
             if issubclass(type_, date):
-                return fasdfsa
+                return GraphQLNonNull(GraphQLString)
 
             if issubclass(type_, time):
-                return fasdfsa
+                return GraphQLNonNull(GraphQLString)
 
             if issubclass(type_, UUID):
-                return GraphQLID
+                return GraphQLNonNull(GraphQLID)
 
             if isinstance(type_, ModelType):
                 return self._build_model_type(type_, **kwargs)
@@ -135,28 +131,18 @@ class GraphQlSchemaEncoder(SchemaEncoder):
 
         return self._build_collection(type_, **kwargs)
 
-    def _build_enum(self, type_: type[Enum], **kwargs):
-        return GraphQLEnumType(type_.__name__, type_)
+    @staticmethod
+    def _build_enum(type_: type[Enum], **kwargs):
+        return GraphQLNonNull(GraphQLEnumType(type_.__name__, type_))
 
     def _build_model(self, type_: Type[Model], **kwargs) -> Any:
         raw = ModelType.from_model(type_)
-        return [self._build_model_type(raw, **kwargs)]
+        return self._build_model_type(raw, **kwargs)
 
     def _build_model_type(self, type_: ModelType, **kwargs) -> Any:
-        if (ans := type_.model_cls.encode_schema(self, type_, **kwargs)) is not MissingSentinel:
-            return ans
-
-        schema = GraphQLObjectType(
-            type_.name,
-            {n: self._build(t, **kwargs) for n, t in type_.type_hints.items()}
+        return GraphQLNonNull(
+            GraphQLObjectType(type_.name, {n: self._build(t, **kwargs) for n, t in type_.type_hints.items()})
         )
-        return schema
-
-    @classmethod
-    def _patch_namespace(cls, namespace: Optional[str]) -> Optional[str]:
-        if len(namespace) > 0:
-            namespace += f".{cls.generate_random_str()}"
-        return namespace
 
     def _build_collection(self, type_: type, **kwargs) -> Any:
         origin_type = get_origin(type_)
@@ -172,19 +158,19 @@ class GraphQlSchemaEncoder(SchemaEncoder):
 
         raise ValueError(f"Given field type is not supported: {type_}")  # pragma: no cover
 
-    def _build_set(self, type_: type, **kwargs) -> dict[str, Any]:
+    def _build_set(self, type_: type, **kwargs):
         return self._build_list(type_, **kwargs)
 
-    def _build_list(self, type_: type, **kwargs) -> dict[str, Any]:
-        return GraphQLList(self._build(get_args(type_)[0], **kwargs))
+    def _build_list(self, type_: type, **kwargs):
+        return GraphQLNonNull(GraphQLList(self._build(get_args(type_)[0], **kwargs)))
 
-    def _build_dict(self, type_: type, **kwargs) -> dict[str, Any]:
-        return fasdfsa
+    def _build_dict(self, type_: type, **kwargs):
+        item = GraphQLObjectType(
+            "DictItem",
+            {
+                "key": self._build(get_args(type_)[0], **kwargs),
+                "value": self._build(get_args(type_)[1], **kwargs),
+            },
+        )
 
-    @staticmethod
-    def generate_random_str() -> str:
-        """Generate a random string
-
-        :return: A random string value.
-        """
-        return str(uuid4())
+        return GraphQLNonNull(GraphQLList(item))
