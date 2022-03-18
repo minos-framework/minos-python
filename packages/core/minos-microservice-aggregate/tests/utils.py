@@ -37,7 +37,7 @@ from minos.aggregate import (
 )
 from minos.common import (
     Lock,
-    MinosPool,
+    LockPool,
 )
 from minos.networks import (
     BrokerClientPool,
@@ -130,7 +130,7 @@ class FakeLock(Lock):
         return
 
 
-class FakeLockPool(MinosPool):
+class FakeLockPool(LockPool):
     """For testing purposes."""
 
     async def _create_instance(self):

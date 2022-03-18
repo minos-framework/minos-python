@@ -20,6 +20,10 @@ from minos.common.exceptions import (
     MinosConfigException,
 )
 
+from .injections import (
+    Injectable,
+)
+
 BROKER = namedtuple("Broker", "host port queue")
 QUEUE = namedtuple("Queue", "database user password host port records retry")
 SERVICE = namedtuple("Service", "name aggregate injections services")
@@ -61,6 +65,7 @@ _ENVIRONMENT_MAPPER = {
 
 _PARAMETERIZED_MAPPER = {
     "service.name": "service_name",
+    "service.injections": "service_injections",
     "rest.host": "rest_host",
     "rest.port": "rest_port",
     "broker.host": "broker_host",
@@ -90,6 +95,7 @@ _PARAMETERIZED_MAPPER = {
 }
 
 
+@Injectable("config")
 class Config:
     """
     A Minos configuration provides information on the connection points available at that service.
@@ -159,11 +165,14 @@ class Config:
         )
 
     @property
-    def _service_injections(self) -> dict[str, str]:
+    def _service_injections(self) -> list[str]:
         try:
-            return self._get("service.injections")
+            injections = self._get("service.injections")
+            if isinstance(injections, dict):
+                injections = list(injections.values())
+            return injections
         except MinosConfigException:
-            return dict()
+            return list()
 
     @property
     def _service_services(self) -> list[str]:

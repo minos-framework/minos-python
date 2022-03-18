@@ -17,6 +17,7 @@ from typing import (
 
 from minos.common import (
     Builder,
+    Injectable,
     SetupMixin,
 )
 
@@ -64,6 +65,7 @@ class BrokerSubscriber(ABC, SetupMixin):
         raise NotImplementedError
 
 
+@Injectable("broker_subscriber_builder")
 class BrokerSubscriberBuilder(Builder[BrokerSubscriber], ABC):
     """Broker Subscriber Builder class."""
 

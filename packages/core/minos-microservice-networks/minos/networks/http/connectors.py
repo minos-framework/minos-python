@@ -27,6 +27,7 @@ from typing import (
 
 from minos.common import (
     Config,
+    Injectable,
     SetupMixin,
 )
 
@@ -51,6 +52,7 @@ RawResponse = TypeVar("RawResponse")
 logger = logging.getLogger(__name__)
 
 
+@Injectable("http_connector")
 class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
     """Http Application base class."""
 

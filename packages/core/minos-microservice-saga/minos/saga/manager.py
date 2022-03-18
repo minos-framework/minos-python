@@ -25,6 +25,7 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     Config,
+    Injectable,
     NotProvidedException,
     SetupMixin,
 )
@@ -58,6 +59,7 @@ from .messages import (
 logger = logging.getLogger(__name__)
 
 
+@Injectable("saga_manager")
 class SagaManager(SetupMixin):
     """Saga Manager implementation class.
 

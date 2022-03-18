@@ -20,27 +20,28 @@ from tests.utils import (
 )
 
 
-class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
+class TestDependencyInjector(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.config_file_path = BASE_PATH / "test_config.yml"
         self.config = Config(path=str(self.config_file_path))
 
     def test_from_str(self):
-        injector = DependencyInjector(self.config, lock_pool=classname(FakeLockPool))
+        injector = DependencyInjector(self.config, [classname(FakeLockPool)])
         self.assertIsInstance(injector.lock_pool, FakeLockPool)
 
     def test_from_type(self):
-        injector = DependencyInjector(self.config, lock_pool=FakeLockPool)
+        injector = DependencyInjector(self.config, [FakeLockPool])
         self.assertIsInstance(injector.lock_pool, FakeLockPool)
 
+    def test_from_instance(self):
+        instance = FakeLockPool()
+        injector = DependencyInjector(self.config, [instance])
+        self.assertEqual(instance, injector.lock_pool)
+
     def test_raises_building(self):
-        injector = DependencyInjector(self.config, lock_pool="path.to.LockPool")
+        injector = DependencyInjector(self.config, ["path.to.LockPool"])
         with self.assertRaises(ValueError):
             injector.injections
-
-    def test_another(self):
-        injector = DependencyInjector(self.config, foo=1)
-        self.assertEqual(1, injector.foo)
 
     def test_raises_attribute_error(self):
         injector = DependencyInjector(self.config)
@@ -53,11 +54,11 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.config, injector.container.config())
 
     def test_container_lock_pool(self):
-        injector = DependencyInjector(self.config, lock_pool=FakeLockPool)
+        injector = DependencyInjector(self.config, [FakeLockPool])
         self.assertEqual(injector.lock_pool, injector.container.lock_pool())
 
     async def test_wire_unwire(self):
-        injector = DependencyInjector(self.config, lock_pool=FakeLockPool)
+        injector = DependencyInjector(self.config, [FakeLockPool])
 
         mock = MagicMock()
         injector.container.wire = mock

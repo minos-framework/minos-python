@@ -17,6 +17,7 @@ from uuid import (
 )
 
 from minos.common import (
+    Injectable,
     SetupMixin,
 )
 
@@ -36,6 +37,7 @@ if TYPE_CHECKING:
     )
 
 
+@Injectable("snapshot_repository")
 class SnapshotRepository(ABC, SetupMixin):
     """Base Snapshot class.
 

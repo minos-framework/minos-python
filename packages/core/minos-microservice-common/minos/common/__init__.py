@@ -57,22 +57,22 @@ from .importlib import (
     get_internal_modules,
     import_module,
 )
-from .injectors import (
+from .injections import (
     DependencyInjector,
+    Injectable,
+    InjectableMixin,
 )
 from .launchers import (
     EntrypointLauncher,
 )
 from .locks import (
     Lock,
+    LockPool,
 )
 from .meta import (
     classproperty,
     property_or_classproperty,
     self_or_classmethod,
-)
-from .mixins import (
-    CircuitBreakerMixin,
 )
 from .model import (
     AvroDataDecoder,
@@ -104,6 +104,7 @@ from .object import (
 )
 from .pools import (
     MinosPool,
+    Pool,
 )
 from .ports import (
     Port,
@@ -114,6 +115,9 @@ from .protocol import (
     MinosAvroProtocol,
     MinosBinaryProtocol,
     MinosJsonBinaryProtocol,
+)
+from .retries import (
+    CircuitBreakerMixin,
 )
 from .setup import (
     MinosSetup,
