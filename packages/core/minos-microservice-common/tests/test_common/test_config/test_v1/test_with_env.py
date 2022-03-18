@@ -5,7 +5,7 @@ from unittest import (
 )
 
 from minos.common import (
-    Config,
+    ConfigV1,
 )
 from tests.utils import (
     BASE_PATH,
@@ -15,7 +15,7 @@ from tests.utils import (
 class TestConfigWithEnvironment(unittest.TestCase):
     def setUp(self) -> None:
         self.config_file_path = BASE_PATH / "test_config.yml"
-        self.config = Config(path=self.config_file_path)
+        self.config = ConfigV1(path=self.config_file_path)
 
     @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
     def test_overwrite_with_environment(self):

@@ -5,7 +5,7 @@ from unittest import (
 )
 
 from minos.common import (
-    Config,
+    ConfigV1,
 )
 from tests.utils import (
     BASE_PATH,
@@ -17,18 +17,18 @@ class TestConfigParameterized(unittest.TestCase):
         self.config_file_path = BASE_PATH / "test_config.yml"
 
     def test_overwrite_with_parameter(self):
-        config = Config(path=self.config_file_path, repository_database="foo")
+        config = ConfigV1(path=self.config_file_path, repository_database="foo")
         repository = config.repository
         self.assertEqual("foo", repository.database)
 
     @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
     def test_overwrite_with_parameter_priority(self):
-        config = Config(path=self.config_file_path, repository_database="bar")
+        config = ConfigV1(path=self.config_file_path, repository_database="bar")
         repository = config.repository
         self.assertEqual("bar", repository.database)
 
     def test_config_discovery(self):
-        config = Config(
+        config = ConfigV1(
             path=self.config_file_path,
             minos_discovery_client="some-type",
             minos_discovery_host="some-host",
@@ -40,11 +40,11 @@ class TestConfigParameterized(unittest.TestCase):
         self.assertEqual(333, discovery.port)
 
     def test_config_service_injections_list(self):
-        config = Config(path=self.config_file_path, service_injections=["foo", "bar"])
+        config = ConfigV1(path=self.config_file_path, service_injections=["foo", "bar"])
         self.assertEqual(["foo", "bar"], config.service.injections)
 
     def test_config_service_injections_dict(self):
-        config = Config(path=self.config_file_path, service_injections={"one": "foo", "two": "bar"})
+        config = ConfigV1(path=self.config_file_path, service_injections={"one": "foo", "two": "bar"})
         self.assertEqual(["foo", "bar"], config.service.injections)
 
 
