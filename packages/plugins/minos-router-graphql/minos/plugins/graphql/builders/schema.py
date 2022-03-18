@@ -15,7 +15,7 @@ from typing import (
     Any,
     Awaitable,
     Optional,
-    Union,
+    Union, get_type_hints, get_args,
 )
 
 from graphql import (
@@ -32,6 +32,7 @@ from minos.networks import (
     Request,
     Response,
 )
+from .type import GraphQlSchemaEncoder
 
 from ..decorators import (
     GraphQlEnrouteDecorator,
@@ -79,7 +80,6 @@ class GraphQLSchemaBuilder:
     def _build_queries(cls, routes: dict[GraphQlEnrouteDecorator, Callable]) -> GraphQLObjectType:
         fields = dict()
         for route, callback in routes.items():
-            callback = cls.adapt_callback(callback)
             if route.KIND == EnrouteDecoratorKind.Query:
                 fields[route.name] = cls._build_field(route, callback)
 
@@ -95,7 +95,6 @@ class GraphQLSchemaBuilder:
     def _build_mutations(cls, routes: dict[GraphQlEnrouteDecorator, Callable]) -> Optional[GraphQLObjectType]:
         fields = dict()
         for route, callback in routes.items():
-            callback = cls.adapt_callback(callback)
 
             if route.KIND == EnrouteDecoratorKind.Command:
                 fields[route.name] = cls._build_field(route, callback)
@@ -105,13 +104,30 @@ class GraphQLSchemaBuilder:
 
         return GraphQLObjectType("Mutation", fields=fields)
 
-    @staticmethod
-    def _build_field(item: GraphQlEnrouteDecorator, callback: Callable) -> GraphQLField:
-        argument = item.argument
-        output = item.output
+    @classmethod
+    def _build_field(cls, item: GraphQlEnrouteDecorator, callback: Callable) -> GraphQLField:
+
+        if item.output is not None:
+            argument = item.argument
+            output = item.output
+        else:
+            hints = get_type_hints(callback)
+            assert len(hints) == 2
+            response_hint = hints.pop("return")
+            request_hint = hints.popitem()[1]
+
+            argument_hint = get_args(request_hint)[0]
+            output_hint = get_args(response_hint)[0]
+
+            argument = GraphQlSchemaEncoder().build(argument_hint)
+            output = GraphQlSchemaEncoder().build(output_hint)
+
+            print("done")
 
         args = None
         if argument is not None:
             args = {"request": GraphQLArgument(argument)}
+
+        callback = cls.adapt_callback(callback)
 
         return GraphQLField(output, args=args, resolve=callback)

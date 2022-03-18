@@ -12,7 +12,7 @@ from contextvars import (
 from typing import (
     Any,
     Final,
-    Optional,
+    Optional, Generic, TypeVar,
 )
 from uuid import (
     UUID,
@@ -26,8 +26,10 @@ from ..exceptions import (
 
 REQUEST_USER_CONTEXT_VAR: Final[ContextVar[Optional[UUID]]] = ContextVar("user", default=None)
 
+RQ = TypeVar("RQ")
 
-class Request(ABC):
+
+class Request(ABC, Generic[RQ]):
     """Request interface."""
 
     @property
@@ -97,8 +99,10 @@ class Request(ABC):
 
 sentinel = object()
 
+RP = TypeVar("RP")
 
-class Response:
+
+class Response(Generic[RP]):
     """Response definition."""
 
     __slots__ = "_data", "_status"
