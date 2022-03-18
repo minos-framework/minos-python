@@ -1,13 +1,12 @@
 import unittest
-import warnings
 from unittest.mock import (
     patch,
 )
 
 from minos.common import (
     Config,
-    MinosConfigException,
     ConfigV1,
+    MinosConfigException,
 )
 from tests.utils import (
     BASE_PATH,

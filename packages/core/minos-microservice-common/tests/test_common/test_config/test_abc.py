@@ -1,12 +1,18 @@
 import unittest
 import warnings
 
-from minos.common import MinosConfig, Config, InjectableMixin, ConfigV1
-from tests.utils import CONFIG_FILE_PATH
+from minos.common import (
+    Config,
+    ConfigV1,
+    InjectableMixin,
+    MinosConfig,
+)
+from tests.utils import (
+    CONFIG_FILE_PATH,
+)
 
 
 class TestConfig(unittest.TestCase):
-
     def test_is_subclass(self):
         self.assertTrue(issubclass(Config, InjectableMixin))
 

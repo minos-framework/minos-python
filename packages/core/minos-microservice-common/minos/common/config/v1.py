@@ -3,7 +3,6 @@ from __future__ import (
 )
 
 import os
-import warnings
 from collections import (
     namedtuple,
 )
@@ -16,11 +15,12 @@ from typing import (
 
 import yaml
 
-from .abc import Config
 from ..exceptions import (
     MinosConfigException,
 )
-
+from .abc import (
+    Config,
+)
 
 BROKER = namedtuple("Broker", "host port queue")
 QUEUE = namedtuple("Queue", "database user password host port records retry")
