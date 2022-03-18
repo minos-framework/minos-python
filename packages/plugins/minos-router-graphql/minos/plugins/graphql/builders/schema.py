@@ -86,7 +86,7 @@ class GraphQLSchemaBuilder:
         if not len(fields):
             fields["dummy"] = GraphQLField(
                 type_=GraphQLString,
-                description="Dummy query added to surpass the 'Type Query must define at least one field' constraint."
+                description="Dummy query added to surpass the 'Type Query must define at least one field' constraint.",
             )
 
         return GraphQLObjectType("Query", fields=fields)
