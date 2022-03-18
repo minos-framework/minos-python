@@ -52,7 +52,7 @@ class TestInjection(unittest.TestCase):
 
 
 @Inject()
-def _get_foo_sync(foo: _Foo = _Foo(12)) -> _Foo:
+def _get_foo_sync(foo: _Foo) -> _Foo:
     return foo
 
 

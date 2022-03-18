@@ -48,8 +48,10 @@ from .mixins import (
 if TYPE_CHECKING:
     InputType = TypeVar("InputType", bound=type)
 
+
     class _Output(InputType, InjectableMixin):
         """For typing purposes only."""
+
 
     OutputType = type[_Output]
 
@@ -134,33 +136,33 @@ class Inject:
                     raise exc
         return kwargs
 
-    @staticmethod
-    def _build_type_hints(func) -> dict[str, tuple[int, type[V], bool]]:
+    def _build_type_hints(self, func) -> dict[str, tuple[int, type[V], bool]]:
         # TODO: Improve this function.
         type_hints_ = dict()
 
         hints = get_type_hints(func)
 
         for i, (name, field) in enumerate(signature(func).parameters.items()):
-            if name in ("return", "self", "cls"):
-                continue
-            if name not in hints:
+            if name in ("return", "self", "cls") or name not in hints:
                 continue
             type_ = hints[name]
-            origin_type = get_origin(type_)
-            if origin_type is Union:
-                some = False
-                for arg in get_args(type_):
-                    if is_type_subclass(arg) and issubclass(arg, InjectableMixin):
-                        some = True
-                if not some:
-                    continue
-            if is_type_subclass(origin_type) and not issubclass(origin_type, InjectableMixin):
-                continue
-            if origin_type is None and not issubclass(type_, InjectableMixin):
+            if not self._is_injectable(type_):
                 continue
             type_hints_[name] = (i, type_, field.default is not Parameter.empty)
         return type_hints_
+
+    def _is_injectable(self, type_: type) -> bool:
+        origin_type = get_origin(type_)
+        if origin_type is Union:
+            if any(self._is_injectable(arg) for arg in get_args(type_)):
+                return True
+        elif origin_type is None:
+            if issubclass(type_, InjectableMixin):
+                return True
+        elif is_type_subclass(origin_type):
+            if issubclass(origin_type, InjectableMixin):
+                return True
+        return False
 
     @classmethod
     def resolve(cls, type_: type[V]) -> V:
@@ -170,13 +172,16 @@ class Inject:
 
         if origin_type is Union:
             for arg in get_args(type_):
-                if is_type_subclass(arg) and issubclass(arg, InjectableMixin):
-                    with suppress(NotProvidedException):
-                        return cls.resolve_by_name(arg.get_injectable_name())
+                with suppress(NotProvidedException):
+                    return cls.resolve(arg)
+        elif origin_type is None:
+            if issubclass(type_, InjectableMixin):
+                return cls.resolve_by_name(type_.get_injectable_name())
+        elif is_type_subclass(origin_type):
+            if issubclass(origin_type, InjectableMixin):
+                return cls.resolve_by_name(origin_type.get_injectable_name())
 
-            raise NotProvidedException(f"The {type_!r} argument must be injected.")
-
-        return cls.resolve_by_name(type_.get_injectable_name())
+        raise NotProvidedException(f"The given type injection could not be resolved: {type_}")
 
     @staticmethod
     @inject
