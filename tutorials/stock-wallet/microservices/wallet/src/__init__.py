@@ -4,6 +4,7 @@ __version__ = "0.1.0"
 
 from .aggregates import (
     Wallet,
+    Ticker
 )
 from .cli import (
     main,
@@ -12,6 +13,6 @@ from .commands import (
     WalletCommandService,
 )
 from .queries import (
-    WalletQueryService,
     WalletQueryServiceRepository,
+    WalletQueryService
 )
