@@ -27,7 +27,6 @@ from graphql import (
     GraphQLBoolean,
     GraphQLEnumType,
     GraphQLFloat,
-    GraphQLID,
     GraphQLInt,
     GraphQLList,
     GraphQLNonNull,
@@ -120,7 +119,7 @@ class GraphQlSchemaEncoder(SchemaEncoder):
                 return GraphQLNonNull(GraphQLString)
 
             if issubclass(type_, UUID):
-                return GraphQLNonNull(GraphQLID)
+                return GraphQLNonNull(GraphQLString)
 
             if isinstance(type_, ModelType):
                 return self._build_model_type(type_, **kwargs)

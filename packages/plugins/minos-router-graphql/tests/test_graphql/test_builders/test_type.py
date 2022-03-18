@@ -18,7 +18,6 @@ from uuid import (
 from graphql import (
     GraphQLBoolean,
     GraphQLFloat,
-    GraphQLID,
     GraphQLInt,
     GraphQLString,
     is_enum_type,
@@ -118,7 +117,7 @@ class TestGraphQlSchemaEncoder(unittest.TestCase):
         observed = self.encoder.build(UUID)
 
         self.assertTrue(is_non_null_type(observed))
-        self.assertEqual(GraphQLID, observed.of_type)
+        self.assertEqual(GraphQLString, observed.of_type)
 
     def test_model(self):
         # noinspection PyUnusedLocal
