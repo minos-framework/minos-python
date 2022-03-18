@@ -9,7 +9,6 @@ from graphql import (
 
 from minos.common import (
     Config,
-    ModelType,
 )
 from minos.networks import (
     Request,
@@ -22,18 +21,14 @@ from minos.plugins.graphql import (
 )
 from tests.utils import (
     BASE_PATH,
-    user_type,
 )
 
 
-async def callback_fn(request: Request):
+async def callback_fn(request: Request) -> Response:
     return Response("ticket #4")
 
 
-Foo = ModelType.build("Foo", {"bar": str, "foobar": bool})
-
-
-async def typed_callback_fn(request: Request[int]) -> Response[Foo]:
+async def typed_callback_fn(request: Request[int]) -> Response[str]:
     return Response("ticket #4")
 
 
@@ -151,7 +146,9 @@ class TestGraphQLSchemaBuilder(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(None, result.errors)
 
     async def test_schema(self):
-        routes = {GraphQlQueryEnrouteDecorator(name="order_query", argument=GraphQLID, output=user_type): callback_fn}
+        routes = {
+            GraphQlQueryEnrouteDecorator(name="order_query", argument=GraphQLID, output=GraphQLString): callback_fn
+        }
 
         schema = GraphQLSchemaBuilder.build(routes=routes)
 

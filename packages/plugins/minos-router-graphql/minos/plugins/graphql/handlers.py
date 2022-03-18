@@ -5,8 +5,8 @@ from graphql import (
 )
 
 from minos.networks import (
-    HttpRequest,
-    HttpResponse,
+    Request,
+    Response,
     ResponseException,
 )
 
@@ -17,7 +17,7 @@ class GraphQlHandler:
     def __init__(self, schema: GraphQLSchema):
         self._schema = schema
 
-    async def execute_operation(self, request: HttpRequest) -> HttpResponse:
+    async def execute_operation(self, request: Request) -> Response:
         """Execute incoming request extracting variables and passing to graphql"""
 
         content = await request.content()
@@ -49,8 +49,8 @@ class GraphQlHandler:
                 if isinstance(error.original_error, ResponseException):
                     status = error.original_error.status
 
-        return HttpResponse({"data": result.data, "errors": [err.message for err in errors]}, status=status)
+        return Response({"data": result.data, "errors": [err.message for err in errors]}, status=status)
 
-    async def get_schema(self, request: HttpRequest) -> HttpResponse:
+    async def get_schema(self, request: Request) -> Response:
         """Get schema"""
-        return HttpResponse(print_schema(self._schema))
+        return Response(print_schema(self._schema))

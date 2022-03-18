@@ -187,7 +187,8 @@ class TestGraphQlSchemaEncoder(unittest.TestCase):
         self.assertTrue(is_non_null_type(observed))
         self.assertTrue(is_list_type(observed.of_type))
 
-        observed_inner = observed.of_type.of_type
+        self.assertTrue(is_non_null_type(observed.of_type.of_type))
+        observed_inner = observed.of_type.of_type.of_type
         self.assertTrue(is_object_type(observed_inner))
         self.assertEqual("DictItem", observed_inner.name)
 

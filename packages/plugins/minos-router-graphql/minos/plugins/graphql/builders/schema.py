@@ -123,7 +123,7 @@ class GraphQLSchemaBuilder:
             argument_hint = get_args(request_hint)[0]
             output_hint = get_args(response_hint)[0]
 
-            argument = GraphQlSchemaEncoder().build(argument_hint)
+            argument = GraphQlSchemaEncoder().build(argument_hint, is_input=True)
             output = GraphQlSchemaEncoder().build(output_hint)
 
         args = None

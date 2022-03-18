@@ -2,7 +2,6 @@ import unittest
 
 from graphql import (
     GraphQLInt,
-    GraphQLNonNull,
     GraphQLString,
 )
 
@@ -30,8 +29,6 @@ from tests.utils import (
     BASE_PATH,
     resolve_create_user,
     resolve_user,
-    user_input_type,
-    user_type,
 )
 
 
@@ -175,14 +172,14 @@ class TestGraphQlHandler(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([], content["errors"])
 
     async def test_query_with_variables_return_user(self):
-        routes = {GraphQlQueryEnrouteDecorator(name="order_query", argument=GraphQLInt, output=user_type): resolve_user}
+        routes = {GraphQlQueryEnrouteDecorator("order_query"): resolve_user}
 
         schema = GraphQLSchemaBuilder.build(routes=routes)
 
         handler = GraphQlHandler(schema)
 
         query = """
-                            query ($userId: Int!) {
+                            query ($userId: String!) {
                                 order_query(request: $userId) {
                                     id
                                     firstName
@@ -193,7 +190,7 @@ class TestGraphQlHandler(unittest.IsolatedAsyncioTestCase):
                             }
                             """
 
-        variables = {"userId": 3}
+        variables = {"userId": "cc44bfe3-7807-4231-8e0d-049d2a6e9ef7"}
 
         content = {"query": query, "variables": variables}
 
@@ -205,24 +202,28 @@ class TestGraphQlHandler(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(200, result.status)
         self.assertDictEqual(
-            {"order_query": {"id": "3", "firstName": "Jack", "lastName": "Johnson", "tweets": 563, "verified": True}},
+            {
+                "order_query": {
+                    "id": "cc44bfe3-7807-4231-8e0d-049d2a6e9ef7",
+                    "firstName": "Jack",
+                    "lastName": "Johnson",
+                    "tweets": 563,
+                    "verified": True,
+                }
+            },
             content["data"],
         )
         self.assertEqual([], content["errors"])
 
     async def test_mutation(self):
-        routes = {
-            GraphQlCommandEnrouteDecorator(
-                name="createUser", argument=GraphQLNonNull(user_input_type), output=user_type
-            ): resolve_create_user
-        }
+        routes = {GraphQlCommandEnrouteDecorator("createUser"): resolve_create_user}
 
         schema = GraphQLSchemaBuilder.build(routes=routes)
 
         handler = GraphQlHandler(schema)
 
         query = """
-                    mutation ($userData: UserInputType!) {
+                    mutation ($userData: UserInput!) {
                         createUser(request: $userData) {
                             id, firstName, lastName, tweets, verified
                         }
@@ -243,7 +244,7 @@ class TestGraphQlHandler(unittest.IsolatedAsyncioTestCase):
         self.assertDictEqual(
             {
                 "createUser": {
-                    "id": "4kjjj43-l23k4l3-325kgaa2",
+                    "id": "cc44bfe3-7807-4231-8e0d-049d2a6e9ef7",
                     "firstName": "John",
                     "lastName": "Doe",
                     "tweets": 42,
