@@ -121,6 +121,10 @@ from .scheduling import (
     ScheduledRequestContent,
     ScheduledResponseException,
 )
+from .specs import (
+    AsyncAPIService,
+    OpenAPIService,
+)
 from .system import (
     SystemService,
 )

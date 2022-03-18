@@ -4,28 +4,33 @@ from itertools import (
 from operator import (
     itemgetter,
 )
-from pathlib import (
-    Path,
-)
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 
-from ..networks import (
+from ..decorators import (
     EnrouteAnalyzer,
     enroute,
+)
+from ..requests import (
+    Request,
+    Response,
 )
 
 
 class OpenAPIService:
-    CONFIG_FILE_PATH = Path(__file__).parent / "config.yml"
+    """TODO"""
 
-    def __init__(self):
+    def __init__(self, config: Config):
+        self.config = config
         self.spec = BASE_SPEC.copy()
 
-    @enroute.rest.command("/spec/openapi")
-    def generate_spec(self) -> dict:
+    # noinspection PyUnusedLocal
+    @enroute.rest.command("/spec/openapi", "GET")
+    def generate_spec(self, request: Request) -> Response:
+        """TODO"""
+
         endpoints = self.get_endpoints()
 
         for endpoint in endpoints:
@@ -44,13 +49,14 @@ class OpenAPIService:
             else:
                 self.spec["paths"][url] = {method: endpoint_spec}
 
-            return self.spec
+            return Response(self.spec)
 
     def get_endpoints(self) -> list[dict]:
-        config = MinosConfig(self.CONFIG_FILE_PATH)
+        """TODO"""
+
         endpoints = list()
-        for name in config.services:
-            decorators = EnrouteAnalyzer(name, config).get_rest_command_query()
+        for name in self.config.services:
+            decorators = EnrouteAnalyzer(name, self.config).get_rest_command_query()
             endpoints += [
                 {"url": decorator.url, "method": decorator.method} for decorator in set(chain(*decorators.values()))
             ]
