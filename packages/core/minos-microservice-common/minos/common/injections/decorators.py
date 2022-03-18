@@ -48,10 +48,8 @@ from .mixins import (
 if TYPE_CHECKING:
     InputType = TypeVar("InputType", bound=type)
 
-
     class _Output(InputType, InjectableMixin):
         """For typing purposes only."""
-
 
     OutputType = type[_Output]
 
@@ -102,7 +100,7 @@ class Injectable:
 
 
 class Inject:
-    """TODO"""
+    """Inject class."""
 
     def __call__(self, func):
         type_hints_ = self._build_type_hints(func)
@@ -137,7 +135,6 @@ class Inject:
         return kwargs
 
     def _build_type_hints(self, func) -> dict[str, tuple[int, type[V], bool]]:
-        # TODO: Improve this function.
         type_hints_ = dict()
 
         hints = get_type_hints(func)
@@ -166,7 +163,11 @@ class Inject:
 
     @classmethod
     def resolve(cls, type_: type[V]) -> V:
-        """TODO"""
+        """Resolve a dependency by type.
+
+        :param type_: The type of the dependency.
+        :return: The dependency value.
+        """
 
         origin_type = get_origin(type_)
 
@@ -185,8 +186,13 @@ class Inject:
 
     @staticmethod
     @inject
-    def resolve_by_name(name: str, container: Container = Provide["<container>"]):
-        """TODO"""
+    def resolve_by_name(name: str, container: Container = Provide["<container>"]) -> Any:
+        """Resolve a dependency by name.
+
+        :param name: The name of the dependency.
+        :param container: The container that contains the dependency.
+        :return: The dependency value.
+        """
         try:
             return container.providers[name]()
         except Exception:
