@@ -18,33 +18,33 @@ from dependency_injector import (
     providers,
 )
 
-from .configuration import (
-    MinosConfig,
+from .config import (
+    Config,
 )
 from .importlib import (
     import_module,
 )
 from .setup import (
-    MinosSetup,
+    SetupMixin,
 )
 
 
 class DependencyInjector:
     """Async wrapper of ``dependency_injector.containers.Container``."""
 
-    def __init__(self, config: MinosConfig, **kwargs: Union[MinosSetup, Type[MinosSetup], str]):
+    def __init__(self, config: Config, **kwargs: Union[SetupMixin, Type[SetupMixin], str]):
         self.config = config
         self._raw_injections = kwargs
 
     @cached_property
-    def injections(self) -> dict[str, MinosSetup]:
-        """Get the injections dictionary.
+    def injections(self) -> dict[str, SetupMixin]:
+        """Get the injections' dictionary.
 
-        :return: A dict of injections..
+        :return: A dict of injections.
         """
         injections = dict()
 
-        def _fn(raw: Union[MinosSetup, Type[MinosSetup], str]) -> MinosSetup:
+        def _fn(raw: Union[SetupMixin, Type[SetupMixin], str]) -> SetupMixin:
             if isinstance(raw, str):
                 raw = import_module(raw)
             if isinstance(raw, type):
@@ -53,7 +53,10 @@ class DependencyInjector:
             return raw
 
         for key, value in self._raw_injections.items():
-            injections[key] = _fn(value)
+            try:
+                injections[key] = _fn(value)
+            except Exception as exc:
+                raise ValueError(f"An exception was raised while building injections: {exc!r}")
 
         return injections
 
@@ -77,7 +80,7 @@ class DependencyInjector:
 
     @cached_property
     def container(self) -> containers.Container:
-        """Get the dependencies container.
+        """Get the dependencies' container.
 
         :return: A ``Container`` instance.
         """
@@ -88,7 +91,7 @@ class DependencyInjector:
             container.set_provider(name, providers.Object(injection))
         return container
 
-    def __getattr__(self, item: str) -> MinosSetup:
+    def __getattr__(self, item: str) -> SetupMixin:
         if item not in self.injections:
             raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
         return self.injections[item]

@@ -16,12 +16,10 @@ from typing import (
 )
 
 from minos.common import (
-    MinosSetup,
+    Builder,
+    SetupMixin,
 )
 
-from ...utils import (
-    Builder,
-)
 from ..messages import (
     BrokerMessage,
 )
@@ -29,7 +27,7 @@ from ..messages import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerSubscriber(ABC, MinosSetup):
+class BrokerSubscriber(ABC, SetupMixin):
     """Broker Subscriber class."""
 
     def __init__(self, topics: Iterable[str], **kwargs):

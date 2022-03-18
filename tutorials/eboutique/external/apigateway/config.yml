@@ -1,0 +1,13 @@
+rest:
+  host: 0.0.0.0
+  port: 5566
+  cors:
+    enabled: true
+  auth:
+    host: localhost
+    port: 8092
+    method: POST
+    path: /validate-token
+discovery:
+  host: localhost
+  port: 5567

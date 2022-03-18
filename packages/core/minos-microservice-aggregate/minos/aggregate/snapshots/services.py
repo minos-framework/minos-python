@@ -22,7 +22,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     ModelType,
     import_module,
 )
@@ -54,7 +54,7 @@ class SnapshotService:
     def __init__(
         self,
         *args,
-        config: MinosConfig = Provide["config"],
+        config: Config = Provide["config"],
         snapshot_repository: SnapshotRepository = Provide["snapshot_repository"],
         **kwargs,
     ):
@@ -62,31 +62,16 @@ class SnapshotService:
         self.snapshot_repository = snapshot_repository
 
     @classmethod
-    def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
-        simplified_name = config.service.aggregate.rsplit(".", 1)[-1]
+    def __get_enroute__(cls, config: Config) -> dict[str, set[EnrouteDecorator]]:
+        from ..entities import (
+            RefResolver,
+        )
+
+        name = config.service.aggregate.rsplit(".", 1)[-1]
         return {
-            cls.__get_one__.__name__: {enroute.broker.command(f"Get{simplified_name}")},
-            cls.__get_many__.__name__: {enroute.broker.command(f"Get{simplified_name}s")},
+            cls.__get_many__.__name__: {enroute.broker.command(RefResolver.build_topic_name(name))},
             cls.__synchronize__.__name__: {enroute.periodic.event("* * * * *")},
         }
-
-    async def __get_one__(self, request: Request) -> Response:
-        """Get one ``RootEntity`` instance.
-
-        :param request: The ``Request`` instance that contains the instance identifier.
-        :return: A ``Response`` instance containing the requested instances.
-        """
-        try:
-            content = await request.content(model_type=ModelType.build("Query", {"uuid": UUID}))
-        except Exception as exc:
-            raise ResponseException(f"There was a problem while parsing the given request: {exc!r}")
-
-        try:
-            instance = await self.type_.get(content["uuid"])
-        except Exception as exc:
-            raise ResponseException(f"There was a problem while getting the instance: {exc!r}")
-
-        return Response(instance)
 
     async def __get_many__(self, request: Request) -> Response:
         """Get many ``RootEntity`` instances.

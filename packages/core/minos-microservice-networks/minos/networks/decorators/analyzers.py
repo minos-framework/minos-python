@@ -4,14 +4,14 @@ from inspect import (
     ismethod,
 )
 from typing import (
+    Any,
     Callable,
     Optional,
     Type,
-    Union,
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     import_module,
 )
 
@@ -35,7 +35,7 @@ class EnrouteAnalyzer:
     """Search decorators in specified class"""
 
     # noinspection PyUnusedLocal
-    def __init__(self, decorated: Union[str, Type], config: Optional[MinosConfig] = None, **kwargs):
+    def __init__(self, decorated: Any, config: Optional[Config] = None, **kwargs):
         if isinstance(decorated, str):
             decorated = import_module(decorated)
 

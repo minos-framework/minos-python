@@ -1,0 +1,16 @@
+aggregate: Coinbase
+author: Clariteia Devs
+deploy: docker-compose
+description: Coinbase Wallter and API Microservice
+email: devs@clariteia.com
+language: python
+name: coinbase
+package_manager: poetry
+project_deploy: docker-compose
+project_description: The Crypto Money Account Manager
+project_name: crypto-account
+project_version: 0.1.0
+template_name: project-init
+template_registry: https://github.com/minos-framework/minos-templates/releases/download/v0.1.1
+template_version: v0.1.1
+version: 0.1.0

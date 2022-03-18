@@ -169,3 +169,14 @@ History
 ------------------
 
 * Fix bug related with dependency specification.
+
+0.5.2 (2022-02-08)
+------------------
+
+* Add compatibility to `minos-microservice-aggregate~=0.5.2`.
+* Minor changes.
+
+0.5.3 (2022-03-04)
+------------------
+
+* Improve attribute and item accessors of `SagaContext`.

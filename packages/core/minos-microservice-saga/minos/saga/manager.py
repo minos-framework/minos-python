@@ -24,9 +24,9 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosConfig,
-    MinosSetup,
+    Config,
     NotProvidedException,
+    SetupMixin,
 )
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
@@ -58,7 +58,7 @@ from .messages import (
 logger = logging.getLogger(__name__)
 
 
-class SagaManager(MinosSetup):
+class SagaManager(SetupMixin):
     """Saga Manager implementation class.
 
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
@@ -77,7 +77,7 @@ class SagaManager(MinosSetup):
         self.broker_pool = broker_pool
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
+    def _from_config(cls, *args, config: Config, **kwargs) -> SagaManager:
         """Build an instance from config.
 
         :param args: Additional positional arguments.

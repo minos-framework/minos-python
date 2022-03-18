@@ -6,9 +6,12 @@ from unittest.mock import (
 from aiokafka import (
     AIOKafkaProducer,
 )
+from kafka.errors import (
+    KafkaConnectionError,
+)
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerMessage,
@@ -33,7 +36,7 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(issubclass(KafkaBrokerPublisher, BrokerPublisher))
 
     def test_from_config(self):
-        config = MinosConfig(CONFIG_FILE_PATH)
+        config = Config(CONFIG_FILE_PATH)
         publisher = KafkaBrokerPublisher.from_config(config)
 
         self.assertIsInstance(publisher, KafkaBrokerPublisher)
@@ -44,6 +47,25 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         publisher = KafkaBrokerPublisher.from_config(CONFIG_FILE_PATH)
 
         self.assertIsInstance(publisher.client, AIOKafkaProducer)
+
+    async def test_start_without_connection(self):
+        publisher = KafkaBrokerPublisher.from_config(CONFIG_FILE_PATH, circuit_breaker_time=0.1)
+        stop_mock = AsyncMock(side_effect=publisher.client.stop)
+
+        async def _fn():
+            if publisher.is_circuit_breaker_recovering:
+                raise ValueError()
+            raise KafkaConnectionError()
+
+        start_mock = AsyncMock(side_effect=_fn)
+        publisher.client.start = start_mock
+        publisher.client.stop = stop_mock
+
+        with self.assertRaises(ValueError):
+            async with publisher:
+                pass
+
+        self.assertEqual(1, stop_mock.call_count)
 
     async def test_send(self):
         send_mock = AsyncMock()
@@ -56,6 +78,26 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(1, send_mock.call_count)
         self.assertEqual("foo", send_mock.call_args.args[0])
         self.assertEqual(message, BrokerMessage.from_avro_bytes(send_mock.call_args.args[1]))
+
+    async def test_send_without_connection(self):
+        async def _fn(*args, **kwargs):
+            if publisher.is_circuit_breaker_recovering:
+                raise ValueError()
+            raise KafkaConnectionError()
+
+        mock = AsyncMock(side_effect=_fn)
+
+        message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
+
+        async with KafkaBrokerPublisher.from_config(CONFIG_FILE_PATH, circuit_breaker_time=0.1) as publisher:
+            stop_mock = AsyncMock(side_effect=publisher.client.stop)
+            publisher.client.stop = stop_mock
+            publisher.client.send_and_wait = mock
+
+            with self.assertRaises(ValueError):
+                await publisher.send(message)
+
+            self.assertEqual(0, stop_mock.call_count)
 
     async def test_setup_destroy(self):
         publisher = KafkaBrokerPublisher.from_config(CONFIG_FILE_PATH)

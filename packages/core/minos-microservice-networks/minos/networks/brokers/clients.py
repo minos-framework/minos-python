@@ -23,9 +23,9 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosConfig,
-    MinosSetup,
+    Config,
     NotProvidedException,
+    SetupMixin,
 )
 
 from ..exceptions import (
@@ -45,7 +45,7 @@ from .subscribers import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerClient(MinosSetup):
+class BrokerClient(SetupMixin):
     """Broker Client class."""
 
     def __init__(self, topic: str, publisher: BrokerPublisher, subscriber: BrokerSubscriber, **kwargs):
@@ -56,7 +56,7 @@ class BrokerClient(MinosSetup):
         self.subscriber = subscriber
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerClient:
+    def _from_config(cls, config: Config, **kwargs) -> BrokerClient:
         if "topic" not in kwargs:
             kwargs["topic"] = str(uuid4()).replace("-", "")
 
@@ -83,7 +83,7 @@ class BrokerClient(MinosSetup):
     @staticmethod
     @inject
     def _get_subscriber(
-        config: MinosConfig,
+        config: Config,
         topic: str,
         subscriber: Optional[BrokerSubscriber] = None,
         broker_subscriber: Optional[BrokerSubscriber] = Provide["broker_subscriber"],

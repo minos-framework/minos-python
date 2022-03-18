@@ -1,6 +1,10 @@
 service:
     name: Order
     aggregate: tests.utils.Order
+routers:
+    - minos.networks.BrokerRouter
+    - minos.networks.PeriodicRouter
+    - minos.networks.RestHttpRouter
 services:
     - tests.services.commands.CommandService
     - tests.services.queries.QueryService

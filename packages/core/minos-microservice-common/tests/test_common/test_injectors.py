@@ -10,8 +10,8 @@ from dependency_injector.containers import (
 )
 
 from minos.common import (
+    Config,
     DependencyInjector,
-    MinosConfig,
     classname,
 )
 from tests.utils import (
@@ -23,15 +23,20 @@ from tests.utils import (
 class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.config_file_path = BASE_PATH / "test_config.yml"
-        self.config = MinosConfig(path=str(self.config_file_path))
+        self.config = Config(path=str(self.config_file_path))
 
     def test_from_str(self):
         injector = DependencyInjector(self.config, lock_pool=classname(FakeLockPool))
         self.assertIsInstance(injector.lock_pool, FakeLockPool)
 
-    def test_lock_pool(self):
+    def test_from_type(self):
         injector = DependencyInjector(self.config, lock_pool=FakeLockPool)
         self.assertIsInstance(injector.lock_pool, FakeLockPool)
+
+    def test_raises_building(self):
+        injector = DependencyInjector(self.config, lock_pool="path.to.LockPool")
+        with self.assertRaises(ValueError):
+            injector.injections
 
     def test_another(self):
         injector = DependencyInjector(self.config, foo=1)

@@ -67,7 +67,7 @@ class TransactionCommitter:
     async def _reserve(self) -> bool:
         async with self.broker_pool.acquire() as broker:
             futures = (
-                broker.send(BrokerMessageV1(f"Reserve{service_name.title()}Transaction", BrokerMessageV1Payload(uuid)))
+                broker.send(BrokerMessageV1(f"_Reserve{service_name.title()}Transaction", BrokerMessageV1Payload(uuid)))
                 for (uuid, service_name) in self.transactions
             )
             await gather(*futures)
@@ -77,7 +77,7 @@ class TransactionCommitter:
     async def _commit(self) -> None:
         futures = (
             self.broker_publisher.send(
-                BrokerMessageV1(f"Commit{service_name.title()}Transaction", BrokerMessageV1Payload(uuid))
+                BrokerMessageV1(f"_Commit{service_name.title()}Transaction", BrokerMessageV1Payload(uuid))
             )
             for (uuid, service_name) in self.transactions
         )
@@ -93,7 +93,7 @@ class TransactionCommitter:
         """
         futures = (
             self.broker_publisher.send(
-                BrokerMessageV1(f"Reject{service_name.title()}Transaction", BrokerMessageV1Payload(uuid))
+                BrokerMessageV1(f"_Reject{service_name.title()}Transaction", BrokerMessageV1Payload(uuid))
             )
             for (uuid, service_name) in self.transactions
         )

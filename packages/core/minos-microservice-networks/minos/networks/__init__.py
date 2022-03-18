@@ -1,6 +1,6 @@
 __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
-__version__ = "0.5.1"
+__version__ = "0.5.3"
 
 from .brokers import (
     REQUEST_HEADERS_CONTEXT_VAR,
@@ -9,7 +9,7 @@ from .brokers import (
     BrokerClientPool,
     BrokerDispatcher,
     BrokerHandler,
-    BrokerHandlerService,
+    BrokerHandlerPort,
     BrokerMessage,
     BrokerMessageV1,
     BrokerMessageV1Payload,
@@ -23,18 +23,23 @@ from .brokers import (
     BrokerResponseException,
     BrokerSubscriber,
     BrokerSubscriberBuilder,
+    BrokerSubscriberDuplicateDetector,
     BrokerSubscriberQueue,
     BrokerSubscriberQueueBuilder,
+    IdempotentBrokerSubscriber,
     InMemoryBrokerPublisher,
     InMemoryBrokerPublisherQueue,
     InMemoryBrokerQueue,
     InMemoryBrokerSubscriber,
     InMemoryBrokerSubscriberBuilder,
+    InMemoryBrokerSubscriberDuplicateDetector,
     InMemoryBrokerSubscriberQueue,
     InMemoryBrokerSubscriberQueueBuilder,
     PostgreSqlBrokerPublisherQueue,
     PostgreSqlBrokerPublisherQueueQueryFactory,
     PostgreSqlBrokerQueue,
+    PostgreSqlBrokerSubscriberDuplicateDetector,
+    PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory,
     PostgreSqlBrokerSubscriberQueue,
     PostgreSqlBrokerSubscriberQueueBuilder,
     PostgreSqlBrokerSubscriberQueueQueryFactory,
@@ -58,6 +63,7 @@ from .decorators import (
     Handler,
     HandlerMeta,
     HandlerWrapper,
+    HttpEnrouteDecorator,
     PeriodicEnrouteDecorator,
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
@@ -69,7 +75,6 @@ from .discovery import (
     DiscoveryClient,
     DiscoveryConnector,
     InMemoryDiscoveryClient,
-    KongDiscoveryClient,
 )
 from .exceptions import (
     MinosActionNotFoundException,
@@ -85,6 +90,14 @@ from .exceptions import (
     NotSatisfiedCheckerException,
     RequestException,
 )
+from .http import (
+    HttpAdapter,
+    HttpConnector,
+    HttpPort,
+    HttpRequest,
+    HttpResponse,
+    HttpResponseException,
+)
 from .requests import (
     REQUEST_USER_CONTEXT_VAR,
     InMemoryRequest,
@@ -93,20 +106,23 @@ from .requests import (
     ResponseException,
     WrappedRequest,
 )
-from .rest import (
-    RestHandler,
-    RestRequest,
-    RestResponse,
-    RestResponseException,
-    RestService,
+from .routers import (
+    BrokerRouter,
+    HttpRouter,
+    PeriodicRouter,
+    RestHttpRouter,
+    Router,
 )
 from .scheduling import (
     PeriodicTask,
     PeriodicTaskScheduler,
-    PeriodicTaskSchedulerService,
+    PeriodicTaskSchedulerPort,
     ScheduledRequest,
     ScheduledRequestContent,
     ScheduledResponseException,
+)
+from .system import (
+    SystemService,
 )
 from .utils import (
     Builder,

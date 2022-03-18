@@ -306,7 +306,6 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
             await self.reader.get("tests.utils.Car", self.uuid_2, transaction=TransactionEntry(self.transaction_2))
 
     async def test_find(self):
-
         condition = Condition.EQUAL("color", "blue")
         iterable = self.reader.find("tests.utils.Car", condition, ordering=Ordering.ASC("updated_at"))
         observed = [v async for v in iterable]

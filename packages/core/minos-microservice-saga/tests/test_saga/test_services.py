@@ -8,7 +8,7 @@ from uuid import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerCommandEnrouteDecorator,
@@ -32,7 +32,7 @@ class TestSagaService(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.config = MinosConfig(BASE_PATH / "config.yml")
+        self.config = Config(BASE_PATH / "config.yml")
 
         self.saga_manager = SagaManager.from_config(self.config)
         self.service = SagaService(saga_manager=self.saga_manager)

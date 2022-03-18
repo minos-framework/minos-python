@@ -23,7 +23,7 @@ from minos.aggregate import (
     TransactionEntry,
 )
 from minos.common import (
-    MinosSetup,
+    SetupMixin,
 )
 from tests.utils import (
     FakeAsyncIterator,
@@ -60,7 +60,7 @@ class TestSnapshotRepository(unittest.IsolatedAsyncioTestCase):
         self.classname = "path.to.Product"
 
     def test_subclass(self):
-        self.assertTrue(issubclass(SnapshotRepository, (ABC, MinosSetup)))
+        self.assertTrue(issubclass(SnapshotRepository, (ABC, SetupMixin)))
 
     def test_abstract(self):
         # noinspection PyUnresolvedReferences
@@ -92,6 +92,27 @@ class TestSnapshotRepository(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(1, self.get_mock.call_count)
         self.assertEqual(transaction, self.get_mock.call_args.kwargs["transaction"])
+
+    async def test_get_all(self):
+        transaction = TransactionEntry()
+
+        iterable = self.snapshot_repository.get_all(self.classname, Ordering.ASC("name"), 10, True, transaction)
+        observed = [a async for a in iterable]
+        self.assertEqual(list(range(5)), observed)
+
+        self.assertEqual(
+            [
+                call(
+                    name=self.classname,
+                    condition=Condition.TRUE,
+                    ordering=Ordering.ASC("name"),
+                    limit=10,
+                    streaming_mode=True,
+                    transaction=transaction,
+                )
+            ],
+            self.find_mock.call_args_list,
+        )
 
     async def test_find(self):
         transaction = TransactionEntry()

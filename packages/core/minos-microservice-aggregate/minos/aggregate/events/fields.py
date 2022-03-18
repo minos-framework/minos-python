@@ -22,17 +22,18 @@ from uuid import (
     uuid4,
 )
 
-from minos.aggregate.actions import (
-    Action,
-)
-from minos.aggregate.collections import (
-    IncrementalSet,
-)
 from minos.common import (
     BucketModel,
     Field,
     Model,
     ModelType,
+)
+
+from ..actions import (
+    Action,
+)
+from ..collections import (
+    IncrementalSet,
 )
 
 logger = logging.getLogger(__name__)
@@ -92,10 +93,10 @@ class FieldDiffContainer(BucketModel):
 
         self._mapper = _build_mapper(self._fields)
 
-    def __getattr__(self, item: str) -> Any:
+    def __getitem__(self, item: str) -> Any:
         try:
-            return super().__getattr__(item)
-        except AttributeError as exc:
+            return super().__getitem__(item)
+        except KeyError as exc:
             try:
                 return self.get_one(item)
             except Exception:

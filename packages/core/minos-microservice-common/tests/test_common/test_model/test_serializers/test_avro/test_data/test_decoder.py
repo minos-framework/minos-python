@@ -32,6 +32,7 @@ from tests.model_classes import (
     Analytics,
     Base,
     GenericUser,
+    TextNumber,
     User,
 )
 from tests.utils import (
@@ -373,6 +374,12 @@ class TestAvroDataDecoder(MinosTestCase):
         observed = decoder.build(raw)
 
         self.assertEqual(raw, observed)
+
+    def test_default_values(self):
+        decoder = AvroDataDecoder(TextNumber)
+        expected = TextNumber(number=56, text="foo")
+        observed = decoder.build({"number": 56})
+        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":

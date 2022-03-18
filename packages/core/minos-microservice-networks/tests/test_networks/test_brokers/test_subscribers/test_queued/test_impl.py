@@ -9,7 +9,7 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -104,7 +104,7 @@ class TestQueuedBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
 
 class TestQueuedBrokerSubscriberBuilder(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
         self.impl_builder = InMemoryBrokerSubscriberBuilder()
         self.queue_builder = InMemoryBrokerSubscriberQueueBuilder()
         self._kwargs = {"impl_builder": self.impl_builder, "queue_builder": self.queue_builder}

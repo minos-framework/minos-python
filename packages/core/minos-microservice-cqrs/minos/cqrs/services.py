@@ -22,7 +22,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     EnrouteDecorator,
@@ -57,7 +57,7 @@ class Service(ABC):
         raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} field.")
 
     @classmethod
-    def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
+    def __get_enroute__(cls, config: Config) -> dict[str, set[EnrouteDecorator]]:
         result = dict()
         for name, fn in getmembers(cls, predicate=lambda x: ismethod(x) or isfunction(x)):
             if not isinstance(fn, HandlerWrapper):

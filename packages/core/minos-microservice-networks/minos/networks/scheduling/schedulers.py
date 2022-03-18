@@ -26,8 +26,8 @@ from crontab import (
 )
 
 from minos.common import (
-    MinosConfig,
-    MinosSetup,
+    Config,
+    SetupMixin,
     current_datetime,
 )
 
@@ -44,7 +44,7 @@ from .requests import (
 logger = logging.getLogger(__name__)
 
 
-class PeriodicTaskScheduler(MinosSetup):
+class PeriodicTaskScheduler(SetupMixin):
     """Periodic Task Scheduler class."""
 
     def __init__(self, tasks: set[PeriodicTask], *args, **kwargs):
@@ -52,12 +52,12 @@ class PeriodicTaskScheduler(MinosSetup):
         self._tasks = tasks
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> PeriodicTaskScheduler:
+    def _from_config(cls, config: Config, **kwargs) -> PeriodicTaskScheduler:
         tasks = cls._tasks_from_config(config, **kwargs)
         return cls(tasks, **kwargs)
 
     @staticmethod
-    def _tasks_from_config(config: MinosConfig, **kwargs) -> set[PeriodicTask]:
+    def _tasks_from_config(config: Config, **kwargs) -> set[PeriodicTask]:
         builder = EnrouteBuilder(*config.services, middleware=config.middleware)
         decorators = builder.get_periodic_event(config=config, **kwargs)
         tasks = {PeriodicTask(decorator.crontab, fn) for decorator, fn in decorators.items()}
@@ -194,7 +194,7 @@ class PeriodicTask:
                 if isawaitable(response):
                     await response
         except ResponseException as exc:
-            logger.warning(f"Raised an application exception: {exc!s}")
+            logger.error(f"Raised an application exception: {exc!s}")
         except Exception as exc:
             logger.exception(f"Raised a system exception: {exc!r}")
         finally:

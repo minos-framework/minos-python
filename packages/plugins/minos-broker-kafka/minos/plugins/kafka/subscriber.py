@@ -13,6 +13,9 @@ from collections.abc import (
 from contextlib import (
     suppress,
 )
+from functools import (
+    partial,
+)
 from typing import (
     Optional,
 )
@@ -34,7 +37,7 @@ from kafka.errors import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerMessage,
@@ -45,10 +48,14 @@ from minos.networks import (
     QueuedBrokerSubscriberBuilder,
 )
 
+from .mixins import (
+    KafkaCircuitBreakerMixin,
+)
+
 logger = logging.getLogger(__name__)
 
 
-class KafkaBrokerSubscriber(BrokerSubscriber):
+class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
     """Kafka Broker Subscriber class."""
 
     def __init__(
@@ -61,6 +68,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
         **kwargs,
     ):
         super().__init__(topics, **kwargs)
+
         self.broker_host = broker_host
         self.broker_port = broker_port
         self.group_id = group_id
@@ -68,38 +76,56 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
         self.remove_topics_on_destroy = remove_topics_on_destroy
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> KafkaBrokerSubscriber:
+    def _from_config(cls, config: Config, **kwargs) -> KafkaBrokerSubscriber:
         # noinspection PyTypeChecker
         return KafkaBrokerSubscriberBuilder.new().with_config(config).with_kwargs(kwargs).build()
 
     async def _setup(self) -> None:
         await super()._setup()
-        self._create_topics()
-        await self.client.start()
+        await self._create_topics()
+        await self._start_client()
 
     async def _destroy(self) -> None:
-        with suppress(TimeoutError):
-            await wait_for(self.client.stop(), 0.5)
-        self._delete_topics()
-        self.admin_client.close()
+        await self._stop_client()
+        await self._delete_topics()
+        await self._stop_admin_client()
         await super()._destroy()
 
-    def _create_topics(self) -> None:
+    async def _start_client(self) -> None:
+        # noinspection PyBroadException
+        try:
+            await self.with_circuit_breaker(self.client.start)
+        except Exception as exc:
+            await self._stop_client()
+            raise exc
+
+    async def _stop_client(self):
+        with suppress(TimeoutError):
+            await wait_for(self.client.stop(), 0.5)
+
+    async def _stop_admin_client(self):
+        await self.with_circuit_breaker(self.admin_client.close)
+
+    async def _create_topics(self) -> None:
         logger.info(f"Creating {self.topics!r} topics...")
 
         new_topics = list()
         for topic in self.topics:
             new_topics.append(NewTopic(name=topic, num_partitions=1, replication_factor=1))
 
-        with suppress(TopicAlreadyExistsError):
-            self.admin_client.create_topics(new_topics)
+        def _fn() -> None:
+            with suppress(TopicAlreadyExistsError):
+                self.admin_client.create_topics(new_topics)
 
-    def _delete_topics(self) -> None:
+        await self.with_circuit_breaker(_fn)
+
+    async def _delete_topics(self) -> None:
         if not self.remove_topics_on_destroy:
             return
 
         logger.info(f"Deleting {self.topics!r} topics...")
-        self.admin_client.delete_topics(list(self.topics))
+        fn = partial(self.admin_client.delete_topics, list(self.topics))
+        await self.with_circuit_breaker(fn)
 
     @cached_property
     def admin_client(self):
@@ -132,7 +158,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
 class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
     """Kafka Broker Subscriber Builder class."""
 
-    def with_config(self, config: MinosConfig) -> BrokerSubscriberBuilder:
+    def with_config(self, config: Config) -> BrokerSubscriberBuilder:
         """Set config.
 
         :param config: The config to be set.

@@ -160,6 +160,12 @@ class GenericUser(DeclarativeModel, Generic[T]):
     username: T
 
 
+class ReservedWordUser(DeclarativeModel, Generic[T]):
+    """For testing purposes."""
+
+    items: str
+
+
 class Auth(DeclarativeModel):
     """For testing purposes."""
 
@@ -188,3 +194,15 @@ class Status(str, Enum):
     PENDING = "pending"
     SUCCESS = "success"
     ERROR = "error"
+
+
+class TextNumber(DeclarativeModel):
+    """For testing purposes."""
+
+    text: str
+    number: int
+
+    def __init__(self, *args, text: Optional[str] = None, **kwargs):
+        if text is None:
+            text = "foo"
+        super().__init__(text, *args, **kwargs)
