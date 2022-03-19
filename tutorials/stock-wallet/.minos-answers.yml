@@ -13,5 +13,5 @@ project_name: stock-wallet
 project_version: 0.1.0
 redis_deploy: self-hosted
 template_name: project-init
-template_registry: https://github.com/minos-framework/minos-templates/releases/download/v0.1.1
-template_version: v0.1.1
+template_registry: https://github.com/minos-framework/minos-templates/releases/download/v0.1.3
+template_version: v0.1.3

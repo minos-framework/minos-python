@@ -10,7 +10,7 @@ services:
     build: external/postgres
     command: postgres -c 'max_connections=200'
     ports:
-    - '5432'
+    - 5432:5432
     volumes:
     - postgres:/var/lib/postgresql/data
     environment:
@@ -75,5 +75,30 @@ services:
     - postgres
     - kafka
     - discovery
+  appsmith:
+    image: index.docker.io/appsmith/appsmith-ce
+    container_name: appsmith
+    ports:
+    - 80:80
+    - 443:443
+    - 9001:9001
+    volumes:
+    - ./stacks:/appsmith-stacks
+    labels:
+      com.centurylinklabs.watchtower.enable: 'true'
+    restart: unless-stopped
+  auto_update:
+    image: containrrr/watchtower:latest-dev
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    command: --schedule "0 0 * ? * *" --label-enable --cleanup
+    restart: unless-stopped
+  microservice-stocks:
+    restart: always
+    build:
+      context: microservices/stocks
+      target: production
+    environment: *id001
+    depends_on: *id002
 x-microservice-environment: *id001
 x-microservice-depends-on: *id002

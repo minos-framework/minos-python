@@ -1,6 +1,6 @@
 service:
-  name: wallet
-  aggregate: src.aggregates.Wallet
+  name: stocks
+  aggregate: src.aggregates.Stocks
   injections:
     lock_pool: minos.common.PostgreSqlLockPool
     postgresql_pool: minos.common.PostgreSqlPool
@@ -10,9 +10,9 @@ service:
     transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
     event_repository: minos.aggregate.PostgreSqlEventRepository
     snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
+    stocks_repository: src.StocksQueryServiceRepository
     saga_manager: minos.saga.SagaManager
     discovery: minos.networks.DiscoveryConnector
-    wallet_repository: src.WalletQueryServiceRepository
   services:
     - minos.networks.BrokerHandlerService
     - minos.networks.RestService
@@ -23,8 +23,8 @@ services:
   - minos.aggregate.TransactionService
   - minos.aggregate.SnapshotService
   - minos.saga.SagaService
-  - src.queries.WalletQueryService
-  - src.commands.WalletCommandService
+  - src.queries.StocksQueryService
+  - src.commands.StocksCommandService
 rest:
   host: 0.0.0.0
   port: 8080
@@ -32,7 +32,7 @@ broker:
   host: localhost
   port: 9092
   queue:
-    database: wallet_db
+    database: stocks_db
     user: minos
     password: min0s
     host: localhost
@@ -40,26 +40,26 @@ broker:
     records: 1000
     retry: 2
 repository:
-  database: wallet_db
+  database: stocks_db
   user: minos
   password: min0s
   host: localhost
   port: 5432
 query_repository:
-  database: wallet_query_db
+  database: stocks_query_db
   user: minos
   password: min0s
   host: localhost
   port: 5432
 snapshot:
-  database: wallet_db
+  database: stocks_db
   user: minos
   password: min0s
   host: localhost
   port: 5432
 saga:
   storage:
-    path: ./wallet.lmdb
+    path: ./stocks.lmdb
 discovery:
   client: minos.plugins.minos_discovery.MinosDiscoveryClient
   host: localhost
