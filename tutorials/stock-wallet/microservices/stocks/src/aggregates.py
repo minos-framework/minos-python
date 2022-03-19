@@ -2,14 +2,12 @@ from uuid import (
     UUID,
 )
 
-from minos.aggregate import (
-    Aggregate,
-    RootEntity,
-    Entity
-)
+from minos.aggregate import Aggregate, RootEntity, Entity
+
 
 class Stocks(RootEntity):
     """Stocks RootEntity class."""
+
     ticker: str
     updated: str
 
