@@ -2,7 +2,11 @@ from uuid import (
     UUID,
 )
 
-from minos.aggregate import Aggregate, RootEntity, Entity
+from minos.aggregate import (
+    Aggregate,
+    Entity,
+    RootEntity,
+)
 
 
 class Stocks(RootEntity):

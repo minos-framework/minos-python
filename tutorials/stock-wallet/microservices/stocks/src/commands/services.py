@@ -1,5 +1,13 @@
 import logging
 
+import arrow
+from alpha_vantage.timeseries import (
+    TimeSeries,
+)
+
+from minos.aggregate import (
+    Event,
+)
 from minos.cqrs import (
     CommandService,
 )
@@ -9,15 +17,10 @@ from minos.networks import (
     ResponseException,
     enroute,
 )
-from minos.aggregate import (
-    Event,
-)
 
 from ..aggregates import (
     StocksAggregate,
 )
-import arrow
-from alpha_vantage.timeseries import TimeSeries
 
 logger = logging.getLogger(__name__)
 
