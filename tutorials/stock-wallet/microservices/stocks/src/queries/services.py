@@ -1,7 +1,6 @@
 from dependency_injector.wiring import (
     Provide,
 )
-
 from src.queries.repository import (
     StocksQueryServiceRepository,
 )

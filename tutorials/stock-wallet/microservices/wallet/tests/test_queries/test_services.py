@@ -1,7 +1,6 @@
 import sys
 import unittest
 
-
 from src import (
     WalletQueryService,
 )
