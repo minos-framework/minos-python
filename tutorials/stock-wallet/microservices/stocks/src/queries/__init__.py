@@ -1,7 +1,6 @@
-from .services import (
-    StocksQueryService,
-)
-
 from .repository import (
     StocksQueryServiceRepository,
+)
+from .services import (
+    StocksQueryService,
 )

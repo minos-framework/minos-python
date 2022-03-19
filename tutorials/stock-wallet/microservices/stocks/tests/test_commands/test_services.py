@@ -16,7 +16,6 @@ from tests.utils import (
 
 
 class TestStocksCommandService(unittest.IsolatedAsyncioTestCase):
-
     def setUp(self) -> None:
         self.injector = build_dependency_injector()
 
@@ -49,5 +48,5 @@ class TestStocksCommandService(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

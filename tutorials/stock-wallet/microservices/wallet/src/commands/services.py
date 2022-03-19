@@ -41,7 +41,7 @@ class WalletCommandService(CommandService):
             content = await request.content()
             wallet_uuid = content["wallet"]
             ticker = content["ticker"]
-            is_crypto = content['is_crypto']
+            is_crypto = content["is_crypto"]
             uuid = await WalletAggregate.add_ticker(wallet_uuid, ticker, is_crypto)
             return Response({"uuid": uuid, "ticker": ticker, "is_crypto": is_crypto})
         except Exception as exc:
