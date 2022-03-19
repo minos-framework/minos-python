@@ -1,13 +1,19 @@
 import sys
 import unittest
 
-from minos.aggregate import Event, Action
-from minos.networks import InMemoryRequest, Response
-
 from src import (
-    WalletQueryServiceRepository, Wallet,
+    Wallet,
+    WalletQueryServiceRepository,
 )
 
+from minos.aggregate import (
+    Action,
+    Event,
+)
+from minos.networks import (
+    InMemoryRequest,
+    Response,
+)
 from tests.utils import (
     build_dependency_injector,
 )

@@ -20,6 +20,7 @@ class StocksAggregate(Aggregate[Stocks]):
     @staticmethod
     async def add_ticker_to_stock(ticker: str) -> UUID:
         """Create a new instance."""
+
         stocks = await Stocks.create(ticker=ticker, updated="Never")
         return stocks
 
