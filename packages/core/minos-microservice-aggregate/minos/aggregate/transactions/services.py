@@ -3,13 +3,9 @@ from datetime import (
     timedelta,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     Config,
+    Inject,
     current_datetime,
 )
 from minos.networks import (
@@ -38,10 +34,8 @@ class TransactionService:
     """Snapshot Service class."""
 
     # noinspection PyUnusedLocal
-    @inject
-    def __init__(
-        self, *args, transaction_repository: TransactionRepository = Provide["transaction_repository"], **kwargs
-    ):
+    @Inject()
+    def __init__(self, *args, transaction_repository: TransactionRepository, **kwargs):
         self.transaction_repository = transaction_repository
 
     @classmethod

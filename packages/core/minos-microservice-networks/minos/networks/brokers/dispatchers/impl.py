@@ -18,13 +18,9 @@ from typing import (
     Union,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     Config,
+    Inject,
     NotProvidedException,
     SetupMixin,
 )
@@ -86,15 +82,15 @@ class BrokerDispatcher(SetupMixin):
 
     # noinspection PyUnusedLocal
     @staticmethod
-    @inject
+    @Inject()
     def _get_publisher(
         publisher: Optional[BrokerPublisher] = None,
-        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
+        broker_publisher: BrokerPublisher = None,
         **kwargs,
     ) -> BrokerPublisher:
         if publisher is None:
             publisher = broker_publisher
-        if publisher is None or isinstance(publisher, Provide):
+        if publisher is None:
             raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
         return publisher
 

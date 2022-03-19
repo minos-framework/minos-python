@@ -6,6 +6,8 @@ from asyncio import (
     gather,
 )
 from typing import (
+    TYPE_CHECKING,
+    Optional,
     Type,
     Union,
 )
@@ -18,23 +20,36 @@ from dependency_injector import (
     providers,
 )
 
-from .config import (
-    Config,
-)
-from .importlib import (
+from ..importlib import (
     import_module,
 )
-from .setup import (
-    SetupMixin,
-)
+
+if TYPE_CHECKING:
+    from ..config import (
+        Config,
+    )
+    from ..setup import (
+        SetupMixin,
+    )
+    from .mixins import (
+        InjectableMixin,
+    )
+
+    _InjectableSetupMixin = Union[SetupMixin, InjectableMixin]
 
 
 class DependencyInjector:
     """Async wrapper of ``dependency_injector.containers.Container``."""
 
-    def __init__(self, config: Config, **kwargs: Union[SetupMixin, Type[SetupMixin], str]):
+    def __init__(
+        self,
+        config: Config,
+        injections: Optional[list[Union[_InjectableSetupMixin, Type[_InjectableSetupMixin], str]]] = None,
+    ):
+        if injections is None:
+            injections = list()
         self.config = config
-        self._raw_injections = kwargs
+        self._raw_injections = injections
 
     @cached_property
     def injections(self) -> dict[str, SetupMixin]:
@@ -44,7 +59,7 @@ class DependencyInjector:
         """
         injections = dict()
 
-        def _fn(raw: Union[SetupMixin, Type[SetupMixin], str]) -> SetupMixin:
+        def _fn(raw: Union[_InjectableSetupMixin, Type[_InjectableSetupMixin], str]) -> _InjectableSetupMixin:
             if isinstance(raw, str):
                 raw = import_module(raw)
             if isinstance(raw, type):
@@ -52,31 +67,60 @@ class DependencyInjector:
                 return raw.from_config(self.config, **injections)
             return raw
 
-        for key, value in self._raw_injections.items():
+        for value in self._raw_injections:
             try:
-                injections[key] = _fn(value)
+                value = _fn(value)
+                key = value.get_injectable_name()
             except Exception as exc:
                 raise ValueError(f"An exception was raised while building injections: {exc!r}")
+            injections[key] = value
 
         return injections
 
-    async def wire(self, *args, **kwargs) -> None:
+    async def wire_and_setup(self, *args, **kwargs) -> None:
         """Connect the configuration.
 
         :return: This method does not return anything.
         """
-        self.container.wire(*args, **kwargs)
 
-        await gather(*(injection.setup() for injection in self.injections.values()))
+        self.wire(*args, **kwargs)
+        await self.setup()
 
-    async def unwire(self) -> None:
+    async def unwire_and_destroy(self) -> None:
         """Disconnect the configuration.
 
         :return: This method does not return anything.
         """
-        await gather(*(injection.destroy() for injection in self.injections.values()))
+        await self.destroy()
+        self.unwire()
 
+    def wire(self, modules=None, *args, **kwargs) -> None:
+        """Connect the configuration.
+
+        :return: This method does not return anything.
+        """
+        from . import (
+            decorators,
+        )
+
+        if modules is None:
+            modules = tuple()
+        modules = [*modules, decorators]
+
+        self.container.wire(modules=modules, *args, **kwargs)
+
+    def unwire(self) -> None:
+        """Disconnect the configuration.
+
+        :return: This method does not return anything.
+        """
         self.container.unwire()
+
+    async def setup(self):
+        await gather(*(injection.setup() for injection in self.injections.values()))
+
+    async def destroy(self):
+        await gather(*(injection.destroy() for injection in self.injections.values()))
 
     @cached_property
     def container(self) -> containers.Container:

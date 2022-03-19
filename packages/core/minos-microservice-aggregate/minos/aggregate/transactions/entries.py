@@ -26,13 +26,10 @@ from uuid import (
     uuid4,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     NULL_UUID,
+    Inject,
+    NotProvidedException,
 )
 
 from ..exceptions import (
@@ -68,7 +65,6 @@ class TransactionEntry:
         "_token",
     )
 
-    @inject
     def __init__(
         self,
         uuid: Optional[UUID] = None,
@@ -77,9 +73,26 @@ class TransactionEntry:
         destination_uuid: Optional[UUID] = None,
         updated_at: Optional[datetime] = None,
         autocommit: bool = True,
-        event_repository: EventRepository = Provide["event_repository"],
-        transaction_repository: TransactionRepository = Provide["transaction_repository"],
+        event_repository: Optional[EventRepository] = None,
+        transaction_repository: Optional[TransactionRepository] = None,
     ):
+
+        if event_repository is None:
+            from ..events import (
+                EventRepository,
+            )
+
+            with suppress(NotProvidedException):
+                event_repository = Inject.resolve(EventRepository)
+
+        if transaction_repository is None:
+            from .repositories import (
+                TransactionRepository,
+            )
+
+            with suppress(NotProvidedException):
+                transaction_repository = Inject.resolve(TransactionRepository)
+
         if uuid is None:
             uuid = uuid4()
         if status is None:

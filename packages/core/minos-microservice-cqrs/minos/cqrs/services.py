@@ -1,6 +1,9 @@
 from abc import (
     ABC,
 )
+from contextlib import (
+    suppress,
+)
 from functools import (
     partial,
 )
@@ -13,16 +16,10 @@ from typing import (
     Any,
 )
 
-from dependency_injector.containers import (
-    Container,
-)
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     Config,
+    Inject,
+    NotProvidedException,
 )
 from minos.networks import (
     EnrouteDecorator,
@@ -42,17 +39,15 @@ from .handlers import (
 class Service(ABC):
     """Base Service class"""
 
-    @inject
-    def __init__(self, container: Container = Provide["<container>"], **kwargs):
-        self._container = container
+    def __init__(self, **kwargs):
         self._kwargs = kwargs
 
     def __getattr__(self, item: str) -> Any:
         if item != "_kwargs" and item in self._kwargs:
             return self._kwargs[item]
 
-        if item != "_container" and isinstance(self._container, Container) and item in self._container.providers:
-            return self._container.providers[item]()
+        with suppress(NotProvidedException):
+            return Inject.resolve_by_name(item)
 
         raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} field.")
 

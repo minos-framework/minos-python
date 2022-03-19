@@ -19,6 +19,7 @@ from typing import (
 
 from minos.common import (
     Config,
+    Injectable,
     MinosImportException,
     SetupMixin,
     import_module,
@@ -40,6 +41,7 @@ from .clients import (
 logger = logging.getLogger(__name__)
 
 
+@Injectable("discovery")
 class DiscoveryConnector(SetupMixin):
     """Discovery Connector class."""
 

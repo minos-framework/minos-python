@@ -1,8 +1,12 @@
 import typing as t
 import unittest
+import warnings
 from asyncio import (
     gather,
     sleep,
+)
+from typing import (
+    Any,
 )
 from unittest.mock import (
     MagicMock,
@@ -11,23 +15,21 @@ from unittest.mock import (
 from aiomisc import (
     PoolBase,
 )
-from aiomisc.pool import (
-    T,
-)
 
 from minos.common import (
     MinosPool,
+    Pool,
     SetupMixin,
 )
 
 
-class _Pool(MinosPool):
+class _Pool(Pool):
     def __init__(self):
         super().__init__()
         self.create_instance_call_count = 0
         self.destroy_instance_call_count = 0
 
-    async def _create_instance(self) -> T:
+    async def _create_instance(self):
         self.create_instance_call_count += 1
         return "foo"
 
@@ -35,11 +37,11 @@ class _Pool(MinosPool):
         self.destroy_instance_call_count += 1
 
 
-class TestMinosPool(unittest.IsolatedAsyncioTestCase):
+class TestPool(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
-        self.assertTrue(issubclass(MinosPool, (SetupMixin, PoolBase)))
+        self.assertTrue(issubclass(Pool, (SetupMixin, PoolBase)))
         # noinspection PyUnresolvedReferences
-        self.assertEqual({"_destroy_instance", "_create_instance"}, MinosPool.__abstractmethods__)
+        self.assertEqual({"_destroy_instance", "_create_instance"}, Pool.__abstractmethods__)
 
     async def test_acquire(self):
         async with _Pool() as pool:
@@ -66,6 +68,27 @@ class TestMinosPool(unittest.IsolatedAsyncioTestCase):
             await gather(_fn1(pool), _fn2(pool))
 
         self.assertEqual(1, pool_mock.call_count)
+
+
+class TestMinosPool(unittest.TestCase):
+    def test_is_subclass(self):
+        self.assertTrue(issubclass(MinosPool, SetupMixin))
+
+    def test_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            setup = _MinosPool()
+            self.assertIsInstance(setup, SetupMixin)
+
+
+class _MinosPool(MinosPool):
+    """For testing purposes."""
+
+    async def _create_instance(self):
+        """For testing purposes."""
+
+    async def _destroy_instance(self, instance: Any) -> None:
+        """For testing purposes."""
 
 
 if __name__ == "__main__":

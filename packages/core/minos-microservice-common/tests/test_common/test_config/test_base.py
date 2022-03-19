@@ -6,6 +6,7 @@ from unittest.mock import (
 
 from minos.common import (
     Config,
+    InjectableMixin,
     MinosConfig,
     MinosConfigException,
 )
@@ -23,6 +24,12 @@ class TestConfig(unittest.TestCase):
         with self.assertRaises(MinosConfigException):
             Config(path=BASE_PATH / "test_fail_config.yaml")
 
+    def test_is_subclass(self):
+        self.assertTrue(issubclass(Config, InjectableMixin))
+
+    def test_get_injectable_name(self):
+        self.assertTrue("config", Config.get_injectable_name())
+
     def test_cast_path(self):
         config_path = self.config._path
         self.assertEqual(CONFIG_FILE_PATH, config_path)
@@ -31,7 +38,7 @@ class TestConfig(unittest.TestCase):
         service = self.config.service
         self.assertEqual("Order", service.name)
         self.assertEqual("src.aggregates.Order", service.aggregate)
-        self.assertEqual(dict(), service.injections)
+        self.assertEqual(list(), service.injections)
         self.assertEqual(list(), service.services)
 
     def test_config_rest(self):

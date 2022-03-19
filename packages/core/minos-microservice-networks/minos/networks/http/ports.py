@@ -10,12 +10,9 @@ from typing import (
 from cached_property import (
     cached_property,
 )
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
 
 from minos.common import (
+    Inject,
     NotProvidedException,
     Port,
 )
@@ -60,14 +57,14 @@ class HttpPort(Port):
         return self._get_connector(**self._init_kwargs)
 
     @staticmethod
-    @inject
+    @Inject()
     def _get_connector(
         connector: Optional[HttpConnector] = None,
-        http_connector: Optional[HttpConnector] = Provide["http_connector"],
+        http_connector: Optional[HttpConnector] = None,
         **kwargs,
     ) -> HttpConnector:
         if connector is None:
             connector = http_connector
-        if connector is None or isinstance(connector, Provide):
+        if connector is None:
             raise NotProvidedException(f"A {HttpConnector!r} must be provided.")
         return connector

@@ -46,7 +46,7 @@ from .importlib import (
     get_internal_modules,
     import_module,
 )
-from .injectors import (
+from .injections import (
     DependencyInjector,
 )
 from .setup import (
@@ -70,7 +70,7 @@ class EntrypointLauncher(SetupMixin):
     def __init__(
         self,
         config: Config,
-        injections: dict[str, Union[SetupMixin, Type[SetupMixin], str]],
+        injections: list[Union[SetupMixin, Type[SetupMixin], str]],
         services: list[Union[Service, Type[Service], str]],
         log_level: Union[int, str] = logging.INFO,
         log_format: Union[str, LogFormat] = "color",
@@ -176,7 +176,7 @@ class EntrypointLauncher(SetupMixin):
 
         :return: This method does not return anything.
         """
-        await self.injector.wire(
+        await self.injector.wire_and_setup(
             modules=self._external_modules + self._internal_modules, packages=self._external_packages
         )
 
@@ -189,7 +189,7 @@ class EntrypointLauncher(SetupMixin):
 
         :return: This method does not return anything.
         """
-        await self.injector.unwire()
+        await self.injector.unwire_and_destroy()
 
     @cached_property
     def injector(self) -> DependencyInjector:
@@ -197,4 +197,4 @@ class EntrypointLauncher(SetupMixin):
 
         :return: A ``DependencyInjector`` instance.
         """
-        return DependencyInjector(config=self.config, **self._raw_injections)
+        return DependencyInjector(self.config, self._raw_injections)
