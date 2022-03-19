@@ -37,6 +37,5 @@ class TestWalletQueryService(unittest.IsolatedAsyncioTestCase):
     #     response_content = await response_wallets.content()
 
 
-
 if __name__ == "__main__":
     unittest.main()

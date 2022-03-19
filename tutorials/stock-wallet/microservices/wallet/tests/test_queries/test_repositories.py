@@ -5,7 +5,8 @@ from minos.aggregate import Event, Action
 from minos.networks import InMemoryRequest, Response
 
 from src import (
-    WalletQueryServiceRepository, Wallet,
+    WalletQueryServiceRepository,
+    Wallet,
 )
 
 from tests.utils import (
