@@ -167,6 +167,9 @@ class ConfigV1(Config):
     def _get_services(self) -> list[str]:
         return self.services
 
+    def _get_aggregate(self) -> dict[str, Any]:
+        return {"root_entity": self.service.aggregate}
+
     def _load(self, path: Path) -> None:
         if not path.exists():
             raise MinosConfigException(f"Check if this path: {path} is correct")

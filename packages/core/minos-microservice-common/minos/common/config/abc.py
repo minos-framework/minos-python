@@ -152,6 +152,17 @@ class Config(ABC):
     def _get_services(self) -> list[str]:
         raise NotImplementedError
 
+    def get_aggregate(self) -> dict[str, Any]:
+        """TODO
+
+        :return: TODO
+        """
+        return self._get_aggregate()
+
+    @abstractmethod
+    def _get_aggregate(self) -> dict[str, Any]:
+        raise NotImplementedError
+
 
 # noinspection PyUnusedLocal
 def _get_version(path: Union[str, Path], *args, **kwargs) -> int:

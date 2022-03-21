@@ -64,7 +64,9 @@ class SnapshotService:
             RefResolver,
         )
 
-        name = config.service.aggregate.rsplit(".", 1)[-1]
+        aggregate_config = config.get_aggregate()
+        name = aggregate_config["root_entity"].rsplit(".", 1)[-1]
+
         return {
             cls.__get_many__.__name__: {enroute.broker.command(RefResolver.build_topic_name(name))},
             cls.__synchronize__.__name__: {enroute.periodic.event("* * * * *")},
@@ -94,8 +96,9 @@ class SnapshotService:
 
         :return: A ``Type`` object.
         """
+        aggregate_config = self.config.get_aggregate()
         # noinspection PyTypeChecker
-        return import_module(self.config.service.aggregate)
+        return import_module(aggregate_config["root_entity"])
 
     # noinspection PyUnusedLocal
     async def __synchronize__(self, request: Request) -> None:
