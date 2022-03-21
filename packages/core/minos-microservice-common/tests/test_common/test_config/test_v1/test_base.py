@@ -26,7 +26,7 @@ class TestConfigV1(unittest.TestCase):
         self.assertTrue(issubclass(ConfigV1, Config))
 
     def test_cast_path(self):
-        config_path = self.config._path
+        config_path = self.config._file_path
         self.assertEqual(CONFIG_FILE_PATH, config_path)
 
     def test_aggregate(self):
@@ -70,21 +70,21 @@ class TestConfigV1(unittest.TestCase):
         )
 
     def test_services_not_defined(self):
-        with patch.object(ConfigV1, "_get", side_effect=MinosConfigException("")):
+        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
             self.assertEqual([], self.config.get_services())
 
     def test_routers(self):
         self.assertEqual(["path.to.MyRouter1", "path.to.MyRouter2"], self.config.get_routers())
 
     def test_routers_not_defined(self):
-        with patch.object(ConfigV1, "_get", side_effect=MinosConfigException("")):
+        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
             self.assertEqual([], self.config.get_routers())
 
     def test_middleware(self):
         self.assertEqual(["tests.middleware.performance_tracking"], self.config.get_middleware())
 
     def test_middleware_not_defined(self):
-        with patch.object(ConfigV1, "_get", side_effect=MinosConfigException("")):
+        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
             self.assertEqual([], self.config.get_middleware())
 
     def test_saga(self):
