@@ -23,6 +23,10 @@ if TYPE_CHECKING:
 class ConfigV2(Config):
     """TODO"""
 
+    @property
+    def _version(self) -> int:
+        return 2
+
     def _get_name(self) -> str:
         pass
 
