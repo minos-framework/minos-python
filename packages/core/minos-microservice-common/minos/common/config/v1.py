@@ -27,9 +27,6 @@ if TYPE_CHECKING:
     from ..injections import (
         InjectableMixin,
     )
-    from ..ports import (
-        Port,
-    )
 
 
 class ConfigV1(Config):
@@ -138,17 +135,6 @@ class ConfigV1(Config):
         # noinspection PyTypeChecker
         return injections
 
-    def _get_ports(self) -> list[type[Port]]:
-        try:
-            ports = self.get_by_key("service.services")
-        except MinosConfigException:
-            ports = list()
-
-        ports = [import_module(classname) for classname in ports]
-
-        # noinspection PyTypeChecker
-        return ports
-
     def _get_interfaces(self) -> dict[str, dict[str, Any]]:
         interfaces = dict()
 
@@ -158,10 +144,19 @@ class ConfigV1(Config):
         with suppress(MinosConfigException):
             interfaces["broker"] = self._get_interface_broker()
 
+        with suppress(MinosConfigException):
+            interfaces["periodic"] = self._get_interface_periodic()
+
         return interfaces
 
     def _get_interface_http(self) -> dict[str, Any]:
+        try:
+            port = next(port for port in self.get_by_key("service.services") if "http" in port.lower())
+        except Exception as exc:
+            raise MinosConfigException(f"The 'http' interface is not available: {exc!r}")
+
         return {
+            "port": import_module(port),
             "connector": {
                 "host": self.get_by_key("rest.host"),
                 "port": int(self.get_by_key("rest.port")),
@@ -169,7 +164,13 @@ class ConfigV1(Config):
         }
 
     def _get_interface_broker(self) -> dict[str, Any]:
+        try:
+            port = next(port for port in self.get_by_key("service.services") if "broker" in port.lower())
+        except Exception as exc:
+            raise MinosConfigException(f"The 'broker' interface is not available: {exc!r}")
+
         return {
+            "port": import_module(port),
             "publisher": dict(),
             "subscriber": dict(),
             "common": {
@@ -180,6 +181,16 @@ class ConfigV1(Config):
                     "retry": int(self.get_by_key("broker.queue.retry")),
                 },
             },
+        }
+
+    def _get_interface_periodic(self):
+        try:
+            port = next(port for port in self.get_by_key("service.services") if "periodic" in port.lower())
+        except Exception as exc:
+            raise MinosConfigException(f"The 'periodic' interface is not available: {exc!r}")
+
+        return {
+            "port": import_module(port),
         }
 
     def _get_services(self) -> list[type]:

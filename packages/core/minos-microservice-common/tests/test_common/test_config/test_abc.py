@@ -16,7 +16,6 @@ from minos.common import (
     InjectableMixin,
     MinosConfig,
     MinosConfigException,
-    Port,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -41,9 +40,6 @@ class _Config(Config):
         """For testing purposes."""
 
     def _get_interfaces(self) -> dict[str, dict[str, Any]]:
-        """For testing purposes."""
-
-    def _get_ports(self) -> list[type[Port]]:
         """For testing purposes."""
 
     def _get_routers(self) -> list[type]:

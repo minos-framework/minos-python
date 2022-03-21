@@ -40,9 +40,6 @@ if TYPE_CHECKING:
     from ..injections import (
         InjectableMixin,
     )
-    from ..ports import (
-        Port,
-    )
 
 
 @Injectable("config")
@@ -180,17 +177,6 @@ class Config(ABC):
         return self._get_interfaces()
 
     def _get_interfaces(self) -> dict[str, dict[str, Any]]:
-        raise NotImplementedError
-
-    def get_ports(self) -> list[type[Port]]:
-        """Get the ports value.
-
-        :return: A ``list`` of ``type`` instances.
-        """
-        return self._get_ports()
-
-    @abstractmethod
-    def _get_ports(self) -> list[type[Port]]:
         raise NotImplementedError
 
     def get_routers(self) -> list[type]:

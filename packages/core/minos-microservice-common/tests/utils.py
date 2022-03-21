@@ -1,4 +1,3 @@
-import unittest
 from pathlib import (
     Path,
 )
@@ -6,6 +5,7 @@ from pathlib import (
 from minos.common import (
     Lock,
     LockPool,
+    Port,
 )
 
 BASE_PATH = Path(__file__).parent
@@ -73,4 +73,34 @@ class FakeLockPool(LockPool):
         return FakeLock()
 
     async def _destroy_instance(self, instance) -> None:
+        """For testing purposes."""
+
+
+class FakePeriodicPort(Port):
+    """For testing purposes."""
+
+    async def start(self) -> None:
+        """For testing purposes."""
+
+    async def stop(self, err: Exception = None) -> None:
+        """For testing purposes."""
+
+
+class FakeHttpPort(Port):
+    """For testing purposes."""
+
+    async def start(self) -> None:
+        """For testing purposes."""
+
+    async def stop(self, err: Exception = None) -> None:
+        """For testing purposes."""
+
+
+class FakeBrokerPort(Port):
+    """For testing purposes."""
+
+    async def start(self) -> None:
+        """For testing purposes."""
+
+    async def stop(self, err: Exception = None) -> None:
         """For testing purposes."""

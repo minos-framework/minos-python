@@ -1,6 +1,10 @@
 service:
     name: Order
     aggregate: builtins.int
+    services:
+        - tests.utils.FakePeriodicPort
+        - tests.utils.FakeHttpPort
+        - tests.utils.FakeBrokerPort
 repository:
     database: order_db
     user: minos

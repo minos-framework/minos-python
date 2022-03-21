@@ -11,6 +11,9 @@ from minos.common import (
 from tests.utils import (
     BASE_PATH,
     CONFIG_FILE_PATH,
+    FakeBrokerPort,
+    FakeHttpPort,
+    FakePeriodicPort,
 )
 
 
@@ -45,14 +48,20 @@ class TestConfigV1(unittest.TestCase):
     def test_interface_http(self):
         observed = self.config.get_interface_by_name("http")
 
-        expected = {"connector": {"host": "localhost", "port": 8900}}
+        expected = {"port": FakeHttpPort, "connector": {"host": "localhost", "port": 8900}}
         self.assertEqual(expected, observed)
+
+    def test_interface_http_not_defined(self):
+        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
+            with self.assertRaises(MinosConfigException):
+                self.config.get_interface_by_name("http")
 
     def test_interface_broker(self):
         config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
         broker = config.get_interface_by_name("broker")
 
         expected = {
+            "port": FakeBrokerPort,
             "common": {
                 "host": "localhost",
                 "port": 9092,
@@ -63,6 +72,22 @@ class TestConfigV1(unittest.TestCase):
         }
 
         self.assertEqual(expected, broker)
+
+    def test_interface_broker_not_defined(self):
+        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
+            with self.assertRaises(MinosConfigException):
+                self.config.get_interface_by_name("broker")
+
+    def test_interface_periodic(self):
+        observed = self.config.get_interface_by_name("periodic")
+
+        expected = {"port": FakePeriodicPort}
+        self.assertEqual(expected, observed)
+
+    def test_interface_periodic_not_defined(self):
+        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
+            with self.assertRaises(MinosConfigException):
+                self.config.get_interface_by_name("periodic")
 
     def test_interface_unknown(self):
         config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
