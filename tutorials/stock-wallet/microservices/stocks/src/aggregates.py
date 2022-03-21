@@ -2,7 +2,12 @@ from uuid import (
     UUID,
 )
 
-from minos.aggregate import Aggregate, Entity, RootEntity, EntitySet
+from minos.aggregate import (
+    Aggregate,
+    Entity,
+    EntitySet,
+    RootEntity,
+)
 
 
 class Quotes(Entity):

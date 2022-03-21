@@ -4,8 +4,12 @@ from sqlalchemy import (
 from sqlalchemy.orm import (
     sessionmaker,
 )
-
-from src.queries.models import Base, Ticker, Wallet, Quotes
+from src.queries.models import (
+    Base,
+    Quotes,
+    Ticker,
+    Wallet,
+)
 
 from minos.common import (
     MinosConfig,
