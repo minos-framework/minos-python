@@ -76,7 +76,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual("Order", self.config.get_by_key("service.name"))
 
     def test_get_cls_by_key(self):
-        self.assertEqual(int, self.config.get_cls_by_key("service.aggregate"))
+        self.assertEqual(int, self.config.get_type_by_key("service.aggregate"))
 
     def test_get_name(self):
         mock = MagicMock(return_value="foo")

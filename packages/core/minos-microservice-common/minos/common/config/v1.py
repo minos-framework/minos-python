@@ -107,7 +107,7 @@ class ConfigV1(Config):
 
     def _get_aggregate(self) -> dict[str, Any]:
         return {
-            "entities": [self.get_cls_by_key("service.aggregate")],
+            "entities": [self.get_type_by_key("service.aggregate")],
         }
 
     def _get_saga(self) -> dict[str, Any]:
@@ -250,7 +250,7 @@ class ConfigV1(Config):
 
     def _get_discovery(self) -> dict[str, Any]:
         return {
-            "client": self.get_cls_by_key("discovery.client"),
+            "client": self.get_type_by_key("discovery.client"),
             "host": self.get_by_key("discovery.host"),
             "port": self.get_by_key("discovery.port"),
         }
