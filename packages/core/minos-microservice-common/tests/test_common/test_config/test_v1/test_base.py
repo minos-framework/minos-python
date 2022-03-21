@@ -74,21 +74,21 @@ class TestConfigV1(unittest.TestCase):
 
     def test_services_not_defined(self):
         with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
-            self.assertEqual([], self.config.get_services())
+            self.assertEqual(list(), self.config.get_services())
 
     def test_routers(self):
         self.assertEqual([set, dict], self.config.get_routers())
 
     def test_routers_not_defined(self):
         with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
-            self.assertEqual([], self.config.get_routers())
+            self.assertEqual(list(), self.config.get_routers())
 
     def test_middleware(self):
         self.assertEqual([list, tuple], self.config.get_middleware())
 
     def test_middleware_not_defined(self):
         with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
-            self.assertEqual([], self.config.get_middleware())
+            self.assertEqual(list(), self.config.get_middleware())
 
     def test_saga(self):
         config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
@@ -96,6 +96,10 @@ class TestConfigV1(unittest.TestCase):
         expected = dict()
 
         self.assertEqual(expected, saga_config)
+
+    def test_saga_not_defined(self):
+        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
+            self.assertEqual(dict(), self.config.get_saga())
 
     def test_database_default(self):
         config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)

@@ -1,12 +1,20 @@
 import unittest
 import warnings
-from typing import Any
-from unittest.mock import MagicMock, call
+from typing import (
+    Any,
+)
+from unittest.mock import (
+    MagicMock,
+    call,
+)
 
 from minos.common import (
     Config,
+    ConfigV1,
     InjectableMixin,
-    MinosConfig, Port,
+    MinosConfig,
+    MinosConfigException,
+    Port,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -165,6 +173,14 @@ class TestConfig(unittest.TestCase):
         self.assertEqual("foo", self.config.get_saga())
 
         self.assertEqual([call()], mock.call_args_list)
+
+    def test_new(self):
+        config = Config(CONFIG_FILE_PATH)
+        self.assertIsInstance(config, ConfigV1)
+
+    def test_new_raises(self):
+        with self.assertRaises(MinosConfigException):
+            Config("path/to/config.yml")
 
 
 class TestMinosConfig(unittest.TestCase):
