@@ -2,24 +2,15 @@ import sys
 import unittest
 
 from src import (
-    Wallet,
-    WalletQueryServiceRepository,
+    Stocks,
 )
 
-from minos.aggregate import (
-    Action,
-    Event,
-)
-from minos.networks import (
-    InMemoryRequest,
-    Response,
-)
 from tests.utils import (
     build_dependency_injector,
 )
 
 
-class TestWalletQueryServiceRepository(unittest.IsolatedAsyncioTestCase):
+class TestStocks(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.injector = build_dependency_injector()
 
@@ -30,8 +21,8 @@ class TestWalletQueryServiceRepository(unittest.IsolatedAsyncioTestCase):
         await self.injector.unwire()
 
     def test_constructor(self):
-        service = WalletQueryServiceRepository()
-        self.assertIsInstance(service, WalletQueryServiceRepository)
+        obj = Stocks()
+        self.assertIsInstance(obj, Stocks)
 
 
 if __name__ == "__main__":

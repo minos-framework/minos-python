@@ -4,24 +4,24 @@ from sqlalchemy import (
 from sqlalchemy.orm import (
     sessionmaker,
 )
-
-from minos.common import (
-    MinosConfig,
-    MinosSetup,
-)
-
 from src.queries.models import (
     Base,
     Ticker,
     Wallet,
 )
 
+from minos.common import (
+    MinosConfig,
+    MinosSetup,
+)
+
 
 class WalletQueryServiceRepository(MinosSetup):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.engine = create_engine("postgresql+psycopg2://postgres:@localhost:5432/wallet_query_db".format(**kwargs))
-        self._session = sessionmaker(bind=self.engine)
+        self.engine = create_engine("postgresql+psycopg2://minos:min0s@postgres:5432/wallet_query_db".format(**kwargs))
+        Session = sessionmaker(bind=self.engine)
+        self._session = Session()
 
     async def _setup(self) -> None:
         Base.metadata.create_all(self.engine)
@@ -48,6 +48,10 @@ class WalletQueryServiceRepository(MinosSetup):
         for wallet in wallets_query:
             wallets.append({"name": wallet.name, "uuid": wallet.uuid})
         return wallets
+
+    def get_wallet(self, uuid):
+        wallet_query = self.session.query(Wallet).filter(Wallet.uuid == uuid).first()
+        return {"id": wallet_query.id, "uuid": wallet_query.uuid, "name": wallet_query.name}
 
     def add_tickers(self, wallet_uuid: str, ticker: dict):
         wallet = self.session.query(Wallet).filter(Wallet.uuid == wallet_uuid).first()
