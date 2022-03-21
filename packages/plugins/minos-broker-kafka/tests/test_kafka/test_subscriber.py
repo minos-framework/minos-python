@@ -47,7 +47,7 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
 
     async def test_from_config(self):
         config = Config(CONFIG_FILE_PATH)
-        broker_config = config.get_interface("broker")["common"]
+        broker_config = config.get_interface_by_name("broker")["common"]
         async with KafkaBrokerSubscriber.from_config(config, topics={"foo", "bar"}) as subscriber:
             self.assertEqual(broker_config["host"], subscriber.broker_host)
             self.assertEqual(broker_config["port"], subscriber.broker_port)
@@ -205,7 +205,7 @@ class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
 
     def test_with_config(self):
         builder = KafkaBrokerSubscriberBuilder().with_config(self.config)
-        common_config = self.config.get_interface("broker")["common"]
+        common_config = self.config.get_interface_by_name("broker")["common"]
 
         expected = {
             "group_id": self.config.get_name(),
@@ -215,7 +215,7 @@ class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
         self.assertEqual(expected, builder.kwargs)
 
     def test_build(self):
-        common_config = self.config.get_interface("broker")["common"]
+        common_config = self.config.get_interface_by_name("broker")["common"]
         builder = KafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
         subscriber = builder.build()
 

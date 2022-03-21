@@ -54,7 +54,7 @@ class TestPostgreSqlEventRepositorySubmit(PostgresAsyncTestCase, EventRepository
 
     def test_from_config(self):
         repository = PostgreSqlEventRepository.from_config(self.config)
-        repository_config = self.config.get_database("event")
+        repository_config = self.config.get_database_by_name("event")
         self.assertEqual(repository_config["database"], repository.database)
         self.assertEqual(repository_config["user"], repository.user)
         self.assertEqual(repository_config["password"], repository.password)

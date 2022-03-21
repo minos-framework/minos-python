@@ -39,7 +39,7 @@ class PostgreSqlBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetec
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> PostgreSqlBrokerSubscriberDuplicateDetector:
-        return cls(**config.get_database("broker"), **kwargs)
+        return cls(**config.get_database_by_name("broker"), **kwargs)
 
     async def _setup(self) -> None:
         await super()._setup()

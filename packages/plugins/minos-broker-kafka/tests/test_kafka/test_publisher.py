@@ -37,7 +37,7 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
 
     def test_from_config(self):
         config = Config(CONFIG_FILE_PATH)
-        broker_config = config.get_interface("broker")["common"]
+        broker_config = config.get_interface_by_name("broker")["common"]
 
         publisher = KafkaBrokerPublisher.from_config(config)
 

@@ -104,7 +104,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         self.assertTrue(issubclass(PostgreSqlSnapshotWriter, PostgreSqlSnapshotSetup))
 
     def test_from_config(self):
-        snapshot_config = self.config.get_database("snapshot")
+        snapshot_config = self.config.get_database_by_name("snapshot")
         self.assertEqual(snapshot_config["host"], self.writer.host)
         self.assertEqual(snapshot_config["port"], self.writer.port)
         self.assertEqual(snapshot_config["database"], self.writer.database)

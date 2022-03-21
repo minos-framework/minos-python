@@ -53,7 +53,7 @@ class TestPostgreSqlTransactionRepository(MinosTestCase, PostgresAsyncTestCase):
 
     def test_from_config(self):
         repository = PostgreSqlTransactionRepository.from_config(self.config)
-        repository_config = self.config.get_database("event")
+        repository_config = self.config.get_database_by_name("event")
         self.assertEqual(repository_config["host"], repository.host)
         self.assertEqual(repository_config["port"], repository.port)
         self.assertEqual(repository_config["database"], repository.database)

@@ -97,7 +97,7 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
 
     def test_from_config(self):
         reader = PostgreSqlSnapshotReader.from_config(self.config)
-        snapshot_config = self.config.get_database("snapshot")
+        snapshot_config = self.config.get_database_by_name("snapshot")
         self.assertEqual(snapshot_config["host"], reader.host)
         self.assertEqual(snapshot_config["port"], reader.port)
         self.assertEqual(snapshot_config["database"], reader.database)

@@ -65,7 +65,7 @@ class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> HttpConnector:
-        http_config = config.get_interface("http")
+        http_config = config.get_interface_by_name("http")
         connector_config = http_config["connector"]
 
         host = connector_config["host"]

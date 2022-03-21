@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from contextlib import (
+    suppress,
+)
 from pathlib import (
     Path,
 )
@@ -146,14 +149,16 @@ class ConfigV1(Config):
         # noinspection PyTypeChecker
         return ports
 
-    def _get_interface(self, name: str):
-        if name == "http":
-            return self._get_interface_http()
+    def _get_interfaces(self) -> dict[str, dict[str, Any]]:
+        interfaces = dict()
 
-        if name == "broker":
-            return self._get_interface_broker()
+        with suppress(MinosConfigException):
+            interfaces["http"] = self._get_interface_http()
 
-        raise MinosConfigException(f"There is not a {name!r} interface.")
+        with suppress(MinosConfigException):
+            interfaces["broker"] = self._get_interface_broker()
+
+        return interfaces
 
     def _get_interface_http(self) -> dict[str, Any]:
         return {
@@ -207,23 +212,28 @@ class ConfigV1(Config):
 
         return middleware
 
-    def _get_database(self, name: str) -> dict[str, Any]:
-        if name == "broker":
-            return self._get_database_broker()
+    def _get_databases(self) -> dict[str, dict[str, Any]]:
+        databases = dict()
 
-        if name == "event":
-            return self._get_database_event()
+        with suppress(MinosConfigException):
+            databases["broker"] = self._get_database_broker()
 
-        if name == "snapshot":
-            return self._get_database_snapshot()
+        with suppress(MinosConfigException):
+            databases["event"] = self._get_database_event()
 
-        if name == "saga":
-            return self._get_database_saga()
+        with suppress(MinosConfigException):
+            databases["snapshot"] = self._get_database_snapshot()
 
-        if name == "query":
-            return self._get_database_query()
+        with suppress(MinosConfigException):
+            databases["saga"] = self._get_database_saga()
 
-        return self._get_database_event()
+        with suppress(MinosConfigException):
+            databases["query"] = self._get_database_query()
+
+        with suppress(MinosConfigException):
+            databases["default"] = self._get_database_event()
+
+        return databases
 
     def _get_database_broker(self):
         return self._get_database_by_name("broker.queue")

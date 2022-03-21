@@ -18,13 +18,13 @@ class TestConfigParameterized(unittest.TestCase):
 
     def test_overwrite_with_parameter(self):
         config = ConfigV1(self.config_file_path, repository_database="foo")
-        database_config = config.get_database()
+        database_config = config.get_database_by_name()
         self.assertEqual("foo", database_config["database"])
 
     @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
     def test_overwrite_with_parameter_priority(self):
         config = ConfigV1(self.config_file_path, repository_database="bar")
-        repository = config.get_database()
+        repository = config.get_database_by_name()
         self.assertEqual("bar", repository["database"])
 
     def test_config_discovery(self):
