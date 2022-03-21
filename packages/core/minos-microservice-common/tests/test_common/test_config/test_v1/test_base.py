@@ -30,7 +30,7 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(CONFIG_FILE_PATH, config_path)
 
     def test_aggregate(self):
-        expected = {"root_entity": "src.aggregates.Order"}
+        expected = {"entities": [int]}
         self.assertEqual(expected, self.config.get_aggregate())
 
     def test_name(self):
@@ -65,23 +65,21 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(expected, broker)
 
     def test_services(self):
-        self.assertEqual(
-            ["tests.services.OrderService", "tests.services.OrderQueryService"], self.config.get_services()
-        )
+        self.assertEqual([float, int], self.config.get_services())
 
     def test_services_not_defined(self):
         with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
             self.assertEqual([], self.config.get_services())
 
     def test_routers(self):
-        self.assertEqual(["path.to.MyRouter1", "path.to.MyRouter2"], self.config.get_routers())
+        self.assertEqual([set, dict], self.config.get_routers())
 
     def test_routers_not_defined(self):
         with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
             self.assertEqual([], self.config.get_routers())
 
     def test_middleware(self):
-        self.assertEqual(["tests.middleware.performance_tracking"], self.config.get_middleware())
+        self.assertEqual([list, tuple], self.config.get_middleware())
 
     def test_middleware_not_defined(self):
         with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
@@ -90,9 +88,7 @@ class TestConfigV1(unittest.TestCase):
     def test_saga(self):
         config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
         saga_config = config.get_saga()
-        expected = {
-            "manager": "minos.saga.SagaManager",
-        }
+        expected = dict()
 
         self.assertEqual(expected, saga_config)
 
@@ -135,7 +131,7 @@ class TestConfigV1(unittest.TestCase):
     def test_discovery(self):
         config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
         discovery = config.get_discovery()
-        self.assertEqual("minos", discovery["client"])
+        self.assertEqual(str, discovery["client"])
         self.assertEqual("localhost", discovery["host"])
         self.assertEqual(8080, discovery["port"])
 

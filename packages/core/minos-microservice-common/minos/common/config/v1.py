@@ -6,15 +6,27 @@ from pathlib import (
     Path,
 )
 from typing import (
+    TYPE_CHECKING,
     Any,
 )
 
 from ..exceptions import (
     MinosConfigException,
 )
+from ..importlib import (
+    import_module,
+)
 from .abc import (
     Config,
 )
+
+if TYPE_CHECKING:
+    from ..injections import (
+        InjectableMixin,
+    )
+    from ..ports import (
+        Port,
+    )
 
 
 class ConfigV1(Config):
@@ -94,7 +106,9 @@ class ConfigV1(Config):
         return self.get_by_key("service.name")
 
     def _get_aggregate(self) -> dict[str, Any]:
-        return {"root_entity": self.get_by_key("service.aggregate")}
+        return {
+            "entities": [self.get_cls_by_key("service.aggregate")],
+        }
 
     def _get_saga(self) -> dict[str, Any]:
         try:
@@ -104,20 +118,29 @@ class ConfigV1(Config):
         saga.pop("storage", None)
         return saga
 
-    def _get_injections(self) -> list[str]:
+    def _get_injections(self) -> list[type[InjectableMixin]]:
         try:
             injections = self.get_by_key("service.injections")
             if isinstance(injections, dict):
                 injections = list(injections.values())
-            return injections
         except MinosConfigException:
-            return list()
+            injections = list()
 
-    def _get_ports(self) -> list[str]:
+        injections = [import_module(classname) for classname in injections]
+
+        # noinspection PyTypeChecker
+        return injections
+
+    def _get_ports(self) -> list[type[Port]]:
         try:
-            return self.get_by_key("service.services")
+            ports = self.get_by_key("service.services")
         except MinosConfigException:
-            return list()
+            ports = list()
+
+        ports = [import_module(classname) for classname in ports]
+
+        # noinspection PyTypeChecker
+        return ports
 
     def _get_interface(self, name: str):
         if name == "http":
@@ -150,23 +173,35 @@ class ConfigV1(Config):
             },
         }
 
-    def _get_services(self) -> list[str]:
+    def _get_services(self) -> list[type]:
         try:
-            return self.get_by_key("services")
+            services = self.get_by_key("services")
         except MinosConfigException:
-            return list()
+            services = list()
 
-    def _get_routers(self) -> list[str]:
-        try:
-            return self.get_by_key("routers")
-        except MinosConfigException:
-            return list()
+        services = [import_module(classname) for classname in services]
 
-    def _get_middleware(self) -> list[str]:
+        return services
+
+    def _get_routers(self) -> list[type]:
         try:
-            return self.get_by_key("middleware")
+            routers = self.get_by_key("routers")
         except MinosConfigException:
-            return list()
+            routers = list()
+
+        routers = [import_module(classname) for classname in routers]
+
+        return routers
+
+    def _get_middleware(self) -> list[type]:
+        try:
+            middleware = self.get_by_key("middleware")
+        except MinosConfigException:
+            middleware = list()
+
+        middleware = [import_module(classname) for classname in middleware]
+
+        return middleware
 
     def _get_database(self, name: str) -> dict[str, Any]:
         if name == "broker":
@@ -215,7 +250,7 @@ class ConfigV1(Config):
 
     def _get_discovery(self) -> dict[str, Any]:
         return {
-            "client": self.get_by_key("discovery.client"),
+            "client": self.get_cls_by_key("discovery.client"),
             "host": self.get_by_key("discovery.host"),
             "port": self.get_by_key("discovery.port"),
         }

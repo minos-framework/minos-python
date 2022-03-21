@@ -17,35 +17,35 @@ class TestConfigParameterized(unittest.TestCase):
         self.config_file_path = BASE_PATH / "test_config.yml"
 
     def test_overwrite_with_parameter(self):
-        config = ConfigV1(path=self.config_file_path, repository_database="foo")
+        config = ConfigV1(self.config_file_path, repository_database="foo")
         database_config = config.get_database()
         self.assertEqual("foo", database_config["database"])
 
     @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
     def test_overwrite_with_parameter_priority(self):
-        config = ConfigV1(path=self.config_file_path, repository_database="bar")
+        config = ConfigV1(self.config_file_path, repository_database="bar")
         repository = config.get_database()
         self.assertEqual("bar", repository["database"])
 
     def test_config_discovery(self):
         config = ConfigV1(
-            path=self.config_file_path,
-            minos_discovery_client="some-type",
+            self.config_file_path,
+            minos_discovery_client="builtins.int",
             minos_discovery_host="some-host",
             minos_discovery_port=333,
         )
         discovery = config.get_discovery()
-        self.assertEqual("some-type", discovery["client"])
+        self.assertEqual(int, discovery["client"])
         self.assertEqual("some-host", discovery["host"])
         self.assertEqual(333, discovery["port"])
 
     def test_config_service_injections_list(self):
-        config = ConfigV1(path=self.config_file_path, service_injections=["foo", "bar"])
-        self.assertEqual(["foo", "bar"], config.get_injections())
+        config = ConfigV1(self.config_file_path, service_injections=["builtins.int", "builtins.float"])
+        self.assertEqual([int, float], config.get_injections())
 
     def test_config_service_injections_dict(self):
-        config = ConfigV1(path=self.config_file_path, service_injections={"one": "foo", "two": "bar"})
-        self.assertEqual(["foo", "bar"], config.get_injections())
+        config = ConfigV1(self.config_file_path, service_injections={"one": "builtins.int", "two": "builtins.float"})
+        self.assertEqual([int, float], config.get_injections())
 
 
 if __name__ == "__main__":

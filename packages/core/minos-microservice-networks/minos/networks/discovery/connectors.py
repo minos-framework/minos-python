@@ -19,9 +19,7 @@ from typing import (
 from minos.common import (
     Config,
     Injectable,
-    MinosImportException,
     SetupMixin,
-    import_module,
 )
 
 from ..decorators import (
@@ -68,22 +66,17 @@ class DiscoveryConnector(SetupMixin):
     def _client_from_config(cls, config: Config) -> DiscoveryClient:
         discovery_config = config.get_discovery()
 
-        client_cls = cls._client_cls_from_classname(discovery_config["client"])
+        client_cls = cls._client_cls_from_config(discovery_config)
         client_host = discovery_config["host"]
         client_port = discovery_config["port"]
 
         return client_cls(host=client_host, port=client_port)
 
     @staticmethod
-    def _client_cls_from_classname(classname: str) -> type[DiscoveryClient]:
-        try:
-            # noinspection PyTypeChecker
-            client_cls: type = import_module(classname)
-        except MinosImportException:
-            raise MinosInvalidDiscoveryClient(f"{classname} could not be imported.")
-
+    def _client_cls_from_config(discovery_config: dict[str, Any]) -> type[DiscoveryClient]:
+        client_cls = discovery_config["client"]
         if not isclass(client_cls) or not issubclass(client_cls, DiscoveryClient):
-            raise MinosInvalidDiscoveryClient(f"{classname} not supported.")
+            raise MinosInvalidDiscoveryClient(f"{client_cls!r} not supported.")
         return client_cls
 
     @staticmethod

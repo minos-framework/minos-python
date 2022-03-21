@@ -11,10 +11,14 @@ from abc import (
 from collections import (
     defaultdict,
 )
+from functools import (
+    lru_cache,
+)
 from pathlib import (
     Path,
 )
 from typing import (
+    TYPE_CHECKING,
     Any,
     Optional,
     Union,
@@ -25,9 +29,20 @@ import yaml
 from ..exceptions import (
     MinosConfigException,
 )
+from ..importlib import (
+    import_module,
+)
 from ..injections import (
     Injectable,
 )
+
+if TYPE_CHECKING:
+    from ..injections import (
+        InjectableMixin,
+    )
+    from ..ports import (
+        Port,
+    )
 
 
 @Injectable("config")
@@ -97,7 +112,7 @@ class Config(ABC):
     def _get_database(self, name: str) -> dict[str, Any]:
         raise NotImplementedError
 
-    def get_injections(self) -> list[str]:
+    def get_injections(self) -> list[type[InjectableMixin]]:
         """TODO
 
         :return: TODO
@@ -105,10 +120,10 @@ class Config(ABC):
         return self._get_injections()
 
     @abstractmethod
-    def _get_injections(self) -> list[str]:
+    def _get_injections(self) -> list[type[InjectableMixin]]:
         raise NotImplementedError
 
-    def get_ports(self) -> list[str]:
+    def get_ports(self) -> list[type[Port]]:
         """TODO
 
         :return: TODO
@@ -116,7 +131,7 @@ class Config(ABC):
         return self._get_ports()
 
     @abstractmethod
-    def _get_ports(self) -> list[str]:
+    def _get_ports(self) -> list[type[Port]]:
         raise NotImplementedError
 
     def get_name(self) -> str:
@@ -142,7 +157,7 @@ class Config(ABC):
     def _get_interface(self, name: str):
         raise NotImplementedError
 
-    def get_routers(self) -> list[str]:
+    def get_routers(self) -> list[type]:
         """TODO
 
         :return: TODO
@@ -150,10 +165,10 @@ class Config(ABC):
         return self._get_routers()
 
     @abstractmethod
-    def _get_routers(self) -> list[str]:
+    def _get_routers(self) -> list[type]:
         raise NotImplementedError
 
-    def get_middleware(self) -> list[str]:
+    def get_middleware(self) -> list[type]:
         """TODO
 
         :return: TODO
@@ -161,7 +176,7 @@ class Config(ABC):
         return self._get_middleware()
 
     @abstractmethod
-    def _get_middleware(self) -> list[str]:
+    def _get_middleware(self) -> list[type]:
         raise NotImplementedError
 
     def get_discovery(self) -> dict[str, Any]:
@@ -175,7 +190,7 @@ class Config(ABC):
     def _get_discovery(self) -> dict[str, Any]:
         raise NotImplementedError
 
-    def get_services(self) -> list[str]:
+    def get_services(self) -> list[type]:
         """TODO
 
         :return: TODO
@@ -183,7 +198,7 @@ class Config(ABC):
         return self._get_services()
 
     @abstractmethod
-    def _get_services(self) -> list[str]:
+    def _get_services(self) -> list[type]:
         raise NotImplementedError
 
     def get_aggregate(self) -> dict[str, Any]:
@@ -208,6 +223,12 @@ class Config(ABC):
     def _get_saga(self) -> dict[str, Any]:
         raise NotImplementedError
 
+    def get_cls_by_key(self, key: str) -> type:
+        """TODO"""
+        classname = self.get_by_key(key)
+        return import_module(classname)
+
+    @lru_cache()
     def get_by_key(self, key: str) -> Any:
         """TODO
 

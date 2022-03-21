@@ -28,11 +28,11 @@ class TestConfigWithEnvironment(unittest.TestCase):
         repository = self.config.get_database()
         self.assertEqual("order_db", repository["database"])
 
-    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_CLIENT": "some-type"})
+    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_CLIENT": "builtins.int"})
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_HOST": "some-host"})
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_PORT": "333"})
     def test_config_discovery(self):
         discovery = self.config.get_discovery()
-        self.assertEqual("some-type", discovery["client"])
+        self.assertEqual(int, discovery["client"])
         self.assertEqual("some-host", discovery["host"])
         self.assertEqual("333", discovery["port"])
