@@ -137,6 +137,7 @@ class PostgreSqlBrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder):
         :return: This method return the builder instance.
         """
         self.kwargs |= config.get_database("broker")
+        self.kwargs |= config.get_interface("broker")["common"]["queue"]
         return super().with_config(config)
 
     def build(self) -> PostgreSqlBrokerSubscriberQueue:

@@ -11,6 +11,7 @@ from pathlib import (
 )
 from typing import (
     Any,
+    Union,
 )
 
 import yaml
@@ -109,7 +110,7 @@ class ConfigV1(Config):
 
     __slots__ = ("_path", "_data", "_with_environment", "_parameterized")
 
-    def __init__(self, path: Path | str, with_environment: bool = True, **kwargs):
+    def __init__(self, path: Union[Path, str], with_environment: bool = True, **kwargs):
         super().__init__()
         if isinstance(path, str):
             path = Path(path)
@@ -123,16 +124,28 @@ class ConfigV1(Config):
     def _get_database(self, name: str) -> dict[str, Any]:
         if name == "broker":
             # noinspection PyProtectedMember
-            return self.broker.queue._asdict()
+            return {
+                "database": self._get("broker.queue.database"),
+                "user": self._get("broker.queue.user"),
+                "password": self._get("broker.queue.password"),
+                "host": self._get("broker.queue.host"),
+                "port": int(self._get("broker.queue.port")),
+            }
+
+        if name == "event":
+            return self._repository._asdict()
+
+        if name == "snapshot":
+            return self._snapshot._asdict()
 
         if name == "saga":
             # noinspection PyProtectedMember
-            return self.saga.storage._asdict()
+            return self._saga.storage._asdict()
 
         if name == "query":
-            return self.query_repository._asdict()
+            return self._query_repository._asdict()
 
-        return self.repository._asdict()
+        return self._repository._asdict()
 
     def _get_injections(self) -> list[str]:
         return self._service_injections
@@ -141,14 +154,27 @@ class ConfigV1(Config):
         return self._service_services
 
     def _get_name(self) -> str:
-        return self.service.name
+        return self._service.name
 
     def _get_interface(self, name: str):
         if name == "http":
-            return {"connector": self.rest._asdict()}
+            return {
+                "connector": self._rest._asdict(),
+            }
 
         if name == "broker":
-            return {"publisher": self.broker._asdict(), "subscriber": self.broker._asdict()}
+            return {
+                "publisher": dict(),
+                "subscriber": dict(),
+                "common": {
+                    "host": self._get("broker.host"),
+                    "port": int(self._get("broker.port")),
+                    "queue": {
+                        "records": int(self._get("broker.queue.records")),
+                        "retry": int(self._get("broker.queue.retry")),
+                    },
+                },
+            }
 
         if name == "periodic":
             return dict()
@@ -156,19 +182,27 @@ class ConfigV1(Config):
         raise ValueError("TODO")
 
     def _get_routers(self) -> list[str]:
-        return self.routers
+        return self._routers
 
     def _get_middleware(self) -> list[str]:
-        return self.middleware
+        return self._middleware
 
     def _get_discovery(self) -> dict[str, Any]:
-        return self.discovery._asdict()
+        return self._discovery._asdict()
 
     def _get_services(self) -> list[str]:
-        return self.services
+        return self._services
 
     def _get_aggregate(self) -> dict[str, Any]:
-        return {"root_entity": self.service.aggregate}
+        return {"root_entity": self._service.aggregate}
+
+    def _get_saga(self) -> dict[str, Any]:
+        try:
+            saga = self._get("saga")
+        except MinosConfigException:
+            saga = dict()
+        saga.pop("storage", None)
+        return saga
 
     def _load(self, path: Path) -> None:
         if not path.exists():
@@ -199,11 +233,7 @@ class ConfigV1(Config):
             raise MinosConfigException(f"{key!r} field is not defined on the configuration!")
 
     @property
-    def service(self) -> SERVICE:
-        """Get the service config.
-
-        :return: A ``SERVICE`` NamedTuple instance.
-        """
+    def _service(self) -> SERVICE:
         return SERVICE(
             name=self._get("service.name"),
             aggregate=self._get("service.aggregate"),
@@ -229,74 +259,32 @@ class ConfigV1(Config):
             return list()
 
     @property
-    def rest(self) -> REST:
-        """Get the rest config.
-
-        :return: A ``REST`` NamedTuple instance.
-        """
+    def _rest(self) -> REST:
         return REST(host=self._get("rest.host"), port=int(self._get("rest.port")))
 
     @property
-    def broker(self) -> BROKER:
-        """Get the events config.
-
-        :return: A ``EVENTS`` NamedTuple instance.
-        """
-        queue = self._broker_queue
-        return BROKER(host=self._get("broker.host"), port=self._get("broker.port"), queue=queue)
-
-    @property
-    def _broker_queue(self) -> QUEUE:
-        return QUEUE(
-            database=self._get("broker.queue.database"),
-            user=self._get("broker.queue.user"),
-            password=self._get("broker.queue.password"),
-            host=self._get("broker.queue.host"),
-            port=int(self._get("broker.queue.port")),
-            records=int(self._get("broker.queue.records")),
-            retry=int(self._get("broker.queue.retry")),
-        )
-
-    @property
-    def services(self) -> list[str]:
-        """Get the commands config.
-
-        :return: A list containing the service class names as string values..
-        """
+    def _services(self) -> list[str]:
         try:
             return self._get("services")
         except MinosConfigException:
             return list()
 
     @property
-    def routers(self) -> list[str]:
-        """Get the routers.
-
-        :return: A list containing the router class names as string values.
-        """
+    def _routers(self) -> list[str]:
         try:
             return self._get("routers")
         except MinosConfigException:
             return list()
 
     @property
-    def middleware(self) -> list[str]:
-        """Get the commands config.
-
-        :return: A list containing the service class names as string values..
-        """
+    def _middleware(self) -> list[str]:
         try:
             return self._get("middleware")
         except MinosConfigException:
             return list()
 
     @property
-    def saga(self) -> SAGA:
-        """Get the sagas config.
-
-        :return: A ``SAGAS`` NamedTuple instance.
-        """
-
+    def _saga(self) -> SAGA:
         storage = self._saga_storage
         return SAGA(storage=storage)
 
@@ -309,11 +297,7 @@ class ConfigV1(Config):
         return queue
 
     @property
-    def repository(self) -> REPOSITORY:
-        """Get the repository config.
-
-        :return: A ``REPOSITORY`` NamedTuple instance.
-        """
+    def _repository(self) -> REPOSITORY:
         return REPOSITORY(
             database=self._get("repository.database"),
             user=self._get("repository.user"),
@@ -323,11 +307,7 @@ class ConfigV1(Config):
         )
 
     @property
-    def query_repository(self) -> REPOSITORY:
-        """Get the query_repository config.
-
-        :return: A ``QUERY_REPOSITORY`` NamedTuple instance.
-        """
+    def _query_repository(self) -> REPOSITORY:
         return REPOSITORY(
             database=self._get("query_repository.database"),
             user=self._get("query_repository.user"),
@@ -337,11 +317,7 @@ class ConfigV1(Config):
         )
 
     @property
-    def snapshot(self) -> SNAPSHOT:
-        """Get the snapshot config.
-
-        :return: A ``SNAPSHOT`` NamedTuple instance.
-        """
+    def _snapshot(self) -> SNAPSHOT:
         return SNAPSHOT(
             database=self._get("snapshot.database"),
             user=self._get("snapshot.user"),
@@ -351,11 +327,7 @@ class ConfigV1(Config):
         )
 
     @property
-    def discovery(self) -> DISCOVERY:
-        """Get the sagas config.
-
-        :return: A ``DISCOVERY`` NamedTuple instance.
-        """
+    def _discovery(self) -> DISCOVERY:
         client = self._get("discovery.client")
         host = self._get("discovery.host")
         port = self._get("discovery.port")

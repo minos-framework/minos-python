@@ -29,8 +29,6 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         self._meta_repository_db = self._config.get_database("aggregate")
 
         self._meta_broker_queue_db = self._config.get_database("broker")
-        self._meta_broker_queue_db.pop("records")
-        self._meta_broker_queue_db.pop("retry")
 
         self._meta_snapshot_db = self._config.get_database("aggregate")
 

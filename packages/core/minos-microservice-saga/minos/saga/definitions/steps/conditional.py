@@ -39,6 +39,9 @@ if TYPE_CHECKING:
 class ConditionalSagaStep(SagaStep):
     """Conditional Saga Step class."""
 
+    if_then_alternatives: list[IfThenAlternative]
+    else_then_alternative: ElseThenAlternative
+
     def __init__(
         self,
         if_then: Optional[Union[IfThenAlternative, Iterable[IfThenAlternative]]] = None,

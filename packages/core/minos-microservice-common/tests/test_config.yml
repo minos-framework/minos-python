@@ -42,6 +42,7 @@ services:
 middleware:
     - tests.middleware.performance_tracking
 saga:
+    manager: minos.saga.SagaManager
     storage:
         path: "./order.lmdb"
 discovery:

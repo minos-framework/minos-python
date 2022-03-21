@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 import warnings
 from abc import (
     ABC,
@@ -29,7 +33,7 @@ from ..injections import (
 class Config(ABC):
     """Config base class."""
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs) -> Config:
         if cls not in (Config, MinosConfig):
             return super().__new__(cls)
 
@@ -161,6 +165,17 @@ class Config(ABC):
 
     @abstractmethod
     def _get_aggregate(self) -> dict[str, Any]:
+        raise NotImplementedError
+
+    def get_saga(self) -> dict[str, Any]:
+        """TODO
+
+        :return: TODO
+        """
+        return self._get_saga()
+
+    @abstractmethod
+    def _get_saga(self) -> dict[str, Any]:
         raise NotImplementedError
 
 

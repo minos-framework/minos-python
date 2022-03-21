@@ -17,7 +17,6 @@ from inspect import (
     signature,
 )
 from typing import (
-    TYPE_CHECKING,
     Any,
     Generic,
     TypeVar,
@@ -45,13 +44,9 @@ from .mixins import (
     InjectableMixin,
 )
 
-if TYPE_CHECKING:
-    InputType = TypeVar("InputType", bound=type)
+InputType = TypeVar("InputType", bound=type)
 
-    class _Output(InputType, InjectableMixin):
-        """For typing purposes only."""
-
-    OutputType = type[_Output]
+OutputType = Union[InputType, type[InjectableMixin]]
 
 
 class Injectable:

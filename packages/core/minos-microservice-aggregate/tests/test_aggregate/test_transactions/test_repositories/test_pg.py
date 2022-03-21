@@ -53,11 +53,12 @@ class TestPostgreSqlTransactionRepository(MinosTestCase, PostgresAsyncTestCase):
 
     def test_from_config(self):
         repository = PostgreSqlTransactionRepository.from_config(self.config)
-        self.assertEqual(self.config.repository.host, repository.host)
-        self.assertEqual(self.config.repository.port, repository.port)
-        self.assertEqual(self.config.repository.database, repository.database)
-        self.assertEqual(self.config.repository.user, repository.user)
-        self.assertEqual(self.config.repository.password, repository.password)
+        repository_config = self.config.get_database("event")
+        self.assertEqual(repository_config["host"], repository.host)
+        self.assertEqual(repository_config["port"], repository.port)
+        self.assertEqual(repository_config["database"], repository.database)
+        self.assertEqual(repository_config["user"], repository.user)
+        self.assertEqual(repository_config["password"], repository.password)
 
     async def test_setup(self):
         async with aiopg.connect(**self.repository_db) as connection:

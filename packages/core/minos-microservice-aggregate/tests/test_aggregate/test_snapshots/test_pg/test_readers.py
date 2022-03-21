@@ -97,11 +97,12 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
 
     def test_from_config(self):
         reader = PostgreSqlSnapshotReader.from_config(self.config)
-        self.assertEqual(self.config.snapshot.host, reader.host)
-        self.assertEqual(self.config.snapshot.port, reader.port)
-        self.assertEqual(self.config.snapshot.database, reader.database)
-        self.assertEqual(self.config.snapshot.user, reader.user)
-        self.assertEqual(self.config.snapshot.password, reader.password)
+        snapshot_config = self.config.get_database("snapshot")
+        self.assertEqual(snapshot_config["host"], reader.host)
+        self.assertEqual(snapshot_config["port"], reader.port)
+        self.assertEqual(snapshot_config["database"], reader.database)
+        self.assertEqual(snapshot_config["user"], reader.user)
+        self.assertEqual(snapshot_config["password"], reader.password)
 
     async def test_find_by_uuid(self):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])

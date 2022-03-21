@@ -37,11 +37,13 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
 
     def test_from_config(self):
         config = Config(CONFIG_FILE_PATH)
+        broker_config = config.get_interface("broker")["common"]
+
         publisher = KafkaBrokerPublisher.from_config(config)
 
         self.assertIsInstance(publisher, KafkaBrokerPublisher)
-        self.assertEqual(config.broker.host, publisher.broker_host)
-        self.assertEqual(config.broker.port, publisher.broker_port)
+        self.assertEqual(broker_config["host"], publisher.broker_host)
+        self.assertEqual(broker_config["port"], publisher.broker_port)
 
     async def test_client(self):
         publisher = KafkaBrokerPublisher.from_config(CONFIG_FILE_PATH)

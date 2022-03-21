@@ -68,7 +68,7 @@ class BrokerDispatcher(SetupMixin):
         kwargs["actions"] = cls._get_actions(config, **kwargs)
         kwargs["publisher"] = cls._get_publisher(**kwargs)
         # noinspection PyProtectedMember
-        return cls(**config.get_database("broker"), **kwargs)
+        return cls(**kwargs)
 
     @staticmethod
     def _get_actions(
