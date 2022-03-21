@@ -64,6 +64,11 @@ class TestConfigV1(unittest.TestCase):
 
         self.assertEqual(expected, broker)
 
+    def test_interface_unknown(self):
+        config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
+        with self.assertRaises(MinosConfigException):
+            config.get_interface("unknown")
+
     def test_services(self):
         self.assertEqual([float, int], self.config.get_services())
 
@@ -101,6 +106,15 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual("localhost", database_config["host"])
         self.assertEqual(5432, database_config["port"])
 
+    def test_database_event(self):
+        config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
+        database_config = config.get_database("event")
+        self.assertEqual("order_db", database_config["database"])
+        self.assertEqual("minos", database_config["user"])
+        self.assertEqual("min0s", database_config["password"])
+        self.assertEqual("localhost", database_config["host"])
+        self.assertEqual(5432, database_config["port"])
+
     def test_database_query(self):
         config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
         query_database = config.get_database("query")
@@ -127,6 +141,11 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual("min0s", snapshot["password"])
         self.assertEqual("localhost", snapshot["host"])
         self.assertEqual(5432, snapshot["port"])
+
+    def test_database_saga(self):
+        config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
+        saga = config.get_database("saga")
+        self.assertEqual(CONFIG_FILE_PATH.parent / "order.lmdb", saga["path"])
 
     def test_discovery(self):
         config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)

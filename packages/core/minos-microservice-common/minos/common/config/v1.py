@@ -149,7 +149,7 @@ class ConfigV1(Config):
         if name == "broker":
             return self._get_interface_broker()
 
-        raise ValueError(f"There is not a {name!r} interface.")
+        raise MinosConfigException(f"There is not a {name!r} interface.")
 
     def _get_interface_http(self) -> dict[str, Any]:
         return {
