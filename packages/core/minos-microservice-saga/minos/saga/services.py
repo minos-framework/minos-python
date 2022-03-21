@@ -23,7 +23,7 @@ class SagaService:
 
     @classmethod
     def __get_enroute__(cls, config: Config) -> dict[str, set[EnrouteDecorator]]:
-        return {cls.__reply__.__name__: {enroute.broker.command(f"{config.service.name}Reply")}}
+        return {cls.__reply__.__name__: {enroute.broker.command(f"{config.get_name()}Reply")}}
 
     async def __reply__(self, request: BrokerRequest) -> None:
         response = SagaResponse.from_message(request.raw)

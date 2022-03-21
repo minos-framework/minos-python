@@ -136,8 +136,7 @@ class PostgreSqlBrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder):
         :param config: The config to be set.
         :return: This method return the builder instance.
         """
-        # noinspection PyProtectedMember
-        self.kwargs |= config.broker.queue._asdict()
+        self.kwargs |= config.get_database("broker")
         return super().with_config(config)
 
     def build(self) -> PostgreSqlBrokerSubscriberQueue:

@@ -59,7 +59,7 @@ class BrokerClient(SetupMixin):
         kwargs["publisher"] = cls._get_publisher(**kwargs)
 
         kwargs["subscriber"] = cls._get_subscriber(config, **kwargs)
-        # noinspection PyProtectedMember
+
         return cls(**kwargs)
 
     # noinspection PyUnusedLocal

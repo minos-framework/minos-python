@@ -120,6 +120,53 @@ class ConfigV1(Config):
         self._with_environment = with_environment
         self._parameterized = kwargs
 
+    def _get_database(self, name: str) -> dict[str, Any]:
+        if name == "broker":
+            # noinspection PyProtectedMember
+            return self.broker.queue._asdict()
+
+        if name == "saga":
+            # noinspection PyProtectedMember
+            return self.saga.storage._asdict()
+
+        if name == "query":
+            return self.query_repository._asdict()
+
+        return self.repository._asdict()
+
+    def _get_injections(self) -> list[str]:
+        return self._service_injections
+
+    def _get_ports(self) -> list[str]:
+        return self._service_services
+
+    def _get_name(self) -> str:
+        return self.service.name
+
+    def _get_interface(self, name: str):
+        if name == "http":
+            return {"connector": self.rest._asdict()}
+
+        if name == "broker":
+            return {"publisher": self.broker._asdict(), "subscriber": self.broker._asdict()}
+
+        if name == "periodic":
+            return dict()
+
+        raise ValueError("TODO")
+
+    def _get_routers(self) -> list[str]:
+        return self.routers
+
+    def _get_middleware(self) -> list[str]:
+        return self.middleware
+
+    def _get_discovery(self) -> dict[str, Any]:
+        return self.discovery._asdict()
+
+    def _get_services(self) -> list[str]:
+        return self.services
+
     def _load(self, path: Path) -> None:
         if not path.exists():
             raise MinosConfigException(f"Check if this path: {path} is correct")

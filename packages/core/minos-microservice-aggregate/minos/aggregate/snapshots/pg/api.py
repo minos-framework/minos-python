@@ -51,7 +51,7 @@ class PostgreSqlSnapshotRepository(SnapshotRepository):
         if "writer" not in kwargs:
             kwargs["writer"] = PostgreSqlSnapshotWriter.from_config(config, **kwargs)
 
-        return cls(**config.snapshot._asdict(), **kwargs)
+        return cls(**config.get_database("aggregate"), **kwargs)
 
     async def _setup(self) -> None:
         await self.writer.setup()

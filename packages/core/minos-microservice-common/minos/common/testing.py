@@ -26,13 +26,13 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         self._uuid = uuid4()
         self._config = Config(self.CONFIG_FILE_PATH)
 
-        self._meta_repository_db = self._config.repository._asdict()
+        self._meta_repository_db = self._config.get_database("aggregate")
 
-        self._meta_broker_queue_db = self._config.broker.queue._asdict()
+        self._meta_broker_queue_db = self._config.get_database("broker")
         self._meta_broker_queue_db.pop("records")
         self._meta_broker_queue_db.pop("retry")
 
-        self._meta_snapshot_db = self._config.snapshot._asdict()
+        self._meta_snapshot_db = self._config.get_database("aggregate")
 
         self._test_db = {"database": f"test_db_{self._uuid.hex}", "user": f"test_user_{self._uuid.hex}"}
 

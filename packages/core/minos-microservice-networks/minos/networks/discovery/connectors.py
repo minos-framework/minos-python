@@ -14,7 +14,6 @@ from operator import (
 )
 from typing import (
     Any,
-    Type,
 )
 
 from minos.common import (
@@ -57,31 +56,47 @@ class DiscoveryConnector(SetupMixin):
 
     @classmethod
     def _from_config(cls, *args, config: Config, **kwargs) -> DiscoveryConnector:
-        client_cls = cls._client_cls_from_config(config)
-        client = client_cls(host=config.discovery.host, port=config.discovery.port)
-        port = config.rest.port
-        name = config.service.name
+        client = cls._client_from_config(config)
+        port = cls._port_from_config(config)
+        name = config.get_name()
         host = get_host_ip()
         endpoints = cls._endpoints_from_config(config)
 
         return cls(client, name, host, port, endpoints, *args, **kwargs)
 
+    @classmethod
+    def _client_from_config(cls, config: Config) -> DiscoveryClient:
+        discovery_config = config.get_discovery()
+
+        client_cls = cls._client_cls_from_classname(discovery_config["client"])
+        client_host = discovery_config["host"]
+        client_port = discovery_config["port"]
+
+        return client_cls(host=client_host, port=client_port)
+
     @staticmethod
-    def _client_cls_from_config(config: Config) -> Type[DiscoveryClient]:
+    def _client_cls_from_classname(classname: str) -> type[DiscoveryClient]:
         try:
             # noinspection PyTypeChecker
-            client_cls: type = import_module(config.discovery.client)
+            client_cls: type = import_module(classname)
         except MinosImportException:
-            raise MinosInvalidDiscoveryClient(f"{config.discovery.client} could not be imported.")
+            raise MinosInvalidDiscoveryClient(f"{classname} could not be imported.")
 
         if not isclass(client_cls) or not issubclass(client_cls, DiscoveryClient):
-            raise MinosInvalidDiscoveryClient(f"{config.discovery.client} not supported.")
+            raise MinosInvalidDiscoveryClient(f"{classname} not supported.")
         return client_cls
+
+    @staticmethod
+    def _port_from_config(config: Config) -> int:
+        http_config = config.get_interface("http")
+        connector_config = http_config["connector"]
+        port = connector_config["port"]
+        return port
 
     @staticmethod
     def _endpoints_from_config(config: Config) -> list[dict[str, Any]]:
         endpoints = list()
-        for name in config.services:
+        for name in config.get_services():
             decorators = EnrouteAnalyzer(name, config).get_rest_command_query()
             endpoints += [
                 {"url": decorator.url, "method": decorator.method} for decorator in set(chain(*decorators.values()))

@@ -39,8 +39,7 @@ class PostgreSqlBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetec
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> PostgreSqlBrokerSubscriberDuplicateDetector:
-        # noinspection PyProtectedMember
-        return cls(**config.broker.queue._asdict(), **kwargs)
+        return cls(**config.get_database("broker"), **kwargs)
 
     async def _setup(self) -> None:
         await super()._setup()

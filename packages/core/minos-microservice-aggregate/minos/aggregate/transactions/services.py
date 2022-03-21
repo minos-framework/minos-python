@@ -40,11 +40,11 @@ class TransactionService:
 
     @classmethod
     def __get_enroute__(cls, config: Config) -> dict[str, set[EnrouteDecorator]]:
-        service_name = config.service.name
+        name = config.get_name()
         return {
-            cls.__reserve__.__name__: {enroute.broker.command(f"_Reserve{service_name.title()}Transaction")},
-            cls.__reject__.__name__: {enroute.broker.command(f"_Reject{service_name.title()}Transaction")},
-            cls.__commit__.__name__: {enroute.broker.command(f"_Commit{service_name.title()}Transaction")},
+            cls.__reserve__.__name__: {enroute.broker.command(f"_Reserve{name.title()}Transaction")},
+            cls.__reject__.__name__: {enroute.broker.command(f"_Reject{name.title()}Transaction")},
+            cls.__commit__.__name__: {enroute.broker.command(f"_Commit{name.title()}Transaction")},
             cls.__reject_blocked__.__name__: {enroute.periodic.event("* * * * *")},
         }
 

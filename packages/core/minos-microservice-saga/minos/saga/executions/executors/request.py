@@ -105,4 +105,4 @@ class RequestExecutor(Executor):
 
     @Inject()
     def _get_default_reply_topic(self, config: Config) -> str:
-        return f"{config.service.name}Reply"
+        return f"{config.get_name()}Reply"

@@ -104,9 +104,9 @@ class EntrypointLauncher(SetupMixin):
     @classmethod
     def _from_config(cls, *args, config: Config, **kwargs) -> EntrypointLauncher:
         if "injections" not in kwargs:
-            kwargs["injections"] = config.service.injections
+            kwargs["injections"] = config.get_injections()
         if "services" not in kwargs:
-            kwargs["services"] = config.service.services
+            kwargs["services"] = config.get_ports()
         return cls(config, *args, **kwargs)
 
     def launch(self) -> NoReturn:

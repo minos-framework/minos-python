@@ -69,10 +69,14 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> KafkaBrokerPublisher:
-        kwargs["broker_host"] = config.broker.host
-        kwargs["broker_port"] = config.broker.port
-        # noinspection PyProtectedMember
-        return cls(**config.broker.queue._asdict(), **kwargs)
+        broker_config = config.get_interface("broker")
+        publisher_config = broker_config["publisher"]
+
+        kwargs["broker_host"] = publisher_config["host"]
+        kwargs["broker_port"] = publisher_config["port"]
+        kwargs |= config.get_database("broker")
+
+        return cls(**kwargs)
 
     async def _setup(self) -> None:
         await super()._setup()

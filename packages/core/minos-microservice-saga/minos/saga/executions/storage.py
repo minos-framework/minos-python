@@ -46,8 +46,7 @@ class SagaExecutionStorage:
         :param kwargs: Additional named arguments.
         :return: A new ``SagaExecutionStorage`` instance.
         """
-        # noinspection PyProtectedMember
-        return cls(**(config.saga.storage._asdict() | kwargs))
+        return cls(**(config.get_database("saga") | kwargs))
 
     def store(self, execution: SagaExecution) -> None:
         """Store an execution.

@@ -43,7 +43,7 @@ class HttpAdapter(SetupMixin):
 
     @staticmethod
     def _routers_from_config(config: Config, **kwargs) -> list[HttpRouter]:
-        classes = config.routers
+        classes = config.get_routers()
         classes = tuple((class_ if not isinstance(class_, str) else import_module(class_)) for class_ in classes)
         classes = filter(lambda router: issubclass(router, HttpRouter), classes)
         routers = [router.from_config(config) for router in classes]

@@ -14,4 +14,4 @@ def get_service_name(config: Config) -> str:
     """Get the service name."""
     if config is None:
         raise NotProvidedException("The config object must be provided.")
-    return config.service.name
+    return config.get_name()
