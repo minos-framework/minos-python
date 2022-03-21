@@ -49,9 +49,10 @@ class StocksCommandService(CommandService):
                     data, metadata = await self.call_remote(ticker["ticker"])
                     await StocksAggregate.update_time_ticker(ticker["uuid"], last_data_refresh)
                     for when, stock_quote in data.items():
-                        await StocksAggregate.add_quotes(ticker["uuid"], {"close": stock_quote["4. close"],
-                                                                          "volume": stock_quote['5. volume'],
-                                                                          "when": when})
+                        await StocksAggregate.add_quotes(
+                            ticker["uuid"],
+                            {"close": stock_quote["4. close"], "volume": stock_quote["5. volume"], "when": when},
+                        )
                 else:
                     time_now_object = arrow.get(updated, "YYYY-MM-DD HH:mm:ss")
                     time_last_update = arrow.get(last_data_refresh, "YYYY-MM-DD HH:mm:ss")
@@ -64,6 +65,11 @@ class StocksCommandService(CommandService):
                             diff_loop = last_data_refresh - time_stock_loop
                             diff_loop_seconds = diff_loop.total_seconds()
                             if diff_loop_seconds > 60:
-                                await StocksAggregate.add_quotes(ticker["uuid"], {"close": stock_quote["4. close"],
-                                                                              "volume": stock_quote['5. volume'],
-                                                                              "when": when})
+                                await StocksAggregate.add_quotes(
+                                    ticker["uuid"],
+                                    {
+                                        "close": stock_quote["4. close"],
+                                        "volume": stock_quote["5. volume"],
+                                        "when": when,
+                                    },
+                                )

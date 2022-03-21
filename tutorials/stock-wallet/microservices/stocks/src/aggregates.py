@@ -2,12 +2,7 @@ from uuid import (
     UUID,
 )
 
-from minos.aggregate import (
-    Aggregate,
-    Entity,
-    RootEntity,
-    EntitySet
-)
+from minos.aggregate import Aggregate, Entity, RootEntity, EntitySet
 
 
 class Quotes(Entity):
@@ -19,6 +14,7 @@ class Quotes(Entity):
 
 class Stocks(RootEntity):
     """Stocks RootEntity class."""
+
     ticker: str
     updated: str
     quotes: EntitySet[Quotes]
@@ -42,14 +38,14 @@ class StocksAggregate(Aggregate[Stocks]):
 
     @staticmethod
     async def get_all_tickers():
-        all_stocks = [{"uuid": stock.uuid, "ticker": stock.ticker, "updated": stock.updated} async for stock in
-                      Stocks.get_all()]
+        all_stocks = [
+            {"uuid": stock.uuid, "ticker": stock.ticker, "updated": stock.updated} async for stock in Stocks.get_all()
+        ]
         return all_stocks
 
     @staticmethod
     async def add_quotes(stock_uuid: str, quote: dict):
         stock = await Stocks.get(stock_uuid)
-        quote = Quotes(close_value=quote["close"], volume=quote['volume'], when=quote['when'],
-                       ticker_name=stock.ticker)
+        quote = Quotes(close_value=quote["close"], volume=quote["volume"], when=quote["when"], ticker_name=stock.ticker)
         stock.quotes.add(quote)
         await stock.save()
