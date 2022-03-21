@@ -1,10 +1,11 @@
 from sqlalchemy import (
     Boolean,
     Column,
+    DateTime,
     Float,
     ForeignKey,
     Integer,
-    String, DateTime,
+    String,
 )
 from sqlalchemy.dialects.postgresql import UUID as UUID_PG
 from sqlalchemy.orm import (

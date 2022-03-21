@@ -21,6 +21,7 @@ from minos.networks import (
 
 logger = logging.getLogger(__name__)
 
+
 class WalletQueryService(QueryService):
     """WalletQueryService class."""
 
@@ -67,7 +68,7 @@ class WalletQueryService(QueryService):
         """
         params = await request.params()
         quotes = []
-        if params['ticker_uuid'] != "null":
+        if params["ticker_uuid"] != "null":
             quotes = self.repository.get_quotes(params["ticker_uuid"])
         return Response(quotes)
 
@@ -101,8 +102,5 @@ class WalletQueryService(QueryService):
         """
         event: Event = await request.content()
 
-        for quote in event['quotes']:
-            self.repository.add_quote(quote['ticker_name'],
-                                      quote['close_value'],
-                                      quote['volume'],
-                                      quote['when'])
+        for quote in event["quotes"]:
+            self.repository.add_quote(quote["ticker_name"], quote["close_value"], quote["volume"], quote["when"])

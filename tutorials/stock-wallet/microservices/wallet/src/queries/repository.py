@@ -4,12 +4,11 @@ from sqlalchemy import (
 from sqlalchemy.orm import (
     sessionmaker,
 )
-
 from src.queries.models import (
     Base,
+    Quotes,
     Ticker,
     Wallet,
-    Quotes
 )
 
 from minos.common import (
@@ -81,12 +80,7 @@ class WalletQueryServiceRepository(MinosSetup):
         quotes_query = self.session.query(Quotes).filter(Quotes.ticker == ticker).all()
         quotes = []
         for quote in quotes_query:
-            quotes.append(
-                {
-                    "close": quote.close_value,
-                    "when": quote.when
-                }
-            )
+            quotes.append({"close": quote.close_value, "when": quote.when})
         return quotes
 
     def add_quote(self, ticker: str, close: float, volume: int, when: str):
