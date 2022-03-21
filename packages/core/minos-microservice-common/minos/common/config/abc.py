@@ -72,11 +72,15 @@ class Config(ABC):
         from .v1 import (
             ConfigV1,
         )
+        from .v2 import (
+            ConfigV2,
+        )
 
         version_mapper = defaultdict(
             lambda: ConfigV1,
             {
                 1: ConfigV1,
+                2: ConfigV2,
             },
         )
 

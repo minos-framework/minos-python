@@ -8,6 +8,7 @@ from .builders import (
 from .config import (
     Config,
     ConfigV1,
+    ConfigV2,
     MinosConfig,
 )
 from .database import (
