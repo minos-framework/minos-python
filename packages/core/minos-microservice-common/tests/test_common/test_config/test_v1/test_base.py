@@ -33,6 +33,9 @@ class TestConfigV1(unittest.TestCase):
         expected = {"entities": [int]}
         self.assertEqual(expected, self.config.get_aggregate())
 
+    def test_version(self):
+        self.assertEqual(1, self.config.version)
+
     def test_name(self):
         self.assertEqual("Order", self.config.get_name())
 

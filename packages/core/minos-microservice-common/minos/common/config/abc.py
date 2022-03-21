@@ -100,6 +100,19 @@ class Config(ABC):
         with path.open() as file:
             return yaml.load(file, Loader=yaml.FullLoader)
 
+    @property
+    def version(self) -> int:
+        """Get the version value.
+
+        :return: A ``int`` instance.
+        """
+        return self._version
+
+    @property
+    @abstractmethod
+    def _version(self) -> int:
+        raise NotImplementedError
+
     def get_name(self) -> str:
         """Get the name value.
 
