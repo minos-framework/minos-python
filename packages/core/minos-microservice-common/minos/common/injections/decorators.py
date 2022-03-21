@@ -19,6 +19,7 @@ from inspect import (
 from typing import (
     Any,
     Generic,
+    Type,
     TypeVar,
     Union,
     get_args,
@@ -46,7 +47,7 @@ from .mixins import (
 
 InputType = TypeVar("InputType", bound=type)
 
-OutputType = Union[InputType, type[InjectableMixin]]
+OutputType = Union[InputType, Type[InjectableMixin]]
 
 
 class Injectable:
