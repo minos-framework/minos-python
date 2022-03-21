@@ -70,7 +70,7 @@ class TestPool(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(1, pool_mock.call_count)
 
 
-class TestMinosPool(unittest.TestCase):
+class TestMinosPool(unittest.IsolatedAsyncioTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(MinosPool, SetupMixin))
 
