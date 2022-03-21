@@ -97,19 +97,15 @@ class Config(ABC):
         with path.open() as file:
             return yaml.load(file, Loader=yaml.FullLoader)
 
-    def get_database(self, name: Optional[str] = None) -> dict[str, Any]:
+    def get_name(self) -> str:
         """TODO
 
-        :param name: TODO
         :return: TODO
         """
-        if name is None:
-            name = "default"
-
-        return self._get_database(name)
+        return self._get_name()
 
     @abstractmethod
-    def _get_database(self, name: str) -> dict[str, Any]:
+    def _get_name(self) -> str:
         raise NotImplementedError
 
     def get_injections(self) -> list[type[InjectableMixin]]:
@@ -123,6 +119,33 @@ class Config(ABC):
     def _get_injections(self) -> list[type[InjectableMixin]]:
         raise NotImplementedError
 
+    def get_database(self, name: Optional[str] = None) -> dict[str, Any]:
+        """TODO
+
+        :param name: TODO
+        :return: TODO
+        """
+        if name is None:
+            name = "default"
+
+        return self._get_database(name=name)
+
+    @abstractmethod
+    def _get_database(self, name: str) -> dict[str, Any]:
+        raise NotImplementedError
+
+    def get_interface(self, name: str) -> dict[str, Any]:
+        """TODO
+
+        :param name: TODO
+        :return: TODO
+        """
+        return self._get_interface(name=name)
+
+    @abstractmethod
+    def _get_interface(self, name: str):
+        raise NotImplementedError
+
     def get_ports(self) -> list[type[Port]]:
         """TODO
 
@@ -132,29 +155,6 @@ class Config(ABC):
 
     @abstractmethod
     def _get_ports(self) -> list[type[Port]]:
-        raise NotImplementedError
-
-    def get_name(self) -> str:
-        """TODO
-
-        :return: TODO
-        """
-        return self._get_name()
-
-    @abstractmethod
-    def _get_name(self) -> str:
-        raise NotImplementedError
-
-    def get_interface(self, name: str) -> dict[str, Any]:
-        """TODO
-
-        :param name: TODO
-        :return: TODO
-        """
-        return self._get_interface(name)
-
-    @abstractmethod
-    def _get_interface(self, name: str):
         raise NotImplementedError
 
     def get_routers(self) -> list[type]:
@@ -179,17 +179,6 @@ class Config(ABC):
     def _get_middleware(self) -> list[type]:
         raise NotImplementedError
 
-    def get_discovery(self) -> dict[str, Any]:
-        """TODO
-
-        :return: TODO
-        """
-        return self._get_discovery()
-
-    @abstractmethod
-    def _get_discovery(self) -> dict[str, Any]:
-        raise NotImplementedError
-
     def get_services(self) -> list[type]:
         """TODO
 
@@ -199,6 +188,17 @@ class Config(ABC):
 
     @abstractmethod
     def _get_services(self) -> list[type]:
+        raise NotImplementedError
+
+    def get_discovery(self) -> dict[str, Any]:
+        """TODO
+
+        :return: TODO
+        """
+        return self._get_discovery()
+
+    @abstractmethod
+    def _get_discovery(self) -> dict[str, Any]:
         raise NotImplementedError
 
     def get_aggregate(self) -> dict[str, Any]:
@@ -224,7 +224,11 @@ class Config(ABC):
         raise NotImplementedError
 
     def get_cls_by_key(self, key: str) -> type:
-        """TODO"""
+        """TODO
+
+        :param key: TODO
+        :return: TODO
+        """
         classname = self.get_by_key(key)
         return import_module(classname)
 
