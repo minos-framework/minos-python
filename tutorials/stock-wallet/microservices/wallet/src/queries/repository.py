@@ -77,7 +77,7 @@ class WalletQueryServiceRepository(MinosSetup):
 
     def get_quotes(self, ticker_uuid):
         ticker = self.session.query(Ticker).filter(Ticker.uuid == ticker_uuid).first()
-        quotes_query = self.session.query(Quotes).filter(Quotes.ticker == ticker).all()
+        quotes_query = self.session.query(Quotes).filter(Quotes.ticker == ticker).order_by(Quotes.when.desc()).all()
         quotes = []
         for quote in quotes_query:
             quotes.append({"close": quote.close_value, "when": quote.when})
