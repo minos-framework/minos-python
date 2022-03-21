@@ -5,7 +5,9 @@ from typing import (
 )
 from unittest.mock import (
     MagicMock,
+    PropertyMock,
     call,
+    patch,
 )
 
 from minos.common import (
@@ -23,6 +25,11 @@ from tests.utils import (
 
 class _Config(Config):
     """For testing purposes."""
+
+    # noinspection PyPropertyDefinition
+    @property
+    def _version(self) -> int:
+        """For testing purposes."""
 
     def _get_name(self) -> str:
         """For testing purposes."""
@@ -77,6 +84,12 @@ class TestConfig(unittest.TestCase):
 
     def test_get_cls_by_key(self):
         self.assertEqual(int, self.config.get_type_by_key("service.aggregate"))
+
+    def test_get_version(self):
+        with patch.object(_Config, "_version", new_callable=PropertyMock, return_value=0) as mock:
+            self.assertEqual(0, self.config.version)
+
+        self.assertEqual([call()], mock.call_args_list)
 
     def test_get_name(self):
         mock = MagicMock(return_value="foo")

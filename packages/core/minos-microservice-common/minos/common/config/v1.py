@@ -102,6 +102,10 @@ class ConfigV1(Config):
         "discovery.port": "minos_discovery_port",
     }
 
+    @property
+    def _version(self) -> int:
+        return 1
+
     def _get_name(self) -> str:
         return self.get_by_key("service.name")
 
