@@ -5,7 +5,8 @@ from unittest.mock import (
 
 from minos.common import (
     Config,
-    MinosConfigException, ConfigV2,
+    ConfigV2,
+    MinosConfigException,
 )
 from tests.utils import (
     BASE_PATH,

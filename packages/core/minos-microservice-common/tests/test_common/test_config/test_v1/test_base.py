@@ -10,7 +10,6 @@ from minos.common import (
 )
 from tests.utils import (
     BASE_PATH,
-    CONFIG_FILE_PATH,
     FakeBrokerPort,
     FakeHttpPort,
     FakePeriodicPort,
@@ -19,18 +18,11 @@ from tests.utils import (
 
 class TestConfigV1(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = ConfigV1(path=CONFIG_FILE_PATH)
-
-    def test_ini_fail(self):
-        with self.assertRaises(MinosConfigException):
-            ConfigV1(path=BASE_PATH / "test_fail_config.yaml")
+        self.file_path = BASE_PATH / "config" / "v1.yml"
+        self.config = ConfigV1(self.file_path)
 
     def test_is_subclass(self):
         self.assertTrue(issubclass(ConfigV1, Config))
-
-    def test_cast_path(self):
-        config_path = self.config._file_path
-        self.assertEqual(CONFIG_FILE_PATH, config_path)
 
     def test_aggregate(self):
         expected = {"entities": [int]}
@@ -57,7 +49,7 @@ class TestConfigV1(unittest.TestCase):
                 self.config.get_interface_by_name("http")
 
     def test_interface_broker(self):
-        config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
+        config = ConfigV1(self.file_path, with_environment=False)
         broker = config.get_interface_by_name("broker")
 
         expected = {
@@ -90,7 +82,7 @@ class TestConfigV1(unittest.TestCase):
                 self.config.get_interface_by_name("periodic")
 
     def test_interface_unknown(self):
-        config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
+        config = ConfigV1(self.file_path, with_environment=False)
         with self.assertRaises(MinosConfigException):
             config.get_interface_by_name("unknown")
 
@@ -116,7 +108,7 @@ class TestConfigV1(unittest.TestCase):
             self.assertEqual(list(), self.config.get_middleware())
 
     def test_saga(self):
-        config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
+        config = ConfigV1(self.file_path, with_environment=False)
         saga_config = config.get_saga()
         expected = dict()
 
@@ -127,7 +119,7 @@ class TestConfigV1(unittest.TestCase):
             self.assertEqual(dict(), self.config.get_saga())
 
     def test_database_default(self):
-        config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
+        config = ConfigV1(self.file_path, with_environment=False)
         database_config = config.get_default_database()
         self.assertEqual("order_db", database_config["database"])
         self.assertEqual("minos", database_config["user"])
@@ -136,7 +128,7 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(5432, database_config["port"])
 
     def test_database_event(self):
-        config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
+        config = ConfigV1(self.file_path, with_environment=False)
         database_config = config.get_database_by_name("event")
         self.assertEqual("order_db", database_config["database"])
         self.assertEqual("minos", database_config["user"])
@@ -145,7 +137,7 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(5432, database_config["port"])
 
     def test_database_query(self):
-        config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
+        config = ConfigV1(self.file_path, with_environment=False)
         query_database = config.get_database_by_name("query")
         self.assertEqual("order_query_db", query_database["database"])
         self.assertEqual("minos", query_database["user"])
@@ -154,7 +146,7 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(5432, query_database["port"])
 
     def test_database_snapshot(self):
-        config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
+        config = ConfigV1(self.file_path, with_environment=False)
         snapshot = config.get_database_by_name("snapshot")
         self.assertEqual("order_db", snapshot["database"])
         self.assertEqual("minos", snapshot["user"])
@@ -163,7 +155,7 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(5432, snapshot["port"])
 
     def test_database_broker(self):
-        config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
+        config = ConfigV1(self.file_path, with_environment=False)
         snapshot = config.get_database_by_name("broker")
         self.assertEqual("order_db", snapshot["database"])
         self.assertEqual("minos", snapshot["user"])
@@ -172,12 +164,12 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(5432, snapshot["port"])
 
     def test_database_saga(self):
-        config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
+        config = ConfigV1(self.file_path, with_environment=False)
         saga = config.get_database_by_name("saga")
-        self.assertEqual(CONFIG_FILE_PATH.parent / "order.lmdb", saga["path"])
+        self.assertEqual(self.file_path.parent / "order.lmdb", saga["path"])
 
     def test_discovery(self):
-        config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
+        config = ConfigV1(self.file_path, with_environment=False)
         discovery = config.get_discovery()
         self.assertEqual(str, discovery["client"])
         self.assertEqual("localhost", discovery["host"])

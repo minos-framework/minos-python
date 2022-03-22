@@ -75,6 +75,13 @@ class TestConfig(unittest.TestCase):
     def test_file_path(self):
         self.assertEqual(CONFIG_FILE_PATH, self.config.file_path)
 
+    def test_file_path_from_str(self):
+        self.assertEqual(CONFIG_FILE_PATH, _Config(str(CONFIG_FILE_PATH)).file_path)
+
+    def test_file_raises(self):
+        with self.assertRaises(MinosConfigException):
+            _Config("/path/to/fake/config.yml")
+
     def test_get_by_key(self):
         self.assertEqual("Order", self.config.get_by_key("service.name"))
 
