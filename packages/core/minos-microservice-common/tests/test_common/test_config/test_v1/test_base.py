@@ -128,7 +128,7 @@ class TestConfigV1(unittest.TestCase):
 
     def test_database_default(self):
         config = ConfigV1(path=CONFIG_FILE_PATH, with_environment=False)
-        database_config = config.get_database_by_name()
+        database_config = config.get_default_database()
         self.assertEqual("order_db", database_config["database"])
         self.assertEqual("minos", database_config["user"])
         self.assertEqual("min0s", database_config["password"])
