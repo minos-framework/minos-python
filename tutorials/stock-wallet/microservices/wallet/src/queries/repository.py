@@ -6,6 +6,7 @@ from sqlalchemy.orm import (
 )
 from src.queries.models import (
     Base,
+    Quotes,
     Ticker,
     Wallet,
 )
@@ -73,3 +74,21 @@ class WalletQueryServiceRepository(MinosSetup):
                 }
             )
         return tickers
+
+    def get_quotes(self, ticker_uuid):
+        ticker = self.session.query(Ticker).filter(Ticker.uuid == ticker_uuid).first()
+        quotes_query = self.session.query(Quotes).filter(Quotes.ticker == ticker).order_by(Quotes.when.desc()).all()
+        quotes = []
+        for quote in quotes_query:
+            quotes.append({"close": quote.close_value, "when": quote.when})
+        return quotes
+
+    def add_quote(self, ticker: str, close: float, volume: int, when: str):
+        ticker = self.session.query(Ticker).filter(Ticker.ticker == ticker).first()
+        quote = Quotes()
+        quote.ticker = ticker
+        quote.when = when
+        quote.volume = volume
+        quote.close_value = close
+        self.session.add(quote)
+        self.session.commit()

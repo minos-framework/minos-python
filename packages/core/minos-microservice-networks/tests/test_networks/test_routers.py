@@ -11,8 +11,8 @@ from minos.common import (
 )
 from minos.networks import (
     BrokerRouter,
-    EnrouteBuilder,
     EnrouteDecorator,
+    EnrouteFactory,
     HttpRouter,
     PeriodicRouter,
     RestHttpRouter,
@@ -38,7 +38,7 @@ class TestRouter(unittest.TestCase):
         self.assertTrue(issubclass(Router, ABC))
 
     def test_constructor(self):
-        builder = EnrouteBuilder(*self.config.get_services(), middleware=self.config.get_middleware())
+        builder = EnrouteFactory(*self.config.get_services(), middleware=self.config.get_middleware())
         router = _Router.from_config(self.config)
         self.assertEqual(builder.get_all().keys(), router.routes.keys())
 
@@ -76,7 +76,7 @@ class TestRestHttpRouter(unittest.TestCase):
         self.assertTrue(issubclass(RestHttpRouter, Router))
 
     def test_routes(self):
-        builder = EnrouteBuilder(*self.config.get_services(), middleware=self.config.get_middleware())
+        builder = EnrouteFactory(*self.config.get_services(), middleware=self.config.get_middleware())
         router = RestHttpRouter.from_config(self.config)
         self.assertEqual(builder.get_rest_command_query().keys(), router.routes.keys())
 
@@ -89,7 +89,7 @@ class TestBrokerRouter(unittest.TestCase):
         self.assertTrue(issubclass(BrokerRouter, Router))
 
     def test_routes(self):
-        builder = EnrouteBuilder(*self.config.get_services(), middleware=self.config.get_middleware())
+        builder = EnrouteFactory(*self.config.get_services(), middleware=self.config.get_middleware())
         router = BrokerRouter.from_config(self.config)
         self.assertEqual(builder.get_broker_command_query_event().keys(), router.routes.keys())
 
@@ -102,7 +102,7 @@ class TestPeriodicRouter(unittest.TestCase):
         self.assertTrue(issubclass(PeriodicRouter, Router))
 
     def test_routes(self):
-        builder = EnrouteBuilder(*self.config.get_services(), middleware=self.config.get_middleware())
+        builder = EnrouteFactory(*self.config.get_services(), middleware=self.config.get_middleware())
         router = PeriodicRouter.from_config(self.config)
         self.assertEqual(builder.get_periodic_event().keys(), router.routes.keys())
 

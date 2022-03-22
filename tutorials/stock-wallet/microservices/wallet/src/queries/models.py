@@ -1,6 +1,7 @@
 from sqlalchemy import (
     Boolean,
     Column,
+    DateTime,
     Float,
     ForeignKey,
     Integer,
@@ -32,3 +33,13 @@ class Ticker(Base):
     ticker = Column(String(10), unique=True)
     is_crypto = Column(Boolean, default=False, unique=False)
     latest_value = Column(Float)
+
+
+class Quotes(Base):
+    __tablename__ = "quotes"
+    id = Column(Integer, primary_key=True)
+    close_value = Column(Float)
+    volume = Column(Integer)
+    when = Column(DateTime)
+    ticker_id = Column(Integer, ForeignKey("ticker.id"))
+    ticker = relationship("Ticker", backref=backref("quotes"))

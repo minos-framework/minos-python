@@ -26,7 +26,7 @@ from minos.common import (
 )
 
 from ...decorators import (
-    EnrouteBuilder,
+    EnrouteFactory,
 )
 from ...exceptions import (
     MinosActionNotFoundException,
@@ -75,7 +75,7 @@ class BrokerDispatcher(SetupMixin):
         config: Config, handlers: dict[str, Optional[Callable]] = None, **kwargs
     ) -> dict[str, Callable[[BrokerRequest], Awaitable[Optional[BrokerResponse]]]]:
         if handlers is None:
-            builder = EnrouteBuilder(*config.get_services(), middleware=config.get_middleware())
+            builder = EnrouteFactory(*config.get_services(), middleware=config.get_middleware())
             decorators = builder.get_broker_command_query_event(config=config, **kwargs)
             handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
         return handlers
