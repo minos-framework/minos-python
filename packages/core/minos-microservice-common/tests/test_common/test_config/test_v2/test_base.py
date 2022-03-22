@@ -16,10 +16,9 @@ from tests.utils import (
 )
 
 
-@unittest.skip("TODO")
 class TestConfigV2(unittest.TestCase):
     def setUp(self) -> None:
-        self.file_path = BASE_PATH / "config" / "v2.yaml"
+        self.file_path = BASE_PATH / "config" / "v2.yml"
         self.config = ConfigV2(self.file_path)
 
     def test_is_subclass(self):
