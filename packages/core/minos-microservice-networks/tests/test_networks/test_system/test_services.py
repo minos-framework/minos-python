@@ -4,7 +4,7 @@ from minos.common import (
     Config,
 )
 from minos.networks import (
-    EnrouteAnalyzer,
+    EnrouteCollector,
     InMemoryRequest,
     Response,
     RestCommandEnrouteDecorator,
@@ -27,7 +27,7 @@ class TestSystemService(unittest.IsolatedAsyncioTestCase):
         expected = {
             self.service.check_health.__name__: {RestCommandEnrouteDecorator("/system/health", "GET")},
         }
-        observed = EnrouteAnalyzer(self.service, self.config).get_all()
+        observed = EnrouteCollector(self.service, self.config).get_all()
         self.assertEqual(expected, observed)
 
     def test_system_health(self):

@@ -23,7 +23,7 @@ from minos.common import (
 )
 
 from ..decorators import (
-    EnrouteAnalyzer,
+    EnrouteCollector,
 )
 from ..exceptions import (
     MinosInvalidDiscoveryClient,
@@ -90,7 +90,7 @@ class DiscoveryConnector(SetupMixin):
     def _endpoints_from_config(config: Config) -> list[dict[str, Any]]:
         endpoints = list()
         for name in config.get_services():
-            decorators = EnrouteAnalyzer(name, config).get_rest_command_query()
+            decorators = EnrouteCollector(name, config).get_rest_command_query()
             endpoints += [
                 {"url": decorator.url, "method": decorator.method} for decorator in set(chain(*decorators.values()))
             ]

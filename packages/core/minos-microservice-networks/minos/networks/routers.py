@@ -22,8 +22,8 @@ from minos.common import (
 
 from .decorators import (
     BrokerEnrouteDecorator,
-    EnrouteBuilder,
     EnrouteDecorator,
+    EnrouteFactory,
     HttpEnrouteDecorator,
     PeriodicEnrouteDecorator,
 )
@@ -55,7 +55,7 @@ class Router(ABC, SetupMixin):
         return routes
 
     def _get_all_routes(self) -> dict[EnrouteDecorator, Callable]:
-        builder = EnrouteBuilder(*self._config.get_services(), middleware=self._config.get_middleware())
+        builder = EnrouteFactory(*self._config.get_services(), middleware=self._config.get_middleware())
         routes = builder.get_all(config=self._config)
         return routes
 
