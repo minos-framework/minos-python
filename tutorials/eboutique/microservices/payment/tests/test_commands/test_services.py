@@ -4,14 +4,14 @@ import unittest
 from faker import (
     Faker,
 )
-from minos.networks import (
-    InMemoryRequest,
-    Response,
-)
-
 from src import (
     Payment,
     PaymentCommandService,
+)
+
+from minos.networks import (
+    InMemoryRequest,
+    Response,
 )
 from tests.utils import (
     build_dependency_injector,
