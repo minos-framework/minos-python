@@ -14,6 +14,7 @@ from typing import (
 )
 
 from minos.common import (
+    BuildableMixin,
     Builder,
 )
 
@@ -24,7 +25,7 @@ from ....collections import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerSubscriberQueue(BrokerQueue, ABC):
+class BrokerSubscriberQueue(BrokerQueue, BuildableMixin, ABC):
     """Broker Subscriber Queue class."""
 
     def __init__(self, topics: Iterable[str], **kwargs):
@@ -55,5 +56,7 @@ class BrokerSubscriberQueueBuilder(Builder[BrokerSubscriberQueue], ABC):
         self.kwargs["topics"] = set(topics)
         return self
 
+
+BrokerSubscriberQueue.set_builder(BrokerSubscriberQueueBuilder)
 
 B = TypeVar("B", bound=BrokerSubscriberQueueBuilder)

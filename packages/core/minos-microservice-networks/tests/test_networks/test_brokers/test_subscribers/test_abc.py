@@ -18,15 +18,13 @@ from minos.networks import (
 )
 
 
-class _BrokerSubscriberBuilder(BrokerSubscriberBuilder):
-    def build(self) -> BrokerSubscriber:
-        """For testing purposes."""
-        return _BrokerSubscriber(**self.kwargs)
-
-
 class _BrokerSubscriber(BrokerSubscriber):
     async def _receive(self) -> BrokerMessage:
         """For testing purposes."""
+
+
+class _BrokerSubscriberBuilder(BrokerSubscriberBuilder):
+    impl_cls = _BrokerSubscriber
 
 
 class TestBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
@@ -70,11 +68,6 @@ class TestBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
 
 
 class TestBrokerSubscriberBuilder(unittest.TestCase):
-    def test_abstract(self):
-        self.assertTrue(issubclass(BrokerSubscriberBuilder, (ABC, SetupMixin)))
-        # noinspection PyUnresolvedReferences
-        self.assertEqual({"build"}, BrokerSubscriberBuilder.__abstractmethods__)
-
     def test_with_group_id(self):
         builder = _BrokerSubscriberBuilder().with_group_id("foobar")
         self.assertIsInstance(builder, _BrokerSubscriberBuilder)

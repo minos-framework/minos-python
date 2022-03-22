@@ -99,7 +99,7 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         """
         self.impl_builder.with_config(config)
         self.queue_builder.with_config(config)
-        return super().with_config(config)
+        return self
 
     def with_kwargs(self, kwargs: dict[str, Any]) -> BrokerSubscriberBuilder:
         """Set kwargs.
@@ -109,7 +109,7 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         """
         self.impl_builder.with_kwargs(kwargs)
         self.queue_builder.with_kwargs(kwargs)
-        return super().with_kwargs(kwargs)
+        return self
 
     def with_topics(self, topics: Iterable[str]) -> BrokerSubscriberBuilder:
         """Set topics.
@@ -120,7 +120,7 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         topics = set(topics)
         self.impl_builder.with_topics(topics)
         self.queue_builder.with_topics(topics)
-        return super().with_topics(topics)
+        return self
 
     def with_group_id(self, group_id: Optional[str]) -> BrokerSubscriberBuilder:
         """Set group_id.
@@ -129,7 +129,7 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         :return: This method return the builder instance.
         """
         self.impl_builder.with_group_id(group_id)
-        return super().with_group_id(group_id)
+        return self
 
     def with_remove_topics_on_destroy(self, remove_topics_on_destroy: bool) -> BrokerSubscriberBuilder:
         """Set remove_topics_on_destroy.
@@ -138,7 +138,7 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         :return: This method return the builder instance.
         """
         self.impl_builder.with_remove_topics_on_destroy(remove_topics_on_destroy)
-        return super().with_remove_topics_on_destroy(remove_topics_on_destroy)
+        return self
 
     def build(self) -> BrokerSubscriber:
         """Build the instance.

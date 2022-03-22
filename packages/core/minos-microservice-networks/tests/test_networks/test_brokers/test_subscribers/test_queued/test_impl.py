@@ -139,7 +139,6 @@ class TestQueuedBrokerSubscriberBuilder(unittest.TestCase):
 
         builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_group_id("foobar")
         self.assertIsInstance(builder, QueuedBrokerSubscriberBuilder)
-        self.assertEqual({"group_id": "foobar"}, builder.kwargs)
 
         self.assertEqual([call("foobar")], impl_mock.call_args_list)
 
@@ -149,7 +148,6 @@ class TestQueuedBrokerSubscriberBuilder(unittest.TestCase):
 
         builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_remove_topics_on_destroy(False)
         self.assertIsInstance(builder, QueuedBrokerSubscriberBuilder)
-        self.assertEqual({"remove_topics_on_destroy": False}, builder.kwargs)
 
         self.assertEqual([call(False)], impl_mock.call_args_list)
 
@@ -161,7 +159,6 @@ class TestQueuedBrokerSubscriberBuilder(unittest.TestCase):
 
         builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_topics({"one", "two"})
         self.assertIsInstance(builder, QueuedBrokerSubscriberBuilder)
-        self.assertEqual({"topics": {"one", "two"}}, builder.kwargs)
 
         self.assertEqual([call({"one", "two"})], impl_mock.call_args_list)
         self.assertEqual([call({"one", "two"})], queue_mock.call_args_list)

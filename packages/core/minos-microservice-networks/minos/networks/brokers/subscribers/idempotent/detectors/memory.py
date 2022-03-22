@@ -7,6 +7,7 @@ from uuid import (
 
 from .abc import (
     BrokerSubscriberDuplicateDetector,
+    BrokerSubscriberDuplicateDetectorBuilder,
 )
 
 
@@ -32,3 +33,17 @@ class InMemoryBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetecto
             self._seen.add((topic, uuid))
             return True
         return False
+
+
+class InMemoryBrokerSubscriberDuplicateDetectorBuilder(BrokerSubscriberDuplicateDetectorBuilder):
+    """In Memory Broker Subscriber Queue Builder class."""
+
+    def build(self) -> InMemoryBrokerSubscriberDuplicateDetector:
+        """Build the instance.
+
+        :return: An ``InMemoryBrokerSubscriberQueue`` instance.
+        """
+        return InMemoryBrokerSubscriberDuplicateDetector(**self.kwargs)
+
+
+InMemoryBrokerSubscriberDuplicateDetector.set_builder(InMemoryBrokerSubscriberDuplicateDetectorBuilder)

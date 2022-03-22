@@ -23,6 +23,7 @@ from minos.common import (
 
 from .abc import (
     BrokerSubscriberDuplicateDetector,
+    BrokerSubscriberDuplicateDetectorBuilder,
 )
 
 
@@ -69,6 +70,29 @@ class PostgreSqlBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetec
             return True
         except IntegrityError:
             return False
+
+
+class PostgreSqlBrokerSubscriberDuplicateDetectorBuilder(BrokerSubscriberDuplicateDetectorBuilder):
+    """TODO"""
+
+    def with_config(self, config: Config):
+        """Set config.
+
+        :param config: The config to be set.
+        :return: This method return the builder instance.
+        """
+        self.kwargs |= config.get_database_by_name("broker")
+        return super().with_config(config)
+
+    def build(self) -> PostgreSqlBrokerSubscriberDuplicateDetector:
+        """Build the instance.
+
+        :return: A ``BrokerSubscriberQueue`` instance.
+        """
+        return PostgreSqlBrokerSubscriberDuplicateDetector(**self.kwargs)
+
+
+PostgreSqlBrokerSubscriberDuplicateDetector.set_builder(PostgreSqlBrokerSubscriberDuplicateDetectorBuilder)
 
 
 class PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory:

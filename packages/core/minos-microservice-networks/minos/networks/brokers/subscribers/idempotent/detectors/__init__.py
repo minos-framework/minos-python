@@ -1,5 +1,6 @@
 from .abc import (
     BrokerSubscriberDuplicateDetector,
+    BrokerSubscriberDuplicateDetectorBuilder,
 )
 from .memory import (
     InMemoryBrokerSubscriberDuplicateDetector,

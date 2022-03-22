@@ -153,7 +153,9 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
 class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
     """Kafka Broker Subscriber Builder class."""
 
-    def with_config(self, config: Config) -> BrokerSubscriberBuilder:
+    impl_cls = KafkaBrokerSubscriber
+
+    def with_config(self, config: Config) -> KafkaBrokerSubscriberBuilder:
         """Set config.
 
         :param config: The config to be set.
@@ -167,14 +169,7 @@ class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
             "broker_host": common_config["host"],
             "broker_port": common_config["port"],
         }
-        return self
-
-    def build(self) -> BrokerSubscriber:
-        """Build the instance.
-
-        :return: A ``KafkaBrokerSubscriber`` instance.
-        """
-        return KafkaBrokerSubscriber(**self.kwargs)
+        return super().with_config(config)
 
 
 KafkaBrokerSubscriber.set_builder(KafkaBrokerSubscriberBuilder)

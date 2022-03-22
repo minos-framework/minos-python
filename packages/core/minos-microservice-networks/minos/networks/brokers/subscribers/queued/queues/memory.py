@@ -28,3 +28,6 @@ class InMemoryBrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder):
         :return: An ``InMemoryBrokerSubscriberQueue`` instance.
         """
         return InMemoryBrokerSubscriberQueue(**self.kwargs)
+
+
+InMemoryBrokerSubscriberQueue.set_builder(InMemoryBrokerSubscriberQueueBuilder)

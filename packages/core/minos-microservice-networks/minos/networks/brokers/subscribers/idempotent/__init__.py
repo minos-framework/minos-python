@@ -1,5 +1,6 @@
 from .detectors import (
     BrokerSubscriberDuplicateDetector,
+    BrokerSubscriberDuplicateDetectorBuilder,
     InMemoryBrokerSubscriberDuplicateDetector,
     PostgreSqlBrokerSubscriberDuplicateDetector,
     PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory,

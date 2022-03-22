@@ -146,3 +146,6 @@ class PostgreSqlBrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder):
         :return: A ``BrokerSubscriberQueue`` instance.
         """
         return PostgreSqlBrokerSubscriberQueue(**self.kwargs)
+
+
+PostgreSqlBrokerSubscriberQueue.set_builder(PostgreSqlBrokerSubscriberQueueBuilder)

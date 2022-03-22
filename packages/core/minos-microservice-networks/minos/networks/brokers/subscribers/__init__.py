@@ -4,6 +4,7 @@ from .abc import (
 )
 from .idempotent import (
     BrokerSubscriberDuplicateDetector,
+    BrokerSubscriberDuplicateDetectorBuilder,
     IdempotentBrokerSubscriber,
     InMemoryBrokerSubscriberDuplicateDetector,
     PostgreSqlBrokerSubscriberDuplicateDetector,
