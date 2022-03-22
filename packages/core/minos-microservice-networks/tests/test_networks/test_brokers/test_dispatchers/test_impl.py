@@ -31,7 +31,7 @@ from minos.networks import (
     Response,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
     FakeModel,
 )
 
@@ -59,7 +59,7 @@ class _Cls:
 
 
 class TestBrokerDispatcher(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
         super().setUp()

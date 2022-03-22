@@ -1,6 +1,10 @@
 service:
     name: Order
     aggregate: tests.utils.Order
+    services:
+      - minos.networks.HttpPort
+      - minos.networks.BrokerHandlerPort
+      - minos.networks.PeriodicTaskSchedulerPort
 routers:
     - minos.networks.BrokerRouter
     - minos.networks.PeriodicRouter
