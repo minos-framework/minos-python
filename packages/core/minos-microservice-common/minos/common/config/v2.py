@@ -44,26 +44,39 @@ class ConfigV2(Config):
         return self.get_by_key("name")
 
     def _get_injections(self) -> list[type[InjectableMixin]]:
+        from ..builders import (
+            BuildableMixin,
+        )
         from ..injections import (
             InjectableMixin,
         )
 
-        ans: list[Union[type, dict]] = list()
+        partial_ans: list[Union[type, dict]] = list()
 
-        ans.extend(self._get_pools().values())
-        ans.append(self._get_interfaces().get("http").get("connector"))
-        ans.append(self._get_interfaces().get("broker").get("publisher"))
-        ans.append(self._get_interfaces().get("broker").get("subscriber"))
-        ans.extend(self._get_aggregate().get("repositories", dict()).values())
-        ans.append(self._get_discovery().get("connector"))
-        ans.append(self._get_saga().get("manager"))
+        partial_ans.extend(self._get_pools().values())
+        partial_ans.append(self._get_interfaces().get("http").get("connector"))
+        partial_ans.append(self._get_interfaces().get("broker").get("publisher"))
+        partial_ans.append(self._get_interfaces().get("broker").get("subscriber"))
+        partial_ans.extend(self._get_aggregate().get("repositories", dict()).values())
+        partial_ans.append(self._get_discovery().get("connector"))
+        partial_ans.append(self._get_saga().get("manager"))
 
         with suppress(MinosConfigException):
             injections = self.get_by_key("injections")
-            ans.extend(import_module(injection) for injection in injections)
+            partial_ans.extend(import_module(injection) for injection in injections)
 
-        ans: list[type] = [(value if isinstance(value, type) else value["client"]) for value in ans]
-        ans: list[type[InjectableMixin]] = [value for value in ans if issubclass(value, InjectableMixin)]
+        ans = list()
+        for type_ in partial_ans:
+            if isinstance(type_, dict):
+                type_ = type_["client"]
+
+            if not issubclass(type_, InjectableMixin):
+                if issubclass(type_, BuildableMixin):
+                    type_ = type_.get_builder()
+                if not issubclass(type_, InjectableMixin):
+                    continue
+            ans.append(type_)
+
         return ans
 
     def _get_databases(self) -> dict[str, dict[str, Any]]:

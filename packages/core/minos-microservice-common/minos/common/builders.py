@@ -70,4 +70,27 @@ class Builder(SetupMixin, ABC, Generic[Instance]):
         """
 
 
+Ins = TypeVar("Ins", bound="BuildableMixin")
+
+
+class BuildableMixin(SetupMixin):
+    """TODO"""
+
+    _builder_cls: type[Builder[Ins]]
+
+    @classmethod
+    def _from_config(cls: type[Ins], config: Config, **kwargs) -> Ins:
+        return cls.get_builder().new().with_config(config).with_kwargs(kwargs).build()
+
+    @classmethod
+    def set_builder(cls, builder: type[Builder[Ins]]):
+        """TODO"""
+        cls._builder_cls = builder
+
+    @classmethod
+    def get_builder(cls) -> type[Builder[Ins]]:
+        """TODO"""
+        return cls._builder_cls
+
+
 B = TypeVar("B", bound=Builder)

@@ -3,6 +3,8 @@ from pathlib import (
 )
 
 from minos.common import (
+    BuildableMixin,
+    Builder,
     Injectable,
     Lock,
     LockPool,
@@ -123,13 +125,33 @@ class FakeHttpConnector:
 
 
 @Injectable("broker_publisher")
-class FakeBrokerPublisher:
+class FakeBrokerPublisher(BuildableMixin):
     """For testing purposes."""
 
 
-@Injectable("broker_subscriber")
-class FakeBrokerSubscriber:
+class FakeBrokerPublisherBuilder(Builder[FakeBrokerPublisher]):
     """For testing purposes."""
+
+    def build(self) -> FakeBrokerPublisher:
+        return FakeBrokerPublisher()
+
+
+FakeBrokerPublisher.set_builder(FakeBrokerPublisherBuilder)
+
+
+class FakeBrokerSubscriber(BuildableMixin):
+    """For testing purposes."""
+
+
+@Injectable("broker_subscriber_builder")
+class FakeBrokerSubscriberBuilder(Builder[FakeBrokerSubscriber]):
+    """For testing purposes."""
+
+    def build(self) -> FakeBrokerSubscriber:
+        return FakeBrokerSubscriber()
+
+
+FakeBrokerSubscriber.set_builder(FakeBrokerSubscriberBuilder)
 
 
 @Injectable("database_pool")

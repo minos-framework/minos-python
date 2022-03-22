@@ -75,11 +75,6 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
 
         self.remove_topics_on_destroy = remove_topics_on_destroy
 
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> KafkaBrokerSubscriber:
-        # noinspection PyTypeChecker
-        return KafkaBrokerSubscriberBuilder.new().with_config(config).with_kwargs(kwargs).build()
-
     async def _setup(self) -> None:
         await super()._setup()
         await self._create_topics()
@@ -180,6 +175,9 @@ class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         :return: A ``KafkaBrokerSubscriber`` instance.
         """
         return KafkaBrokerSubscriber(**self.kwargs)
+
+
+KafkaBrokerSubscriber.set_builder(KafkaBrokerSubscriberBuilder)
 
 
 class PostgreSqlQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):

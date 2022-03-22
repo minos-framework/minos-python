@@ -16,9 +16,9 @@ from typing import (
 )
 
 from minos.common import (
+    BuildableMixin,
     Builder,
     Injectable,
-    SetupMixin,
 )
 
 from ..messages import (
@@ -28,7 +28,7 @@ from ..messages import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerSubscriber(ABC, SetupMixin):
+class BrokerSubscriber(ABC, BuildableMixin):
     """Broker Subscriber class."""
 
     def __init__(self, topics: Iterable[str], **kwargs):
@@ -95,3 +95,6 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriber], ABC):
         """
         self.kwargs["topics"] = set(topics)
         return self
+
+
+BrokerSubscriber.set_builder(BrokerSubscriberBuilder)
