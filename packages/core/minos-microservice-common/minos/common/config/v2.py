@@ -15,9 +15,6 @@ if TYPE_CHECKING:
     from ..injections import (
         InjectableMixin,
     )
-    from ..ports import (
-        Port,
-    )
 
 
 class ConfigV2(Config):
@@ -33,13 +30,10 @@ class ConfigV2(Config):
     def _get_injections(self) -> list[type[InjectableMixin]]:
         pass
 
-    def _get_database(self, name: str) -> dict[str, Any]:
+    def _get_databases(self) -> dict[str, dict[str, Any]]:
         pass
 
-    def _get_interface(self, name: str):
-        pass
-
-    def _get_ports(self) -> list[type[Port]]:
+    def _get_interfaces(self) -> dict[str, dict[str, Any]]:
         pass
 
     def _get_routers(self) -> list[type]:
