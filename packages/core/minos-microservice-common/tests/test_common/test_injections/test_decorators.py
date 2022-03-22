@@ -72,16 +72,17 @@ def _get_foo_with_not_injectable(foo: _Foo, another: int) -> int:
     return another
 
 
-@Inject()
-def _get_bar(bar: Union[_Bar, int]) -> Union[_Bar[int], int]:
-    return bar
+class _Test:
+    @Inject()
+    def _get_bar(self, bar: Union[_Bar, int]) -> Union[_Bar[int], int]:
+        return bar
 
-
-@Inject()
-def _get_bar_with_default(bar: Union[_Bar[int], int] = 12) -> int:
-    if isinstance(bar, _Bar):
-        bar = bar.value
-    return bar
+    @classmethod
+    @Inject()
+    def _get_bar_with_default(cls, bar: Union[_Bar[int], int] = 12) -> int:
+        if isinstance(bar, _Bar):
+            bar = bar.value
+        return bar
 
 
 class TestInject(unittest.IsolatedAsyncioTestCase):
@@ -118,14 +119,15 @@ class TestInject(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(another, await _get_foo_async(foo=another))
 
     def test_decorator_not_provided(self):
+        self.assertEqual(12, _Test()._get_bar(12))
         with self.assertRaises(NotProvidedException):
-            _get_bar()
+            _Test()._get_bar()
 
     def test_decorator_ignore_not_injectable(self):
         self.assertEqual(56, _get_foo_with_not_injectable(another=56))
 
     def test_decorator_not_provided_with_default(self):
-        self.assertEqual(12, _get_bar_with_default())
+        self.assertEqual(12, _Test._get_bar_with_default())
 
     def test_resolve_by_name(self):
         self.assertEqual(self.foo, Inject.resolve_by_name("foo"))

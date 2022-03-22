@@ -10,6 +10,7 @@ import uvloop
 
 from minos.common import (
     EntrypointLauncher,
+    InjectableMixin,
     Port,
     classname,
 )
@@ -58,10 +59,17 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         launcher = EntrypointLauncher.from_config(self.config)
         self.assertIsInstance(launcher, EntrypointLauncher)
         self.assertEqual(self.config, launcher.config)
-        self.assertEqual(dict(), launcher.injector.injections)
+        self.assertEqual(12, len(launcher.injections))
+
+        for injection in launcher.injections.values():
+            self.assertIsInstance(injection, InjectableMixin)
+
         self.assertEqual(3, len(launcher.ports))
         for port in launcher.ports:
             self.assertIsInstance(port, Port)
+
+    def test_injections(self):
+        self.assertEqual(dict(), self.launcher.injections)
 
     def test_ports(self):
         self.assertEqual([1, 2], self.launcher.ports[:2])

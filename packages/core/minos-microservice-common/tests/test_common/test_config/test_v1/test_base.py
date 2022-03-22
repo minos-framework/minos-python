@@ -10,9 +10,21 @@ from minos.common import (
 )
 from tests.utils import (
     BASE_PATH,
+    FakeBrokerClientPool,
     FakeBrokerPort,
+    FakeBrokerPublisher,
+    FakeBrokerSubscriberBuilder,
+    FakeCustomInjection,
+    FakeDatabasePool,
+    FakeDiscoveryConnector,
+    FakeEventRepository,
+    FakeHttpConnector,
     FakeHttpPort,
+    FakeLockPool,
     FakePeriodicPort,
+    FakeSagaManager,
+    FakeSnapshotRepository,
+    FakeTransactionRepository,
 )
 
 
@@ -25,7 +37,10 @@ class TestConfigV1(unittest.TestCase):
         self.assertTrue(issubclass(ConfigV1, Config))
 
     def test_aggregate(self):
-        expected = {"entities": [int]}
+        expected = {
+            "entities": [int],
+            "repositories": dict(),
+        }
         self.assertEqual(expected, self.config.get_aggregate())
 
     def test_version(self):
@@ -35,12 +50,32 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual("Order", self.config.get_name())
 
     def test_injections(self):
-        self.assertEqual(list(), self.config.get_injections())
+        expected = [
+            FakeLockPool,
+            FakeDatabasePool,
+            FakeBrokerClientPool,
+            FakeHttpConnector,
+            FakeBrokerPublisher,
+            FakeBrokerSubscriberBuilder,
+            FakeEventRepository,
+            FakeSnapshotRepository,
+            FakeTransactionRepository,
+            FakeDiscoveryConnector,
+            FakeSagaManager,
+            FakeCustomInjection,
+        ]
+        self.assertEqual(expected, self.config.get_injections())
 
     def test_interface_http(self):
         observed = self.config.get_interface_by_name("http")
 
-        expected = {"port": FakeHttpPort, "connector": {"host": "localhost", "port": 8900}}
+        expected = {
+            "port": FakeHttpPort,
+            "connector": {
+                "host": "localhost",
+                "port": 8900,
+            },
+        }
         self.assertEqual(expected, observed)
 
     def test_interface_http_not_defined(self):
@@ -73,7 +108,9 @@ class TestConfigV1(unittest.TestCase):
     def test_interface_periodic(self):
         observed = self.config.get_interface_by_name("periodic")
 
-        expected = {"port": FakePeriodicPort}
+        expected = {
+            "port": FakePeriodicPort,
+        }
         self.assertEqual(expected, observed)
 
     def test_interface_periodic_not_defined(self):

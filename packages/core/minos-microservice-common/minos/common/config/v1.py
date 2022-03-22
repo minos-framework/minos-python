@@ -112,6 +112,7 @@ class ConfigV1(Config):
     def _get_aggregate(self) -> dict[str, Any]:
         return {
             "entities": [self.get_type_by_key("service.aggregate")],
+            "repositories": dict(),
         }
 
     def _get_saga(self) -> dict[str, Any]:
