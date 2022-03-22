@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 
 class ConfigV2(Config):
-    """TODO"""
+    """Config V2 class."""
 
     @property
     def _version(self) -> int:

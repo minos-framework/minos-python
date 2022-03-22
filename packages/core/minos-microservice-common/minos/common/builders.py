@@ -74,7 +74,7 @@ Ins = TypeVar("Ins", bound="BuildableMixin")
 
 
 class BuildableMixin(SetupMixin):
-    """TODO"""
+    """Buildable Mixin class."""
 
     _builder_cls: type[Builder[Ins]]
 
@@ -83,13 +83,20 @@ class BuildableMixin(SetupMixin):
         return cls.get_builder().new().with_config(config).with_kwargs(kwargs).build()
 
     @classmethod
-    def set_builder(cls, builder: type[Builder[Ins]]):
-        """TODO"""
+    def set_builder(cls: type[Ins], builder: type[Builder[Ins]]) -> None:
+        """Set a builder class.
+
+        :param builder: The builder class to be set.
+        :return: This method does not return anything.
+        """
         cls._builder_cls = builder
 
     @classmethod
     def get_builder(cls) -> type[Builder[Ins]]:
-        """TODO"""
+        """Get the builder class.
+
+        :return: A ``Builder`` subclass.
+        """
         return cls._builder_cls
 
 
