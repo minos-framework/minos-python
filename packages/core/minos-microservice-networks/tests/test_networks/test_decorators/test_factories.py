@@ -10,7 +10,7 @@ from minos.networks import (
     BrokerCommandEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
-    EnrouteBuilder,
+    EnrouteFactory,
     InMemoryRequest,
     MinosRedefinedEnrouteDecoratorException,
     PeriodicEventEnrouteDecorator,
@@ -25,16 +25,16 @@ from tests.utils import (
 )
 
 
-class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
+class TestEnrouteFactory(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.request = InMemoryRequest("test")
-        self.builder = EnrouteBuilder(FakeService, middleware=fake_middleware)
+        self.builder = EnrouteFactory(FakeService, middleware=fake_middleware)
 
     def test_classes(self):
         self.assertEqual((FakeService,), self.builder.classes)
 
     def test_classes_str(self):
-        builder = EnrouteBuilder(classname(FakeService))
+        builder = EnrouteFactory(classname(FakeService))
         self.assertEqual((FakeService,), builder.classes)
 
     async def test_get_rest_command_query(self):
@@ -141,7 +141,7 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
             def _fn2(self, request):
                 return Response("bar")
 
-        builder = EnrouteBuilder(_WrongService)
+        builder = EnrouteFactory(_WrongService)
         with self.assertRaises(MinosRedefinedEnrouteDecoratorException):
             builder.get_rest_command_query()
 
@@ -155,7 +155,7 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
             def _fn2(self, request):
                 return Response("bar")
 
-        builder = EnrouteBuilder(_WrongService)
+        builder = EnrouteFactory(_WrongService)
         with self.assertRaises(MinosRedefinedEnrouteDecoratorException):
             builder.get_rest_command_query()
 

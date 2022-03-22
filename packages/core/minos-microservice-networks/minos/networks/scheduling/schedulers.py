@@ -32,7 +32,7 @@ from minos.common import (
 )
 
 from ..decorators import (
-    EnrouteBuilder,
+    EnrouteFactory,
 )
 from ..requests import (
     ResponseException,
@@ -58,7 +58,7 @@ class PeriodicTaskScheduler(SetupMixin):
 
     @staticmethod
     def _tasks_from_config(config: Config, **kwargs) -> set[PeriodicTask]:
-        builder = EnrouteBuilder(*config.services, middleware=config.middleware)
+        builder = EnrouteFactory(*config.services, middleware=config.middleware)
         decorators = builder.get_periodic_event(config=config, **kwargs)
         tasks = {PeriodicTask(decorator.crontab, fn) for decorator, fn in decorators.items()}
         return tasks

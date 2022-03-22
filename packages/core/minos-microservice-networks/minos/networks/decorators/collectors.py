@@ -31,7 +31,7 @@ from .definitions import (
 )
 
 
-class EnrouteAnalyzer:
+class EnrouteCollector:
     """Search decorators in specified class"""
 
     # noinspection PyUnusedLocal

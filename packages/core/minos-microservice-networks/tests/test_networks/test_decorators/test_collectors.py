@@ -7,7 +7,7 @@ from minos.networks import (
     BrokerCommandEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
-    EnrouteAnalyzer,
+    EnrouteCollector,
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestQueryEnrouteDecorator,
@@ -18,13 +18,13 @@ from tests.utils import (
 )
 
 
-class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
+class TestEnrouteCollector(unittest.IsolatedAsyncioTestCase):
     def test_decorated_str(self):
-        analyzer = EnrouteAnalyzer(classname(FakeService))
+        analyzer = EnrouteCollector(classname(FakeService))
         self.assertEqual(FakeService, analyzer.decorated)
 
     def test_get_all(self):
-        analyzer = EnrouteAnalyzer(FakeService)
+        analyzer = EnrouteCollector(FakeService)
 
         observed = analyzer.get_all()
         expected = {
@@ -46,7 +46,7 @@ class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     def test_get_rest_command_query(self):
-        analyzer = EnrouteAnalyzer(FakeService)
+        analyzer = EnrouteCollector(FakeService)
 
         observed = analyzer.get_rest_command_query()
         expected = {
@@ -58,7 +58,7 @@ class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     def test_get_broker_command_query_event(self):
-        analyzer = EnrouteAnalyzer(FakeService)
+        analyzer = EnrouteCollector(FakeService)
 
         observed = analyzer.get_broker_command_query_event()
         expected = {
@@ -74,7 +74,7 @@ class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     def test_get_broker_command_query(self):
-        analyzer = EnrouteAnalyzer(FakeService)
+        analyzer = EnrouteCollector(FakeService)
 
         observed = analyzer.get_broker_command_query()
         expected = {
@@ -89,7 +89,7 @@ class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     def test_get_broker_event(self):
-        analyzer = EnrouteAnalyzer(FakeService)
+        analyzer = EnrouteCollector(FakeService)
 
         observed = analyzer.get_broker_event()
         expected = {"ticket_added": {BrokerEventEnrouteDecorator("TicketAdded")}}
@@ -97,7 +97,7 @@ class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     def test_get_periodic_event(self):
-        analyzer = EnrouteAnalyzer(FakeService)
+        analyzer = EnrouteCollector(FakeService)
 
         observed = analyzer.get_periodic_event()
         expected = {
@@ -108,7 +108,7 @@ class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     def test_with_get_enroute(self):
-        analyzer = EnrouteAnalyzer(FakeServiceWithGetEnroute)
+        analyzer = EnrouteCollector(FakeServiceWithGetEnroute)
 
         observed = analyzer.get_all()
         expected = {"create_foo": {BrokerCommandEnrouteDecorator("CreateFoo")}}
