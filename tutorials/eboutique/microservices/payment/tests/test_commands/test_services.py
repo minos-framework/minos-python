@@ -1,22 +1,24 @@
 import sys
 import unittest
 
-from src import (
-    PaymentCommandService,
+from faker import (
+    Faker,
 )
-
 from minos.networks import (
     InMemoryRequest,
     Response,
 )
+
+from src import (
+    Payment,
+    PaymentCommandService,
+)
 from tests.utils import (
     build_dependency_injector,
 )
-from faker import Faker
 
 
 class TestPaymentCommandService(unittest.IsolatedAsyncioTestCase):
-
     def setUp(self) -> None:
         self.injector = build_dependency_injector()
 
@@ -40,8 +42,15 @@ class TestPaymentCommandService(unittest.IsolatedAsyncioTestCase):
         expire = faker.credit_card_expire()
         card_number = faker.credit_card_number()
         security_code = faker.credit_card_security_code()
-        request = InMemoryRequest({"card_number": card_number, "validity": expire, "security_code": security_code,
-                                   "name": user_name, "surname": user_surname})
+        request = InMemoryRequest(
+            {
+                "card_number": card_number,
+                "validity": expire,
+                "security_code": security_code,
+                "name": user_name,
+                "surname": user_surname,
+            }
+        )
         response = await service.create_payment(request)
 
         self.assertIsInstance(response, Response)
@@ -50,6 +59,8 @@ class TestPaymentCommandService(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual({"status": "payment accepted"}, observed)
 
+        self.assertEqual(1, len([p async for p in Payment.get_all()]))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
