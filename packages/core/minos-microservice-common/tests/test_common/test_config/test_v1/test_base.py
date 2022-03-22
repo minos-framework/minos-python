@@ -170,10 +170,15 @@ class TestConfigV1(unittest.TestCase):
 
     def test_discovery(self):
         config = ConfigV1(self.file_path, with_environment=False)
-        discovery = config.get_discovery()
-        self.assertEqual(str, discovery["client"])
-        self.assertEqual("localhost", discovery["host"])
-        self.assertEqual(8080, discovery["port"])
+        observed = config.get_discovery()
+
+        expected = {
+            "client": str,
+            "host": "localhost",
+            "port": 8080,
+        }
+
+        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":
