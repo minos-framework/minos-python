@@ -32,8 +32,8 @@ from ..requests import (
     Request,
     Response,
 )
-from .analyzers import (
-    EnrouteAnalyzer,
+from .collectors import (
+    EnrouteCollector,
 )
 from .definitions import (
     BrokerEnrouteDecorator,
@@ -46,8 +46,8 @@ from .definitions import (
 Handler = Callable[[Request], Awaitable[Optional[Response]]]
 
 
-class EnrouteBuilder:
-    """Enroute builder class."""
+class EnrouteFactory:
+    """Enroute factory class."""
 
     def __init__(
         self, *classes: Union[str, type], middleware: Optional[Union[str, Callable, list[Union[str, Callable]]]] = None
@@ -153,7 +153,7 @@ class EnrouteBuilder:
     def _build_one_class(
         self, class_: type, method_name: str, ans: dict[EnrouteDecorator, set[Handler]], **kwargs
     ) -> None:
-        analyzer = EnrouteAnalyzer(class_, **kwargs)
+        analyzer = EnrouteCollector(class_, **kwargs)
         mapping = getattr(analyzer, method_name)()
 
         for name, decorators in mapping.items():
