@@ -10,9 +10,21 @@ from minos.common import (
 )
 from tests.utils import (
     BASE_PATH,
+    FakeBrokerClientPool,
     FakeBrokerPort,
+    FakeBrokerPublisher,
+    FakeBrokerSubscriber,
+    FakeCustomInjection,
+    FakeDatabasePool,
+    FakeDiscoveryConnector,
+    FakeEventRepository,
+    FakeHttpConnector,
     FakeHttpPort,
+    FakeLockPool,
     FakePeriodicPort,
+    FakeSagaManager,
+    FakeSnapshotRepository,
+    FakeTransactionRepository,
 )
 
 
@@ -25,22 +37,50 @@ class TestConfigV2(unittest.TestCase):
         self.assertTrue(issubclass(ConfigV2, Config))
 
     def test_aggregate(self):
-        expected = {"entities": [int]}
+        expected = {
+            "entities": [int],
+            "repositories": {
+                "event": FakeEventRepository,
+                "snapshot": FakeSnapshotRepository,
+                "transaction": FakeTransactionRepository,
+            },
+        }
         self.assertEqual(expected, self.config.get_aggregate())
 
     def test_version(self):
-        self.assertEqual(1, self.config.version)
+        self.assertEqual(2, self.config.version)
 
     def test_name(self):
         self.assertEqual("Order", self.config.get_name())
 
     def test_injections(self):
-        self.assertEqual(list(), self.config.get_injections())
+        expected = [
+            FakeLockPool,
+            FakeDatabasePool,
+            FakeBrokerClientPool,
+            FakeHttpConnector,
+            FakeBrokerPublisher,
+            FakeBrokerSubscriber,
+            FakeEventRepository,
+            FakeSnapshotRepository,
+            FakeTransactionRepository,
+            FakeDiscoveryConnector,
+            FakeSagaManager,
+            FakeCustomInjection,
+        ]
+        self.assertEqual(expected, self.config.get_injections())
 
     def test_interface_http(self):
         observed = self.config.get_interface_by_name("http")
 
-        expected = {"port": FakeHttpPort, "connector": {"host": "localhost", "port": 8900}}
+        expected = {
+            "port": FakeHttpPort,
+            "connector": {
+                "client": FakeHttpConnector,
+                "host": "localhost",
+                "port": 8900,
+            },
+        }
         self.assertEqual(expected, observed)
 
     def test_interface_http_not_defined(self):
@@ -59,8 +99,8 @@ class TestConfigV2(unittest.TestCase):
                 "port": 9092,
                 "queue": {"records": 10, "retry": 2},
             },
-            "publisher": {},
-            "subscriber": {},
+            "publisher": {"client": FakeBrokerPublisher, "queue": int},
+            "subscriber": {"client": FakeBrokerSubscriber, "queue": int, "idempotent": float},
         }
 
         self.assertEqual(expected, broker)
@@ -73,7 +113,9 @@ class TestConfigV2(unittest.TestCase):
     def test_interface_periodic(self):
         observed = self.config.get_interface_by_name("periodic")
 
-        expected = {"port": FakePeriodicPort}
+        expected = {
+            "port": FakePeriodicPort,
+        }
         self.assertEqual(expected, observed)
 
     def test_interface_periodic_not_defined(self):
@@ -110,13 +152,11 @@ class TestConfigV2(unittest.TestCase):
     def test_saga(self):
         config = ConfigV2(self.file_path, with_environment=False)
         saga_config = config.get_saga()
-        expected = dict()
+        expected = {
+            "manager": FakeSagaManager,
+        }
 
         self.assertEqual(expected, saga_config)
-
-    def test_saga_not_defined(self):
-        with patch.object(ConfigV2, "get_by_key", side_effect=MinosConfigException("")):
-            self.assertEqual(dict(), self.config.get_saga())
 
     def test_database_default(self):
         config = ConfigV2(self.file_path, with_environment=False)
@@ -170,10 +210,16 @@ class TestConfigV2(unittest.TestCase):
 
     def test_discovery(self):
         config = ConfigV2(self.file_path, with_environment=False)
-        discovery = config.get_discovery()
-        self.assertEqual(str, discovery["client"])
-        self.assertEqual("localhost", discovery["host"])
-        self.assertEqual(8080, discovery["port"])
+        observed = config.get_discovery()
+
+        expected = {
+            "connector": FakeDiscoveryConnector,
+            "client": str,
+            "host": "localhost",
+            "port": 8080,
+        }
+
+        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":
