@@ -66,6 +66,10 @@ class TestConfigV1(unittest.TestCase):
         ]
         self.assertEqual(expected, self.config.get_injections())
 
+    def test_injections_not_defined(self):
+        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
+            self.assertEqual(list(), self.config.get_injections())
+
     def test_interface_http(self):
         observed = self.config.get_interface_by_name("http")
 
@@ -122,6 +126,9 @@ class TestConfigV1(unittest.TestCase):
         config = ConfigV1(self.file_path, with_environment=False)
         with self.assertRaises(MinosConfigException):
             config.get_interface_by_name("unknown")
+
+    def test_pools(self):
+        self.assertEqual(dict(), self.config.get_pools())
 
     def test_services(self):
         self.assertEqual([float, int], self.config.get_services())

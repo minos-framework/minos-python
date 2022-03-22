@@ -14,7 +14,6 @@ from pathlib import (
 from typing import (
     TYPE_CHECKING,
     Any,
-    Union,
 )
 
 from ..exceptions import (
@@ -51,15 +50,28 @@ class ConfigV2(Config):
             InjectableMixin,
         )
 
-        partial_ans: list[Union[type, dict]] = list()
+        partial_ans = list()
 
-        partial_ans.extend(self._get_pools().values())
-        partial_ans.append(self._get_interfaces().get("http").get("connector"))
-        partial_ans.append(self._get_interfaces().get("broker").get("publisher"))
-        partial_ans.append(self._get_interfaces().get("broker").get("subscriber"))
-        partial_ans.extend(self._get_aggregate().get("repositories", dict()).values())
-        partial_ans.append(self._get_discovery().get("connector"))
-        partial_ans.append(self._get_saga().get("manager"))
+        with suppress(MinosConfigException):
+            partial_ans.extend(self._get_pools().values())
+
+        with suppress(MinosConfigException):
+            partial_ans.append(self._get_interfaces().get("http").get("connector"))
+
+        with suppress(MinosConfigException):
+            partial_ans.append(self._get_interfaces().get("broker").get("publisher"))
+
+        with suppress(MinosConfigException):
+            partial_ans.append(self._get_interfaces().get("broker").get("subscriber"))
+
+        with suppress(MinosConfigException):
+            partial_ans.extend(self._get_aggregate().get("repositories", dict()).values())
+
+        with suppress(MinosConfigException):
+            partial_ans.append(self._get_discovery().get("connector"))
+
+        with suppress(MinosConfigException):
+            partial_ans.append(self._get_saga().get("manager"))
 
         with suppress(MinosConfigException):
             injections = self.get_by_key("injections")
@@ -70,11 +82,16 @@ class ConfigV2(Config):
             if isinstance(type_, dict):
                 type_ = type_["client"]
 
+            if (
+                not issubclass(type_, InjectableMixin)
+                and issubclass(type_, BuildableMixin)
+                and issubclass((builder_type := type_.get_builder()), InjectableMixin)
+            ):
+                type_ = builder_type
+
             if not issubclass(type_, InjectableMixin):
-                if issubclass(type_, BuildableMixin):
-                    type_ = type_.get_builder()
-                if not issubclass(type_, InjectableMixin):
-                    continue
+                raise MinosConfigException(f"{type_!r} must be subclass of {InjectableMixin!r}.")
+
             ans.append(type_)
 
         return ans
@@ -88,9 +105,7 @@ class ConfigV2(Config):
         return data
 
     def _str_to_path(self, raw: str) -> Path:
-        if raw.startswith("/"):
-            return Path(raw)
-        return self.file_path.parent / raw
+        return Path(raw) if raw.startswith("/") else self.file_path.parent / raw
 
     def _get_interfaces(self) -> dict[str, dict[str, Any]]:
         data = deepcopy(self.get_by_key("interfaces"))
@@ -135,7 +150,7 @@ class ConfigV2(Config):
 
         return data
 
-    def _get_pools(self) -> dict[str, Any]:
+    def _get_pools(self) -> dict[str, type]:
         try:
             data = self.get_by_key("pools")
         except MinosConfigException:

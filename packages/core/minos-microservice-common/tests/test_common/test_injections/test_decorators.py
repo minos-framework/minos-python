@@ -68,7 +68,7 @@ async def _get_foo_async(foo: _Foo) -> _Foo:
 
 # noinspection PyUnusedLocal
 @Inject()
-def _get_foo_with_not_injectable(foo: _Foo, another: int) -> int:
+def _get_foo_with_not_injectable(foo: _Foo, another: int, one=None) -> int:
     return another
 
 

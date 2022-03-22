@@ -204,6 +204,9 @@ class ConfigV1(Config):
 
         return services
 
+    def _get_pools(self) -> dict[str, type]:
+        return dict()
+
     def _get_routers(self) -> list[type]:
         try:
             routers = self.get_by_key("routers")

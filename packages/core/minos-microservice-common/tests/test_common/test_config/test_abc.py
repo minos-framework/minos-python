@@ -42,6 +42,9 @@ class _Config(Config):
     def _get_interfaces(self) -> dict[str, dict[str, Any]]:
         """For testing purposes."""
 
+    def _get_pools(self) -> dict[str, type]:
+        """For testing purposes."""
+
     def _get_routers(self) -> list[type]:
         """For testing purposes."""
 
@@ -84,6 +87,10 @@ class TestConfig(unittest.TestCase):
 
     def test_get_by_key(self):
         self.assertEqual("Order", self.config.get_by_key("service.name"))
+
+    def test_get_by_key_raises(self):
+        with self.assertRaises(MinosConfigException):
+            self.assertEqual("Order", self.config.get_by_key("something"))
 
     def test_get_cls_by_key(self):
         self.assertEqual(int, self.config.get_type_by_key("service.aggregate"))
@@ -147,6 +154,14 @@ class TestConfig(unittest.TestCase):
         self.config._get_routers = mock
 
         self.assertEqual("foo", self.config.get_routers())
+
+        self.assertEqual([call()], mock.call_args_list)
+
+    def test_get_pools(self):
+        mock = MagicMock(return_value={"foo": "bar"})
+        self.config._get_pools = mock
+
+        self.assertEqual({"foo": "bar"}, self.config.get_pools())
 
         self.assertEqual([call()], mock.call_args_list)
 

@@ -189,6 +189,17 @@ class Config(ABC):
     def _get_interfaces(self) -> dict[str, dict[str, Any]]:
         raise NotImplementedError
 
+    def get_pools(self) -> dict[str, type]:
+        """Get the pools value.
+
+        :return: A ``dict`` with pool names as keys and pools as values.
+        """
+        return self._get_pools()
+
+    @abstractmethod
+    def _get_pools(self) -> dict[str, type]:
+        raise NotImplementedError
+
     def get_routers(self) -> list[type]:
         """Get the routers value.
 
