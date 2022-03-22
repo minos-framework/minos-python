@@ -19,6 +19,7 @@ class PaymentCommandService(CommandService):
     def validate_card(self, card_number: str) -> bool:
         def digits_of(n):
             return [int(d) for d in str(n)]
+
         digits = digits_of(card_number)
         odd_digits = digits[-1::-2]
         even_digits = digits[-2::-2]
@@ -40,9 +41,14 @@ class PaymentCommandService(CommandService):
         """
         try:
             content = await request.content()
-            if self.validate_card(content['card_number']):
-                payment = await PaymentAggregate.create(content['card_number'], content['validity'],
-                                                        content['security_code'], content['name'], content['surname'])
+            if self.validate_card(content["card_number"]):
+                payment = await PaymentAggregate.create(
+                    content["card_number"],
+                    content["validity"],
+                    content["security_code"],
+                    content["name"],
+                    content["surname"],
+                )
 
             return Response({"status": "payment accepted"})
         except Exception as exc:
