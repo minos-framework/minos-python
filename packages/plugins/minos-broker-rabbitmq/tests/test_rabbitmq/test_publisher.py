@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import (
-    AsyncMock, patch, MagicMock,
-)
+    AsyncMock, patch, )
 
 import aio_pika
 
@@ -38,16 +37,14 @@ class TestRabbitMQBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(config.broker.host, publisher.broker_host)
         self.assertEqual(config.broker.port, publisher.broker_port)
 
-    async def test_send(self):
+    @patch("minos.plugins.rabbitmq.publisher.connect")
+    async def test_send(self, connect_mock):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
 
-        with patch('aio_pika.connect', return_value=AsyncMock()) as connection_mock:
-            async with RabbitMQBrokerPublisher.from_config(CONFIG_FILE_PATH) as publisher:
-                await publisher.send(message)
+        async with RabbitMQBrokerPublisher.from_config(CONFIG_FILE_PATH) as publisher:
+            await publisher.send(message)
 
-            self.assertEqual(1, connection_mock.call_count)
-            self.assertEqual("foo", connection_mock.call_args.args[0])
-            self.assertEqual(message, BrokerMessage.from_avro_bytes(connection_mock.call_args.args[1]))
+            self.assertEqual(1, connect_mock.call_count)
 
     async def test_setup_destroy(self):
         publisher = RabbitMQBrokerPublisher.from_config(CONFIG_FILE_PATH)
