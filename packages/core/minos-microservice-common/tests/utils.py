@@ -9,7 +9,7 @@ from minos.common import (
 )
 
 BASE_PATH = Path(__file__).parent
-CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+CONFIG_FILE_PATH = BASE_PATH / "config" / "v1.yml"
 
 
 class FakeEntrypoint:

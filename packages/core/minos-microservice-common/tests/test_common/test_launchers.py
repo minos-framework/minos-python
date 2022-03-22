@@ -17,7 +17,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
     FakeEntrypoint,
     FakeLoop,
 )
@@ -38,7 +38,7 @@ class FooPort(Port):
 
 
 class TestEntrypointLauncher(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self):
         super().setUp()
@@ -155,7 +155,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
 class TestEntryPointLauncherLoop(unittest.TestCase):
     def test_loop(self):
-        launcher = EntrypointLauncher.from_config(BASE_PATH / "test_config.yml")
+        launcher = EntrypointLauncher.from_config(CONFIG_FILE_PATH)
         self.assertIsInstance(launcher.loop, uvloop.Loop)
 
 

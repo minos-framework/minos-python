@@ -14,7 +14,7 @@ from tests.utils import (
 
 class TestConfigWithEnvironment(unittest.TestCase):
     def setUp(self) -> None:
-        self.config_file_path = BASE_PATH / "test_config.yml"
+        self.config_file_path = BASE_PATH / "config" / "v1.yml"
         self.config = ConfigV1(path=self.config_file_path)
 
     @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})

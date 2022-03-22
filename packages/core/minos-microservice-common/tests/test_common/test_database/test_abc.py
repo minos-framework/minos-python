@@ -12,12 +12,12 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
 )
 
 
 class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def test_constructor(self):
         database = PostgreSqlMinosDatabase(**self.repository_db)

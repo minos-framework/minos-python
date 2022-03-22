@@ -14,7 +14,7 @@ from tests.utils import (
 
 class TestConfigParameterized(unittest.TestCase):
     def setUp(self) -> None:
-        self.config_file_path = BASE_PATH / "test_config.yml"
+        self.config_file_path = BASE_PATH / "config" / "v1.yml"
 
     def test_overwrite_with_parameter(self):
         config = ConfigV1(self.config_file_path, repository_database="foo")
