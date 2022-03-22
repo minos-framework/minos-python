@@ -8,21 +8,7 @@ services:
             POSTGRES_PASSWORD: min0s
             POSTGRES_DB: order_db
 
-    zookeeper:
-        image: wurstmeister/zookeeper:latest
+    rabbitmq:
+        image: rabbitmq:3
         ports:
-            - "2181:2181"
-
-    kafka:
-        image: wurstmeister/kafka:latest
-        ports:
-            - "9092:9092"
-        depends_on:
-            - zookeeper
-        environment:
-            KAFKA_ADVERTISED_HOST_NAME: kafka
-            KAFKA_ADVERTISED_PORT: 9092
-            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-            KAFKA_DELETE_TOPIC_ENABLE: "true"
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
+            - "5672:5672"
