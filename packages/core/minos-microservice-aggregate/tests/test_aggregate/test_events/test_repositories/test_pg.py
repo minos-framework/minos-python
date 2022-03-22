@@ -14,14 +14,14 @@ from tests.testcases import (
     EventRepositorySubmitTestCase,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
 )
 
 
 class TestPostgreSqlEventRepositorySubmit(PostgresAsyncTestCase, EventRepositorySubmitTestCase):
     __test__ = True
 
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
         PostgresAsyncTestCase.setUp(self)
@@ -74,7 +74,7 @@ class TestPostgreSqlEventRepositorySubmit(PostgresAsyncTestCase, EventRepository
 class TestPostgreSqlRepositorySelect(PostgresAsyncTestCase, EventRepositorySelectTestCase):
     __test__ = True
 
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
         PostgresAsyncTestCase.setUp(self)

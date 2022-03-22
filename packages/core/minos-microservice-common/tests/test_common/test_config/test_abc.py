@@ -107,7 +107,7 @@ class TestConfig(unittest.TestCase):
         mock = MagicMock(return_value={"default": "foo"})
         self.config._get_databases = mock
 
-        self.assertEqual("foo", self.config.get_database_by_name())
+        self.assertEqual("foo", self.config.get_default_database())
 
         self.assertEqual([call()], mock.call_args_list)
 
@@ -116,6 +116,14 @@ class TestConfig(unittest.TestCase):
         self.config._get_databases = mock
 
         self.assertEqual("foo", self.config.get_database_by_name("event"))
+
+        self.assertEqual([call()], mock.call_args_list)
+
+    def test_get_database_unknown(self):
+        mock = MagicMock(return_value={"default": "foo"})
+        self.config._get_databases = mock
+
+        self.assertEqual("foo", self.config.get_database_by_name("unknown"))
 
         self.assertEqual([call()], mock.call_args_list)
 

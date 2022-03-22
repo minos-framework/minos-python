@@ -15,12 +15,12 @@ from minos.networks import (
     get_host_ip,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
 )
 
 
 class TestDiscoveryConnector(unittest.IsolatedAsyncioTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
         self.config = Config(self.CONFIG_FILE_PATH)

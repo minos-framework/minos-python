@@ -20,7 +20,6 @@ from pathlib import (
 from typing import (
     TYPE_CHECKING,
     Any,
-    Optional,
     Union,
 )
 
@@ -136,7 +135,14 @@ class Config(ABC):
     def _get_injections(self) -> list[type[InjectableMixin]]:
         raise NotImplementedError
 
-    def get_database_by_name(self, name: Optional[str] = None) -> dict[str, Any]:
+    def get_default_database(self):
+        """Get the default database value.
+
+        :return: A ``dict`` containing the database's config values.
+        """
+        return self.get_database_by_name("default")
+
+    def get_database_by_name(self, name: str) -> dict[str, Any]:
         """Get the database value by name.
 
         :param name: The name of the database. If ``None`` is provided then the default database will be used.
@@ -144,7 +150,7 @@ class Config(ABC):
         """
         databases = self.get_databases()
 
-        if name is None or name not in databases:
+        if name not in databases:
             name = "default"
 
         return databases[name]
