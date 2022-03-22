@@ -3,6 +3,7 @@ from pathlib import (
 )
 
 from minos.common import (
+    Injectable,
     Lock,
     LockPool,
     Port,
@@ -104,3 +105,63 @@ class FakeBrokerPort(Port):
 
     async def stop(self, err: Exception = None) -> None:
         """For testing purposes."""
+
+
+@Injectable("custom")
+class FakeCustomInjection:
+    """For testing purposes."""
+
+
+@Injectable("serializer")
+class FakeSerializer:
+    """For testing purposes."""
+
+
+@Injectable("http_connector")
+class FakeHttpConnector:
+    """For testing purposes."""
+
+
+@Injectable("broker_publisher")
+class FakeBrokerPublisher:
+    """For testing purposes."""
+
+
+@Injectable("broker_subscriber")
+class FakeBrokerSubscriber:
+    """For testing purposes."""
+
+
+@Injectable("database_pool")
+class FakeDatabasePool:
+    """For testing purposes."""
+
+
+@Injectable("broker_pool")
+class FakeBrokerClientPool:
+    """For testing purposes."""
+
+
+@Injectable("discovery_connector")
+class FakeDiscoveryConnector:
+    """For testing purposes."""
+
+
+@Injectable("saga_manager")
+class FakeSagaManager:
+    """For testing purposes."""
+
+
+@Injectable("event_repository")
+class FakeEventRepository:
+    """For testing purposes."""
+
+
+@Injectable("snapshot_repository")
+class FakeSnapshotRepository:
+    """For testing purposes."""
+
+
+@Injectable("transaction_repository")
+class FakeTransactionRepository:
+    """For testing purposes."""
