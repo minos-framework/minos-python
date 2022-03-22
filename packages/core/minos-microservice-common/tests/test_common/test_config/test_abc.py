@@ -16,7 +16,6 @@ from minos.common import (
     InjectableMixin,
     MinosConfig,
     MinosConfigException,
-    Port,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -37,13 +36,10 @@ class _Config(Config):
     def _get_injections(self) -> list[type[InjectableMixin]]:
         """For testing purposes."""
 
-    def _get_database(self, name: str) -> dict[str, Any]:
+    def _get_databases(self) -> dict[str, dict[str, Any]]:
         """For testing purposes."""
 
-    def _get_interface(self, name: str):
-        """For testing purposes."""
-
-    def _get_ports(self) -> list[type[Port]]:
+    def _get_interfaces(self) -> dict[str, dict[str, Any]]:
         """For testing purposes."""
 
     def _get_routers(self) -> list[type]:
@@ -108,34 +104,26 @@ class TestConfig(unittest.TestCase):
         self.assertEqual([call()], mock.call_args_list)
 
     def test_get_database_default(self):
-        mock = MagicMock(return_value="foo")
-        self.config._get_database = mock
+        mock = MagicMock(return_value={"default": "foo"})
+        self.config._get_databases = mock
 
-        self.assertEqual("foo", self.config.get_database())
+        self.assertEqual("foo", self.config.get_database_by_name())
 
-        self.assertEqual([call(name="default")], mock.call_args_list)
+        self.assertEqual([call()], mock.call_args_list)
 
     def test_get_database_event(self):
-        mock = MagicMock(return_value="foo")
-        self.config._get_database = mock
+        mock = MagicMock(return_value={"event": "foo"})
+        self.config._get_databases = mock
 
-        self.assertEqual("foo", self.config.get_database("event"))
+        self.assertEqual("foo", self.config.get_database_by_name("event"))
 
-        self.assertEqual([call(name="event")], mock.call_args_list)
+        self.assertEqual([call()], mock.call_args_list)
 
     def test_get_interface_http(self):
-        mock = MagicMock(return_value="foo")
-        self.config._get_interface = mock
+        mock = MagicMock(return_value={"http": "foo"})
+        self.config._get_interfaces = mock
 
-        self.assertEqual("foo", self.config.get_interface("http"))
-
-        self.assertEqual([call(name="http")], mock.call_args_list)
-
-    def test_get_ports(self):
-        mock = MagicMock(return_value="foo")
-        self.config._get_ports = mock
-
-        self.assertEqual("foo", self.config.get_ports())
+        self.assertEqual("foo", self.config.get_interface_by_name("http"))
 
         self.assertEqual([call()], mock.call_args_list)
 

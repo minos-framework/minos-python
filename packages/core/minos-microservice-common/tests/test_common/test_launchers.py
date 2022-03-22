@@ -59,7 +59,9 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         self.assertIsInstance(launcher, EntrypointLauncher)
         self.assertEqual(self.config, launcher.config)
         self.assertEqual(dict(), launcher.injector.injections)
-        self.assertEqual(list(), launcher.ports)
+        self.assertEqual(3, len(launcher.ports))
+        for port in launcher.ports:
+            self.assertIsInstance(port, Port)
 
     def test_ports(self):
         self.assertEqual([1, 2], self.launcher.ports[:2])

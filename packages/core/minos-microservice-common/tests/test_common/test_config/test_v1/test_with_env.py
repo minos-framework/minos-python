@@ -19,13 +19,13 @@ class TestConfigWithEnvironment(unittest.TestCase):
 
     @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
     def test_overwrite_with_environment(self):
-        repository = self.config.get_database()
+        repository = self.config.get_database_by_name()
         self.assertEqual("foo", repository["database"])
 
     @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
     def test_overwrite_with_environment_false(self):
         self.config._with_environment = False
-        repository = self.config.get_database()
+        repository = self.config.get_database_by_name()
         self.assertEqual("order_db", repository["database"])
 
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_CLIENT": "builtins.int"})

@@ -69,7 +69,7 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> KafkaBrokerPublisher:
-        broker_config = config.get_interface("broker")
+        broker_config = config.get_interface_by_name("broker")
         common_config = broker_config["common"]
 
         kwargs["broker_host"] = common_config["host"]

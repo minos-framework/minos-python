@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from contextlib import (
+    suppress,
+)
 from pathlib import (
     Path,
 )
@@ -23,9 +26,6 @@ from .abc import (
 if TYPE_CHECKING:
     from ..injections import (
         InjectableMixin,
-    )
-    from ..ports import (
-        Port,
     )
 
 
@@ -135,28 +135,28 @@ class ConfigV1(Config):
         # noinspection PyTypeChecker
         return injections
 
-    def _get_ports(self) -> list[type[Port]]:
-        try:
-            ports = self.get_by_key("service.services")
-        except MinosConfigException:
-            ports = list()
+    def _get_interfaces(self) -> dict[str, dict[str, Any]]:
+        interfaces = dict()
 
-        ports = [import_module(classname) for classname in ports]
+        with suppress(MinosConfigException):
+            interfaces["http"] = self._get_interface_http()
 
-        # noinspection PyTypeChecker
-        return ports
+        with suppress(MinosConfigException):
+            interfaces["broker"] = self._get_interface_broker()
 
-    def _get_interface(self, name: str):
-        if name == "http":
-            return self._get_interface_http()
+        with suppress(MinosConfigException):
+            interfaces["periodic"] = self._get_interface_periodic()
 
-        if name == "broker":
-            return self._get_interface_broker()
-
-        raise MinosConfigException(f"There is not a {name!r} interface.")
+        return interfaces
 
     def _get_interface_http(self) -> dict[str, Any]:
+        try:
+            port = next(port for port in self.get_by_key("service.services") if "http" in port.lower())
+        except Exception as exc:
+            raise MinosConfigException(f"The 'http' interface is not available: {exc!r}")
+
         return {
+            "port": import_module(port),
             "connector": {
                 "host": self.get_by_key("rest.host"),
                 "port": int(self.get_by_key("rest.port")),
@@ -164,7 +164,13 @@ class ConfigV1(Config):
         }
 
     def _get_interface_broker(self) -> dict[str, Any]:
+        try:
+            port = next(port for port in self.get_by_key("service.services") if "broker" in port.lower())
+        except Exception as exc:
+            raise MinosConfigException(f"The 'broker' interface is not available: {exc!r}")
+
         return {
+            "port": import_module(port),
             "publisher": dict(),
             "subscriber": dict(),
             "common": {
@@ -175,6 +181,16 @@ class ConfigV1(Config):
                     "retry": int(self.get_by_key("broker.queue.retry")),
                 },
             },
+        }
+
+    def _get_interface_periodic(self):
+        try:
+            port = next(port for port in self.get_by_key("service.services") if "periodic" in port.lower())
+        except Exception as exc:
+            raise MinosConfigException(f"The 'periodic' interface is not available: {exc!r}")
+
+        return {
+            "port": import_module(port),
         }
 
     def _get_services(self) -> list[type]:
@@ -207,23 +223,28 @@ class ConfigV1(Config):
 
         return middleware
 
-    def _get_database(self, name: str) -> dict[str, Any]:
-        if name == "broker":
-            return self._get_database_broker()
+    def _get_databases(self) -> dict[str, dict[str, Any]]:
+        databases = dict()
 
-        if name == "event":
-            return self._get_database_event()
+        with suppress(MinosConfigException):
+            databases["broker"] = self._get_database_broker()
 
-        if name == "snapshot":
-            return self._get_database_snapshot()
+        with suppress(MinosConfigException):
+            databases["event"] = self._get_database_event()
 
-        if name == "saga":
-            return self._get_database_saga()
+        with suppress(MinosConfigException):
+            databases["snapshot"] = self._get_database_snapshot()
 
-        if name == "query":
-            return self._get_database_query()
+        with suppress(MinosConfigException):
+            databases["saga"] = self._get_database_saga()
 
-        return self._get_database_event()
+        with suppress(MinosConfigException):
+            databases["query"] = self._get_database_query()
+
+        with suppress(MinosConfigException):
+            databases["default"] = self._get_database_event()
+
+        return databases
 
     def _get_database_broker(self):
         return self._get_database_by_name("broker.queue")

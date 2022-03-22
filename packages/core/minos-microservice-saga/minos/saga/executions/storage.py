@@ -46,7 +46,7 @@ class SagaExecutionStorage:
         :param kwargs: Additional named arguments.
         :return: A new ``SagaExecutionStorage`` instance.
         """
-        return cls(**(config.get_database("saga") | kwargs))
+        return cls(**(config.get_database_by_name("saga") | kwargs))
 
     def store(self, execution: SagaExecution) -> None:
         """Store an execution.

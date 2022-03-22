@@ -78,9 +78,9 @@ class PostgreSqlBrokerQueue(BrokerQueue, PostgreSqlMinosDatabase):
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> PostgreSqlBrokerQueue:
-        broker_interface = config.get_interface("broker")
+        broker_interface = config.get_interface_by_name("broker")
         queue_config = broker_interface["common"]["queue"]
-        database_config = config.get_database("broker")
+        database_config = config.get_database_by_name("broker")
 
         return cls(**(kwargs | database_config | queue_config))
 

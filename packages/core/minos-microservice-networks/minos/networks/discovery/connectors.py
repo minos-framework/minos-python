@@ -81,7 +81,7 @@ class DiscoveryConnector(SetupMixin):
 
     @staticmethod
     def _port_from_config(config: Config) -> int:
-        http_config = config.get_interface("http")
+        http_config = config.get_interface_by_name("http")
         connector_config = http_config["connector"]
         port = connector_config["port"]
         return port

@@ -40,9 +40,6 @@ if TYPE_CHECKING:
     from ..injections import (
         InjectableMixin,
     )
-    from ..ports import (
-        Port,
-    )
 
 
 @Injectable("config")
@@ -139,42 +136,51 @@ class Config(ABC):
     def _get_injections(self) -> list[type[InjectableMixin]]:
         raise NotImplementedError
 
-    def get_database(self, name: Optional[str] = None) -> dict[str, Any]:
+    def get_database_by_name(self, name: Optional[str] = None) -> dict[str, Any]:
         """Get the database value by name.
 
         :param name: The name of the database. If ``None`` is provided then the default database will be used.
         :return: A ``dict`` containing the database's config values.
         """
-        if name is None:
+        databases = self.get_databases()
+
+        if name is None or name not in databases:
             name = "default"
 
-        return self._get_database(name=name)
+        return databases[name]
 
-    @abstractmethod
-    def _get_database(self, name: str) -> dict[str, Any]:
+    def get_databases(self) -> dict[str, dict[str, Any]]:
+        """Get all databases' values.
+
+        :return: A mapping from database name to database's config values.
+        """
+        return self._get_databases()
+
+    def _get_databases(self) -> dict[str, dict[str, Any]]:
         raise NotImplementedError
 
-    def get_interface(self, name: str) -> dict[str, Any]:
+    def get_interface_by_name(self, name: str) -> dict[str, Any]:
         """Get the interface value by name.
 
         :param name: The name of the interface.
         :return: A ``dict`` containing the interface's config values.
         """
-        return self._get_interface(name=name)
 
-    @abstractmethod
-    def _get_interface(self, name: str):
-        raise NotImplementedError
+        interfaces = self.get_interfaces()
 
-    def get_ports(self) -> list[type[Port]]:
-        """Get the ports value.
+        if name not in interfaces:
+            raise MinosConfigException(f"There is not a {name!r} interface.")
 
-        :return: A ``list`` of ``type`` instances.
+        return interfaces[name]
+
+    def get_interfaces(self) -> dict[str, dict[str, Any]]:
+        """Get all interfaces' values.
+
+        :return: A mapping from interface name to interface's config values.
         """
-        return self._get_ports()
+        return self._get_interfaces()
 
-    @abstractmethod
-    def _get_ports(self) -> list[type[Port]]:
+    def _get_interfaces(self) -> dict[str, dict[str, Any]]:
         raise NotImplementedError
 
     def get_routers(self) -> list[type]:
