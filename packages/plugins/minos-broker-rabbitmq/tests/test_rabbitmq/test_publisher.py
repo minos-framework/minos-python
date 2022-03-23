@@ -7,7 +7,8 @@ from unittest.mock import (
 import aio_pika
 
 from minos.common import (
-    MinosConfig, Config,
+    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerMessage,
