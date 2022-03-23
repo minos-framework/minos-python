@@ -11,6 +11,9 @@ from collections.abc import (
     AsyncIterator,
     Iterable,
 )
+from contextlib import (
+    suppress,
+)
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -22,6 +25,7 @@ from minos.common import (
     Builder,
     Config,
     Injectable,
+    MinosConfigException,
 )
 
 from ..messages import (
@@ -103,14 +107,15 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriber]):
         :param config: The config to be set.
         :return: This method return the builder instance.
         """
-        broker_config = config.get_interface_by_name("broker")
-        broker_subscriber_config = broker_config.get("subscriber", None)
-        if broker_subscriber_config is not None and broker_subscriber_config.get("idempotent", None) is not None:
-            self.duplicate_detector_builder = (
-                broker_subscriber_config.get("idempotent").get_builder().new().with_config(config)
-            )
-        if broker_subscriber_config is not None and broker_subscriber_config.get("queue", None) is not None:
-            self.queue_builder = broker_subscriber_config.get("queue").get_builder().new().with_config(config)
+        with suppress(MinosConfigException):
+            broker_config = config.get_interface_by_name("broker")
+            broker_subscriber_config = broker_config.get("subscriber", None)
+            if broker_subscriber_config is not None and broker_subscriber_config.get("idempotent", None) is not None:
+                self.duplicate_detector_builder = (
+                    broker_subscriber_config.get("idempotent").get_builder().new().with_config(config)
+                )
+            if broker_subscriber_config is not None and broker_subscriber_config.get("queue", None) is not None:
+                self.queue_builder = broker_subscriber_config.get("queue").get_builder().new().with_config(config)
         return super().with_config(config)
 
     def with_kwargs(self, kwargs: dict[str, Any]):
