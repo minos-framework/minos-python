@@ -68,14 +68,14 @@ class BrokerDispatcher(SetupMixin):
         kwargs["actions"] = cls._get_actions(config, **kwargs)
         kwargs["publisher"] = cls._get_publisher(**kwargs)
         # noinspection PyProtectedMember
-        return cls(**config.broker.queue._asdict(), **kwargs)
+        return cls(**kwargs)
 
     @staticmethod
     def _get_actions(
         config: Config, handlers: dict[str, Optional[Callable]] = None, **kwargs
     ) -> dict[str, Callable[[BrokerRequest], Awaitable[Optional[BrokerResponse]]]]:
         if handlers is None:
-            builder = EnrouteFactory(*config.services, middleware=config.middleware)
+            builder = EnrouteFactory(*config.get_services(), middleware=config.get_middleware())
             decorators = builder.get_broker_command_query_event(config=config, **kwargs)
             handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
         return handlers

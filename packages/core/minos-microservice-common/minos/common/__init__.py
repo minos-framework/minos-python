@@ -6,16 +6,8 @@ from .builders import (
     Builder,
 )
 from .config import (
-    BROKER,
-    DISCOVERY,
-    QUEUE,
-    REPOSITORY,
-    REST,
-    SAGA,
-    SERVICE,
-    SNAPSHOT,
-    STORAGE,
     Config,
+    ConfigV1,
     MinosConfig,
 )
 from .database import (

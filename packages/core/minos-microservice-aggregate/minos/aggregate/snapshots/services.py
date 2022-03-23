@@ -21,7 +21,6 @@ from minos.common import (
     Config,
     Inject,
     ModelType,
-    import_module,
 )
 from minos.networks import (
     EnrouteDecorator,
@@ -64,7 +63,10 @@ class SnapshotService:
             RefResolver,
         )
 
-        name = config.service.aggregate.rsplit(".", 1)[-1]
+        aggregate_config = config.get_aggregate()
+        root_entity = aggregate_config["entities"][0]
+        name = root_entity.__name__
+
         return {
             cls.__get_many__.__name__: {enroute.broker.command(RefResolver.build_topic_name(name))},
             cls.__synchronize__.__name__: {enroute.periodic.event("* * * * *")},
@@ -94,8 +96,8 @@ class SnapshotService:
 
         :return: A ``Type`` object.
         """
-        # noinspection PyTypeChecker
-        return import_module(self.config.service.aggregate)
+        aggregate_config = self.config.get_aggregate()
+        return aggregate_config["entities"][0]
 
     # noinspection PyUnusedLocal
     async def __synchronize__(self, request: Request) -> None:

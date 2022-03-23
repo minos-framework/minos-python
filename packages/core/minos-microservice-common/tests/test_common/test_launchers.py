@@ -10,6 +10,7 @@ import uvloop
 
 from minos.common import (
     EntrypointLauncher,
+    Port,
     classname,
 )
 from minos.common.testing import (
@@ -22,9 +23,18 @@ from tests.utils import (
 )
 
 
-class Foo:
+class FooPort(Port):
+    """For testing purposes."""
+
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.kwargs = kwargs
+
+    async def start(self) -> None:
+        """For testing purposes."""
+
+    async def stop(self, err: Exception = None) -> None:
+        """For testing purposes."""
 
 
 class TestEntrypointLauncher(PostgresAsyncTestCase):
@@ -32,14 +42,14 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
     def setUp(self):
         super().setUp()
-        self.injections = {}
-        self.services = [1, 2, Foo, classname(Foo)]
+        self.injections = list()
+        self.ports = [1, 2, FooPort, classname(FooPort)]
         import tests
 
         self.launcher = EntrypointLauncher(
             config=self.config,
             injections=self.injections,
-            services=self.services,
+            ports=self.ports,
             external_modules=[tests],
             external_packages=["tests"],
         )
@@ -49,12 +59,20 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         self.assertIsInstance(launcher, EntrypointLauncher)
         self.assertEqual(self.config, launcher.config)
         self.assertEqual(dict(), launcher.injector.injections)
-        self.assertEqual(list(), launcher.services)
+        self.assertEqual(3, len(launcher.ports))
+        for port in launcher.ports:
+            self.assertIsInstance(port, Port)
+
+    def test_ports(self):
+        self.assertEqual([1, 2], self.launcher.ports[:2])
+        self.assertIsInstance(self.launcher.ports[2], FooPort)
+        # noinspection PyUnresolvedReferences
+        self.assertEqual({"config": self.config}, self.launcher.ports[2].kwargs)
 
     def test_services(self):
-        self.assertEqual([1, 2], self.launcher.services[:2])
-        self.assertIsInstance(self.launcher.services[2], Foo)
-        self.assertEqual({"config": self.config}, self.launcher.services[2].kwargs)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            self.assertEqual(self.launcher.ports, self.launcher.services)
 
     async def test_entrypoint(self):
         mock_setup = AsyncMock()

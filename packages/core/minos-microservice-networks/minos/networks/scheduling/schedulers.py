@@ -58,7 +58,7 @@ class PeriodicTaskScheduler(SetupMixin):
 
     @staticmethod
     def _tasks_from_config(config: Config, **kwargs) -> set[PeriodicTask]:
-        builder = EnrouteFactory(*config.services, middleware=config.middleware)
+        builder = EnrouteFactory(*config.get_services(), middleware=config.get_middleware())
         decorators = builder.get_periodic_event(config=config, **kwargs)
         tasks = {PeriodicTask(decorator.crontab, fn) for decorator, fn in decorators.items()}
         return tasks

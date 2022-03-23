@@ -6,6 +6,7 @@ from unittest.mock import (
 
 from minos.common import (
     Config,
+    MinosImportException,
 )
 from minos.networks import (
     DiscoveryConnector,
@@ -14,12 +15,12 @@ from minos.networks import (
     get_host_ip,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
 )
 
 
 class TestDiscoveryConnector(unittest.IsolatedAsyncioTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
         self.config = Config(self.CONFIG_FILE_PATH)
@@ -28,7 +29,7 @@ class TestDiscoveryConnector(unittest.IsolatedAsyncioTestCase):
 
     def test_config_minos_client_does_not_exist(self):
         config = Config(self.CONFIG_FILE_PATH, minos_discovery_client="wrong-client")
-        with self.assertRaises(MinosInvalidDiscoveryClient):
+        with self.assertRaises(MinosImportException):
             DiscoveryConnector.from_config(config=config)
 
     def test_config_minos_client_not_supported(self):

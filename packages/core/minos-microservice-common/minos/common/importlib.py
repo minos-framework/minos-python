@@ -1,5 +1,8 @@
 import importlib
 import pkgutil
+from functools import (
+    lru_cache,
+)
 from types import (
     ModuleType,
 )
@@ -13,7 +16,7 @@ from .exceptions import (
 )
 
 
-# noinspection SpellCheckingInspection
+@lru_cache()
 def import_module(module_name: str) -> Union[type, Callable, ModuleType]:
     """Import the given module from a package"""
     parts = module_name.rsplit(".", 1)

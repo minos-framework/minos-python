@@ -35,7 +35,7 @@ from minos.saga import (
 )
 from tests.utils import (
     ADD_ORDER,
-    BASE_PATH,
+    DB_PATH,
     DELETE_ORDER,
     Foo,
     MinosTestCase,
@@ -43,7 +43,7 @@ from tests.utils import (
 
 
 class TestSagaManager(MinosTestCase):
-    DB_PATH = BASE_PATH / "test_db.lmdb"
+    DB_PATH = DB_PATH
 
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
