@@ -82,30 +82,30 @@ class FakeLockPool(LockPool):
 class FakePeriodicPort(Port):
     """For testing purposes."""
 
-    async def start(self) -> None:
+    async def _start(self) -> None:
         """For testing purposes."""
 
-    async def stop(self, err: Exception = None) -> None:
+    async def _stop(self, err: Exception = None) -> None:
         """For testing purposes."""
 
 
 class FakeHttpPort(Port):
     """For testing purposes."""
 
-    async def start(self) -> None:
+    async def _start(self) -> None:
         """For testing purposes."""
 
-    async def stop(self, err: Exception = None) -> None:
+    async def _stop(self, err: Exception = None) -> None:
         """For testing purposes."""
 
 
 class FakeBrokerPort(Port):
     """For testing purposes."""
 
-    async def start(self) -> None:
+    async def _start(self) -> None:
         """For testing purposes."""
 
-    async def stop(self, err: Exception = None) -> None:
+    async def _stop(self, err: Exception = None) -> None:
         """For testing purposes."""
 
 

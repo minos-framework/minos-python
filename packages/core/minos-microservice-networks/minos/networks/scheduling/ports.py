@@ -22,11 +22,7 @@ class PeriodicTaskSchedulerPort(Port):
         super().__init__(**kwargs)
         self._init_kwargs = kwargs
 
-    async def start(self) -> None:
-        """Start the service execution.
-
-        :return: This method does not return anything.
-        """
+    async def _start(self) -> None:
         await self.scheduler.setup()
 
         try:
@@ -36,12 +32,7 @@ class PeriodicTaskSchedulerPort(Port):
 
         await self.scheduler.start()
 
-    async def stop(self, exception: Exception = None) -> None:
-        """Stop the service execution.
-
-        :param exception: Optional exception that stopped the execution.
-        :return: This method does not return anything.
-        """
+    async def _stop(self, exception: Exception = None) -> None:
         await self.scheduler.stop()
         await self.scheduler.destroy()
 
