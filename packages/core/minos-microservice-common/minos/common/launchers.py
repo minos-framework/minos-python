@@ -32,7 +32,7 @@ from aiomisc.log import (
     LogFormat,
     basic_config,
 )
-from aiomisc.log.enum import (
+from aiomisc_log.enum import (
     DateFormat,
 )
 from aiomisc.utils import (
