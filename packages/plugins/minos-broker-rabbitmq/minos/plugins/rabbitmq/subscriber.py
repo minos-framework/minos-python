@@ -15,7 +15,8 @@ from aio_pika import (
 )
 
 from minos.common import (
-    MinosConfig, Config,
+    Config,
+    MinosConfig,
 )
 from minos.networks import (
     BrokerMessage,
