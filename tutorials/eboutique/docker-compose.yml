@@ -95,6 +95,27 @@ services:
       target: production
     environment: *id001
     depends_on: *id002
+  microservice-currency:
+    restart: always
+    build:
+      context: microservices/currency
+      target: production
+    environment: *id001
+    depends_on: *id002
+  microservice-payment:
+    restart: always
+    build:
+      context: microservices/payment
+      target: production
+    environment: *id001
+    depends_on: *id002
+  microservice-shipping:
+    restart: always
+    build:
+      context: microservices/shipping
+      target: production
+    environment: *id001
+    depends_on: *id002
   microservice-notifier:
     restart: always
     build:
