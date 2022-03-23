@@ -12,7 +12,7 @@ from tests.utils import (
 )
 
 
-class TestConfigWithEnvironment(unittest.TestCase):
+class TestConfigV2WithEnvironment(unittest.TestCase):
     def setUp(self) -> None:
         self.file_path = BASE_PATH / "config" / "v1.yml"
         self.config = ConfigV1(self.file_path)

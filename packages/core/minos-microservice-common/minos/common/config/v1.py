@@ -283,3 +283,9 @@ class ConfigV1(Config):
             "host": self.get_by_key("discovery.host"),
             "port": self.get_by_key("discovery.port"),
         }
+
+    def _to_parameterized_variable(self, key: str) -> str:
+        return self._PARAMETERIZED_MAPPER[key]
+
+    def _to_environment_variable(self, key: str) -> str:
+        return self._ENVIRONMENT_MAPPER[key]

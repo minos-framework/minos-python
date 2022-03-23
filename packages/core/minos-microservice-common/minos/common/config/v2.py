@@ -207,3 +207,9 @@ class ConfigV2(Config):
         data = deepcopy(self.get_by_key("saga"))
         data["manager"] = import_module(data["manager"])
         return data
+
+    def _to_parameterized_variable(self, key: str) -> str:
+        return key.replace(".", "_").lower()
+
+    def _to_environment_variable(self, key: str) -> str:
+        return f"MINOS_{key.replace('.', '_').upper()}"

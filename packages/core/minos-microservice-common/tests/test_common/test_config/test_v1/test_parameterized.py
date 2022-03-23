@@ -12,7 +12,7 @@ from tests.utils import (
 )
 
 
-class TestConfigParameterized(unittest.TestCase):
+class TestConfigV1Parameterized(unittest.TestCase):
     def setUp(self) -> None:
         self.file_path = BASE_PATH / "config" / "v1.yml"
 
