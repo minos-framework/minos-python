@@ -23,7 +23,6 @@ from typing import (
 )
 
 from minos.common import (
-    Builder,
     Config,
 )
 
@@ -93,10 +92,7 @@ class QueuedBrokerSubscriberBuilder(BrokerSubscriberBuilder[QueuedBrokerSubscrib
     def __init__(
         self, *args, impl_builder: BrokerSubscriberBuilder, queue_builder: BrokerSubscriberQueueBuilder, **kwargs
     ):
-        warnings.warn(
-            f"{type(self)!r} has been deprecated. Use {BrokerSubscriberBuilder} instead.",
-            DeprecationWarning
-        )
+        warnings.warn(f"{type(self)!r} has been deprecated. Use {BrokerSubscriberBuilder} instead.", DeprecationWarning)
 
         super().__init__(*args, **kwargs)
         self.impl_builder = impl_builder
