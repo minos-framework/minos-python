@@ -1,9 +1,11 @@
 from abc import (
     ABC,
 )
+from collections.abc import (
+    Iterable,
+)
 from typing import (
     Final,
-    Iterable,
     Union,
 )
 
@@ -28,10 +30,7 @@ class PeriodicEnrouteDecorator(EnrouteDecorator, ABC):
         self.crontab = crontab
 
     def __iter__(self) -> Iterable:
-        yield from (self.crontab,)
-
-    def __hash__(self):
-        return hash(tuple((s if not isinstance(s, CronTab) else s.matchers) for s in self))
+        yield from (self.crontab.matchers,)
 
 
 class PeriodicEventEnrouteDecorator(PeriodicEnrouteDecorator):

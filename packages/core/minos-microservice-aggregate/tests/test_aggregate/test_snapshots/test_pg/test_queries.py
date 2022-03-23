@@ -185,6 +185,17 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         self.assertEqual(await self._flatten_query(expected_query), await self._flatten_query(observed[0]))
         self.assertEqual(self._flatten_parameters(expected_parameters), self._flatten_parameters(observed[1]))
 
+    async def test_build_fixed_with_like(self):
+        condition = Condition.LIKE("uuid", "a%")
+        with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
+
+        expected_query = SQL(" WHERE ").join([self.base_select, SQL('("uuid"::text LIKE %(hello)s)')])
+        expected_parameters = {"hello": "a%"} | self.base_parameters
+
+        self.assertEqual(await self._flatten_query(expected_query), await self._flatten_query(observed[0]))
+        self.assertEqual(self._flatten_parameters(expected_parameters), self._flatten_parameters(observed[1]))
+
     async def test_build_lower(self):
         condition = Condition.LOWER("age", 1)
         with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
@@ -269,6 +280,17 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
 
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("FALSE")])
         expected_parameters = self.base_parameters
+
+        self.assertEqual(await self._flatten_query(expected_query), await self._flatten_query(observed[0]))
+        self.assertEqual(self._flatten_parameters(expected_parameters), self._flatten_parameters(observed[1]))
+
+    async def test_build_like(self):
+        condition = Condition.LIKE("name", "a%")
+        with patch("minos.aggregate.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
+            observed = PostgreSqlSnapshotQueryBuilder(self.classname, condition).build()
+
+        expected_query = SQL(" WHERE ").join([self.base_select, SQL("(data#>>'{name}' LIKE %(hello)s)")])
+        expected_parameters = {"hello": "a%"} | self.base_parameters
 
         self.assertEqual(await self._flatten_query(expected_query), await self._flatten_query(observed[0]))
         self.assertEqual(self._flatten_parameters(expected_parameters), self._flatten_parameters(observed[1]))

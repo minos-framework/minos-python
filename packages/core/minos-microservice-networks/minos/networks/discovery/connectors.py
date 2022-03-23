@@ -18,14 +18,15 @@ from typing import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
+    Injectable,
     MinosImportException,
-    MinosSetup,
+    SetupMixin,
     import_module,
 )
 
 from ..decorators import (
-    EnrouteAnalyzer,
+    EnrouteCollector,
 )
 from ..exceptions import (
     MinosInvalidDiscoveryClient,
@@ -40,7 +41,8 @@ from .clients import (
 logger = logging.getLogger(__name__)
 
 
-class DiscoveryConnector(MinosSetup):
+@Injectable("discovery")
+class DiscoveryConnector(SetupMixin):
     """Discovery Connector class."""
 
     def __init__(self, client, name: str, host: str, port: int, endpoints: list[dict[str, Any]], *args, **kwargs):
@@ -54,7 +56,7 @@ class DiscoveryConnector(MinosSetup):
         self.endpoints = endpoints
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DiscoveryConnector:
+    def _from_config(cls, *args, config: Config, **kwargs) -> DiscoveryConnector:
         client_cls = cls._client_cls_from_config(config)
         client = client_cls(host=config.discovery.host, port=config.discovery.port)
         port = config.rest.port
@@ -65,7 +67,7 @@ class DiscoveryConnector(MinosSetup):
         return cls(client, name, host, port, endpoints, *args, **kwargs)
 
     @staticmethod
-    def _client_cls_from_config(config: MinosConfig) -> Type[DiscoveryClient]:
+    def _client_cls_from_config(config: Config) -> Type[DiscoveryClient]:
         try:
             # noinspection PyTypeChecker
             client_cls: type = import_module(config.discovery.client)
@@ -77,10 +79,10 @@ class DiscoveryConnector(MinosSetup):
         return client_cls
 
     @staticmethod
-    def _endpoints_from_config(config: MinosConfig) -> list[dict[str, Any]]:
+    def _endpoints_from_config(config: Config) -> list[dict[str, Any]]:
         endpoints = list()
         for name in config.services:
-            decorators = EnrouteAnalyzer(name, config).get_rest_command_query()
+            decorators = EnrouteCollector(name, config).get_rest_command_query()
             endpoints += [
                 {"url": decorator.url, "method": decorator.method} for decorator in set(chain(*decorators.values()))
             ]

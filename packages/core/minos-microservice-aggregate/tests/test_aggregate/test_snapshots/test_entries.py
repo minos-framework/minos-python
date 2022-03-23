@@ -31,9 +31,6 @@ class TestSnapshotEntry(MinosTestCase):
         }
         self.data = {"color": "blue"}
 
-    def tearDown(self) -> None:
-        self.container.unwire()
-
     def test_constructor(self):
         entry = SnapshotEntry(self.uuid, "example.Car", 0, self.schema, self.data)
         self.assertEqual(self.uuid, entry.uuid)

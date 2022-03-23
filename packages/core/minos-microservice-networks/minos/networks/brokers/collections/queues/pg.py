@@ -35,7 +35,7 @@ from psycopg2.sql import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     PostgreSqlMinosDatabase,
 )
 
@@ -77,7 +77,7 @@ class PostgreSqlBrokerQueue(BrokerQueue, PostgreSqlMinosDatabase):
         return self._query_factory
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlBrokerQueue:
+    def _from_config(cls, config: Config, **kwargs) -> PostgreSqlBrokerQueue:
         # noinspection PyProtectedMember
         return cls(**config.broker.queue._asdict(), **kwargs)
 

@@ -8,7 +8,7 @@ from typing import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     PostgreSqlMinosDatabase,
 )
 
@@ -17,7 +17,7 @@ class PostgreSqlSnapshotSetup(PostgreSqlMinosDatabase):
     """Minos Snapshot Setup Class"""
 
     @classmethod
-    def _from_config(cls: Type[T], config: MinosConfig, **kwargs) -> T:
+    def _from_config(cls: Type[T], config: Config, **kwargs) -> T:
         return cls(**config.snapshot._asdict(), **kwargs)
 
     async def _setup(self) -> None:

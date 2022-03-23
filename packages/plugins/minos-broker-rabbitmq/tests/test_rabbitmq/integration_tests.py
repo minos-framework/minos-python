@@ -1,9 +1,19 @@
 import asyncio
-from unittest import IsolatedAsyncioTestCase
+from unittest import (
+    IsolatedAsyncioTestCase,
+)
 
-from minos.networks import BrokerMessageV1, BrokerMessageV1Payload
-from minos.plugins.rabbitmq import RabbitMQBrokerPublisher, RabbitMQBrokerSubscriber
-from tests.utils import CONFIG_FILE_PATH
+from minos.networks import (
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
+)
+from minos.plugins.rabbitmq import (
+    RabbitMQBrokerPublisher,
+    RabbitMQBrokerSubscriber,
+)
+from tests.utils import (
+    CONFIG_FILE_PATH,
+)
 
 
 class IntegrationTests(IsolatedAsyncioTestCase):

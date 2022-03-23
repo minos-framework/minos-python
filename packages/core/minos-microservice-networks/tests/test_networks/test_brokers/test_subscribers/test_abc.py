@@ -7,7 +7,7 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    MinosSetup,
+    SetupMixin,
 )
 from minos.networks import (
     BrokerMessage,
@@ -31,7 +31,7 @@ class _BrokerSubscriber(BrokerSubscriber):
 
 class TestBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
-        self.assertTrue(issubclass(BrokerSubscriber, (ABC, MinosSetup)))
+        self.assertTrue(issubclass(BrokerSubscriber, (ABC, SetupMixin)))
         # noinspection PyUnresolvedReferences
         self.assertEqual({"_receive"}, BrokerSubscriber.__abstractmethods__)
 
@@ -71,7 +71,7 @@ class TestBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
 
 class TestBrokerSubscriberBuilder(unittest.TestCase):
     def test_abstract(self):
-        self.assertTrue(issubclass(BrokerSubscriberBuilder, (ABC, MinosSetup)))
+        self.assertTrue(issubclass(BrokerSubscriberBuilder, (ABC, SetupMixin)))
         # noinspection PyUnresolvedReferences
         self.assertEqual({"build"}, BrokerSubscriberBuilder.__abstractmethods__)
 

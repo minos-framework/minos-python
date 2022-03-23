@@ -14,7 +14,7 @@ from .dispatchers import (
 )
 from .handlers import (
     BrokerHandler,
-    BrokerHandlerService,
+    BrokerHandlerPort,
 )
 from .messages import (
     REQUEST_HEADERS_CONTEXT_VAR,
@@ -40,12 +40,17 @@ from .publishers import (
 from .subscribers import (
     BrokerSubscriber,
     BrokerSubscriberBuilder,
+    BrokerSubscriberDuplicateDetector,
     BrokerSubscriberQueue,
     BrokerSubscriberQueueBuilder,
+    IdempotentBrokerSubscriber,
     InMemoryBrokerSubscriber,
     InMemoryBrokerSubscriberBuilder,
+    InMemoryBrokerSubscriberDuplicateDetector,
     InMemoryBrokerSubscriberQueue,
     InMemoryBrokerSubscriberQueueBuilder,
+    PostgreSqlBrokerSubscriberDuplicateDetector,
+    PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory,
     PostgreSqlBrokerSubscriberQueue,
     PostgreSqlBrokerSubscriberQueueBuilder,
     PostgreSqlBrokerSubscriberQueueQueryFactory,

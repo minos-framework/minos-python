@@ -3,6 +3,9 @@ from __future__ import (
 )
 
 import logging
+from functools import (
+    lru_cache,
+)
 from typing import (
     Any,
     TypeVar,
@@ -65,7 +68,9 @@ class TypeHintComparator:
 
         return self._compare(self._first, self._second)
 
-    def _compare(self, first: T, second: K) -> bool:
+    @classmethod
+    @lru_cache()
+    def _compare(cls, first: T, second: K) -> bool:
         if isinstance(first, TypeVar):
             first = unpack_typevar(first)
 
@@ -75,10 +80,10 @@ class TypeHintComparator:
         if second is Any:
             return True
 
-        if get_origin(first) is Union and all(self._compare(f, second) for f in get_args(first)):
+        if get_origin(first) is Union and all(cls._compare(f, second) for f in get_args(first)):
             return True
 
-        if get_origin(second) is Union and any(self._compare(first, s) for s in get_args(second)):
+        if get_origin(second) is Union and any(cls._compare(first, s) for s in get_args(second)):
             return True
 
         if is_model_subclass(first):
@@ -98,13 +103,14 @@ class TypeHintComparator:
                 return True
 
         first_origin, second_origin = get_origin(first), get_origin(second)
-        if first_origin is not None and self._compare(first_origin, second_origin):
-            return self._compare_args(first, second)
+        if first_origin is not None and cls._compare(first_origin, second_origin):
+            return cls._compare_args(first, second)
 
         return False
 
-    def _compare_args(self, first: T, second: K) -> bool:
+    @classmethod
+    def _compare_args(cls, first: T, second: K) -> bool:
         first_args, second_args = get_args(first), get_args(second)
         if len(first_args) != len(second_args):
             return False
-        return all(self._compare(fi, si) for fi, si in zip(first_args, second_args))
+        return all(cls._compare(fi, si) for fi, si in zip(first_args, second_args))

@@ -103,19 +103,19 @@ class TestTransactionCommitter(MinosTestCase):
         return [
             BrokerMessageV1(
                 payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="ReserveBarTransaction",
+                topic="_ReserveBarTransaction",
                 reply_topic=observed[0].reply_topic,
                 identifier=observed[0].identifier,
             ),
             BrokerMessageV1(
                 payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="ReserveFooTransaction",
+                topic="_ReserveFooTransaction",
                 reply_topic=observed[1].reply_topic,
                 identifier=observed[1].identifier,
             ),
             BrokerMessageV1(
                 payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="ReserveFoobarTransaction",
+                topic="_ReserveFoobarTransaction",
                 reply_topic=observed[2].reply_topic,
                 identifier=observed[2].identifier,
             ),
@@ -125,17 +125,17 @@ class TestTransactionCommitter(MinosTestCase):
         return [
             BrokerMessageV1(
                 payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="CommitBarTransaction",
+                topic="_CommitBarTransaction",
                 identifier=observed[0].identifier,
             ),
             BrokerMessageV1(
                 payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="CommitFooTransaction",
+                topic="_CommitFooTransaction",
                 identifier=observed[1].identifier,
             ),
             BrokerMessageV1(
                 payload=BrokerMessageV1Payload(self.execution_uuid),
-                topic="CommitFoobarTransaction",
+                topic="_CommitFoobarTransaction",
                 identifier=observed[2].identifier,
             ),
         ]
@@ -143,17 +143,17 @@ class TestTransactionCommitter(MinosTestCase):
     def _build_reject_messages(self, observed: list[BrokerMessage]) -> list[BrokerMessage]:
         return [
             BrokerMessageV1(
-                topic="RejectBarTransaction",
+                topic="_RejectBarTransaction",
                 payload=BrokerMessageV1Payload(self.execution_uuid),
                 identifier=observed[0].identifier,
             ),
             BrokerMessageV1(
-                topic="RejectFooTransaction",
+                topic="_RejectFooTransaction",
                 payload=BrokerMessageV1Payload(self.execution_uuid),
                 identifier=observed[1].identifier,
             ),
             BrokerMessageV1(
-                topic="RejectFoobarTransaction",
+                topic="_RejectFoobarTransaction",
                 payload=BrokerMessageV1Payload(self.execution_uuid),
                 identifier=observed[2].identifier,
             ),

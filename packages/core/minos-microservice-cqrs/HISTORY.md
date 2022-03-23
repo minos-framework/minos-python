@@ -68,3 +68,8 @@
 ## 0.5.1 (2022-02-03)
 
 * Fix bug related with dependency specification.
+
+# 0.5.3 (2022-03-04)
+
+* Update the `resolve_references: bool` default value to `False` defined at `PreEventHandler.handle`.
+* Improve error messages of  `PreEventHandler`.
