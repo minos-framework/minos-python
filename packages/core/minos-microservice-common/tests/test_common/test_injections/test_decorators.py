@@ -90,10 +90,10 @@ class TestInject(unittest.IsolatedAsyncioTestCase):
         super().setUp()
         self.foo = _Foo(34)
         self.injector = DependencyInjector(None, [self.foo])
-        self.injector.wire()
+        self.injector.wire_injections()
 
     def tearDown(self) -> None:
-        self.injector.unwire()
+        self.injector.unwire_injections()
         super().tearDown()
 
     def test_decorator_sync(self):

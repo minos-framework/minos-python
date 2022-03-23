@@ -41,12 +41,12 @@ class TestService(PostgresAsyncTestCase):
         self.lock_pool = PostgreSqlLockPool.from_config(self.config)
 
         self.injector = DependencyInjector(self.config, [BrokerClientPool])
-        self.injector.wire(modules=[sys.modules[__name__]])
+        self.injector.wire_injections(modules=[sys.modules[__name__]])
 
         self.service = FakeService(config=self.config, lock_pool=self.lock_pool)
 
     def tearDown(self) -> None:
-        self.injector.unwire()
+        self.injector.unwire_injections()
 
     async def test_constructor(self):
         self.assertEqual(self.config, self.service.config)

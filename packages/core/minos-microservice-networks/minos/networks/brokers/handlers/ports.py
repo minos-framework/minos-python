@@ -22,11 +22,7 @@ class BrokerHandlerPort(Port):
         super().__init__(**kwargs)
         self._init_kwargs = kwargs
 
-    async def start(self) -> None:
-        """Start the service execution.
-
-        :return: This method does not return anything.
-        """
+    async def _start(self) -> None:
         await self.handler.setup()
 
         try:
@@ -36,12 +32,7 @@ class BrokerHandlerPort(Port):
 
         await self.handler.run()
 
-    async def stop(self, err: Exception = None) -> None:
-        """Stop the service execution.
-
-        :param err: Optional exception that stopped the execution.
-        :return: This method does not return anything.
-        """
+    async def _stop(self, err: Exception = None) -> None:
         await self.handler.destroy()
 
     @cached_property
