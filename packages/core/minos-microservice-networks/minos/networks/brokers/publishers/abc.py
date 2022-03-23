@@ -30,7 +30,7 @@ from ..messages import (
 
 if TYPE_CHECKING:
     from .queued import (
-        QueuedBrokerPublisher,
+        QueuedBrokerPublisher,BrokerPublisherQueue
     )
 
 logger = logging.getLogger(__name__)
@@ -113,7 +113,7 @@ class BrokerPublisherBuilder(Builder[BrokerPublisher], Generic[BrokerPublisherCl
         if "queue" in broker_publisher_config:
             self.with_queue(broker_publisher_config["queue"])
 
-    def with_queue(self, queue: Union[type[QueuedBrokerPublisher], Builder[QueuedBrokerPublisher]]):
+    def with_queue(self, queue: Union[type[BrokerPublisherQueue], Builder[BrokerPublisherQueue]]):
         """TODO
 
         :param queue: TODO
