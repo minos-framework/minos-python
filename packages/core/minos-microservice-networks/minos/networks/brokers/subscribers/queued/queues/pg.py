@@ -16,12 +16,9 @@ from psycopg2.sql import (
     Identifier,
 )
 
-from minos.common import (
-    Config,
-)
-
 from ....collections import (
     PostgreSqlBrokerQueue,
+    PostgreSqlBrokerQueueBuilder,
     PostgreSqlBrokerQueueQueryFactory,
 )
 from ....messages import (
@@ -127,18 +124,10 @@ class PostgreSqlBrokerSubscriberQueueQueryFactory(PostgreSqlBrokerQueueQueryFact
         )
 
 
-class PostgreSqlBrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder[PostgreSqlBrokerSubscriberQueue]):
+class PostgreSqlBrokerSubscriberQueueBuilder(
+    BrokerSubscriberQueueBuilder[PostgreSqlBrokerSubscriberQueue], PostgreSqlBrokerQueueBuilder
+):
     """PostgreSql Broker Subscriber Queue Builder class."""
-
-    def with_config(self, config: Config):
-        """Set config.
-
-        :param config: The config to be set.
-        :return: This method return the builder instance.
-        """
-        self.kwargs |= config.get_database_by_name("broker")
-        self.kwargs |= config.get_interface_by_name("broker")["common"]["queue"]
-        return super().with_config(config)
 
 
 PostgreSqlBrokerSubscriberQueue.set_builder(PostgreSqlBrokerSubscriberQueueBuilder)

@@ -40,6 +40,7 @@ from minos.common import (
 )
 
 from ....utils import (
+    Builder,
     consume_queue,
 )
 from ...messages import (
@@ -197,6 +198,23 @@ class PostgreSqlBrokerQueue(BrokerQueue, PostgreSqlMinosDatabase):
         # noinspection PyTypeChecker
         await cursor.execute(self._query_factory.build_select_not_processed(), (self._retry, self._records))
         return await cursor.fetchall()
+
+
+class PostgreSqlBrokerQueueBuilder(Builder):
+    """TODO"""
+
+    def with_config(self, config: Config):
+        """Set config.
+
+        :param config: The config to be set.
+        :return: This method return the builder instance.
+        """
+        self.kwargs |= config.get_database_by_name("broker")
+        self.kwargs |= config.get_interface_by_name("broker")["common"]["queue"]
+        return super().with_config(config)
+
+
+PostgreSqlBrokerQueue.set_builder(PostgreSqlBrokerQueueBuilder)
 
 
 class PostgreSqlBrokerQueueQueryFactory(ABC):

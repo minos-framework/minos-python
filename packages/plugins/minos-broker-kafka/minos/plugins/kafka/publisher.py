@@ -24,12 +24,14 @@ from minos.common import (
 from minos.networks import (
     BrokerMessage,
     BrokerPublisher,
+    BrokerPublisherBuilder,
     InMemoryBrokerPublisherQueue,
     PostgreSqlBrokerPublisherQueue,
     QueuedBrokerPublisher,
 )
 
-from .mixins import (
+from .common import (
+    KafkaBrokerBuilderMixin,
     KafkaCircuitBreakerMixin,
 )
 
@@ -66,15 +68,6 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
         self.broker_port = broker_port
 
         self._client = None
-
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> KafkaBrokerPublisher:
-        broker_config = config.get_interface_by_name("broker")
-        common_config = broker_config["common"]
-
-        kwargs["broker_host"] = common_config["host"]
-        kwargs["broker_port"] = common_config["port"]
-        return cls(**kwargs)
 
     async def _setup(self) -> None:
         await super()._setup()
@@ -116,3 +109,10 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
     @property
     def _bootstrap_servers(self):
         return f"{self.broker_host}:{self.broker_port}"
+
+
+class KafkaBrokerPublisherBuilder(BrokerPublisherBuilder[KafkaBrokerPublisher], KafkaBrokerBuilderMixin):
+    """TODO"""
+
+
+KafkaBrokerPublisher.set_builder(KafkaBrokerPublisherBuilder)

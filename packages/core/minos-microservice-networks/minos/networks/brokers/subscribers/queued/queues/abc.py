@@ -15,7 +15,6 @@ from typing import (
 )
 
 from minos.common import (
-    BuildableMixin,
     Builder,
 )
 
@@ -26,7 +25,7 @@ from ....collections import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerSubscriberQueue(BrokerQueue, BuildableMixin, ABC):
+class BrokerSubscriberQueue(BrokerQueue, ABC):
     """Broker Subscriber Queue class."""
 
     def __init__(self, topics: Iterable[str], **kwargs):
