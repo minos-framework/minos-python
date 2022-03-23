@@ -25,7 +25,7 @@ class KafkaCircuitBreakerMixin(CircuitBreakerMixin):
 
 
 class KafkaBrokerBuilderMixin(Builder):
-    """TODO"""
+    """Kafka Broker Builder Mixin class."""
 
     def with_config(self, config: Config):
         """Set config.

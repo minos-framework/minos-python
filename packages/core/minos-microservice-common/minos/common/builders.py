@@ -63,10 +63,10 @@ class Builder(SetupMixin, ABC, Generic[Instance]):
         return cls()
 
     def with_cls(self: B, cls: type) -> B:
-        """TODO
+        """Set class to be built.
 
-        :param cls: TODO
-        :return: TODO
+        :param cls: The class to be set.
+        :return: This method return the builder instance.
         """
         self.instance_cls = cls
         return self
@@ -92,7 +92,7 @@ class Builder(SetupMixin, ABC, Generic[Instance]):
     def build(self) -> Instance:
         """Build the instance.
 
-        :return: A ``BrokerSubscriber`` instance.
+        :return: A ``Instance`` instance.
         """
         return self.instance_cls(**self.kwargs)
 

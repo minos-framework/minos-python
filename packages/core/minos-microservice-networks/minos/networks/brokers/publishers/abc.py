@@ -30,7 +30,8 @@ from ..messages import (
 
 if TYPE_CHECKING:
     from .queued import (
-        QueuedBrokerPublisher,BrokerPublisherQueue
+        BrokerPublisherQueue,
+        QueuedBrokerPublisher,
     )
 
 logger = logging.getLogger(__name__)
@@ -81,10 +82,10 @@ class BrokerPublisherBuilder(Builder[BrokerPublisher], Generic[BrokerPublisherCl
         self.queued_cls = queued_cls
 
     def with_queued_cls(self, queued_cls: type[QueuedBrokerPublisher]):
-        """TODO
+        """Set the queued class.
 
-        :param queued_cls: TODO
-        :return: TODO
+        :param queued_cls: A subclass of ``QueuedBrokerPublisher``.
+        :return: This method return the builder instance.
         """
         self.queued_cls = queued_cls
 
@@ -114,10 +115,10 @@ class BrokerPublisherBuilder(Builder[BrokerPublisher], Generic[BrokerPublisherCl
             self.with_queue(broker_publisher_config["queue"])
 
     def with_queue(self, queue: Union[type[BrokerPublisherQueue], Builder[BrokerPublisherQueue]]):
-        """TODO
+        """Set the queue builder.
 
-        :param queue: TODO
-        :return: TODO
+        :param queue: The queue builder to be set.
+        :return: This method return the builder instance.
         """
         if not isinstance(queue, Builder):
             queue = queue.get_builder()

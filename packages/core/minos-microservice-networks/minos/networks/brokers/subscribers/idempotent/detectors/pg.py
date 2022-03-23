@@ -69,7 +69,7 @@ class PostgreSqlBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetec
 
 
 class PostgreSqlBrokerSubscriberDuplicateDetectorBuilder(Builder[PostgreSqlBrokerSubscriberDuplicateDetector]):
-    """TODO"""
+    """PostgreSql Broker Subscriber Duplicate Detector Builder class."""
 
     def with_config(self, config: Config):
         """Set config.

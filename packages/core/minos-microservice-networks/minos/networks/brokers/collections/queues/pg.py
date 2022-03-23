@@ -201,7 +201,7 @@ class PostgreSqlBrokerQueue(BrokerQueue, PostgreSqlMinosDatabase):
 
 
 class PostgreSqlBrokerQueueBuilder(Builder):
-    """TODO"""
+    """PostgreSql Broker Queue Builder class."""
 
     def with_config(self, config: Config):
         """Set config.

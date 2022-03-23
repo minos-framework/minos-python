@@ -4,13 +4,15 @@ from abc import (
 )
 from unittest.mock import (
     AsyncMock,
-    call, MagicMock,
+    MagicMock,
+    call,
 )
 
 from minos.common import (
     Builder,
+    Config,
+    MinosConfigException,
     SetupMixin,
-    Config, MinosConfigException,
 )
 from minos.networks import (
     BrokerMessage,
@@ -18,11 +20,13 @@ from minos.networks import (
     BrokerMessageV1Payload,
     BrokerPublisher,
     BrokerPublisherBuilder,
+    InMemoryBrokerPublisher,
     InMemoryBrokerPublisherQueue,
     QueuedBrokerPublisher,
-    InMemoryBrokerPublisher,
 )
-from tests.utils import CONFIG_FILE_PATH
+from tests.utils import (
+    CONFIG_FILE_PATH,
+)
 
 
 class _BrokerPublisher(BrokerPublisher):

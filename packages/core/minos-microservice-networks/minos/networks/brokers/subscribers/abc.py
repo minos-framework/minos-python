@@ -123,20 +123,20 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriberCls], Generic[BrokerSubscr
         self.queued_cls = queued_cls
 
     def with_idempotent_cls(self, idempotent_cls: type[IdempotentBrokerSubscriber]):
-        """TODO
+        """Set the idempotent class.
 
-        :param idempotent_cls: TODO
-        :return: TODO
+        :param idempotent_cls: A subclass of ``IdempotentBrokerSubscriber``.
+        :return: This method return the builder instance.
         """
         self.idempotent_cls = idempotent_cls
 
         return self
 
     def with_queued_cls(self, queued_cls: type[QueuedBrokerSubscriber]):
-        """TODO
+        """Set the queued class.
 
-        :param queued_cls: TODO
-        :return: TODO
+        :param queued_cls: A subclass of ``QueuedBrokerSubscriber``.
+        :return: This method return the builder instance.
         """
         self.queued_cls = queued_cls
 
@@ -174,10 +174,10 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriberCls], Generic[BrokerSubscr
         self,
         duplicate_detector: Union[type[BrokerSubscriberDuplicateDetector], Builder[BrokerSubscriberDuplicateDetector]],
     ):
-        """TODO
+        """Set the duplicate detector.
 
-        :param duplicate_detector: TODO
-        :return: TODO
+        :param duplicate_detector: The duplicate detector to be set.
+        :return: This method return the builder instance.
         """
         if not isinstance(duplicate_detector, Builder):
             duplicate_detector = duplicate_detector.get_builder()
@@ -185,10 +185,10 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriberCls], Generic[BrokerSubscr
         return self
 
     def with_queue(self, queue: Union[type[BrokerSubscriberQueue], BrokerSubscriberQueueBuilder]):
-        """TODO
+        """Set the queue builder.
 
-        :param queue: TODO
-        :return: TODO
+        :param queue: The queue to be set.
+        :return: This method return the builder instance.
         """
         if not isinstance(queue, Builder):
             queue = queue.get_builder()

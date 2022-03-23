@@ -121,7 +121,7 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
 
 
 class KafkaBrokerPublisherBuilder(BrokerPublisherBuilder[KafkaBrokerPublisher], KafkaBrokerBuilderMixin):
-    """TODO"""
+    """Kafka Broker Publisher Builder class."""
 
 
 KafkaBrokerPublisher.set_builder(KafkaBrokerPublisherBuilder)
