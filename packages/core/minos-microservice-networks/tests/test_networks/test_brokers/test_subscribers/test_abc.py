@@ -19,12 +19,10 @@ from minos.networks import (
 
 
 class _BrokerSubscriber(BrokerSubscriber):
+    """For testing purposes."""
+
     async def _receive(self) -> BrokerMessage:
         """For testing purposes."""
-
-
-class _BrokerSubscriberBuilder(BrokerSubscriberBuilder):
-    impl_cls = _BrokerSubscriber
 
 
 class TestBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
@@ -69,23 +67,23 @@ class TestBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
 
 class TestBrokerSubscriberBuilder(unittest.TestCase):
     def test_with_group_id(self):
-        builder = _BrokerSubscriberBuilder().with_group_id("foobar")
-        self.assertIsInstance(builder, _BrokerSubscriberBuilder)
+        builder = BrokerSubscriberBuilder().with_group_id("foobar")
+        self.assertIsInstance(builder, BrokerSubscriberBuilder)
         self.assertEqual({"group_id": "foobar"}, builder.kwargs)
 
     def test_with_remove_topics_on_destroy(self):
-        builder = _BrokerSubscriberBuilder().with_remove_topics_on_destroy(False)
-        self.assertIsInstance(builder, _BrokerSubscriberBuilder)
+        builder = BrokerSubscriberBuilder().with_remove_topics_on_destroy(False)
+        self.assertIsInstance(builder, BrokerSubscriberBuilder)
         self.assertEqual({"remove_topics_on_destroy": False}, builder.kwargs)
 
     def test_with_topics(self):
-        builder = _BrokerSubscriberBuilder().with_topics({"one", "two"})
-        self.assertIsInstance(builder, _BrokerSubscriberBuilder)
+        builder = BrokerSubscriberBuilder().with_topics({"one", "two"})
+        self.assertIsInstance(builder, BrokerSubscriberBuilder)
         self.assertEqual({"topics": {"one", "two"}}, builder.kwargs)
 
     def test_build(self):
-        builder = _BrokerSubscriberBuilder().with_topics({"one", "two"})
-        self.assertIsInstance(builder, _BrokerSubscriberBuilder)
+        builder = BrokerSubscriberBuilder().with_cls(_BrokerSubscriber).with_topics({"one", "two"})
+        self.assertIsInstance(builder, BrokerSubscriberBuilder)
         subscriber = builder.build()
         self.assertIsInstance(subscriber, _BrokerSubscriber)
         self.assertEqual({"one", "two"}, subscriber.topics)

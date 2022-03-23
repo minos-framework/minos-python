@@ -1,3 +1,7 @@
+from minos.common import (
+    Builder,
+)
+
 from ...messages import (
     BrokerMessage,
 )
@@ -39,4 +43,4 @@ class IdempotentBrokerSubscriber(BrokerSubscriber):
         return message
 
 
-IdempotentBrokerSubscriber.set_builder(None)
+IdempotentBrokerSubscriber.set_builder(Builder)

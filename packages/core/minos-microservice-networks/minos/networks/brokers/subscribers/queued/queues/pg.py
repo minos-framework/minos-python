@@ -127,7 +127,7 @@ class PostgreSqlBrokerSubscriberQueueQueryFactory(PostgreSqlBrokerQueueQueryFact
         )
 
 
-class PostgreSqlBrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder):
+class PostgreSqlBrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder[PostgreSqlBrokerSubscriberQueue]):
     """PostgreSql Broker Subscriber Queue Builder class."""
 
     def with_config(self, config: Config):
@@ -139,13 +139,6 @@ class PostgreSqlBrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder):
         self.kwargs |= config.get_database_by_name("broker")
         self.kwargs |= config.get_interface_by_name("broker")["common"]["queue"]
         return super().with_config(config)
-
-    def build(self) -> PostgreSqlBrokerSubscriberQueue:
-        """Build the instance.
-
-        :return: A ``BrokerSubscriberQueue`` instance.
-        """
-        return PostgreSqlBrokerSubscriberQueue(**self.kwargs)
 
 
 PostgreSqlBrokerSubscriberQueue.set_builder(PostgreSqlBrokerSubscriberQueueBuilder)

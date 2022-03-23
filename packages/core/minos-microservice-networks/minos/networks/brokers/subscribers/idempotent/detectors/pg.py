@@ -17,13 +17,13 @@ from psycopg2.sql import (
 )
 
 from minos.common import (
+    Builder,
     Config,
     PostgreSqlMinosDatabase,
 )
 
 from .abc import (
     BrokerSubscriberDuplicateDetector,
-    BrokerSubscriberDuplicateDetectorBuilder,
 )
 
 
@@ -37,10 +37,6 @@ class PostgreSqlBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetec
             query_factory = PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory()
         super().__init__(*args, **kwargs)
         self._query_factory = query_factory
-
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> PostgreSqlBrokerSubscriberDuplicateDetector:
-        return cls(**config.get_database_by_name("broker"), **kwargs)
 
     async def _setup(self) -> None:
         await super()._setup()
@@ -72,7 +68,7 @@ class PostgreSqlBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetec
             return False
 
 
-class PostgreSqlBrokerSubscriberDuplicateDetectorBuilder(BrokerSubscriberDuplicateDetectorBuilder):
+class PostgreSqlBrokerSubscriberDuplicateDetectorBuilder(Builder[PostgreSqlBrokerSubscriberDuplicateDetector]):
     """TODO"""
 
     def with_config(self, config: Config):
@@ -83,13 +79,6 @@ class PostgreSqlBrokerSubscriberDuplicateDetectorBuilder(BrokerSubscriberDuplica
         """
         self.kwargs |= config.get_database_by_name("broker")
         return super().with_config(config)
-
-    def build(self) -> PostgreSqlBrokerSubscriberDuplicateDetector:
-        """Build the instance.
-
-        :return: A ``BrokerSubscriberQueue`` instance.
-        """
-        return PostgreSqlBrokerSubscriberDuplicateDetector(**self.kwargs)
 
 
 PostgreSqlBrokerSubscriberDuplicateDetector.set_builder(PostgreSqlBrokerSubscriberDuplicateDetectorBuilder)
