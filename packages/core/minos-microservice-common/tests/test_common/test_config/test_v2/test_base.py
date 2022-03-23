@@ -65,7 +65,7 @@ class TestConfigV2(unittest.TestCase):
             FakeBrokerClientPool,
             FakeHttpConnector,
             FakeBrokerPublisher,
-            FakeBrokerSubscriberBuilder,
+            FakeBrokerSubscriberBuilder(FakeBrokerSubscriber),
             FakeEventRepository,
             FakeSnapshotRepository,
             FakeTransactionRepository,

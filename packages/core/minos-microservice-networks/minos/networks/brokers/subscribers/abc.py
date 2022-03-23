@@ -168,7 +168,7 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriberCls], Generic[BrokerSubscr
             self.with_queue(broker_subscriber_config["queue"])
 
     def with_duplicate_detector(
-        self, duplicate_detector: Union[IdempotentBrokerSubscriber, Builder[IdempotentBrokerSubscriber]]
+        self, duplicate_detector: Union[type[IdempotentBrokerSubscriber], Builder[IdempotentBrokerSubscriber]]
     ):
         """TODO
 
@@ -176,18 +176,18 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriberCls], Generic[BrokerSubscr
         :return: TODO
         """
         if not isinstance(duplicate_detector, Builder):
-            duplicate_detector = duplicate_detector.get_builder().new().with_cls(duplicate_detector)
+            duplicate_detector = duplicate_detector.get_builder()
         self.duplicate_detector_builder = duplicate_detector.copy()
         return self
 
-    def with_queue(self, queue: Union[QueuedBrokerSubscriber, BrokerSubscriberQueueBuilder]):
+    def with_queue(self, queue: Union[type[QueuedBrokerSubscriber], BrokerSubscriberQueueBuilder]):
         """TODO
 
         :param queue: TODO
         :return: TODO
         """
         if not isinstance(queue, Builder):
-            queue = queue.get_builder().new().with_cls(queue)
+            queue = queue.get_builder()
         self.queue_builder = queue.copy()
         return self
 

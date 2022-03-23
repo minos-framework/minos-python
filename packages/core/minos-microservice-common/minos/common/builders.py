@@ -10,6 +10,7 @@ from typing import (
     Generic,
     Optional,
     TypeVar,
+    Union,
     get_args,
 )
 
@@ -98,6 +99,12 @@ class Builder(SetupMixin, ABC, Generic[Instance]):
         """
         return self.instance_cls(**self.kwargs)
 
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, type(self)) and self.instance_cls == other.instance_cls and self.kwargs == other.kwargs
+
+    def __repr__(self) -> str:
+        return f"{type(self)}({self.instance_cls!r}, {self.kwargs!r})"
+
 
 Ins = TypeVar("Ins", bound="BuildableMixin")
 
@@ -105,28 +112,38 @@ Ins = TypeVar("Ins", bound="BuildableMixin")
 class BuildableMixin(SetupMixin):
     """Buildable Mixin class."""
 
-    _builder_cls: type[Builder[Ins]] = Builder
+    _builder: Union[Builder[Ins], type[Builder[Ins]]] = Builder
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs):
-        return cls.get_builder().new().with_cls(cls).with_config(config).with_kwargs(kwargs).build()
+        return cls.get_builder().with_config(config).with_kwargs(kwargs).build()
 
     @classmethod
-    def set_builder(cls: type[Ins], builder: type[Builder[Ins]]) -> None:
+    def set_builder(cls: type[Ins], builder: Union[Builder[Ins], type[Builder[Ins]]]) -> None:
         """Set a builder class.
 
         :param builder: The builder class to be set.
         :return: This method does not return anything.
         """
-        cls._builder_cls = builder
+        if not isinstance(builder, Builder) and not (isinstance(builder, type) and issubclass(builder, Builder)):
+            raise ValueError(f"Given builder value is invalid: {builder!r}")
+
+        cls._builder = builder
 
     @classmethod
-    def get_builder(cls) -> type[Builder[Ins]]:
+    def get_builder(cls) -> Builder[Ins]:
         """Get the builder class.
 
         :return: A ``Builder`` subclass.
         """
-        return cls._builder_cls
+        builder = cls._builder
+
+        if isinstance(builder, Builder):
+            builder = builder.copy()
+        else:
+            builder = builder.new()
+
+        return builder.with_cls(cls)
 
 
 B = TypeVar("B", bound=Builder)
