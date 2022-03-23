@@ -16,7 +16,8 @@ from aio_pika import (
 from aio_pika.exceptions import QueueEmpty
 
 from minos.common import (
-    MinosConfig, Config,
+    Config,
+    MinosConfig,
 )
 from minos.networks import (
     BrokerMessage,

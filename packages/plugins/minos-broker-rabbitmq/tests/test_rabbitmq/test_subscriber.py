@@ -9,7 +9,8 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    MinosConfig, Config,
+    Config,
+    MinosConfig,
 )
 from minos.networks import (
     BrokerMessageV1,
