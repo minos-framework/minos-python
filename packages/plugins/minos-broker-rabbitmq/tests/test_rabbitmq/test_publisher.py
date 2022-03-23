@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import (
-    AsyncMock, patch, )
+    AsyncMock,
+    patch,
+)
 
 import aio_pika
 
@@ -52,6 +54,7 @@ class TestRabbitMQBrokerPublisher(unittest.IsolatedAsyncioTestCase):
             await publisher.destroy()
 
             self.assertEqual(1, destroy_mock.call_count)
+
 
 class TestPostgreSqlQueuedRabbitMQBrokerPublisher(unittest.IsolatedAsyncioTestCase):
     def test_from_config(self):

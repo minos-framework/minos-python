@@ -68,7 +68,4 @@ class RabbitMQBrokerPublisher(BrokerPublisher):
         async with self.connection:
             channel = await self.connection.channel()
             queue = await channel.declare_queue(message.topic)
-            await channel.default_exchange.publish(
-                Message(message.avro_bytes),
-                routing_key=queue.name
-            )
+            await channel.default_exchange.publish(Message(message.avro_bytes), routing_key=queue.name)

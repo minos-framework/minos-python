@@ -4,7 +4,8 @@ from collections import (
 )
 from unittest.mock import (
     AsyncMock,
-    MagicMock, patch,
+    MagicMock,
+    patch,
 )
 
 from minos.common import (
