@@ -13,6 +13,7 @@ from typing import (
 from aio_pika import (
     connect,
 )
+from aio_pika.exceptions import QueueEmpty
 
 from minos.common import (
     MinosConfig, Config,
@@ -55,7 +56,7 @@ class RabbitMQBrokerSubscriber(BrokerSubscriber):
 
     async def _setup(self) -> None:
         await super()._setup()
-        self.connection = await connect(f"amqp://guest:guest@{self.broker_host}/")
+        self.connection = await connect(f"amqp://guest:guest@{self.broker_host}:{self.broker_port}/")
 
     async def _destroy(self) -> None:
         await self.connection.close()
@@ -65,8 +66,11 @@ class RabbitMQBrokerSubscriber(BrokerSubscriber):
             async with self.connection:
                 channel = await self.connection.channel()
                 queue = await channel.declare_queue(topic)
-                message = await queue.get(fail=False)
-                return BrokerMessage.from_avro_bytes(message.body if message.body else None)
+                try:
+                    message = await queue.get()
+                    return BrokerMessage.from_avro_bytes(message.body)
+                except QueueEmpty:
+                    pass
 
 
 class RabbitMQBrokerSubscriberBuilder(BrokerSubscriberBuilder):
