@@ -5,6 +5,8 @@ from __future__ import (
 import logging
 
 from aio_pika import connect, Message
+from aio_pika.abc import AbstractConnection
+from cached_property import cached_property
 
 from minos.common import (
     MinosConfig,
@@ -57,14 +59,14 @@ class RabbitMQBrokerPublisher(BrokerPublisher):
 
     async def _setup(self) -> None:
         await super()._setup()
+        self.connection = await connect(f"amqp://guest:guest@{self.broker_host}/")
 
     async def _destroy(self) -> None:
-        pass
+        await self.connection.close()
 
     async def _send(self, message: BrokerMessage) -> None:
-        connection = await connect(f"amqp://guest:guest@{self.broker_host}/")
-        async with connection:
-            channel = await connection.channel()
+        async with self.connection:
+            channel = await self.connection.channel()
             queue = await channel.declare_queue(message.topic)
             await channel.default_exchange.publish(
                 Message(message.avro_bytes),

@@ -2,39 +2,15 @@ from __future__ import (
     annotations,
 )
 
-import asyncio
 import logging
-from asyncio import (
-    TimeoutError,
-    wait_for,
-)
 from collections.abc import (
     Iterable,
-)
-from contextlib import (
-    suppress,
 )
 from typing import (
     Optional,
 )
 
 from aio_pika import connect
-from aio_pika.abc import AbstractConnection, AbstractIncomingMessage
-from aiokafka import (
-    AIOKafkaConsumer,
-)
-from cached_property import (
-    cached_property,
-)
-from kafka import (
-    KafkaAdminClient,
-)
-from kafka.admin import (
-    NewTopic,
-)
-from kafka.errors import (
-    TopicAlreadyExistsError,
-)
 
 from minos.common import (
     MinosConfig,
@@ -77,18 +53,18 @@ class RabbitMQBrokerSubscriber(BrokerSubscriber):
 
     async def _setup(self) -> None:
         await super()._setup()
+        self.connection = await connect(f"amqp://guest:guest@{self.broker_host}/")
 
     async def _destroy(self) -> None:
-        pass
+        await self.connection.close()
 
     async def _receive(self) -> BrokerMessage:
         for topic in self.topics:
-            connection = await connect(f"amqp://guest:guest@{self.broker_host}/")
-            async with connection:
-                channel = await connection.channel()
+            async with self.connection:
+                channel = await self.connection.channel()
                 queue = await channel.declare_queue(topic)
-                message = await queue.get()
-                return BrokerMessage.from_avro_bytes(message.body)
+                message = await queue.get(fail=False)
+                return BrokerMessage.from_avro_bytes(message.body if message.body else None)
 
 
 class RabbitMQBrokerSubscriberBuilder(BrokerSubscriberBuilder):
