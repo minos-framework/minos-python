@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 import logging
+import warnings
 from asyncio import (
     TimeoutError,
     wait_for,
@@ -41,6 +42,10 @@ logger = logging.getLogger(__name__)
 class PostgreSqlQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
     """PostgreSql Queued Kafka Broker Publisher class."""
 
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{PostgreSqlQueuedKafkaBrokerPublisher!r} has been deprecated.", DeprecationWarning)
+        super().__init__(*args, **kwargs)
+
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> PostgreSqlQueuedKafkaBrokerPublisher:
         impl = KafkaBrokerPublisher.from_config(config, **kwargs)
@@ -50,6 +55,10 @@ class PostgreSqlQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
 
 class InMemoryQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
     """In Memory Queued Kafka Broker Publisher class."""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{InMemoryQueuedKafkaBrokerPublisher!r} has been deprecated.", DeprecationWarning)
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> InMemoryQueuedKafkaBrokerPublisher:

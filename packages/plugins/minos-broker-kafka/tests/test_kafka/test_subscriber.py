@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from collections import (
     namedtuple,
 )
@@ -230,7 +231,12 @@ class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
         self.config = Config(CONFIG_FILE_PATH)
 
     def test_build(self):
-        builder = PostgreSqlQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            builder = (
+                PostgreSqlQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+            )
+
         subscriber = builder.build()
 
         self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
@@ -243,7 +249,10 @@ class TestInMemoryQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
         self.config = Config(CONFIG_FILE_PATH)
 
     def test_build(self):
-        builder = InMemoryQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            builder = InMemoryQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+
         subscriber = builder.build()
 
         self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
