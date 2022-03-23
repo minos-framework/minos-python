@@ -73,20 +73,20 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase, ABC):
                 self.snapshot_repository,
             ],
         )
-        self.injector.wire()
+        self.injector.wire_injections()
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
 
-        await self.injector.setup()
+        await self.injector.setup_injections()
 
     async def asyncTearDown(self):
-        await self.injector.destroy()
+        await self.injector.destroy_injections()
 
         await super().asyncTearDown()
 
     def tearDown(self) -> None:
-        self.injector.unwire()
+        self.injector.unwire_injections()
         super().tearDown()
 
 

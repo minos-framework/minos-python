@@ -30,10 +30,10 @@ class FooPort(Port):
         super().__init__(**kwargs)
         self.kwargs = kwargs
 
-    async def start(self) -> None:
+    async def _start(self) -> None:
         """For testing purposes."""
 
-    async def stop(self, err: Exception = None) -> None:
+    async def _stop(self, err: Exception = None) -> None:
         """For testing purposes."""
 
 
@@ -99,7 +99,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
     async def test_setup(self):
         mock = AsyncMock()
-        self.launcher.injector.wire_and_setup = mock
+        self.launcher.injector.wire_and_setup_injections = mock
         await self.launcher.setup()
 
         self.assertEqual(1, mock.call_count)
@@ -120,11 +120,11 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         await self.launcher.destroy()
 
     async def test_destroy(self):
-        self.launcher.injector.wire_and_setup = AsyncMock()
+        self.launcher.injector.wire_and_setup_injections = AsyncMock()
         await self.launcher.setup()
 
         mock = AsyncMock()
-        self.launcher.injector.unwire_and_destroy = mock
+        self.launcher.injector.unwire_and_destroy_injections = mock
         await self.launcher.destroy()
 
         self.assertEqual(1, mock.call_count)

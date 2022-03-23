@@ -186,7 +186,7 @@ class EntrypointLauncher(SetupMixin):
 
         :return: This method does not return anything.
         """
-        await self.injector.wire_and_setup(
+        await self.injector.wire_and_setup_injections(
             modules=self._external_modules + self._internal_modules, packages=self._external_packages
         )
 
@@ -199,7 +199,7 @@ class EntrypointLauncher(SetupMixin):
 
         :return: This method does not return anything.
         """
-        await self.injector.unwire_and_destroy()
+        await self.injector.unwire_and_destroy_injections()
 
     @cached_property
     def injector(self) -> DependencyInjector:

@@ -66,13 +66,13 @@ class TestDependencyInjector(unittest.IsolatedAsyncioTestCase):
 
         mock = MagicMock()
         injector.container.wire = mock
-        await injector.wire_and_setup()
+        await injector.wire_and_setup_injections()
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(modules=[decorators]), mock.call_args)
 
         mock = MagicMock()
         injector.container.unwire = mock
-        await injector.unwire_and_destroy()
+        await injector.unwire_and_destroy_injections()
         self.assertEqual(1, mock.call_count)
 
     async def test_wire_unwire_with_modules(self):
@@ -84,13 +84,13 @@ class TestDependencyInjector(unittest.IsolatedAsyncioTestCase):
 
         mock = MagicMock()
         injector.container.wire = mock
-        await injector.wire_and_setup(modules=[sys.modules[__name__]])
+        await injector.wire_and_setup_injections(modules=[sys.modules[__name__]])
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(modules=[sys.modules[__name__], decorators]), mock.call_args)
 
         mock = MagicMock()
         injector.container.unwire = mock
-        await injector.unwire_and_destroy()
+        await injector.unwire_and_destroy_injections()
         self.assertEqual(1, mock.call_count)
 
 
