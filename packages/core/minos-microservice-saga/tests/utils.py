@@ -37,6 +37,7 @@ from minos.saga import (
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "config.yml"
+DB_PATH = BASE_PATH / "test_db.lmdb"
 
 
 class MinosTestCase(unittest.IsolatedAsyncioTestCase):

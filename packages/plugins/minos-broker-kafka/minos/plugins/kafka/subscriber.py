@@ -164,10 +164,13 @@ class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         :param config: The config to be set.
         :return: This method return the builder instance.
         """
+        broker_config = config.get_interface_by_name("broker")
+        common_config = broker_config["common"]
+
         self.kwargs |= {
-            "group_id": config.service.name,
-            "broker_host": config.broker.host,
-            "broker_port": config.broker.port,
+            "group_id": config.get_name(),
+            "broker_host": common_config["host"],
+            "broker_port": common_config["port"],
         }
         return self
 

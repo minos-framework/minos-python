@@ -23,13 +23,13 @@ from minos.networks import (
     ScheduledResponseException,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
 )
 
 
 class TestPeriodicTaskScheduler(unittest.IsolatedAsyncioTestCase):
     def test_from_config(self):
-        config = Config(BASE_PATH / "test_config.yml")
+        config = Config(CONFIG_FILE_PATH)
         scheduler = PeriodicTaskScheduler.from_config(config)
         self.assertEqual(1, len(scheduler.tasks))
         self.assertTrue(all(map(lambda t: isinstance(t, PeriodicTask), scheduler.tasks)))

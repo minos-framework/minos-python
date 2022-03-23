@@ -24,13 +24,13 @@ from minos.networks import (
     MinosHandlerNotFoundEnoughEntriesException,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
     FakeModel,
 )
 
 
 class TestBrokerClient(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
         super().setUp()

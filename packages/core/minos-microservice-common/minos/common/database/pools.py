@@ -50,7 +50,7 @@ class PostgreSqlPool(Pool[ContextManager]):
 
     @classmethod
     def _from_config(cls, *args, config, **kwargs):
-        return cls(*args, **config.repository._asdict(), **kwargs)
+        return cls(*args, **config.get_default_database(), **kwargs)
 
     async def _create_instance(self) -> Optional[Connection]:
         try:
