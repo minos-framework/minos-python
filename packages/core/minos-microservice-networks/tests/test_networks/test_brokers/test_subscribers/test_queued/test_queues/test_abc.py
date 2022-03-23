@@ -39,7 +39,7 @@ class TestBrokerSubscriberQueue(unittest.IsolatedAsyncioTestCase):
             _BrokerSubscriberQueue([])
 
 
-class TestBrokerSubscriberBuilder(unittest.TestCase):
+class TestBrokerSubscriberQueueBuilder(unittest.TestCase):
     def test_with_topics(self):
         builder = BrokerSubscriberQueueBuilder().with_topics({"one", "two"})
         self.assertIsInstance(builder, BrokerSubscriberQueueBuilder)
