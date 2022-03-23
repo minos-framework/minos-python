@@ -23,7 +23,7 @@ class IntegrationTests(IsolatedAsyncioTestCase):
         async with RabbitMQBrokerPublisher.from_config(CONFIG_FILE_PATH) as publisher:
             await publisher.send(message)
 
-        async with RabbitMQBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}) as subscriber:
+        async with RabbitMQBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo"}) as subscriber:
             observed = await subscriber.receive()
 
         self.assertEqual(message.content, observed.content)

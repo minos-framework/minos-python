@@ -23,7 +23,7 @@ snapshot:
     port: 5432
 broker:
   host: localhost
-  port: 9092
+  port: 5672
   queue:
     database: order_db
     user: minos

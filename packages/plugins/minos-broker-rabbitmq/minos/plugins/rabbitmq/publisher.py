@@ -62,7 +62,7 @@ class RabbitMQBrokerPublisher(BrokerPublisher):
 
     async def _setup(self) -> None:
         await super()._setup()
-        self.connection = await connect(f"amqp://guest:guest@{self.broker_host}/")
+        self.connection = await connect(f"amqp://guest:guest@{self.broker_host}:{self.broker_port}/")
 
     async def _destroy(self) -> None:
         await self.connection.close()
