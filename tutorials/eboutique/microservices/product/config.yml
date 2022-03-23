@@ -1,0 +1,60 @@
+service:
+  name: product
+  aggregate: src.aggregates.Product
+  injections:
+    lock_pool: minos.common.PostgreSqlLockPool
+    postgresql_pool: minos.common.PostgreSqlPool
+    broker_publisher: minos.plugins.kafka.InMemoryQueuedKafkaBrokerPublisher
+    broker_subscriber_builder: minos.plugins.kafka.InMemoryQueuedKafkaBrokerSubscriberBuilder
+    broker_pool: minos.networks.BrokerClientPool
+    transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
+    event_repository: minos.aggregate.PostgreSqlEventRepository
+    snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
+    saga_manager: minos.saga.SagaManager
+    discovery: minos.networks.DiscoveryConnector
+    product_repository: src.ProductQueryRepository
+  services:
+    - minos.networks.BrokerHandlerService
+    - minos.networks.RestService
+    - minos.networks.PeriodicTaskSchedulerService
+middleware:
+  - minos.saga.transactional_command
+services:
+  - minos.aggregate.TransactionService
+  - minos.aggregate.SnapshotService
+  - minos.saga.SagaService
+  - src.queries.ProductQueryService
+  - src.commands.ProductCommandService
+rest:
+  host: 0.0.0.0
+  port: 8081
+broker:
+  host: localhost
+  port: 9092
+  queue:
+    database: product_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+    records: 1000
+    retry: 2
+repository:
+  database: product_db
+  user: minos
+  password: min0s
+  host: localhost
+  port: 5432
+snapshot:
+  database: product_db
+  user: minos
+  password: min0s
+  host: localhost
+  port: 5432
+saga:
+  storage:
+    path: ./product.lmdb
+discovery:
+  client: minos.plugins.minos_discovery.MinosDiscoveryClient
+  host: localhost
+  port: 5567

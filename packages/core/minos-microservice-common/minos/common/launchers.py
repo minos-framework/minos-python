@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import logging
-import pkgutil
-import re
-import sys
 from asyncio import (
     AbstractEventLoop,
 )
@@ -32,27 +29,28 @@ from aiomisc.log import (
     LogFormat,
     basic_config,
 )
-from aiomisc.log.enum import (
-    DateFormat,
-)
 from aiomisc.utils import (
     create_default_event_loop,
+)
+from aiomisc_log.enum import (
+    DateFormat,
 )
 from cached_property import (
     cached_property,
 )
 
-from .configuration import (
-    MinosConfig,
+from .config import (
+    Config,
 )
 from .importlib import (
+    get_internal_modules,
     import_module,
 )
-from .injectors import (
+from .injections import (
     DependencyInjector,
 )
 from .setup import (
-    MinosSetup,
+    SetupMixin,
 )
 
 logger = logging.getLogger(__name__)
@@ -66,23 +64,26 @@ def _create_loop() -> AbstractEventLoop:  # pragma: no cover
     return create_default_event_loop()[0]
 
 
-class EntrypointLauncher(MinosSetup):
+class EntrypointLauncher(SetupMixin):
     """EntryPoint Launcher class."""
 
     def __init__(
         self,
-        config: MinosConfig,
-        injections: dict[str, Union[MinosSetup, Type[MinosSetup], str]],
+        config: Config,
+        injections: list[Union[SetupMixin, Type[SetupMixin], str]],
         services: list[Union[Service, Type[Service], str]],
         log_level: Union[int, str] = logging.INFO,
         log_format: Union[str, LogFormat] = "color",
         log_date_format: Union[str, DateFormat] = DateFormat["color"],
         external_modules: Optional[list[ModuleType]] = None,
+        external_packages: Optional[list[str]] = None,
         *args,
         **kwargs,
     ):
         if external_modules is None:
             external_modules = list()
+        if external_packages is None:
+            external_packages = list()
 
         super().__init__(*args, **kwargs)
 
@@ -98,9 +99,10 @@ class EntrypointLauncher(MinosSetup):
         self._raw_injections = injections
         self._raw_services = services
         self._external_modules = external_modules
+        self._external_packages = external_packages
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EntrypointLauncher:
+    def _from_config(cls, *args, config: Config, **kwargs) -> EntrypointLauncher:
         if "injections" not in kwargs:
             kwargs["injections"] = config.service.injections
         if "services" not in kwargs:
@@ -174,22 +176,20 @@ class EntrypointLauncher(MinosSetup):
 
         :return: This method does not return anything.
         """
-        await self.injector.wire(modules=self._external_modules + self._internal_modules)
+        await self.injector.wire_and_setup(
+            modules=self._external_modules + self._internal_modules, packages=self._external_packages
+        )
 
     @property
     def _internal_modules(self) -> list[ModuleType]:
-        import minos
-
-        for loader, module_name, _ in pkgutil.iter_modules(minos.__path__):
-            loader.find_module(module_name).load_module(module_name)
-        return [v for k, v in sys.modules.items() if re.fullmatch(r"minos\.\w+", k)]
+        return get_internal_modules()
 
     async def _destroy(self) -> None:
         """Unwire the injected dependencies and destroys it.
 
         :return: This method does not return anything.
         """
-        await self.injector.unwire()
+        await self.injector.unwire_and_destroy()
 
     @cached_property
     def injector(self) -> DependencyInjector:
@@ -197,4 +197,4 @@ class EntrypointLauncher(MinosSetup):
 
         :return: A ``DependencyInjector`` instance.
         """
-        return DependencyInjector(config=self.config, **self._raw_injections)
+        return DependencyInjector(self.config, self._raw_injections)

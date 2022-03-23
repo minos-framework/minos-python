@@ -22,17 +22,14 @@ from uuid import (
     UUID,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     NULL_UUID,
+    Inject,
+    Injectable,
     Lock,
-    MinosPool,
-    MinosSetup,
+    LockPool,
     NotProvidedException,
+    SetupMixin,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -68,27 +65,28 @@ from ..models import (
 )
 
 
-class EventRepository(ABC, MinosSetup):
+@Injectable("event_repository")
+class EventRepository(ABC, SetupMixin):
     """Base event repository class in ``minos``."""
 
-    @inject
+    @Inject()
     def __init__(
         self,
-        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
-        transaction_repository: TransactionRepository = Provide["transaction_repository"],
-        lock_pool: MinosPool[Lock] = Provide["lock_pool"],
+        broker_publisher: BrokerPublisher,
+        transaction_repository: TransactionRepository,
+        lock_pool: LockPool,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
-        if broker_publisher is None or isinstance(broker_publisher, Provide):
+        if broker_publisher is None:
             raise NotProvidedException("A broker instance is required.")
 
-        if transaction_repository is None or isinstance(transaction_repository, Provide):
+        if transaction_repository is None:
             raise NotProvidedException("A transaction repository instance is required.")
 
-        if lock_pool is None or isinstance(lock_pool, Provide):
+        if lock_pool is None:
             raise NotProvidedException("A lock pool instance is required.")
 
         self._broker_publisher = broker_publisher

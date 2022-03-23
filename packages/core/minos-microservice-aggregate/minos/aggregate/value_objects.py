@@ -7,26 +7,24 @@ from typing import (
     TypeVar,
 )
 
-from minos.aggregate.collections import (
-    IncrementalSet,
-)
-from minos.aggregate.exceptions import (
-    ValueObjectException,
-)
 from minos.common import (
     DeclarativeModel,
     Model,
+)
+
+from .collections import (
+    IncrementalSet,
+)
+from .exceptions import (
+    ValueObjectException,
 )
 
 
 class ValueObject(DeclarativeModel):
     """Value Object class."""
 
-    def __setattr__(self, key: str, value: Any):
-        if key.startswith("_"):
-            super().__setattr__(key, value)
-        else:
-            raise ValueObjectException("modification of an immutable value object not allowed")
+    def __setitem__(self, key: str, value: Any) -> None:
+        raise ValueObjectException("modification of an immutable value object not allowed")
 
 
 T = TypeVar("T", bound=Model)

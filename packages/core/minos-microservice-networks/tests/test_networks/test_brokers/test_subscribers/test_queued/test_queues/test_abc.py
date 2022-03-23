@@ -4,7 +4,7 @@ from abc import (
 )
 
 from minos.common import (
-    MinosSetup,
+    SetupMixin,
 )
 from minos.networks import (
     BrokerMessage,
@@ -52,7 +52,7 @@ class TestBrokerSubscriberQueue(unittest.IsolatedAsyncioTestCase):
 
 class TestBrokerSubscriberBuilder(unittest.TestCase):
     def test_abstract(self):
-        self.assertTrue(issubclass(BrokerSubscriberQueueBuilder, (ABC, MinosSetup)))
+        self.assertTrue(issubclass(BrokerSubscriberQueueBuilder, (ABC, SetupMixin)))
         # noinspection PyUnresolvedReferences
         self.assertEqual({"build"}, BrokerSubscriberQueueBuilder.__abstractmethods__)
 

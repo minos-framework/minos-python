@@ -1,4 +1,4 @@
-.PHONY: docs
+.PHONY: docs dist
 
 lint:
 	poetry run flake8

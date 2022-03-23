@@ -209,3 +209,14 @@ History
 ------------------
 
 * Fix bug related with dependency specification.
+
+0.5.2 (2022-02-08)
+------------------
+
+* Fix bug related with enroute decorator collisions in which the `MinosRedefinedEnrouteDecoratorException` was not raised. 
+* Minor changes.
+
+0.5.3 (2022-03-04)
+------------------
+
+* Improve error messages of  `BrokerDispatcher`, `RestHandler` and `PeriodicTask`.

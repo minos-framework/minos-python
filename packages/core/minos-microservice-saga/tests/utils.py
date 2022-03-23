@@ -2,7 +2,6 @@ from __future__ import (
     annotations,
 )
 
-import sys
 import unittest
 from pathlib import (
     Path,
@@ -11,22 +10,18 @@ from typing import (
     Any,
 )
 
-from dependency_injector import (
-    containers,
-    providers,
-)
-
 from minos.aggregate import (
     InMemoryEventRepository,
     InMemorySnapshotRepository,
     InMemoryTransactionRepository,
 )
 from minos.common import (
+    Config,
+    DeclarativeModel,
+    DependencyInjector,
     Lock,
-    MinosConfig,
-    MinosModel,
-    MinosPool,
-    MinosSetup,
+    LockPool,
+    SetupMixin,
 )
 from minos.networks import (
     BrokerClientPool,
@@ -48,15 +43,12 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.config = MinosConfig(BASE_PATH / "config.yml")
+        self.config = Config(CONFIG_FILE_PATH)
 
-        self.broker_publisher = InMemoryBrokerPublisher()
         self.broker_pool = BrokerClientPool.from_config(CONFIG_FILE_PATH)
+        self.broker_publisher = InMemoryBrokerPublisher()
         self.broker_subscriber_builder = InMemoryBrokerSubscriberBuilder()
-
-        self.lock = FakeLock()
         self.lock_pool = FakeLockPool()
-
         self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
         self.event_repository = InMemoryEventRepository(
             broker_publisher=self.broker_publisher,
@@ -67,48 +59,36 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
             event_repository=self.event_repository, transaction_repository=self.transaction_repository
         )
 
-        self.container = containers.DynamicContainer()
-        self.container.config = providers.Object(self.config)
-        self.container.broker_pool = providers.Object(self.broker_pool)
-        self.container.broker_publisher = providers.Object(self.broker_publisher)
-        self.container.broker_subscriber_builder = providers.Object(self.broker_subscriber_builder)
-        self.container.lock_pool = providers.Object(self.lock_pool)
-        self.container.transaction_repository = providers.Object(self.transaction_repository)
-        self.container.event_repository = providers.Object(self.event_repository)
-        self.container.snapshot_repository = providers.Object(self.snapshot_repository)
-        self.container.wire(
-            modules=[
-                sys.modules["minos.networks"],
-                sys.modules["minos.saga"],
-                sys.modules["minos.aggregate"],
-                sys.modules["minos.common"],
-            ]
+        self.injector = DependencyInjector(
+            self.config,
+            [
+                self.broker_pool,
+                self.broker_publisher,
+                self.broker_subscriber_builder,
+                self.lock_pool,
+                self.transaction_repository,
+                self.event_repository,
+                self.snapshot_repository,
+            ],
         )
+        self.injector.wire()
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
 
-        await self.broker_publisher.setup()
-        await self.transaction_repository.setup()
-        await self.lock_pool.setup()
-        await self.event_repository.setup()
-        await self.snapshot_repository.setup()
+        await self.injector.setup()
 
     async def asyncTearDown(self):
-        await self.snapshot_repository.destroy()
-        await self.event_repository.destroy()
-        await self.lock_pool.destroy()
-        await self.transaction_repository.destroy()
-        await self.broker_publisher.destroy()
+        await self.injector.destroy()
 
         await super().asyncTearDown()
 
     def tearDown(self) -> None:
-        self.container.unwire()
+        self.injector.unwire()
         super().tearDown()
 
 
-class FakeBrokerPublisher(MinosSetup):
+class FakeBrokerPublisher(SetupMixin):
     """For testing purposes."""
 
     async def send(self, data: Any, **kwargs) -> None:
@@ -127,7 +107,7 @@ class FakeLock(Lock):
         return
 
 
-class FakeLockPool(MinosPool):
+class FakeLockPool(LockPool):
     """For testing purposes."""
 
     async def _create_instance(self):
@@ -137,7 +117,7 @@ class FakeLockPool(MinosPool):
         """For testing purposes."""
 
 
-class Foo(MinosModel):
+class Foo(DeclarativeModel):
     """Utility minos model class for testing purposes"""
 
     foo: str

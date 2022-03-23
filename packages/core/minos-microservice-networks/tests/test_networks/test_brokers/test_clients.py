@@ -9,8 +9,8 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    MinosSetup,
     NotProvidedException,
+    SetupMixin,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -67,7 +67,7 @@ class TestBrokerClient(PostgresAsyncTestCase):
         self.assertTrue(broker.already_destroyed)
 
     def test_base_classes(self):
-        self.assertIsInstance(self.broker, MinosSetup)
+        self.assertIsInstance(self.broker, SetupMixin)
 
     async def test_send(self):
         mock = AsyncMock()

@@ -13,9 +13,12 @@ from aiokafka import (
 from kafka import (
     KafkaAdminClient,
 )
+from kafka.errors import (
+    KafkaConnectionError,
+)
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -43,7 +46,7 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(issubclass(KafkaBrokerSubscriber, BrokerSubscriber))
 
     async def test_from_config(self):
-        config = MinosConfig(CONFIG_FILE_PATH)
+        config = Config(CONFIG_FILE_PATH)
         async with KafkaBrokerSubscriber.from_config(config, topics={"foo", "bar"}) as subscriber:
             self.assertEqual(config.broker.host, subscriber.broker_host)
             self.assertEqual(config.broker.port, subscriber.broker_port)
@@ -66,6 +69,25 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
         async with KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}) as subscriber:
             client = subscriber.admin_client
             self.assertIsInstance(client, KafkaAdminClient)
+
+    async def test_setup_destroy_without_connection(self):
+        publisher = KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}, circuit_breaker_time=0.1)
+        stop_mock = AsyncMock(side_effect=publisher.client.stop)
+
+        async def _fn():
+            if publisher.is_circuit_breaker_recovering:
+                raise ValueError()
+            raise KafkaConnectionError()
+
+        start_mock = AsyncMock(side_effect=_fn)
+        publisher.client.start = start_mock
+        publisher.client.stop = stop_mock
+
+        with self.assertRaises(ValueError):
+            async with publisher:
+                pass
+
+        self.assertEqual(1, stop_mock.call_count)
 
     async def test_setup_destroy_client(self):
         subscriber = KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"})
@@ -178,7 +200,7 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
 
 class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_with_config(self):
         builder = KafkaBrokerSubscriberBuilder().with_config(self.config)
@@ -202,7 +224,7 @@ class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
 
 class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_build(self):
         builder = PostgreSqlQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
@@ -215,7 +237,7 @@ class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
 
 class TestInMemoryQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_build(self):
         builder = InMemoryQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})

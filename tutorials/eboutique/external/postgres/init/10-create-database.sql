@@ -1,0 +1,23 @@
+DROP DATABASE IF EXISTS product_db;
+DROP DATABASE IF EXISTS product_query_db;
+DROP DATABASE IF EXISTS cart_query_db;
+DROP DATABASE IF EXISTS cart_db;
+DROP DATABASE IF EXISTS shipping_db;
+DROP DATABASE IF EXISTS currency_db;
+DROP DATABASE IF EXISTS notifier_db;
+DROP DATABASE IF EXISTS checkout_db;
+DROP DATABASE IF EXISTS checkout_query_db;
+DROP DATABASE IF EXISTS payment_db;
+DROP DATABASE IF EXISTS payment_query_db;
+
+CREATE DATABASE product_db;
+CREATE DATABASE product_query_db;
+CREATE DATABASE cart_query_db;
+CREATE DATABASE cart_db;
+CREATE DATABASE shipping_db;
+CREATE DATABASE currency_db;
+CREATE DATABASE notifier_db;
+CREATE DATABASE checkout_db;
+CREATE DATABASE checkout_query_db;
+CREATE DATABASE payment_db;
+CREATE DATABASE payment_query_db;

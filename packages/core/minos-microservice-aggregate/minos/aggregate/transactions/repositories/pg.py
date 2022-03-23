@@ -14,7 +14,7 @@ from uuid import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
     PostgreSqlMinosDatabase,
 )
 
@@ -33,7 +33,7 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
     """PostgreSql Transaction Repository class."""
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[PostgreSqlTransactionRepository]:
+    def _from_config(cls, *args, config: Config, **kwargs) -> Optional[PostgreSqlTransactionRepository]:
         return cls(*args, **config.repository._asdict(), **kwargs)
 
     async def _setup(self):

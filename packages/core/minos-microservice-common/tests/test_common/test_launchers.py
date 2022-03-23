@@ -6,6 +6,8 @@ from unittest.mock import (
     patch,
 )
 
+import uvloop
+
 from minos.common import (
     EntrypointLauncher,
     classname,
@@ -35,7 +37,11 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         import tests
 
         self.launcher = EntrypointLauncher(
-            config=self.config, injections=self.injections, services=self.services, external_modules=[tests]
+            config=self.config,
+            injections=self.injections,
+            services=self.services,
+            external_modules=[tests],
+            external_packages=["tests"],
         )
 
     def test_from_config(self):
@@ -75,7 +81,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
     async def test_setup(self):
         mock = AsyncMock()
-        self.launcher.injector.wire = mock
+        self.launcher.injector.wire_and_setup = mock
         await self.launcher.setup()
 
         self.assertEqual(1, mock.call_count)
@@ -85,20 +91,22 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         )
 
         self.assertEqual(0, len(mock.call_args.args))
-        self.assertEqual(1, len(mock.call_args.kwargs))
+        self.assertEqual(2, len(mock.call_args.kwargs))
         observed = mock.call_args.kwargs["modules"]
 
         self.assertIn(tests, observed)
         self.assertIn(common, observed)
 
+        self.assertEqual(["tests"], mock.call_args.kwargs["packages"])
+
         await self.launcher.destroy()
 
     async def test_destroy(self):
-        self.launcher.injector.wire = AsyncMock()
+        self.launcher.injector.wire_and_setup = AsyncMock()
         await self.launcher.setup()
 
         mock = AsyncMock()
-        self.launcher.injector.unwire = mock
+        self.launcher.injector.unwire_and_destroy = mock
         await self.launcher.destroy()
 
         self.assertEqual(1, mock.call_count)
@@ -125,6 +133,12 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
         self.assertEqual(1, mock_entrypoint.call_count)
         self.assertEqual(1, mock_loop.call_count)
+
+
+class TestEntryPointLauncherLoop(unittest.TestCase):
+    def test_loop(self):
+        launcher = EntrypointLauncher.from_config(BASE_PATH / "test_config.yml")
+        self.assertIsInstance(launcher.loop, uvloop.Loop)
 
 
 if __name__ == "__main__":

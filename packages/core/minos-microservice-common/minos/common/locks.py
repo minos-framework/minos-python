@@ -1,3 +1,10 @@
+from __future__ import (
+    annotations,
+)
+
+from abc import (
+    ABC,
+)
 from collections.abc import (
     Hashable,
 )
@@ -7,6 +14,13 @@ from contextlib import (
 
 from cached_property import (
     cached_property,
+)
+
+from .injections import (
+    Injectable,
+)
+from .pools import (
+    Pool,
 )
 
 
@@ -30,3 +44,8 @@ class Lock(AbstractAsyncContextManager):
         if not isinstance(self.key, int):
             return hash(self.key)
         return self.key
+
+
+@Injectable("lock_pool")
+class LockPool(Pool[Lock], ABC):
+    """Postgres Locking Pool class."""

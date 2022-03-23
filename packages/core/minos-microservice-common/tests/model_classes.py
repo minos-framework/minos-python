@@ -12,33 +12,32 @@ from uuid import (
 
 from minos.common import (
     DeclarativeModel,
-    MinosModel,
     MissingSentinel,
 )
 
 
-class Foo(MinosModel):
+class Foo(DeclarativeModel):
     """For testing purposes"""
 
     text: str
 
 
-class Bar(MinosModel):
+class Bar(DeclarativeModel):
     """For testing purposes"""
 
     first: Foo
     second: Foo
 
 
-class FooBar(MinosModel):
+class FooBar(DeclarativeModel):
     """For testing purposes"""
 
     identifier: UUID
 
 
-class Base(MinosModel):
+class Base(DeclarativeModel):
     """
-    base class derived directly from MinosModel
+    base class derived directly from DeclarativeModel
     """
 
     id: int
@@ -74,8 +73,8 @@ class User(Base):
         return not value.count(" ")
 
 
-class ShoppingList(MinosModel):
-    """Class to test ``MinosModel`` composition."""
+class ShoppingList(DeclarativeModel):
+    """Class to test ``DeclarativeModel`` composition."""
 
     user: Optional[User]
     cost: float
@@ -98,7 +97,7 @@ class ShoppingList(MinosModel):
 
 
 class Analytics(Base):
-    """Class to test ``MinosModel`` recursive type validation."""
+    """Class to test ``DeclarativeModel`` recursive type validation."""
 
     orders: dict[str, list[ShoppingList]]
 
@@ -135,7 +134,7 @@ class CustomerDict(User):
     friends: dict[str, str]
 
 
-class CustomerFailList(MinosModel):
+class CustomerFailList(DeclarativeModel):
     """
     Test a Model Class with a List wrong formatted
     """
@@ -143,7 +142,7 @@ class CustomerFailList(MinosModel):
     friends: list
 
 
-class CustomerFailDict(MinosModel):
+class CustomerFailDict(DeclarativeModel):
     """
     Test a Model Class with a Dictionary wrong formatted
     """
@@ -158,6 +157,12 @@ class GenericUser(DeclarativeModel, Generic[T]):
     """For testing purposes."""
 
     username: T
+
+
+class ReservedWordUser(DeclarativeModel, Generic[T]):
+    """For testing purposes."""
+
+    items: str
 
 
 class Auth(DeclarativeModel):
@@ -188,3 +193,15 @@ class Status(str, Enum):
     PENDING = "pending"
     SUCCESS = "success"
     ERROR = "error"
+
+
+class TextNumber(DeclarativeModel):
+    """For testing purposes."""
+
+    text: str
+    number: int
+
+    def __init__(self, *args, text: Optional[str] = None, **kwargs):
+        if text is None:
+            text = "foo"
+        super().__init__(text, *args, **kwargs)

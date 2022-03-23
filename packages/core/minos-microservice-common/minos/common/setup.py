@@ -8,31 +8,31 @@ from pathlib import (
     Path,
 )
 from typing import (
-    Optional,
     Type,
     TypeVar,
     Union,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
+from .config import (
+    Config,
 )
-
-from .configuration import (
-    MinosConfig,
+from .injections import (
+    Inject,
 )
-from .exceptions import (
-    NotProvidedException,
+from .object import (
+    Object,
 )
 
 logger = logging.getLogger(__name__)
 
+S = TypeVar("S", bound="SetupMixin")
 
-class MinosSetup:
-    """Minos setup base class."""
+
+class SetupMixin(Object):
+    """Setup Mixin class."""
 
     def __init__(self, *args, already_setup: bool = False, **kwargs):
+        super().__init__(**kwargs)
         self._already_setup = already_setup
 
     @property
@@ -52,30 +52,22 @@ class MinosSetup:
         return not self._already_setup
 
     @classmethod
-    def from_config(cls: Type[S], config: Optional[Union[MinosConfig, Path]] = None, **kwargs) -> S:
+    @Inject()
+    def from_config(cls: Type[S], config: Union[Config, Path], **kwargs) -> S:
         """Build a new instance from config.
 
         :param config: Config instance. If `None` is provided, default config is chosen.
         :param kwargs: Additional named arguments.
         :return: A instance of the called class.
         """
-        if config is None:
-            config = cls._get_config()
-        elif isinstance(config, Path):
-            config = MinosConfig(config)
+        if isinstance(config, Path):
+            config = Config(config)
 
         logger.info(f"Building a {cls.__name__!r} instance from config...")
         return cls._from_config(config=config, **kwargs)
 
-    @staticmethod
-    @inject
-    def _get_config(config: MinosConfig = Provide["config"]) -> MinosConfig:
-        if isinstance(config, Provide):
-            raise NotProvidedException("The config object must be provided.")
-        return config
-
     @classmethod
-    def _from_config(cls: Type[S], config: MinosConfig, **kwargs) -> S:
+    def _from_config(cls: Type[S], config: Config, **kwargs) -> S:
         return cls(**kwargs)
 
     async def __aenter__(self: S) -> S:
@@ -112,10 +104,15 @@ class MinosSetup:
         """Destroy miscellaneous repository things."""
 
     def __del__(self):
-        if not self.already_destroyed:
+        if not getattr(self, "already_destroyed", True):
             warnings.warn(
                 f"A not destroyed {type(self).__name__!r} instance is trying to be deleted...", ResourceWarning
             )
 
 
-S = TypeVar("S", bound=MinosSetup)
+class MinosSetup(SetupMixin):
+    """Minos Setup class."""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{MinosSetup!r} has been deprecated. Use {SetupMixin} instead.", DeprecationWarning)
+        super().__init__(*args, **kwargs)
