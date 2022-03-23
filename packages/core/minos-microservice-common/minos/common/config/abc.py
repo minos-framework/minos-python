@@ -14,6 +14,9 @@ from collections import (
 from collections.abc import (
     Callable,
 )
+from contextlib import (
+    suppress,
+)
 from pathlib import (
     Path,
 )
@@ -44,9 +47,6 @@ if TYPE_CHECKING:
 @Injectable("config")
 class Config(ABC):
     """Config base class."""
-
-    _PARAMETERIZED_MAPPER: dict = dict()
-    _ENVIRONMENT_MAPPER: dict = dict()
 
     __slots__ = ("_file_path", "_data", "_with_environment", "_parameterized")
 
@@ -281,25 +281,40 @@ class Config(ABC):
         :param key: The key that identifies the value.
         :return: A value instance.
         """
-        if key in self._PARAMETERIZED_MAPPER and self._PARAMETERIZED_MAPPER[key] in self._parameterized:
-            return self._parameterized[self._PARAMETERIZED_MAPPER[key]]
 
-        if self._with_environment and key in self._ENVIRONMENT_MAPPER and self._ENVIRONMENT_MAPPER[key] in os.environ:
-            return os.environ[self._ENVIRONMENT_MAPPER[key]]
+        def _fn(k: str, data: dict[str, Any], previous: str) -> Any:
+            current, _sep, following = k.partition(".")
 
-        def _fn(k: str, data: dict[str, Any]) -> Any:
-            current, _, following = k.partition(".")
+            full = f"{previous}.{current}".lstrip(".")
+            with suppress(KeyError):
+                return self._parameterized[self._to_parameterized_variable(full)]
+
+            if self._with_environment:
+                with suppress(KeyError):
+                    return os.environ[self._to_environment_variable(full)]
 
             part = data[current]
             if not following:
-                return part
+                if not isinstance(part, dict):
+                    return part
 
-            return _fn(following, part)
+                result = dict()
+                for kk in part:
+                    result[kk] = _fn(kk, part, full)
+                return result
+
+            return _fn(following, part, full)
 
         try:
-            return _fn(key, self._data)
+            return _fn(key, self._data, "")
         except Exception:
             raise MinosConfigException(f"{key!r} field is not defined on the configuration!")
+
+    def _to_parameterized_variable(self, key: str) -> str:
+        raise KeyError
+
+    def _to_environment_variable(self, key: str) -> str:
+        raise KeyError
 
 
 # noinspection PyUnusedLocal
