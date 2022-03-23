@@ -23,6 +23,7 @@ from typing import (
 )
 
 from minos.common import (
+    Builder,
     Config,
 )
 
