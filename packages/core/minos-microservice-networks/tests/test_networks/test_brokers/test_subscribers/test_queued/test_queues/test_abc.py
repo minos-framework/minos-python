@@ -3,9 +3,6 @@ from abc import (
     ABC,
 )
 
-from minos.common import (
-    SetupMixin,
-)
 from minos.networks import (
     BrokerMessage,
     BrokerQueue,
@@ -22,14 +19,6 @@ class _BrokerSubscriberQueue(BrokerSubscriberQueue):
 
     async def _dequeue(self) -> BrokerMessage:
         """For testing purposes."""
-
-
-class _BrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder):
-    """For testing purposes."""
-
-    def build(self) -> BrokerSubscriberQueue:
-        """For testing purposes."""
-        return _BrokerSubscriberQueue(**self.kwargs)
 
 
 class TestBrokerSubscriberQueue(unittest.IsolatedAsyncioTestCase):
@@ -51,19 +40,14 @@ class TestBrokerSubscriberQueue(unittest.IsolatedAsyncioTestCase):
 
 
 class TestBrokerSubscriberBuilder(unittest.TestCase):
-    def test_abstract(self):
-        self.assertTrue(issubclass(BrokerSubscriberQueueBuilder, (ABC, SetupMixin)))
-        # noinspection PyUnresolvedReferences
-        self.assertEqual({"build"}, BrokerSubscriberQueueBuilder.__abstractmethods__)
-
     def test_with_topics(self):
-        builder = _BrokerSubscriberQueueBuilder().with_topics({"one", "two"})
-        self.assertIsInstance(builder, _BrokerSubscriberQueueBuilder)
+        builder = BrokerSubscriberQueueBuilder().with_topics({"one", "two"})
+        self.assertIsInstance(builder, BrokerSubscriberQueueBuilder)
         self.assertEqual({"topics": {"one", "two"}}, builder.kwargs)
 
     def test_build(self):
-        builder = _BrokerSubscriberQueueBuilder().with_topics({"one", "two"})
-        self.assertIsInstance(builder, _BrokerSubscriberQueueBuilder)
+        builder = BrokerSubscriberQueueBuilder().with_topics({"one", "two"}).with_cls(_BrokerSubscriberQueue)
+        self.assertIsInstance(builder, BrokerSubscriberQueueBuilder)
         subscriber = builder.build()
         self.assertIsInstance(subscriber, _BrokerSubscriberQueue)
         self.assertEqual({"one", "two"}, subscriber.topics)

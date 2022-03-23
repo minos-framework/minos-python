@@ -10,6 +10,7 @@ from collections.abc import (
     Iterable,
 )
 from typing import (
+    Generic,
     TypeVar,
 )
 
@@ -44,7 +45,10 @@ class BrokerSubscriberQueue(BrokerQueue, BuildableMixin, ABC):
         return self._topics
 
 
-class BrokerSubscriberQueueBuilder(Builder[BrokerSubscriberQueue], ABC):
+BrokerSubscriberQueueCls = TypeVar("BrokerSubscriberQueueCls", bound=BrokerSubscriberQueue)
+
+
+class BrokerSubscriberQueueBuilder(Builder[BrokerSubscriberQueueCls], Generic[BrokerSubscriberQueueCls]):
     """Broker Subscriber Queue Builder class."""
 
     def with_topics(self: B, topics: Iterable[str]) -> B:

@@ -150,10 +150,8 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
         )
 
 
-class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
+class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder[KafkaBrokerSubscriber]):
     """Kafka Broker Subscriber Builder class."""
-
-    impl_cls = KafkaBrokerSubscriber
 
     def with_config(self, config: Config) -> KafkaBrokerSubscriberBuilder:
         """Set config.

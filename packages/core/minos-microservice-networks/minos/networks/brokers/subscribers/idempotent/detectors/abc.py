@@ -12,7 +12,6 @@ from uuid import (
 
 from minos.common import (
     BuildableMixin,
-    Builder,
 )
 
 from ....messages import (
@@ -34,10 +33,3 @@ class BrokerSubscriberDuplicateDetector(BuildableMixin, ABC):
     @abstractmethod
     async def _is_valid(self, topic: str, uuid: UUID) -> bool:
         raise NotImplementedError
-
-
-class BrokerSubscriberDuplicateDetectorBuilder(Builder[BrokerSubscriberDuplicateDetector], ABC):
-    """TODO"""
-
-
-BrokerSubscriberDuplicateDetector.set_builder(BrokerSubscriberDuplicateDetectorBuilder)

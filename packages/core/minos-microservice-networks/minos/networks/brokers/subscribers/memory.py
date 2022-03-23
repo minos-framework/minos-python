@@ -41,10 +41,8 @@ class InMemoryBrokerSubscriber(BrokerSubscriber):
         return await self._queue.get()
 
 
-class InMemoryBrokerSubscriberBuilder(BrokerSubscriberBuilder):
+class InMemoryBrokerSubscriberBuilder(BrokerSubscriberBuilder[InMemoryBrokerSubscriber]):
     """In Memory Broker Subscriber Builder class."""
-
-    impl_cls = InMemoryBrokerSubscriber
 
     def with_messages(self, messages: Iterable[BrokerMessage]) -> InMemoryBrokerSubscriberBuilder:
         """Set messages.
@@ -54,3 +52,6 @@ class InMemoryBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         """
         self.kwargs["messages"] = messages
         return self
+
+
+InMemoryBrokerSubscriber.set_builder(InMemoryBrokerSubscriberBuilder)

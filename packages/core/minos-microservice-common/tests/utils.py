@@ -132,9 +132,6 @@ class FakeBrokerPublisher(BuildableMixin):
 class FakeBrokerPublisherBuilder(Builder[FakeBrokerPublisher]):
     """For testing purposes."""
 
-    def build(self) -> FakeBrokerPublisher:
-        return FakeBrokerPublisher()
-
 
 FakeBrokerPublisher.set_builder(FakeBrokerPublisherBuilder)
 
@@ -146,9 +143,6 @@ class FakeBrokerSubscriber(BuildableMixin):
 @Injectable("broker_subscriber_builder")
 class FakeBrokerSubscriberBuilder(Builder[FakeBrokerSubscriber]):
     """For testing purposes."""
-
-    def build(self) -> FakeBrokerSubscriber:
-        return FakeBrokerSubscriber()
 
 
 FakeBrokerSubscriber.set_builder(FakeBrokerSubscriberBuilder)
