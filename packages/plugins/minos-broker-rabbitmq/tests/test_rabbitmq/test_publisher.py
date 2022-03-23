@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import (
-    AsyncMock, patch, )
+    AsyncMock,
+    patch,
+)
 
 import aio_pika
 
@@ -17,8 +19,8 @@ from minos.networks import (
 )
 from minos.plugins.rabbitmq import (
     InMemoryQueuedRabbitMQBrokerPublisher,
-    RabbitMQBrokerPublisher,
     PostgreSqlQueuedRabbitMQBrokerPublisher,
+    RabbitMQBrokerPublisher,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -52,6 +54,7 @@ class TestRabbitMQBrokerPublisher(unittest.IsolatedAsyncioTestCase):
             await publisher.destroy()
 
             self.assertEqual(1, destroy_mock.call_count)
+
 
 class TestPostgreSqlQueuedRabbitMQBrokerPublisher(unittest.IsolatedAsyncioTestCase):
     def test_from_config(self):

@@ -4,7 +4,8 @@ from collections import (
 )
 from unittest.mock import (
     AsyncMock,
-    MagicMock, patch,
+    MagicMock,
+    patch,
 )
 
 from minos.common import (
@@ -20,9 +21,9 @@ from minos.networks import (
 )
 from minos.plugins.rabbitmq import (
     InMemoryQueuedRabbitMQBrokerSubscriberBuilder,
+    PostgreSqlQueuedRabbitMQBrokerSubscriberBuilder,
     RabbitMQBrokerSubscriber,
     RabbitMQBrokerSubscriberBuilder,
-    PostgreSqlQueuedRabbitMQBrokerSubscriberBuilder,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,

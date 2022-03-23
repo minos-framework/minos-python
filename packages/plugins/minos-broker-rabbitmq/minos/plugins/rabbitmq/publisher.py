@@ -4,9 +4,16 @@ from __future__ import (
 
 import logging
 
-from aio_pika import connect, Message
-from aio_pika.abc import AbstractConnection
-from cached_property import cached_property
+from aio_pika import (
+    Message,
+    connect,
+)
+from aio_pika.abc import (
+    AbstractConnection,
+)
+from cached_property import (
+    cached_property,
+)
 
 from minos.common import (
     MinosConfig,
@@ -68,7 +75,4 @@ class RabbitMQBrokerPublisher(BrokerPublisher):
         async with self.connection:
             channel = await self.connection.channel()
             queue = await channel.declare_queue(message.topic)
-            await channel.default_exchange.publish(
-                Message(message.avro_bytes),
-                routing_key=queue.name
-            )
+            await channel.default_exchange.publish(Message(message.avro_bytes), routing_key=queue.name)
