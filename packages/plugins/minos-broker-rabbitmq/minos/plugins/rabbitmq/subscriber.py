@@ -10,7 +10,9 @@ from typing import (
     Optional,
 )
 
-from aio_pika import connect
+from aio_pika import (
+    connect,
+)
 
 from minos.common import (
     MinosConfig,

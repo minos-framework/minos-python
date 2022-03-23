@@ -21,9 +21,9 @@ from minos.networks import (
 )
 from minos.plugins.rabbitmq import (
     InMemoryQueuedRabbitMQBrokerSubscriberBuilder,
+    PostgreSqlQueuedRabbitMQBrokerSubscriberBuilder,
     RabbitMQBrokerSubscriber,
     RabbitMQBrokerSubscriberBuilder,
-    PostgreSqlQueuedRabbitMQBrokerSubscriberBuilder,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,

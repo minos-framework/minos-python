@@ -4,12 +4,12 @@ __version__ = "0.5.1"
 
 from .publisher import (
     InMemoryQueuedRabbitMQBrokerPublisher,
-    RabbitMQBrokerPublisher,
     PostgreSqlQueuedRabbitMQBrokerPublisher,
+    RabbitMQBrokerPublisher,
 )
 from .subscriber import (
     InMemoryQueuedRabbitMQBrokerSubscriberBuilder,
+    PostgreSqlQueuedRabbitMQBrokerSubscriberBuilder,
     RabbitMQBrokerSubscriber,
     RabbitMQBrokerSubscriberBuilder,
-    PostgreSqlQueuedRabbitMQBrokerSubscriberBuilder,
 )
