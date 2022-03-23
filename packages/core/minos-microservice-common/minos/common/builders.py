@@ -40,10 +40,7 @@ class Builder(SetupMixin, ABC, Generic[Instance]):
         # noinspection PyUnresolvedReferences
         bases = self.__orig_bases__
 
-        try:
-            instance_cls = get_args(next((base for base in bases if len(get_args(base))), None))[0]
-        except Exception:
-            return None
+        instance_cls = get_args(next((base for base in bases if len(get_args(base))), None))[0]
 
         if not isinstance(instance_cls, type):
             return None
@@ -103,7 +100,7 @@ class Builder(SetupMixin, ABC, Generic[Instance]):
         return isinstance(other, type(self)) and self.instance_cls == other.instance_cls and self.kwargs == other.kwargs
 
     def __repr__(self) -> str:
-        return f"{type(self)}({self.instance_cls!r}, {self.kwargs!r})"
+        return f"{type(self).__name__}({self.instance_cls.__name__}, {self.kwargs!r})"
 
 
 Ins = TypeVar("Ins", bound="BuildableMixin")
