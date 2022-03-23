@@ -34,12 +34,15 @@ from ..messages import (
 
 if TYPE_CHECKING:
     from .idempotent import (
+        BrokerSubscriberDuplicateDetector,
         IdempotentBrokerSubscriber,
     )
     from .queued import (
+        BrokerSubscriberQueue,
         BrokerSubscriberQueueBuilder,
         QueuedBrokerSubscriber,
     )
+
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +171,8 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriberCls], Generic[BrokerSubscr
             self.with_queue(broker_subscriber_config["queue"])
 
     def with_duplicate_detector(
-        self, duplicate_detector: Union[type[IdempotentBrokerSubscriber], Builder[IdempotentBrokerSubscriber]]
+        self,
+        duplicate_detector: Union[type[BrokerSubscriberDuplicateDetector], Builder[BrokerSubscriberDuplicateDetector]],
     ):
         """TODO
 
@@ -180,7 +184,7 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriberCls], Generic[BrokerSubscr
         self.duplicate_detector_builder = duplicate_detector.copy()
         return self
 
-    def with_queue(self, queue: Union[type[QueuedBrokerSubscriber], BrokerSubscriberQueueBuilder]):
+    def with_queue(self, queue: Union[type[BrokerSubscriberQueue], BrokerSubscriberQueueBuilder]):
         """TODO
 
         :param queue: TODO

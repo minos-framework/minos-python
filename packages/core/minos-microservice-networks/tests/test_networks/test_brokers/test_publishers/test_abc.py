@@ -99,7 +99,7 @@ class TestBrokerPublisherBuilder(unittest.TestCase):
     def test_with_queue_with_config(self):
         config = Config(CONFIG_FILE_PATH)
 
-        builder = BrokerPublisherBuilder().with_config(config).with_queue(InMemoryBrokerPublisherQueue)
+        builder = BrokerPublisherBuilder().with_queue(InMemoryBrokerPublisherQueue).with_config(config)
         self.assertEqual({}, builder.kwargs)
         self.assertEqual(Builder().with_cls(InMemoryBrokerPublisherQueue), builder.queue_builder)
 
