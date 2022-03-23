@@ -7,7 +7,7 @@ from unittest.mock import (
 import aio_pika
 
 from minos.common import (
-    MinosConfig,
+    MinosConfig, Config,
 )
 from minos.networks import (
     BrokerMessage,
@@ -32,12 +32,14 @@ class TestRabbitMQBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(issubclass(RabbitMQBrokerPublisher, BrokerPublisher))
 
     def test_from_config(self):
-        config = MinosConfig(CONFIG_FILE_PATH)
+        config = Config(CONFIG_FILE_PATH)
+        broker_config = config.get_interface_by_name("broker")["common"]
+
         publisher = RabbitMQBrokerPublisher.from_config(config)
 
         self.assertIsInstance(publisher, RabbitMQBrokerPublisher)
-        self.assertEqual(config.broker.host, publisher.broker_host)
-        self.assertEqual(config.broker.port, publisher.broker_port)
+        self.assertEqual(broker_config["host"], publisher.broker_host)
+        self.assertEqual(broker_config["port"], publisher.broker_port)
 
     @patch("minos.plugins.rabbitmq.publisher.connect")
     async def test_send(self, connect_mock):

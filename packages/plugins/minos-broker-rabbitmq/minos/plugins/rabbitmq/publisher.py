@@ -8,12 +8,6 @@ from aio_pika import (
     Message,
     connect,
 )
-from aio_pika.abc import (
-    AbstractConnection,
-)
-from cached_property import (
-    cached_property,
-)
 
 from minos.common import (
     MinosConfig,
@@ -59,10 +53,12 @@ class RabbitMQBrokerPublisher(BrokerPublisher):
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> RabbitMQBrokerPublisher:
-        kwargs["broker_host"] = config.broker.host
-        kwargs["broker_port"] = config.broker.port
-        # noinspection PyProtectedMember
-        return cls(**config.broker.queue._asdict(), **kwargs)
+        broker_config = config.get_interface_by_name("broker")
+        common_config = broker_config["common"]
+
+        kwargs["broker_host"] = common_config["host"]
+        kwargs["broker_port"] = common_config["port"]
+        return cls(**kwargs)
 
     async def _setup(self) -> None:
         await super()._setup()

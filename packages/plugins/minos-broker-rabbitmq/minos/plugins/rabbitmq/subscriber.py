@@ -15,7 +15,7 @@ from aio_pika import (
 )
 
 from minos.common import (
-    MinosConfig,
+    MinosConfig, Config,
 )
 from minos.networks import (
     BrokerMessage,
@@ -72,16 +72,19 @@ class RabbitMQBrokerSubscriber(BrokerSubscriber):
 class RabbitMQBrokerSubscriberBuilder(BrokerSubscriberBuilder):
     """RabbitMQ Broker Subscriber Builder class."""
 
-    def with_config(self, config: MinosConfig) -> BrokerSubscriberBuilder:
+    def with_config(self, config: Config) -> BrokerSubscriberBuilder:
         """Set config.
 
         :param config: The config to be set.
         :return: This method return the builder instance.
         """
+        broker_config = config.get_interface_by_name("broker")
+        common_config = broker_config["common"]
+
         self.kwargs |= {
-            "group_id": config.service.name,
-            "broker_host": config.broker.host,
-            "broker_port": config.broker.port,
+            "group_id": config.get_name(),
+            "broker_host": common_config["host"],
+            "broker_port": common_config["port"],
         }
         return self
 
