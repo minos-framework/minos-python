@@ -39,6 +39,5 @@ class TestStocksCommandService(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(response, list)
 
 
-
 if __name__ == "__main__":
     unittest.main()

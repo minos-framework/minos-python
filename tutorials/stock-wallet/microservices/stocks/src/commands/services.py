@@ -31,8 +31,9 @@ class StocksCommandService(CommandService):
 
     def call_remote(self, ticker, from_: str, to_: str):
         with RESTClient("") as client:
-            resp = client.stocks_equities_aggregates(ticker, 1, "hour", from_, to_, adjusted=True, sort="asc",
-                                                     limit=50000)
+            resp = client.stocks_equities_aggregates(
+                ticker, 1, "hour", from_, to_, adjusted=True, sort="asc", limit=50000
+            )
         return resp.results
 
     @enroute.periodic.event("* * * * *")
@@ -43,16 +44,15 @@ class StocksCommandService(CommandService):
         if len(tickers) > 0:
             for ticker in tickers:
                 ticker_updated = pendulum.parse(ticker["updated"])
-                results = await self.call_remote(ticker["ticker"],
-                                                 now_minus_one_month.to_date_string(),
-                                                 now.to_date_string())
+                results = await self.call_remote(
+                    ticker["ticker"], now_minus_one_month.to_date_string(), now.to_date_string()
+                )
                 for result in results:
                     result_date = pendulum.parse(result["t"])
                     difference_ticker_result = ticker_updated.diff(result_date).in_hours()
                     if difference_ticker_result < 0:
                         await StocksAggregate.update_time_ticker(ticker["uuid"], result_date.to_datetime_string())
                         when = result_date.to_datetime_string()
-                        await StocksAggregate.add_quotes(ticker["uuid"], {"close": result['c'],
-                                                                          "volume": result['v'],
-                                                                          "when": when})
-
+                        await StocksAggregate.add_quotes(
+                            ticker["uuid"], {"close": result["c"], "volume": result["v"], "when": when}
+                        )
