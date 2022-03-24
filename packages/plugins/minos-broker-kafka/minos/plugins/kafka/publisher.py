@@ -14,6 +14,9 @@ from contextlib import (
 from functools import (
     partial,
 )
+from typing import (
+    Optional,
+)
 
 from aiokafka import (
     AIOKafkaProducer,
@@ -70,13 +73,35 @@ class InMemoryQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
 class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
     """Kafka Broker Publisher class."""
 
-    def __init__(self, *args, broker_host: str, broker_port: int, **kwargs):
+    def __init__(self, *args, host: Optional[str] = None, port: Optional[int] = None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.broker_host = broker_host
-        self.broker_port = broker_port
+        if host is None:
+            host = "localhost"
+
+        if port is None:
+            port = 9092
+
+        self._host = host
+        self._port = port
 
         self._client = None
+
+    @property
+    def host(self) -> str:
+        """The host of kafka.
+
+        :return: A ``str`` value.
+        """
+        return self._host
+
+    @property
+    def port(self) -> int:
+        """The port of kafka.
+
+        :return: A ``int`` value.
+        """
+        return self._port
 
     async def _setup(self) -> None:
         await super()._setup()
@@ -117,7 +142,7 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
 
     @property
     def _bootstrap_servers(self):
-        return f"{self.broker_host}:{self.broker_port}"
+        return f"{self.host}:{self.port}"
 
 
 class KafkaBrokerPublisherBuilder(BrokerPublisherBuilder[KafkaBrokerPublisher], KafkaBrokerBuilderMixin):

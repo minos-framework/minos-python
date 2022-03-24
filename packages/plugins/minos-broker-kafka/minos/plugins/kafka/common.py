@@ -34,11 +34,11 @@ class KafkaBrokerBuilderMixin(Builder):
         :return: This method return the builder instance.
         """
         broker_config = config.get_interface_by_name("broker")
-        common_config = broker_config["common"]
+        common_config = broker_config.get("common", dict())
 
         self.kwargs |= {
             "group_id": config.get_name(),
-            "broker_host": common_config["host"],
-            "broker_port": common_config["port"],
+            "host": common_config.get("host"),
+            "port": common_config.get("port"),
         }
         return super().with_config(config)

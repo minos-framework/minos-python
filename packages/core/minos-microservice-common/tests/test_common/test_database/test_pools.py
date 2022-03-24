@@ -32,6 +32,14 @@ class TestPostgreSqlPool(PostgresAsyncTestCase):
         super().setUp()
         self.pool = PostgreSqlPool.from_config(self.config)
 
+    def test_constructor(self):
+        pool = PostgreSqlPool("foo")
+        self.assertEqual("foo", pool.database)
+        self.assertEqual("postgres", pool.user)
+        self.assertEqual("", pool.password)
+        self.assertEqual("localhost", pool.host)
+        self.assertEqual(5432, pool.port)
+
     async def asyncSetUp(self):
         await super().asyncSetUp()
         await self.pool.setup()

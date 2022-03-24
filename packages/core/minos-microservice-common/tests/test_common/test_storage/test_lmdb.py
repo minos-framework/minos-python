@@ -1,5 +1,8 @@
 import shutil
 import unittest
+from pathlib import (
+    Path,
+)
 
 from minos.common import (
     MinosStorageLmdb,
@@ -15,6 +18,11 @@ class TestMinosStorageLmdb(unittest.TestCase):
 
     def tearDown(self) -> None:
         shutil.rmtree(self.path, ignore_errors=True)
+        shutil.rmtree(".lmdb", ignore_errors=True)
+
+    def test_constructor_default_path(self):
+        MinosStorageLmdb.build()
+        self.assertTrue(Path(".lmdb").exists())
 
     def test_storage_add_text(self):
         storage = MinosStorageLmdb.build(self.path)

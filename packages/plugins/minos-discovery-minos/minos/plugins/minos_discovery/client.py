@@ -5,6 +5,9 @@ from collections.abc import (
 from functools import (
     partial,
 )
+from typing import (
+    Optional,
+)
 
 from aiohttp import (
     ClientError,
@@ -24,8 +27,18 @@ logger = logging.getLogger(__name__)
 class MinosDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
     """Minos Discovery Client class."""
 
-    def __init__(self, *args, circuit_breaker_exceptions: Iterable[type] = tuple(), **kwargs):
-        super().__init__(*args, circuit_breaker_exceptions=(ClientError, *circuit_breaker_exceptions), **kwargs)
+    def __init__(
+        self,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
+        circuit_breaker_exceptions: Iterable[type] = tuple(),
+        **kwargs,
+    ):
+        if host is None:
+            host = "localhost"
+        if port is None:
+            port = 5567
+        super().__init__(host, port, circuit_breaker_exceptions=(ClientError, *circuit_breaker_exceptions), **kwargs)
 
     async def subscribe(
         self, host: str, port: int, name: str, endpoints: list[dict[str, str]], *args, **kwargs

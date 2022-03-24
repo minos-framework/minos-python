@@ -8,9 +8,6 @@ from contextlib import (
 from copy import (
     deepcopy,
 )
-from pathlib import (
-    Path,
-)
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -99,14 +96,7 @@ class ConfigV2(Config):
 
     def _get_databases(self) -> dict[str, dict[str, Any]]:
         data = deepcopy(self.get_by_key("databases"))
-
-        if "saga" in data:
-            if "path" in data["saga"]:
-                data["saga"]["path"] = self._str_to_path(data["saga"]["path"])
         return data
-
-    def _str_to_path(self, raw: str) -> Path:
-        return Path(raw) if raw.startswith("/") else self.file_path.parent / raw
 
     def _get_interfaces(self) -> dict[str, dict[str, Any]]:
         data = deepcopy(self.get_by_key("interfaces"))

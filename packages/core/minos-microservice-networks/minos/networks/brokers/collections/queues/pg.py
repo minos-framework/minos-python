@@ -58,8 +58,20 @@ class PostgreSqlBrokerQueue(BrokerQueue, PostgreSqlMinosDatabase):
 
     _queue: PriorityQueue[_Entry]
 
-    def __init__(self, *args, query_factory: PostgreSqlBrokerQueueQueryFactory, retry: int, records: int, **kwargs):
+    def __init__(
+        self,
+        *args,
+        query_factory: PostgreSqlBrokerQueueQueryFactory,
+        retry: Optional[int] = None,
+        records: Optional[int] = None,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
+
+        if retry is None:
+            retry = 2
+        if records is None:
+            records = 1000
 
         self._query_factory = query_factory
         self._retry = retry
@@ -68,6 +80,22 @@ class PostgreSqlBrokerQueue(BrokerQueue, PostgreSqlMinosDatabase):
         self._queue = PriorityQueue(maxsize=records)
 
         self._run_task = None
+
+    @property
+    def retry(self) -> int:
+        """Get the retry value.
+
+        :return: A ``int`` value.
+        """
+        return self._retry
+
+    @property
+    def records(self) -> int:
+        """Get the records value.
+
+        :return: A ``int`` value.
+        """
+        return self._records
 
     @property
     def query_factory(self) -> PostgreSqlBrokerQueueQueryFactory:
@@ -80,7 +108,7 @@ class PostgreSqlBrokerQueue(BrokerQueue, PostgreSqlMinosDatabase):
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> PostgreSqlBrokerQueue:
         broker_interface = config.get_interface_by_name("broker")
-        queue_config = broker_interface["common"]["queue"]
+        queue_config = broker_interface.get("common", dict()).get("queue", dict())
         database_config = config.get_database_by_name("broker")
 
         return cls(**(kwargs | database_config | queue_config))
@@ -336,7 +364,7 @@ class PostgreSqlBrokerQueueBuilder(Builder):
         :return: This method return the builder instance.
         """
         self.kwargs |= config.get_database_by_name("broker")
-        self.kwargs |= config.get_interface_by_name("broker")["common"]["queue"]
+        self.kwargs |= config.get_interface_by_name("broker").get("common", dict()).get("queue", dict())
         return super().with_config(config)
 
 
