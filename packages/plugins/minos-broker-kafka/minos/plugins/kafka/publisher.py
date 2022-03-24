@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 import logging
+import warnings
 from asyncio import (
     TimeoutError,
     wait_for,
@@ -27,12 +28,14 @@ from minos.common import (
 from minos.networks import (
     BrokerMessage,
     BrokerPublisher,
+    BrokerPublisherBuilder,
     InMemoryBrokerPublisherQueue,
     PostgreSqlBrokerPublisherQueue,
     QueuedBrokerPublisher,
 )
 
-from .mixins import (
+from .common import (
+    KafkaBrokerBuilderMixin,
     KafkaCircuitBreakerMixin,
 )
 
@@ -41,6 +44,10 @@ logger = logging.getLogger(__name__)
 
 class PostgreSqlQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
     """PostgreSql Queued Kafka Broker Publisher class."""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{PostgreSqlQueuedKafkaBrokerPublisher!r} has been deprecated.", DeprecationWarning)
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> PostgreSqlQueuedKafkaBrokerPublisher:
@@ -51,6 +58,10 @@ class PostgreSqlQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
 
 class InMemoryQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
     """In Memory Queued Kafka Broker Publisher class."""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{InMemoryQueuedKafkaBrokerPublisher!r} has been deprecated.", DeprecationWarning)
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> InMemoryQueuedKafkaBrokerPublisher:
@@ -92,14 +103,6 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
         """
         return self._port
 
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> KafkaBrokerPublisher:
-        broker_config = config.get_interface_by_name("broker")
-        common_config = broker_config.get("common", dict())
-        kwargs["host"] = common_config.get("host")
-        kwargs["port"] = common_config.get("port")
-        return cls(**kwargs)
-
     async def _setup(self) -> None:
         await super()._setup()
         await self._start_client()
@@ -140,3 +143,10 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
     @property
     def _bootstrap_servers(self):
         return f"{self.host}:{self.port}"
+
+
+class KafkaBrokerPublisherBuilder(BrokerPublisherBuilder[KafkaBrokerPublisher], KafkaBrokerBuilderMixin):
+    """Kafka Broker Publisher Builder class."""
+
+
+KafkaBrokerPublisher.set_builder(KafkaBrokerPublisherBuilder)

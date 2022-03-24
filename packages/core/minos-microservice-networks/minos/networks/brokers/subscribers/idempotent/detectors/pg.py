@@ -17,6 +17,7 @@ from psycopg2.sql import (
 )
 
 from minos.common import (
+    Builder,
     Config,
     PostgreSqlMinosDatabase,
 )
@@ -36,10 +37,6 @@ class PostgreSqlBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetec
             query_factory = PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory()
         super().__init__(*args, **kwargs)
         self._query_factory = query_factory
-
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> PostgreSqlBrokerSubscriberDuplicateDetector:
-        return cls(**config.get_database_by_name("broker"), **kwargs)
 
     async def _setup(self) -> None:
         await super()._setup()
@@ -69,6 +66,22 @@ class PostgreSqlBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetec
             return True
         except IntegrityError:
             return False
+
+
+class PostgreSqlBrokerSubscriberDuplicateDetectorBuilder(Builder[PostgreSqlBrokerSubscriberDuplicateDetector]):
+    """PostgreSql Broker Subscriber Duplicate Detector Builder class."""
+
+    def with_config(self, config: Config):
+        """Set config.
+
+        :param config: The config to be set.
+        :return: This method return the builder instance.
+        """
+        self.kwargs |= config.get_database_by_name("broker")
+        return super().with_config(config)
+
+
+PostgreSqlBrokerSubscriberDuplicateDetector.set_builder(PostgreSqlBrokerSubscriberDuplicateDetectorBuilder)
 
 
 class PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory:

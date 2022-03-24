@@ -5,9 +5,6 @@ from __future__ import (
 import re
 import socket
 import warnings
-from abc import (
-    ABC,
-)
 from asyncio import (
     QueueEmpty,
 )
@@ -59,7 +56,7 @@ async def consume_queue(queue, max_count: int) -> None:
             break
 
 
-class Builder(CommonBuilder, ABC):
+class Builder(CommonBuilder):
     """Builder class."""
 
     def __init__(self, *args, **kwargs):

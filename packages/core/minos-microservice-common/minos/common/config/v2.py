@@ -11,6 +11,7 @@ from copy import (
 from typing import (
     TYPE_CHECKING,
     Any,
+    Union,
 )
 
 from ..exceptions import (
@@ -39,7 +40,7 @@ class ConfigV2(Config):
     def _get_name(self) -> str:
         return self.get_by_key("name")
 
-    def _get_injections(self) -> list[type[InjectableMixin]]:
+    def _get_injections(self) -> list[Union[InjectableMixin, type[InjectableMixin]]]:
         from ..builders import (
             BuildableMixin,
         )
@@ -82,15 +83,15 @@ class ConfigV2(Config):
             if (
                 not issubclass(type_, InjectableMixin)
                 and issubclass(type_, BuildableMixin)
-                and issubclass((builder_type := type_.get_builder()), InjectableMixin)
+                and isinstance((builder_type := type_.get_builder()), InjectableMixin)
             ):
                 type_ = builder_type
-
-            if not issubclass(type_, InjectableMixin):
+            elif not issubclass(type_, InjectableMixin):
                 raise MinosConfigException(f"{type_!r} must be subclass of {InjectableMixin!r}.")
 
             ans.append(type_)
 
+        # noinspection PyTypeChecker
         return ans
 
     def _get_databases(self) -> dict[str, dict[str, Any]]:

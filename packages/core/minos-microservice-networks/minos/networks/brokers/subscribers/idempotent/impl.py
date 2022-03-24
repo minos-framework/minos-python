@@ -1,3 +1,7 @@
+from minos.common import (
+    Builder,
+)
+
 from ...messages import (
     BrokerMessage,
 )
@@ -37,3 +41,6 @@ class IdempotentBrokerSubscriber(BrokerSubscriber):
         while message is _sentinel or not (await self.duplicate_detector.is_valid(message)):
             message = await self.impl.receive()
         return message
+
+
+IdempotentBrokerSubscriber.set_builder(Builder)

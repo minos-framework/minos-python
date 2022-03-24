@@ -36,9 +36,6 @@ from kafka.errors import (
     TopicAlreadyExistsError,
 )
 
-from minos.common import (
-    Config,
-)
 from minos.networks import (
     BrokerMessage,
     BrokerSubscriber,
@@ -48,7 +45,8 @@ from minos.networks import (
     QueuedBrokerSubscriberBuilder,
 )
 
-from .mixins import (
+from .common import (
+    KafkaBrokerBuilderMixin,
     KafkaCircuitBreakerMixin,
 )
 
@@ -187,31 +185,8 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
         )
 
 
-class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
+class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder[KafkaBrokerSubscriber], KafkaBrokerBuilderMixin):
     """Kafka Broker Subscriber Builder class."""
-
-    def with_config(self, config: Config) -> BrokerSubscriberBuilder:
-        """Set config.
-
-        :param config: The config to be set.
-        :return: This method return the builder instance.
-        """
-        broker_config = config.get_interface_by_name("broker")
-        common_config = broker_config.get("common", dict())
-
-        self.kwargs |= {
-            "group_id": config.get_name(),
-            "host": common_config.get("host"),
-            "port": common_config.get("port"),
-        }
-        return self
-
-    def build(self) -> BrokerSubscriber:
-        """Build the instance.
-
-        :return: A ``KafkaBrokerSubscriber`` instance.
-        """
-        return KafkaBrokerSubscriber(**self.kwargs)
 
 
 KafkaBrokerSubscriber.set_builder(KafkaBrokerSubscriberBuilder)

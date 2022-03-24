@@ -37,13 +37,9 @@ class TestBuilder(unittest.TestCase):
         self.assertTrue(issubclass(Builder, CommonBuilder))
 
     def test_warnings(self):
-        class _Builder(Builder):
-            def build(self) -> None:
-                """For testing purpose"""
-
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
-            builder = _Builder()
+            builder = Builder()
             self.assertIsInstance(builder, CommonBuilder)
 
 
