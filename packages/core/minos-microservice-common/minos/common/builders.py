@@ -21,7 +21,7 @@ from .setup import (
     SetupMixin,
 )
 
-Instance = TypeVar("Instance", bound=type)
+Instance = TypeVar("Instance")
 
 
 class Builder(SetupMixin, ABC, Generic[Instance]):
@@ -50,7 +50,7 @@ class Builder(SetupMixin, ABC, Generic[Instance]):
     def copy(self: type[B]) -> B:
         """Get a copy of the instance.
 
-        :return: A ``BrokerSubscriberBuilder`` instance.
+        :return: A ``Builder`` instance.
         """
         return self.new().with_cls(self.instance_cls).with_kwargs(self.kwargs)
 
@@ -58,7 +58,7 @@ class Builder(SetupMixin, ABC, Generic[Instance]):
     def new(cls: type[B]) -> B:
         """Get a new instance.
 
-        :return: A ``BrokerSubscriberBuilder`` instance.
+        :return: A ``Builder`` instance.
         """
         return cls()
 
@@ -131,7 +131,7 @@ class BuildableMixin(SetupMixin):
     def get_builder(cls) -> Builder[Ins]:
         """Get the builder class.
 
-        :return: A ``Builder`` subclass.
+        :return: A ``Builder`` instance.
         """
         builder = cls._builder
 
