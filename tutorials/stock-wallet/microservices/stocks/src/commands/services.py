@@ -1,6 +1,10 @@
 import logging
 
 import pendulum
+from polygon import (
+    RESTClient,
+)
+
 from minos.aggregate import (
     Event,
 )
@@ -15,7 +19,6 @@ from minos.networks import (
 from ..aggregates import (
     StocksAggregate,
 )
-from polygon import RESTClient
 
 logger = logging.getLogger(__name__)
 

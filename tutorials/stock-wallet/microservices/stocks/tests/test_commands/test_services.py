@@ -2,7 +2,6 @@ import sys
 import unittest
 
 import pendulum
-
 from src import (
     Stocks,
     StocksCommandService,
