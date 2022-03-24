@@ -23,7 +23,7 @@ class TestGraphQlHttpRouter(unittest.TestCase):
 
         self.assertIsInstance(router, GraphQlHttpRouter)
         self.assertEqual(
-            {HttpEnrouteDecorator("/graphql", "POST"), HttpEnrouteDecorator("/graphql/schema", "GET")},
+            {HttpEnrouteDecorator("/foo/graphql", "POST"), HttpEnrouteDecorator("/foo/graphql/schema", "GET")},
             router.routes.keys(),
         )
 

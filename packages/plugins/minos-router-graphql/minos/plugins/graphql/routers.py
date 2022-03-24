@@ -35,6 +35,6 @@ class GraphQlHttpRouter(HttpRouter):
         schema = GraphQLSchemaBuilder.build(routes)
         handler = GraphQlHandler(schema)
         return {
-            HttpEnrouteDecorator(f"/{self._config.get_name()}/graphql", "POST"): handler.execute_operation,
-            HttpEnrouteDecorator(f"/{self._config.get_name()}/graphql/schema", "GET"): handler.get_schema,
+            HttpEnrouteDecorator(f"/{self._config.get_name().lower()}/graphql", "POST"): handler.execute_operation,
+            HttpEnrouteDecorator(f"/{self._config.get_name().lower()}/graphql/schema", "GET"): handler.get_schema,
         }
