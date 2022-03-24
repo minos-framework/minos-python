@@ -326,4 +326,4 @@ $RECYCLE.BIN/
 **/docs/api*
 **/docs/_build
 
-tutorials/stock-wallet/stacks
+tutorials/stock-wallet/front/stock-front
