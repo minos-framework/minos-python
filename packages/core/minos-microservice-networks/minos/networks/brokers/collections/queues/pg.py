@@ -200,23 +200,6 @@ class PostgreSqlBrokerQueue(BrokerQueue, PostgreSqlMinosDatabase):
         return await cursor.fetchall()
 
 
-class PostgreSqlBrokerQueueBuilder(Builder):
-    """PostgreSql Broker Queue Builder class."""
-
-    def with_config(self, config: Config):
-        """Set config.
-
-        :param config: The config to be set.
-        :return: This method return the builder instance.
-        """
-        self.kwargs |= config.get_database_by_name("broker")
-        self.kwargs |= config.get_interface_by_name("broker")["common"]["queue"]
-        return super().with_config(config)
-
-
-PostgreSqlBrokerQueue.set_builder(PostgreSqlBrokerQueueBuilder)
-
-
 class PostgreSqlBrokerQueueQueryFactory(ABC):
     """PostgreSql Broker Queue Query Factory class."""
 
@@ -341,3 +324,20 @@ class _Entry:
             return isinstance(other, type(self)) and self.data < other.data
         except Exception:
             return False
+
+
+class PostgreSqlBrokerQueueBuilder(Builder):
+    """PostgreSql Broker Queue Builder class."""
+
+    def with_config(self, config: Config):
+        """Set config.
+
+        :param config: The config to be set.
+        :return: This method return the builder instance.
+        """
+        self.kwargs |= config.get_database_by_name("broker")
+        self.kwargs |= config.get_interface_by_name("broker")["common"]["queue"]
+        return super().with_config(config)
+
+
+PostgreSqlBrokerQueue.set_builder(PostgreSqlBrokerQueueBuilder)
