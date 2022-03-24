@@ -82,6 +82,23 @@ class TestConfigV1(unittest.TestCase):
         }
         self.assertEqual(expected, observed)
 
+    def test_interface_http_connector_not_defined(self):
+        base = self.config.get_by_key
+
+        def _fn(label):
+            if label == "rest":
+                raise MinosConfigException("")
+            return base(label)
+
+        with patch.object(ConfigV1, "get_by_key", side_effect=_fn):
+            observed = self.config.get_interface_by_name("http")
+
+        expected = {
+            "port": FakeHttpPort,
+            "connector": {},
+        }
+        self.assertEqual(expected, observed)
+
     def test_interface_http_not_defined(self):
         with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
             with self.assertRaises(MinosConfigException):
@@ -103,6 +120,46 @@ class TestConfigV1(unittest.TestCase):
         }
 
         self.assertEqual(expected, broker)
+
+    def test_interface_broker_section_not_defined(self):
+        base = self.config.get_by_key
+
+        def _fn(label):
+            if label == "broker":
+                raise MinosConfigException("")
+            return base(label)
+
+        with patch.object(ConfigV1, "get_by_key", side_effect=_fn):
+            observed = self.config.get_interface_by_name("broker")
+
+        expected = {
+            "port": FakeBrokerPort,
+            "common": {
+                "queue": {"records": 10, "retry": 2},
+            },
+            "publisher": {},
+            "subscriber": {},
+        }
+        self.assertEqual(expected, observed)
+
+    def test_interface_broker_queue_not_defined(self):
+        base = self.config.get_by_key
+
+        def _fn(label):
+            if label == "broker.queue":
+                raise MinosConfigException("")
+            return base(label)
+
+        with patch.object(ConfigV1, "get_by_key", side_effect=_fn):
+            observed = self.config.get_interface_by_name("broker")
+
+        expected = {
+            "port": FakeBrokerPort,
+            "common": {"host": "localhost", "port": 9092, "queue": {}},
+            "publisher": {},
+            "subscriber": {},
+        }
+        self.assertEqual(expected, observed)
 
     def test_interface_broker_not_defined(self):
         with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
@@ -210,7 +267,7 @@ class TestConfigV1(unittest.TestCase):
     def test_database_saga(self):
         config = ConfigV1(self.file_path, with_environment=False)
         saga = config.get_database_by_name("saga")
-        self.assertEqual(self.file_path.parent / "order.lmdb", saga["path"])
+        self.assertEqual("./order.lmdb", saga["path"])
 
     def test_discovery(self):
         config = ConfigV1(self.file_path, with_environment=False)

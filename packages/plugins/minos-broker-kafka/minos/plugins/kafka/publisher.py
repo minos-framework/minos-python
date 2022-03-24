@@ -13,6 +13,9 @@ from contextlib import (
 from functools import (
     partial,
 )
+from typing import (
+    Optional,
+)
 
 from aiokafka import (
     AIOKafkaProducer,
@@ -59,21 +62,42 @@ class InMemoryQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
 class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
     """Kafka Broker Publisher class."""
 
-    def __init__(self, *args, broker_host: str, broker_port: int, **kwargs):
+    def __init__(self, *args, host: Optional[str] = None, port: Optional[int] = None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.broker_host = broker_host
-        self.broker_port = broker_port
+        if host is None:
+            host = "localhost"
+
+        if port is None:
+            port = 9092
+
+        self._host = host
+        self._port = port
 
         self._client = None
+
+    @property
+    def host(self) -> str:
+        """The host of kafka.
+
+        :return: A ``str`` value.
+        """
+        return self._host
+
+    @property
+    def port(self) -> int:
+        """The port of kafka.
+
+        :return: A ``int`` value.
+        """
+        return self._port
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> KafkaBrokerPublisher:
         broker_config = config.get_interface_by_name("broker")
-        common_config = broker_config["common"]
-
-        kwargs["broker_host"] = common_config["host"]
-        kwargs["broker_port"] = common_config["port"]
+        common_config = broker_config.get("common", dict())
+        kwargs["host"] = common_config.get("host")
+        kwargs["port"] = common_config.get("port")
         return cls(**kwargs)
 
     async def _setup(self) -> None:
@@ -115,4 +139,4 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
 
     @property
     def _bootstrap_servers(self):
-        return f"{self.broker_host}:{self.broker_port}"
+        return f"{self.host}:{self.port}"

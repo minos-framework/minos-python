@@ -233,7 +233,7 @@ class TestConfigV2(unittest.TestCase):
     def test_database_saga(self):
         config = ConfigV2(self.file_path, with_environment=False)
         saga = config.get_database_by_name("saga")
-        self.assertEqual(self.file_path.parent / "order.lmdb", saga["path"])
+        self.assertEqual("./order.lmdb", saga["path"])
 
     def test_discovery(self):
         config = ConfigV2(self.file_path, with_environment=False)

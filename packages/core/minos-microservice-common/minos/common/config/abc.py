@@ -23,6 +23,7 @@ from pathlib import (
 from typing import (
     TYPE_CHECKING,
     Any,
+    Optional,
     Union,
 )
 
@@ -43,12 +44,16 @@ if TYPE_CHECKING:
         InjectableMixin,
     )
 
+sentinel = object()
+
 
 @Injectable("config")
 class Config(ABC):
     """Config base class."""
 
     __slots__ = ("_file_path", "_data", "_with_environment", "_parameterized")
+
+    DEFAULT_VALUES: dict[str, Any] = dict()
 
     def __init__(self, path: Union[Path, str], with_environment: bool = True, **kwargs):
         super().__init__()
@@ -282,7 +287,7 @@ class Config(ABC):
         :return: A value instance.
         """
 
-        def _fn(k: str, data: dict[str, Any], previous: str) -> Any:
+        def _fn(k: str, data: dict[str, Any], previous: str = "", default: Optional[Any] = sentinel) -> Any:
             current, _sep, following = k.partition(".")
             full = f"{previous}.{current}".lstrip(".")
 
@@ -293,20 +298,33 @@ class Config(ABC):
                 with suppress(KeyError):
                     return os.environ[self._to_environment_variable(full)]
 
-            part = data[current]
-            if not following:
-                if not isinstance(part, dict):
-                    return part
+            if default is not sentinel and current in default:
+                default_part = default[current]
+            else:
+                default_part = sentinel
 
-                result = dict()
-                for subpart in part:
-                    result[subpart] = _fn(subpart, part, full)
-                return result
+            if current not in data and default_part is not sentinel:
+                part = default_part
+            else:
+                part = data[current]
 
-            return _fn(following, part, full)
+            if following:
+                return _fn(following, part, full, default_part)
+
+            if not isinstance(part, dict):
+                return part
+
+            keys = part.keys()
+            if isinstance(default_part, dict):
+                keys |= default_part.keys()
+
+            result = dict()
+            for subpart in keys:
+                result[subpart] = _fn(subpart, part, full, default_part)
+            return result
 
         try:
-            return _fn(key, self._data, str())
+            return _fn(key, self._data, default=self.DEFAULT_VALUES)
         except Exception:
             raise MinosConfigException(f"{key!r} field is not defined on the configuration!")
 
