@@ -1,10 +1,6 @@
 import logging
 
-import arrow
-from alpha_vantage.async_support.timeseries import (
-    TimeSeries,
-)
-
+import pendulum
 from minos.aggregate import (
     Event,
 )
@@ -19,6 +15,7 @@ from minos.networks import (
 from ..aggregates import (
     StocksAggregate,
 )
+from polygon import RESTClient
 
 logger = logging.getLogger(__name__)
 
@@ -32,40 +29,30 @@ class StocksCommandService(CommandService):
         for ticker in event["tickers"]:
             await StocksAggregate.add_ticker_to_stock(ticker["ticker"])
 
-    async def call_remote(self, ticker):
-        timeserie = TimeSeries(key="LPY6CZEYR6OIMRYA")
-        data, metadata = await timeserie.get_intraday(ticker)
-        return data, metadata
-
-    async def add_quote(self, ticker: str, when: str, quote: dict):
-        await StocksAggregate.add_quotes(
-            ticker,
-            {"close": quote["4. close"], "volume": quote["5. volume"], "when": when},
-        )
+    def call_remote(self, ticker, from_: str, to_: str):
+        with RESTClient("") as client:
+            resp = client.stocks_equities_aggregates(ticker, 1, "hour", from_, to_, adjusted=True, sort="asc",
+                                                     limit=50000)
+        return resp.results
 
     @enroute.periodic.event("* * * * *")
     async def get_stock_values(self, request: Request):
         tickers = await StocksAggregate.get_all_tickers()
+        now = pendulum.now()
+        now_minus_one_month = now.subtract(months=1)
         if len(tickers) > 0:
             for ticker in tickers:
-                updated = ticker["updated"]
-                data, metadata = await self.call_remote(ticker["ticker"])
-                last_data_refresh = metadata["3. Last Refreshed"]
-                if updated == "Never":
-                    data, metadata = await self.call_remote(ticker["ticker"])
-                    await StocksAggregate.update_time_ticker(ticker["uuid"], last_data_refresh)
-                    for when, stock_quote in data.items():
-                        await self.add_quote(ticker["uuid"], when, stock_quote)
-                else:
-                    time_now_object = arrow.get(updated, "YYYY-MM-DD HH:mm:ss")
-                    time_last_update = arrow.get(last_data_refresh, "YYYY-MM-DD HH:mm:ss")
-                    diff = time_last_update - time_now_object
-                    diff_in_seconds = diff.total_seconds()
-                    if diff_in_seconds > 60:
-                        await StocksAggregate.update_time_ticker(ticker["uuid"], last_data_refresh)
-                        for when, stock_quote in data.items():
-                            time_stock_loop = arrow.get(when, "YYYY-MM-DD HH:mm:ss")
-                            diff_loop = last_data_refresh - time_stock_loop
-                            diff_loop_seconds = diff_loop.total_seconds()
-                            if diff_loop_seconds > 60:
-                                await self.add_quote(ticker["uuid"], when, stock_quote)
+                ticker_updated = pendulum.parse(ticker["updated"])
+                results = await self.call_remote(ticker["ticker"],
+                                                 now_minus_one_month.to_date_string(),
+                                                 now.to_date_string())
+                for result in results:
+                    result_date = pendulum.parse(result["t"])
+                    difference_ticker_result = ticker_updated.diff(result_date).in_hours()
+                    if difference_ticker_result < 0:
+                        await StocksAggregate.update_time_ticker(ticker["uuid"], result_date.to_datetime_string())
+                        when = result_date.to_datetime_string()
+                        await StocksAggregate.add_quotes(ticker["uuid"], {"close": result['c'],
+                                                                          "volume": result['v'],
+                                                                          "when": when})
+

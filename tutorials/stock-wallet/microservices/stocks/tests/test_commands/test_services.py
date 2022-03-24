@@ -1,6 +1,8 @@
 import sys
 import unittest
 
+import pendulum
+
 from src import (
     Stocks,
     StocksCommandService,
@@ -29,23 +31,13 @@ class TestStocksCommandService(unittest.IsolatedAsyncioTestCase):
         service = StocksCommandService()
         self.assertIsInstance(service, StocksCommandService)
 
-    async def test_create_stocks(self):
+    async def test_get_remote_quotes(self):
         service = StocksCommandService()
+        now = pendulum.now()
+        now_minus_one_month = now.subtract(months=1)
+        response = service.call_remote("AAPL", now_minus_one_month.to_date_string(), now.to_date_string())
+        self.assertIsInstance(response, list)
 
-        request = InMemoryRequest({})
-        response = await service.create_stocks(request)
-
-        self.assertIsInstance(response, Response)
-
-        observed = await response.content()
-        expected = Stocks(
-            created_at=observed.created_at,
-            updated_at=observed.updated_at,
-            uuid=observed.uuid,
-            version=observed.version,
-        )
-
-        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":

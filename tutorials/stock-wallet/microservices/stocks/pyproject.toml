@@ -16,8 +16,8 @@ minos-broker-kafka = "^0.5.0"
 minos-discovery-minos = "^0.5.0"
 typer = "^0.3.2"
 SQLAlchemy = "^1.4.0"
-alpha-vantage = "^2.3.1"
-arrow = "^1.2.2"
+pendulum = "^2.1.2"
+polygon-api-client = "^0.2.11"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"
