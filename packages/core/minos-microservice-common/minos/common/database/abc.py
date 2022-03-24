@@ -43,24 +43,54 @@ class PostgreSqlMinosDatabase(SetupMixin):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-
-        if host is None:
-            host = "localhost"
-        if port is None:
-            port = 5432
-        if user is None:
-            user = "postgres"
-        if password is None:
-            password = ""
-
-        self.database = database
-        self.host = host
-        self.port = port
-        self.user = user
-        self.password = password
+        self._database = database
+        self._host = host
+        self._port = port
+        self._user = user
+        self._password = password
 
         self._pool = None
         self._owned_pool = False
+
+    @property
+    def database(self) -> str:
+        """Get the database's database.
+
+        :return: A ``str`` value.
+        """
+        return self.pool.database
+
+    @property
+    def host(self) -> str:
+        """Get the database's host.
+
+        :return: A ``str`` value.
+        """
+        return self.pool.host
+
+    @property
+    def port(self) -> int:
+        """Get the database's port.
+
+        :return: An ``int`` value.
+        """
+        return self.pool.port
+
+    @property
+    def user(self) -> str:
+        """Get the database's user.
+
+        :return: A ``str`` value.
+        """
+        return self.pool.user
+
+    @property
+    def password(self) -> str:
+        """Get the database's password.
+
+        :return: A ``str`` value.
+        """
+        return self.pool.password
 
     async def _destroy(self) -> None:
         if self._owned_pool:
@@ -197,6 +227,6 @@ class PostgreSqlMinosDatabase(SetupMixin):
             return pool, False
 
         pool = PostgreSqlPool(
-            host=self.host, port=self.port, database=self.database, user=self.user, password=self.password
+            host=self._host, port=self._port, database=self._database, user=self._user, password=self._password
         )
         return pool, True
