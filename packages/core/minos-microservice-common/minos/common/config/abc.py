@@ -308,16 +308,20 @@ class Config(ABC):
             else:
                 part = data[current]
 
-            if not following:
-                if not isinstance(part, dict):
-                    return part
+            if following:
+                return _fn(following, part, full, default_part)
 
-                result = dict()
-                for subpart in part:
-                    result[subpart] = _fn(subpart, part, full, default_part)
-                return result
+            if not isinstance(part, dict):
+                return part
 
-            return _fn(following, part, full, default_part)
+            keys = part.keys()
+            if isinstance(default_part, dict):
+                keys |= default_part.keys()
+
+            result = dict()
+            for subpart in keys:
+                result[subpart] = _fn(subpart, part, full, default_part)
+            return result
 
         try:
             return _fn(key, self._data, default=self.DEFAULT_VALUES)
