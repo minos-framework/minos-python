@@ -15,15 +15,14 @@ from minos.common import (
     classname,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
     FakeLockPool,
 )
 
 
 class TestDependencyInjector(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.config_file_path = BASE_PATH / "test_config.yml"
-        self.config = Config(path=str(self.config_file_path))
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_from_str(self):
         injector = DependencyInjector(self.config, [classname(FakeLockPool)])

@@ -12,10 +12,10 @@ from tests.utils import (
 )
 
 
-class TestConfigWithEnvironment(unittest.TestCase):
+class TestConfigV2WithEnvironment(unittest.TestCase):
     def setUp(self) -> None:
-        self.config_file_path = BASE_PATH / "test_config.yml"
-        self.config = ConfigV1(path=self.config_file_path)
+        self.file_path = BASE_PATH / "config" / "v1.yml"
+        self.config = ConfigV1(self.file_path)
 
     @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
     def test_overwrite_with_environment(self):

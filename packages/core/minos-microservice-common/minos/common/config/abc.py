@@ -14,6 +14,9 @@ from collections import (
 from collections.abc import (
     Callable,
 )
+from contextlib import (
+    suppress,
+)
 from pathlib import (
     Path,
 )
@@ -45,9 +48,6 @@ if TYPE_CHECKING:
 class Config(ABC):
     """Config base class."""
 
-    _PARAMETERIZED_MAPPER: dict = dict()
-    _ENVIRONMENT_MAPPER: dict = dict()
-
     __slots__ = ("_file_path", "_data", "_with_environment", "_parameterized")
 
     def __init__(self, path: Union[Path, str], with_environment: bool = True, **kwargs):
@@ -68,11 +68,15 @@ class Config(ABC):
         from .v1 import (
             ConfigV1,
         )
+        from .v2 import (
+            ConfigV2,
+        )
 
         version_mapper = defaultdict(
             lambda: ConfigV1,
             {
                 1: ConfigV1,
+                2: ConfigV2,
             },
         )
 
@@ -185,6 +189,17 @@ class Config(ABC):
     def _get_interfaces(self) -> dict[str, dict[str, Any]]:
         raise NotImplementedError
 
+    def get_pools(self) -> dict[str, type]:
+        """Get the pools value.
+
+        :return: A ``dict`` with pool names as keys and pools as values.
+        """
+        return self._get_pools()
+
+    @abstractmethod
+    def _get_pools(self) -> dict[str, type]:
+        raise NotImplementedError
+
     def get_routers(self) -> list[type]:
         """Get the routers value.
 
@@ -266,25 +281,40 @@ class Config(ABC):
         :param key: The key that identifies the value.
         :return: A value instance.
         """
-        if key in self._PARAMETERIZED_MAPPER and self._PARAMETERIZED_MAPPER[key] in self._parameterized:
-            return self._parameterized[self._PARAMETERIZED_MAPPER[key]]
 
-        if self._with_environment and key in self._ENVIRONMENT_MAPPER and self._ENVIRONMENT_MAPPER[key] in os.environ:
-            return os.environ[self._ENVIRONMENT_MAPPER[key]]
+        def _fn(k: str, data: dict[str, Any], previous: str) -> Any:
+            current, _sep, following = k.partition(".")
+            full = f"{previous}.{current}".lstrip(".")
 
-        def _fn(k: str, data: dict[str, Any]) -> Any:
-            current, _, following = k.partition(".")
+            with suppress(KeyError):
+                return self._parameterized[self._to_parameterized_variable(full)]
+
+            if self._with_environment:
+                with suppress(KeyError):
+                    return os.environ[self._to_environment_variable(full)]
 
             part = data[current]
             if not following:
-                return part
+                if not isinstance(part, dict):
+                    return part
 
-            return _fn(following, part)
+                result = dict()
+                for subpart in part:
+                    result[subpart] = _fn(subpart, part, full)
+                return result
+
+            return _fn(following, part, full)
 
         try:
-            return _fn(key, self._data)
+            return _fn(key, self._data, str())
         except Exception:
             raise MinosConfigException(f"{key!r} field is not defined on the configuration!")
+
+    def _to_parameterized_variable(self, key: str) -> str:
+        raise KeyError
+
+    def _to_environment_variable(self, key: str) -> str:
+        raise KeyError
 
 
 # noinspection PyUnusedLocal

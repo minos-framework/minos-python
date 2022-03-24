@@ -112,6 +112,7 @@ class ConfigV1(Config):
     def _get_aggregate(self) -> dict[str, Any]:
         return {
             "entities": [self.get_type_by_key("service.aggregate")],
+            "repositories": dict(),
         }
 
     def _get_saga(self) -> dict[str, Any]:
@@ -203,6 +204,9 @@ class ConfigV1(Config):
 
         return services
 
+    def _get_pools(self) -> dict[str, type]:
+        return dict()
+
     def _get_routers(self) -> list[type]:
         try:
             routers = self.get_by_key("routers")
@@ -279,3 +283,9 @@ class ConfigV1(Config):
             "host": self.get_by_key("discovery.host"),
             "port": self.get_by_key("discovery.port"),
         }
+
+    def _to_parameterized_variable(self, key: str) -> str:
+        return self._PARAMETERIZED_MAPPER[key]
+
+    def _to_environment_variable(self, key: str) -> str:
+        return self._ENVIRONMENT_MAPPER[key]

@@ -5,6 +5,19 @@ service:
         - tests.utils.FakePeriodicPort
         - tests.utils.FakeHttpPort
         - tests.utils.FakeBrokerPort
+    injections:
+        - tests.utils.FakeLockPool
+        - tests.utils.FakeDatabasePool
+        - tests.utils.FakeBrokerClientPool
+        - tests.utils.FakeHttpConnector
+        - tests.utils.FakeBrokerPublisher
+        - tests.utils.FakeBrokerSubscriberBuilder
+        - tests.utils.FakeEventRepository
+        - tests.utils.FakeSnapshotRepository
+        - tests.utils.FakeTransactionRepository
+        - tests.utils.FakeDiscoveryConnector
+        - tests.utils.FakeSagaManager
+        - tests.utils.FakeCustomInjection
 repository:
     database: order_db
     user: minos

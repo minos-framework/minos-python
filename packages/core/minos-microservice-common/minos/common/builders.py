@@ -70,4 +70,34 @@ class Builder(SetupMixin, ABC, Generic[Instance]):
         """
 
 
+Ins = TypeVar("Ins", bound="BuildableMixin")
+
+
+class BuildableMixin(SetupMixin):
+    """Buildable Mixin class."""
+
+    _builder_cls: type[Builder[Ins]]
+
+    @classmethod
+    def _from_config(cls: type[Ins], config: Config, **kwargs) -> Ins:
+        return cls.get_builder().new().with_config(config).with_kwargs(kwargs).build()
+
+    @classmethod
+    def set_builder(cls: type[Ins], builder: type[Builder[Ins]]) -> None:
+        """Set a builder class.
+
+        :param builder: The builder class to be set.
+        :return: This method does not return anything.
+        """
+        cls._builder_cls = builder
+
+    @classmethod
+    def get_builder(cls) -> type[Builder[Ins]]:
+        """Get the builder class.
+
+        :return: A ``Builder`` subclass.
+        """
+        return cls._builder_cls
+
+
 B = TypeVar("B", bound=Builder)
