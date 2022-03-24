@@ -3,18 +3,13 @@ from collections import (
     namedtuple,
 )
 from unittest.mock import (
-    AsyncMock,
-    MagicMock,
     patch,
 )
 
 from minos.common import (
     Config,
-    MinosConfig,
 )
 from minos.networks import (
-    BrokerMessageV1,
-    BrokerMessageV1Payload,
     BrokerSubscriber,
     InMemoryBrokerSubscriberQueue,
     PostgreSqlBrokerSubscriberQueue,
@@ -50,11 +45,6 @@ class TestRabbitMQBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
     @patch("minos.plugins.rabbitmq.subscriber.connect")
     @patch("minos.networks.BrokerMessage.from_avro_bytes")
     async def test_receive(self, connect_mock, mock_avro):
-        messages = [
-            BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
-            BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
-        ]
-
         async with RabbitMQBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}) as subscriber:
             await subscriber.receive()
 

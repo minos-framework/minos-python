@@ -1,17 +1,12 @@
 import unittest
 from unittest.mock import (
-    AsyncMock,
     patch,
 )
 
-import aio_pika
-
 from minos.common import (
     Config,
-    MinosConfig,
 )
 from minos.networks import (
-    BrokerMessage,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerPublisher,
