@@ -43,7 +43,7 @@ class TestPostgreSqlTransactionRepository(MinosTestCase, PostgresAsyncTestCase):
         self.assertTrue(issubclass(PostgreSqlTransactionRepository, TransactionRepository))
 
     def test_constructor(self):
-        repository = PostgreSqlTransactionRepository("host", 1234, "database", "user", "password")
+        repository = PostgreSqlTransactionRepository("database", "host", 1234, "user", "password")
         self.assertIsInstance(repository, PostgreSqlTransactionRepository)
         self.assertEqual("host", repository.host)
         self.assertEqual(1234, repository.port)
