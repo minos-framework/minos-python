@@ -6,11 +6,11 @@ from uuid import (
 )
 
 from .abc import (
-    BrokerSubscriberDuplicateDetector,
+    BrokerSubscriberDuplicateValidator,
 )
 
 
-class InMemoryBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetector):
+class InMemoryBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateValidator):
     """In Memory Broker Subscriber Duplicate Detector class."""
 
     def __init__(self, seen: Iterable[tuple[str, UUID]] = None, *args, **kwargs):
@@ -27,7 +27,7 @@ class InMemoryBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetecto
         """
         return self._seen
 
-    async def _is_valid(self, topic: str, uuid: UUID) -> bool:
+    async def _is_unique(self, topic: str, uuid: UUID) -> bool:
         if (topic, uuid) not in self._seen:
             self._seen.add((topic, uuid))
             return True

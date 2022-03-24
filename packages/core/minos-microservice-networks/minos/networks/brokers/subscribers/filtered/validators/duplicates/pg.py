@@ -23,18 +23,18 @@ from minos.common import (
 )
 
 from .abc import (
-    BrokerSubscriberDuplicateDetector,
+    BrokerSubscriberDuplicateValidator,
 )
 
 
-class PostgreSqlBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetector, PostgreSqlMinosDatabase):
+class PostgreSqlBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateValidator, PostgreSqlMinosDatabase):
     """PostgreSql Broker Subscriber Duplicate Detector class."""
 
     def __init__(
-        self, query_factory: Optional[PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory] = None, *args, **kwargs
+        self, query_factory: Optional[PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory] = None, *args, **kwargs
     ):
         if query_factory is None:
-            query_factory = PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory()
+            query_factory = PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory()
         super().__init__(*args, **kwargs)
         self._query_factory = query_factory
 
@@ -53,14 +53,14 @@ class PostgreSqlBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetec
         )
 
     @property
-    def query_factory(self) -> PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory:
+    def query_factory(self) -> PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory:
         """Get the query factory.
 
-        :return: A ``PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory`` instance.
+        :return: A ``PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory`` instance.
         """
         return self._query_factory
 
-    async def _is_valid(self, topic: str, uuid: UUID) -> bool:
+    async def _is_unique(self, topic: str, uuid: UUID) -> bool:
         try:
             await self.submit_query(self._query_factory.build_insert_row(), {"topic": topic, "uuid": uuid})
             return True
@@ -68,7 +68,7 @@ class PostgreSqlBrokerSubscriberDuplicateDetector(BrokerSubscriberDuplicateDetec
             return False
 
 
-class PostgreSqlBrokerSubscriberDuplicateDetectorBuilder(Builder[PostgreSqlBrokerSubscriberDuplicateDetector]):
+class PostgreSqlBrokerSubscriberDuplicateValidatorBuilder(Builder[PostgreSqlBrokerSubscriberDuplicateValidator]):
     """PostgreSql Broker Subscriber Duplicate Detector Builder class."""
 
     def with_config(self, config: Config):
@@ -81,10 +81,10 @@ class PostgreSqlBrokerSubscriberDuplicateDetectorBuilder(Builder[PostgreSqlBroke
         return super().with_config(config)
 
 
-PostgreSqlBrokerSubscriberDuplicateDetector.set_builder(PostgreSqlBrokerSubscriberDuplicateDetectorBuilder)
+PostgreSqlBrokerSubscriberDuplicateValidator.set_builder(PostgreSqlBrokerSubscriberDuplicateValidatorBuilder)
 
 
-class PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory:
+class PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory:
     """PostgreSql Broker Subscriber Duplicate Detector Query Factory class."""
 
     @staticmethod

@@ -10,26 +10,25 @@ from uuid import (
     UUID,
 )
 
-from minos.common import (
-    BuildableMixin,
-)
-
-from ....messages import (
+from .....messages import (
     BrokerMessage,
 )
+from ..abc import (
+    BrokerSubscriberValidator,
+)
 
 
-class BrokerSubscriberDuplicateDetector(BuildableMixin, ABC):
+class BrokerSubscriberDuplicateValidator(BrokerSubscriberValidator, ABC):
     """Broker Subscriber Duplicate Detector class."""
 
-    async def is_valid(self, message: BrokerMessage) -> bool:
+    async def _is_valid(self, message: BrokerMessage) -> bool:
         """Check if the given message is valid.
 
         :param message: The message to be checked.
         :return: ``True`` if it is valid or ``False`` otherwise.
         """
-        return await self._is_valid(message.topic, message.identifier)
+        return await self._is_unique(message.topic, message.identifier)
 
     @abstractmethod
-    async def _is_valid(self, topic: str, uuid: UUID) -> bool:
+    async def _is_unique(self, topic: str, uuid: UUID) -> bool:
         raise NotImplementedError

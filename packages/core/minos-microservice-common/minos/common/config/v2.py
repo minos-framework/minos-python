@@ -130,8 +130,8 @@ class ConfigV2(Config):
             data["subscriber"]["client"] = import_module(data["subscriber"]["client"])
             if "queue" in data["subscriber"]:
                 data["subscriber"]["queue"] = import_module(data["subscriber"]["queue"])
-            if "idempotent" in data["subscriber"]:
-                data["subscriber"]["idempotent"] = import_module(data["subscriber"]["idempotent"])
+            if "validator" in data["subscriber"]:
+                data["subscriber"]["validator"] = import_module(data["subscriber"]["validator"])
 
         return data
 
