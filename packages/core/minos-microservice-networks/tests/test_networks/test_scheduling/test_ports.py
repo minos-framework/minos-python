@@ -14,12 +14,12 @@ from minos.networks import (
     PeriodicTaskSchedulerPort,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
 )
 
 
 class TestPeriodicTaskSchedulerPort(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def test_is_instance(self):
         service = PeriodicTaskSchedulerPort(config=self.config)

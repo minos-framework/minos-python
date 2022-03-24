@@ -25,8 +25,8 @@ class WalletCommandService(CommandService):
         """
         try:
             content = await request.content()
-            uuid = await WalletAggregate.create_wallet(content["name"])
-            return Response({"uuid": uuid, "name": content["name"]})
+            uuid = await WalletAggregate.create_wallet(content["wallet_name"])
+            return Response({"uuid": uuid, "wallet_name": content["wallet_name"]})
         except Exception as exc:
             raise ResponseException(f"An error occurred during Wallet creation: {exc}")
 
@@ -41,7 +41,8 @@ class WalletCommandService(CommandService):
             content = await request.content()
             wallet_uuid = content["wallet"]
             ticker = content["ticker"]
-            uuid = await WalletAggregate.add_ticker(wallet_uuid, ticker)
-            return Response({"uuid": uuid, "ticker": ticker})
+            is_crypto = content["is_crypto"]
+            uuid = await WalletAggregate.add_ticker(wallet_uuid, ticker, is_crypto)
+            return Response({"uuid": uuid, "ticker": ticker, "is_crypto": is_crypto})
         except Exception as exc:
             raise ResponseException(f"An error occurred during Wallet creation: {exc}")

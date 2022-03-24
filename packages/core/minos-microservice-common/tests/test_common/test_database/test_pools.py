@@ -41,11 +41,12 @@ class TestPostgreSqlPool(PostgresAsyncTestCase):
         await super().asyncTearDown()
 
     def test_from_config(self):
-        self.assertEqual(self.config.repository.database, self.pool.database)
-        self.assertEqual(self.config.repository.user, self.pool.user)
-        self.assertEqual(self.config.repository.password, self.pool.password)
-        self.assertEqual(self.config.repository.host, self.pool.host)
-        self.assertEqual(self.config.repository.port, self.pool.port)
+        repository_config = self.config.get_database_by_name("event")
+        self.assertEqual(repository_config["database"], self.pool.database)
+        self.assertEqual(repository_config["user"], self.pool.user)
+        self.assertEqual(repository_config["password"], self.pool.password)
+        self.assertEqual(repository_config["host"], self.pool.host)
+        self.assertEqual(repository_config["port"], self.pool.port)
 
     async def test_acquire(self):
         async with self.pool.acquire() as c1:

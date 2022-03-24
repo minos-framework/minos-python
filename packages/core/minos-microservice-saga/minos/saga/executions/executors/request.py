@@ -9,13 +9,9 @@ from uuid import (
     UUID,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     Config,
+    Inject,
     NotProvidedException,
 )
 from minos.networks import (
@@ -51,15 +47,13 @@ class RequestExecutor(Executor):
     This class has the responsibility to publish command on the corresponding broker's queue.
     """
 
-    @inject
-    def __init__(
-        self, *args, user: Optional[UUID], broker_publisher: BrokerPublisher = Provide["broker_publisher"], **kwargs
-    ):
+    @Inject()
+    def __init__(self, *args, user: Optional[UUID], broker_publisher: BrokerPublisher, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.user = user
 
-        if broker_publisher is None or isinstance(broker_publisher, Provide):
+        if broker_publisher is None:
             raise NotProvidedException("A broker instance is required.")
 
         self.broker_publisher = broker_publisher
@@ -109,6 +103,6 @@ class RequestExecutor(Executor):
         except Exception as exc:
             raise ExecutorException(exc)
 
-    @inject
-    def _get_default_reply_topic(self, config: Config = Provide["config"]) -> str:
-        return f"{config.service.name}Reply"
+    @Inject()
+    def _get_default_reply_topic(self, config: Config) -> str:
+        return f"{config.get_name()}Reply"

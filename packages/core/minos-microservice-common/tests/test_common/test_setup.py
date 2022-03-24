@@ -73,11 +73,11 @@ class TestSetupMixin(unittest.IsolatedAsyncioTestCase):
     async def test_from_config_with_dependency_injection(self):
         config = Config(BASE_PATH / "test_config.yml")
         injector = DependencyInjector(config)
-        await injector.wire(modules=[sys.modules[__name__]])
+        await injector.wire_and_setup_injections(modules=[sys.modules[__name__]])
 
         _SetupMixin.from_config()
 
-        await injector.unwire()
+        await injector.unwire_and_destroy_injections()
 
     def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):

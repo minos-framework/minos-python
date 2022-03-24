@@ -5,6 +5,7 @@ from abc import (
 )
 
 from minos.common import (
+    Injectable,
     SetupMixin,
 )
 
@@ -15,6 +16,7 @@ from ..messages import (
 logger = logging.getLogger(__name__)
 
 
+@Injectable("broker_publisher")
 class BrokerPublisher(ABC, SetupMixin):
     """Broker Publisher class."""
 

@@ -1,45 +1,15 @@
-import sys
-import unittest
 from pathlib import (
     Path,
 )
 
-from dependency_injector import (
-    containers,
-    providers,
-)
-
 from minos.common import (
     Lock,
-    MinosPool,
+    LockPool,
+    Port,
 )
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
-
-
-class MinosTestCase(unittest.IsolatedAsyncioTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.lock_pool = FakeLockPool()
-        self.container = containers.DynamicContainer()
-        self.container.lock_pool = providers.Object(self.lock_pool)
-        self.container.wire(modules=[sys.modules[__name__]])
-
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-
-        await self.lock_pool.setup()
-
-    async def asyncTearDown(self):
-        await self.lock_pool.destroy()
-
-        await super().asyncTearDown()
-
-    def tearDown(self) -> None:
-        self.container.unwire()
-        super().tearDown()
 
 
 class FakeEntrypoint:
@@ -96,11 +66,41 @@ class FakeLock(Lock):
         return
 
 
-class FakeLockPool(MinosPool):
+class FakeLockPool(LockPool):
     """For testing purposes."""
 
     async def _create_instance(self):
         return FakeLock()
 
     async def _destroy_instance(self, instance) -> None:
+        """For testing purposes."""
+
+
+class FakePeriodicPort(Port):
+    """For testing purposes."""
+
+    async def _start(self) -> None:
+        """For testing purposes."""
+
+    async def _stop(self, err: Exception = None) -> None:
+        """For testing purposes."""
+
+
+class FakeHttpPort(Port):
+    """For testing purposes."""
+
+    async def _start(self) -> None:
+        """For testing purposes."""
+
+    async def _stop(self, err: Exception = None) -> None:
+        """For testing purposes."""
+
+
+class FakeBrokerPort(Port):
+    """For testing purposes."""
+
+    async def _start(self) -> None:
+        """For testing purposes."""
+
+    async def _stop(self, err: Exception = None) -> None:
         """For testing purposes."""

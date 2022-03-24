@@ -10,12 +10,9 @@ from typing import (
 from cached_property import (
     cached_property,
 )
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
 
 from minos.common import (
+    Inject,
     NotProvidedException,
     Port,
 )
@@ -34,20 +31,11 @@ class HttpPort(Port):
         super().__init__(**kwargs)
         self._init_kwargs = kwargs
 
-    async def start(self) -> None:
-        """Start the service execution.
-
-        :return: This method does not return anything.
-        """
+    async def _start(self) -> None:
         await self.connector.setup()
         await self.connector.start()
 
-    async def stop(self, err: Exception = None) -> None:
-        """Stop the service execution.
-
-        :param err: Optional exception that stopped the execution.
-        :return: This method does not return anything.
-        """
+    async def _stop(self, err: Exception = None) -> None:
         await self.connector.stop()
         await self.connector.destroy()
 
@@ -60,14 +48,14 @@ class HttpPort(Port):
         return self._get_connector(**self._init_kwargs)
 
     @staticmethod
-    @inject
+    @Inject()
     def _get_connector(
         connector: Optional[HttpConnector] = None,
-        http_connector: Optional[HttpConnector] = Provide["http_connector"],
+        http_connector: Optional[HttpConnector] = None,
         **kwargs,
     ) -> HttpConnector:
         if connector is None:
             connector = http_connector
-        if connector is None or isinstance(connector, Provide):
+        if connector is None:
             raise NotProvidedException(f"A {HttpConnector!r} must be provided.")
         return connector

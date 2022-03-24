@@ -42,7 +42,7 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
 
     @classmethod
     def _from_config(cls, *args, config: Config, **kwargs) -> Optional[EventRepository]:
-        return cls(*args, **config.repository._asdict(), **kwargs)
+        return cls(*args, **config.get_database_by_name("event"), **kwargs)
 
     async def _setup(self):
         """Setup miscellaneous repository thing.

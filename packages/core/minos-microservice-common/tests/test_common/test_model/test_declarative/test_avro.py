@@ -23,12 +23,9 @@ from tests.model_classes import (
     ShoppingList,
     User,
 )
-from tests.utils import (
-    MinosTestCase,
-)
 
 
-class TestModelAvro(MinosTestCase):
+class TestModelAvro(unittest.IsolatedAsyncioTestCase):
     def test_avro_schema(self):
         expected = [
             {

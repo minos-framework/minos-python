@@ -1,6 +1,10 @@
 service:
     name: Order
-    aggregate: src.aggregates.Order
+    aggregate: builtins.int
+    services:
+        - tests.utils.FakePeriodicPort
+        - tests.utils.FakeHttpPort
+        - tests.utils.FakeBrokerPort
 repository:
     database: order_db
     user: minos
@@ -34,17 +38,18 @@ broker:
         records: 10
         retry: 2
 routers:
-    - path.to.MyRouter1
-    - path.to.MyRouter2
+    - builtins.set
+    - builtins.dict
 services:
-    - tests.services.OrderService
-    - tests.services.OrderQueryService
+    - builtins.float
+    - builtins.int
 middleware:
-    - tests.middleware.performance_tracking
+    - builtins.list
+    - builtins.tuple
 saga:
     storage:
         path: "./order.lmdb"
 discovery:
-    client: minos
+    client: builtins.str
     host: localhost
     port: 8080

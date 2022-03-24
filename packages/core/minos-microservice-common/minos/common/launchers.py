@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 import logging
+import warnings
 from asyncio import (
     AbstractEventLoop,
 )
@@ -15,13 +16,9 @@ from types import (
 from typing import (
     NoReturn,
     Optional,
-    Type,
     Union,
 )
 
-from aiomisc import (
-    Service,
-)
 from aiomisc.entrypoint import (
     Entrypoint,
 )
@@ -46,8 +43,11 @@ from .importlib import (
     get_internal_modules,
     import_module,
 )
-from .injectors import (
+from .injections import (
     DependencyInjector,
+)
+from .ports import (
+    Port,
 )
 from .setup import (
     SetupMixin,
@@ -70,8 +70,8 @@ class EntrypointLauncher(SetupMixin):
     def __init__(
         self,
         config: Config,
-        injections: dict[str, Union[SetupMixin, Type[SetupMixin], str]],
-        services: list[Union[Service, Type[Service], str]],
+        injections: list[Union[SetupMixin, type[SetupMixin], str]],
+        ports: list[Union[Port, type[Port], str]],
         log_level: Union[int, str] = logging.INFO,
         log_format: Union[str, LogFormat] = "color",
         log_date_format: Union[str, DateFormat] = DateFormat["color"],
@@ -97,16 +97,16 @@ class EntrypointLauncher(SetupMixin):
         self._log_date_format = log_date_format
 
         self._raw_injections = injections
-        self._raw_services = services
+        self._raw_ports = ports
         self._external_modules = external_modules
         self._external_packages = external_packages
 
     @classmethod
     def _from_config(cls, *args, config: Config, **kwargs) -> EntrypointLauncher:
         if "injections" not in kwargs:
-            kwargs["injections"] = config.service.injections
-        if "services" not in kwargs:
-            kwargs["services"] = config.service.services
+            kwargs["injections"] = config.get_injections()
+        if "ports" not in kwargs:
+            kwargs["ports"] = [interface["port"] for interface in config.get_interfaces().values()]
         return cls(config, *args, **kwargs)
 
     def launch(self) -> NoReturn:
@@ -132,7 +132,7 @@ class EntrypointLauncher(SetupMixin):
             self.graceful_shutdown()
 
     def graceful_shutdown(self, err: Exception = None) -> None:
-        """Shutdown the services execution gracefully.
+        """Shutdown the execution gracefully.
 
         :return: This method does not return anything.
         """
@@ -145,7 +145,7 @@ class EntrypointLauncher(SetupMixin):
 
         :return: An ``Entrypoint`` instance.
         """
-        return _create_entrypoint(*self.services, loop=self.loop, log_config=False)
+        return _create_entrypoint(*self.ports, loop=self.loop, log_config=False)
 
     @cached_property
     def loop(self) -> AbstractEventLoop:
@@ -156,27 +156,37 @@ class EntrypointLauncher(SetupMixin):
         return _create_loop()
 
     @cached_property
-    def services(self) -> list[Service]:
-        """List of services to be launched.
+    def ports(self) -> list[Port]:
+        """List of ports to be launched.
 
-        :return: A list of ``Service`` instances.
+        :return: A list of ``Port`` instances.
         """
 
-        def _fn(raw: Union[Service, Type[Service], str]) -> Service:
+        def _fn(raw: Union[Port, type[Port], str]) -> Port:
             if isinstance(raw, str):
                 raw = import_module(raw)
             if isinstance(raw, type):
                 return raw(config=self.config)
             return raw
 
-        return [_fn(raw) for raw in self._raw_services]
+        return [_fn(raw) for raw in self._raw_ports]
+
+    @property
+    def services(self) -> list[Port]:
+        """List of ports to be launched.
+
+        :return: A list of ``Port`` instances.
+        """
+        warnings.warn("'services' property has been deprecated. Use 'ports' instead.", DeprecationWarning)
+
+        return self.ports
 
     async def _setup(self) -> None:
         """Wire the dependencies and setup it.
 
         :return: This method does not return anything.
         """
-        await self.injector.wire(
+        await self.injector.wire_and_setup_injections(
             modules=self._external_modules + self._internal_modules, packages=self._external_packages
         )
 
@@ -189,7 +199,7 @@ class EntrypointLauncher(SetupMixin):
 
         :return: This method does not return anything.
         """
-        await self.injector.unwire()
+        await self.injector.unwire_and_destroy_injections()
 
     @cached_property
     def injector(self) -> DependencyInjector:
@@ -197,4 +207,4 @@ class EntrypointLauncher(SetupMixin):
 
         :return: A ``DependencyInjector`` instance.
         """
-        return DependencyInjector(config=self.config, **self._raw_injections)
+        return DependencyInjector(self.config, self._raw_injections)

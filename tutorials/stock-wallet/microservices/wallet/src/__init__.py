@@ -3,6 +3,7 @@ __email__ = ""
 __version__ = "0.1.0"
 
 from .aggregates import (
+    Ticker,
     Wallet,
 )
 from .cli import (

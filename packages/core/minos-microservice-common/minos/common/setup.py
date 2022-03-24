@@ -8,28 +8,24 @@ from pathlib import (
     Path,
 )
 from typing import (
-    Optional,
     Type,
     TypeVar,
     Union,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from .config import (
     Config,
 )
-from .exceptions import (
-    NotProvidedException,
+from .injections import (
+    Inject,
 )
 from .object import (
     Object,
 )
 
 logger = logging.getLogger(__name__)
+
+S = TypeVar("S", bound="SetupMixin")
 
 
 class SetupMixin(Object):
@@ -56,27 +52,19 @@ class SetupMixin(Object):
         return not self._already_setup
 
     @classmethod
-    def from_config(cls: Type[S], config: Optional[Union[Config, Path]] = None, **kwargs) -> S:
+    @Inject()
+    def from_config(cls: Type[S], config: Union[Config, Path], **kwargs) -> S:
         """Build a new instance from config.
 
         :param config: Config instance. If `None` is provided, default config is chosen.
         :param kwargs: Additional named arguments.
         :return: A instance of the called class.
         """
-        if config is None:
-            config = cls._get_config()
-        elif isinstance(config, Path):
+        if isinstance(config, Path):
             config = Config(config)
 
         logger.info(f"Building a {cls.__name__!r} instance from config...")
         return cls._from_config(config=config, **kwargs)
-
-    @staticmethod
-    @inject
-    def _get_config(config: Config = Provide["config"]) -> Config:
-        if isinstance(config, Provide):
-            raise NotProvidedException("The config object must be provided.")
-        return config
 
     @classmethod
     def _from_config(cls: Type[S], config: Config, **kwargs) -> S:
@@ -120,9 +108,6 @@ class SetupMixin(Object):
             warnings.warn(
                 f"A not destroyed {type(self).__name__!r} instance is trying to be deleted...", ResourceWarning
             )
-
-
-S = TypeVar("S", bound=SetupMixin)
 
 
 class MinosSetup(SetupMixin):
