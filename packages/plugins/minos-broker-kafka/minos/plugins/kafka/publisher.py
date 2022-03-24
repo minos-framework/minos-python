@@ -13,6 +13,9 @@ from contextlib import (
 from functools import (
     partial,
 )
+from typing import (
+    Optional,
+)
 
 from aiokafka import (
     AIOKafkaProducer,
@@ -59,8 +62,14 @@ class InMemoryQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
 class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
     """Kafka Broker Publisher class."""
 
-    def __init__(self, *args, broker_host: str, broker_port: int, **kwargs):
+    def __init__(self, *args, broker_host: Optional[str] = None, broker_port: Optional[int] = None, **kwargs):
         super().__init__(*args, **kwargs)
+
+        if broker_host is None:
+            broker_host = "localhost"
+
+        if broker_port is None:
+            broker_port = 9092
 
         self.broker_host = broker_host
         self.broker_port = broker_port
@@ -70,10 +79,9 @@ class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> KafkaBrokerPublisher:
         broker_config = config.get_interface_by_name("broker")
-        common_config = broker_config["common"]
-
-        kwargs["broker_host"] = common_config["host"]
-        kwargs["broker_port"] = common_config["port"]
+        common_config = broker_config.get("common", dict())
+        kwargs["broker_host"] = common_config.get("host")
+        kwargs["broker_port"] = common_config.get("port")
         return cls(**kwargs)
 
     async def _setup(self) -> None:

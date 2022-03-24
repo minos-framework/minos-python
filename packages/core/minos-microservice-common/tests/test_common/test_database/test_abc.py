@@ -20,6 +20,14 @@ class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def test_constructor(self):
+        pool = PostgreSqlMinosDatabase("foo")
+        self.assertEqual("foo", pool.database)
+        self.assertEqual("postgres", pool.user)
+        self.assertEqual("", pool.password)
+        self.assertEqual("localhost", pool.host)
+        self.assertEqual(5432, pool.port)
+
+    def test_constructor_extended(self):
         database = PostgreSqlMinosDatabase(**self.repository_db)
         self.assertEqual(self.repository_db["host"], database.host)
         self.assertEqual(self.repository_db["port"], database.port)

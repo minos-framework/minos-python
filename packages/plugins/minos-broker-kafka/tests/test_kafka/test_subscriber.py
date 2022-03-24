@@ -45,6 +45,13 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(KafkaBrokerSubscriber, BrokerSubscriber))
 
+    def test_constructor(self):
+        subscriber = KafkaBrokerSubscriber(["foo", "bar"])
+        self.assertEqual({"foo", "bar"}, subscriber.topics)
+        self.assertEqual("localhost", subscriber.broker_host)
+        self.assertEqual(9092, subscriber.broker_port)
+        self.assertEqual(None, subscriber.group_id)
+
     async def test_from_config(self):
         config = Config(CONFIG_FILE_PATH)
         broker_config = config.get_interface_by_name("broker")["common"]

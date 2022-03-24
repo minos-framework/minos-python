@@ -61,13 +61,18 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
     def __init__(
         self,
         topics: Iterable[str],
-        broker_host: str,
-        broker_port: int,
+        broker_host: Optional[str] = None,
+        broker_port: Optional[int] = None,
         group_id: Optional[str] = None,
         remove_topics_on_destroy: bool = False,
         **kwargs,
     ):
         super().__init__(topics, **kwargs)
+        if broker_host is None:
+            broker_host = "localhost"
+
+        if broker_port is None:
+            broker_port = 9092
 
         self.broker_host = broker_host
         self.broker_port = broker_port
@@ -160,12 +165,12 @@ class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         :return: This method return the builder instance.
         """
         broker_config = config.get_interface_by_name("broker")
-        common_config = broker_config["common"]
+        common_config = broker_config.get("common", dict())
 
         self.kwargs |= {
             "group_id": config.get_name(),
-            "broker_host": common_config["host"],
-            "broker_port": common_config["port"],
+            "broker_host": common_config.get("host"),
+            "broker_port": common_config.get("port"),
         }
         return self
 

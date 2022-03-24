@@ -35,6 +35,11 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(KafkaBrokerPublisher, BrokerPublisher))
 
+    def test_constructor(self):
+        publisher = KafkaBrokerPublisher()
+        self.assertEqual("localhost", publisher.broker_host)
+        self.assertEqual(9092, publisher.broker_port)
+
     def test_from_config(self):
         config = Config(CONFIG_FILE_PATH)
         broker_config = config.get_interface_by_name("broker")["common"]

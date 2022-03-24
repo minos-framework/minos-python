@@ -63,6 +63,12 @@ class TestHttpConnector(unittest.IsolatedAsyncioTestCase):
             HttpConnector.__abstractmethods__,
         )
 
+    def test_constructor(self):
+        connector = FakeHttpConnector(self.adapter)
+        self.assertEqual(self.adapter, connector.adapter)
+        self.assertEqual("0.0.0.0", connector.host)
+        self.assertEqual(8080, connector.port)
+
     def test_host(self):
         self.assertEqual("localhost", self.connector.host)
 

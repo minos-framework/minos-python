@@ -5,9 +5,6 @@ from __future__ import (
 from contextlib import (
     suppress,
 )
-from pathlib import (
-    Path,
-)
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -156,12 +153,14 @@ class ConfigV1(Config):
         except Exception as exc:
             raise MinosConfigException(f"The 'http' interface is not available: {exc!r}")
 
+        try:
+            connector = self.get_by_key("rest")
+        except MinosConfigException:
+            connector = dict()
+
         return {
             "port": import_module(port),
-            "connector": {
-                "host": self.get_by_key("rest.host"),
-                "port": int(self.get_by_key("rest.port")),
-            },
+            "connector": connector,
         }
 
     def _get_interface_broker(self) -> dict[str, Any]:
@@ -170,18 +169,27 @@ class ConfigV1(Config):
         except Exception as exc:
             raise MinosConfigException(f"The 'broker' interface is not available: {exc!r}")
 
+        try:
+            common = self.get_by_key("broker")
+        except MinosConfigException:
+            common = dict()
+
+        try:
+            common["queue"] = self.get_by_key("broker.queue")
+            common["queue"].pop("database", None)
+            common["queue"].pop("port", None)
+            common["queue"].pop("host", None)
+            common["queue"].pop("port", None)
+            common["queue"].pop("user", None)
+            common["queue"].pop("password", None)
+        except MinosConfigException:
+            common["queue"] = dict()
+
         return {
             "port": import_module(port),
             "publisher": dict(),
             "subscriber": dict(),
-            "common": {
-                "host": self.get_by_key("broker.host"),
-                "port": int(self.get_by_key("broker.port")),
-                "queue": {
-                    "records": int(self.get_by_key("broker.queue.records")),
-                    "retry": int(self.get_by_key("broker.queue.retry")),
-                },
-            },
+            "common": common,
         }
 
     def _get_interface_periodic(self):
@@ -254,10 +262,8 @@ class ConfigV1(Config):
         return self._get_database_by_name("broker.queue")
 
     def _get_database_saga(self) -> dict[str, Any]:
-        raw = self.get_by_key("saga.storage.path")
-        return {
-            "path": Path(raw) if raw.startswith("/") else self.file_path.parent / raw,
-        }
+        raw = self.get_by_key("saga.storage")
+        return raw
 
     def _get_database_event(self) -> dict[str, Any]:
         return self._get_database_by_name("repository")
@@ -269,20 +275,15 @@ class ConfigV1(Config):
         return self._get_database_by_name("snapshot")
 
     def _get_database_by_name(self, prefix: str):
-        return {
-            "database": self.get_by_key(f"{prefix}.database"),
-            "user": self.get_by_key(f"{prefix}.user"),
-            "password": self.get_by_key(f"{prefix}.password"),
-            "host": self.get_by_key(f"{prefix}.host"),
-            "port": int(self.get_by_key(f"{prefix}.port")),
-        }
+        data = self.get_by_key(prefix)
+        data.pop("records", None)
+        data.pop("retry", None)
+        return data
 
     def _get_discovery(self) -> dict[str, Any]:
-        return {
-            "client": self.get_type_by_key("discovery.client"),
-            "host": self.get_by_key("discovery.host"),
-            "port": self.get_by_key("discovery.port"),
-        }
+        data = self.get_by_key("discovery")
+        data["client"] = self.get_type_by_key("discovery.client")
+        return data
 
     def _to_parameterized_variable(self, key: str) -> str:
         return self._PARAMETERIZED_MAPPER[key]
