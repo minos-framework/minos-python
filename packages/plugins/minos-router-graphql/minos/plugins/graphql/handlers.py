@@ -1,3 +1,4 @@
+import logging
 import traceback
 from typing import (
     Any,
@@ -15,7 +16,6 @@ from minos.networks import (
     Response,
     ResponseException,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class GraphQlHandler:
             for error in errors:
                 if isinstance(error.original_error, ResponseException):
                     status = error.original_error.status
-                    error_trace = ''.join(traceback.format_tb(error.original_error.__traceback__))
+                    error_trace = "".join(traceback.format_tb(error.original_error.__traceback__))
                     logger.exception(f"Raised a system exception:\n {error_trace}")
                 else:
                     logger.error(f"Raised an application exception:\n {error}")
