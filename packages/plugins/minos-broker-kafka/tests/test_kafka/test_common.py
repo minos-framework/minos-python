@@ -33,8 +33,8 @@ class TestKafkaBrokerBuilderMixin(unittest.IsolatedAsyncioTestCase):
 
         expected = {
             "group_id": config.get_name(),
-            "broker_host": common_config["host"],
-            "broker_port": common_config["port"],
+            "host": common_config["host"],
+            "port": common_config["port"],
         }
         self.assertEqual(expected, mixin.kwargs)
 

@@ -136,8 +136,8 @@ class TestKafkaBrokerPublisherBuilder(unittest.TestCase):
 
         expected = {
             "group_id": self.config.get_name(),
-            "broker_host": common_config["host"],
-            "broker_port": common_config["port"],
+            "host": common_config["host"],
+            "port": common_config["port"],
         }
         self.assertEqual(expected, builder.kwargs)
 
@@ -147,8 +147,8 @@ class TestKafkaBrokerPublisherBuilder(unittest.TestCase):
         publisher = builder.build()
 
         self.assertIsInstance(publisher, KafkaBrokerPublisher)
-        self.assertEqual(common_config["host"], publisher.broker_host)
-        self.assertEqual(common_config["port"], publisher.broker_port)
+        self.assertEqual(common_config["host"], publisher.host)
+        self.assertEqual(common_config["port"], publisher.port)
 
 
 class TestPostgreSqlQueuedKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
