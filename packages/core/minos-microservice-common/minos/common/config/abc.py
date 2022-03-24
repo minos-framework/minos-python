@@ -284,8 +284,8 @@ class Config(ABC):
 
         def _fn(k: str, data: dict[str, Any], previous: str) -> Any:
             current, _sep, following = k.partition(".")
-
             full = f"{previous}.{current}".lstrip(".")
+
             with suppress(KeyError):
                 return self._parameterized[self._to_parameterized_variable(full)]
 
@@ -299,14 +299,14 @@ class Config(ABC):
                     return part
 
                 result = dict()
-                for kk in part:
-                    result[kk] = _fn(kk, part, full)
+                for subpart in part:
+                    result[subpart] = _fn(subpart, part, full)
                 return result
 
             return _fn(following, part, full)
 
         try:
-            return _fn(key, self._data, "")
+            return _fn(key, self._data, str())
         except Exception:
             raise MinosConfigException(f"{key!r} field is not defined on the configuration!")
 
