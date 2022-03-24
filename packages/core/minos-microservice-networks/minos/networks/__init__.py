@@ -117,6 +117,7 @@ from .routers import (
     Router,
 )
 from .scheduling import (
+    CronTab,
     PeriodicTask,
     PeriodicTaskScheduler,
     PeriodicTaskSchedulerPort,

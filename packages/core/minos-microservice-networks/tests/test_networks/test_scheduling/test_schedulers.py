@@ -8,15 +8,12 @@ from unittest.mock import (
     patch,
 )
 
-from crontab import (
-    CronTab,
-)
-
 from minos.common import (
     Config,
     current_datetime,
 )
 from minos.networks import (
+    CronTab,
     PeriodicTask,
     PeriodicTaskScheduler,
     ScheduledRequest,
@@ -81,7 +78,7 @@ class TestPeriodicTask(unittest.IsolatedAsyncioTestCase):
         self.periodic = PeriodicTask("@daily", self.fn_mock)
 
     def test_crontab(self) -> None:
-        self.assertEqual(CronTab("@daily").matchers, self.periodic.crontab.matchers)
+        self.assertEqual(CronTab("@daily"), self.periodic.crontab)
 
     def test_fn(self) -> None:
         self.assertEqual(self.fn_mock, self.periodic.fn)
