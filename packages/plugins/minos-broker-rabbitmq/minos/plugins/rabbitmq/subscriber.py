@@ -13,7 +13,9 @@ from typing import (
 from aio_pika import (
     connect,
 )
-from aio_pika.exceptions import QueueEmpty
+from aio_pika.exceptions import (
+    QueueEmpty,
+)
 
 from minos.common import (
     Config,
