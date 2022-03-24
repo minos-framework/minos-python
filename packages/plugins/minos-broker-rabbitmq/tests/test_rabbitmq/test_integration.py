@@ -31,4 +31,3 @@ class IntegrationTests(IsolatedAsyncioTestCase):
     async def test_empty_topic(self):
         async with RabbitMQBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"empty_topic"}) as subscriber:
             observed = await subscriber.receive()
-
