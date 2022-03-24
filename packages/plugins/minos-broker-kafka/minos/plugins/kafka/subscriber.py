@@ -61,24 +61,56 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
     def __init__(
         self,
         topics: Iterable[str],
-        broker_host: Optional[str] = None,
-        broker_port: Optional[int] = None,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
         group_id: Optional[str] = None,
         remove_topics_on_destroy: bool = False,
         **kwargs,
     ):
         super().__init__(topics, **kwargs)
-        if broker_host is None:
-            broker_host = "localhost"
+        if host is None:
+            host = "localhost"
 
-        if broker_port is None:
-            broker_port = 9092
+        if port is None:
+            port = 9092
 
-        self.broker_host = broker_host
-        self.broker_port = broker_port
-        self.group_id = group_id
+        self._host = host
+        self._port = port
+        self._group_id = group_id
 
-        self.remove_topics_on_destroy = remove_topics_on_destroy
+        self._remove_topics_on_destroy = remove_topics_on_destroy
+
+    @property
+    def host(self) -> str:
+        """The host of kafka.
+
+        :return: A ``str`` value.
+        """
+        return self._host
+
+    @property
+    def port(self) -> int:
+        """The port of kafka.
+
+        :return: A ``int`` value.
+        """
+        return self._port
+
+    @property
+    def group_id(self) -> Optional[str]:
+        """The id of kafka's group.
+
+        :return: An ``Optional[str]``` value.
+        """
+        return self._group_id
+
+    @property
+    def remove_topics_on_destroy(self) -> int:
+        """Flag to check if topics should be removed on destroy.
+
+        :return: A ``bool`` value.
+        """
+        return self._remove_topics_on_destroy
 
     async def _setup(self) -> None:
         await super()._setup()
@@ -133,7 +165,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
 
         :return: An ``KafkaAdminClient`` instance.
         """
-        return KafkaAdminClient(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
+        return KafkaAdminClient(bootstrap_servers=f"{self.host}:{self.port}")
 
     async def _receive(self) -> BrokerMessage:
         record = await self.client.getone()
@@ -149,7 +181,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
         """
         return AIOKafkaConsumer(
             *self.topics,
-            bootstrap_servers=f"{self.broker_host}:{self.broker_port}",
+            bootstrap_servers=f"{self.host}:{self.port}",
             group_id=self.group_id,
             auto_offset_reset="earliest",
         )
@@ -169,8 +201,8 @@ class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
 
         self.kwargs |= {
             "group_id": config.get_name(),
-            "broker_host": common_config.get("host"),
-            "broker_port": common_config.get("port"),
+            "host": common_config.get("host"),
+            "port": common_config.get("port"),
         }
         return self
 
