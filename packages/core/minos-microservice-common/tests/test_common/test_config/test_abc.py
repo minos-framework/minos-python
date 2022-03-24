@@ -25,6 +25,8 @@ from tests.utils import (
 class _Config(Config):
     """For testing purposes."""
 
+    DEFAULT_VALUES = {"foo": {"bar": 56}}
+
     # noinspection PyPropertyDefinition
     @property
     def _version(self) -> int:
@@ -87,6 +89,9 @@ class TestConfig(unittest.TestCase):
 
     def test_get_by_key(self):
         self.assertEqual("Order", self.config.get_by_key("service.name"))
+
+    def test_get_by_key_with_default(self):
+        self.assertEqual(56, self.config.get_by_key("foo.bar"))
 
     def test_get_by_key_raises(self):
         with self.assertRaises(MinosConfigException):
