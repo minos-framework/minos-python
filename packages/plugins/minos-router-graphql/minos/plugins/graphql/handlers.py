@@ -1,3 +1,4 @@
+import logging
 import traceback
 from typing import (
     Any,
@@ -15,7 +16,6 @@ from minos.networks import (
     Response,
     ResponseException,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 
