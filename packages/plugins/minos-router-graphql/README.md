@@ -47,9 +47,11 @@ class QueryService:
 ```
 
 ### Execute query
-Send `post` request to `http://your_ip_address:port/graphql` endpoint:
-```javascript
-{ SimpleQuery }
+Send `post` request to `http://your_ip_address:port/service_name/graphql` endpoint:
+```json
+{
+    "query": "{ SimpleQuery }"
+}
 ```
 
 You will receive:
@@ -307,6 +309,12 @@ Yoy will receive:
     },
     "errors": []
 }
+```
+
+### Get Schema
+By calling `{service_name}/graphql/schema` with `GET` method, you will receive the schema:
+```text
+"type Query {\n  GetUser(request: Int): UserType\n}\n\ntype UserType {\n  id: ID!\n  firstName: String!\n  lastName: String!\n  tweets: Int\n  verified: Boolean!\n}\n\ntype Mutation {\n  CreateUser(request: UserInputType!): UserType\n}\n\ninput UserInputType {\n  firstName: String!\n  lastName: String!\n  tweets: Int\n  verified: Boolean\n}"
 ```
 
 ## Documentation
