@@ -72,6 +72,7 @@ class RabbitMQBrokerSubscriber(BrokerSubscriber):
     async def _destroy(self) -> None:
         await self._stop_task()
         await self.connection.close()
+        await super()._destroy()
 
     async def _start_task(self):
         if self._run_task is None:
