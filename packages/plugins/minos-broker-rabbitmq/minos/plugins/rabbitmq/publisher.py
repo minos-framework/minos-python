@@ -3,6 +3,9 @@ from __future__ import (
 )
 
 import logging
+from typing import (
+    Optional,
+)
 
 from aio_pika import (
     Message,
@@ -25,23 +28,30 @@ logger = logging.getLogger(__name__)
 class RabbitMQBrokerPublisher(BrokerPublisher):
     """RabbitMQ Broker Publisher class."""
 
-    def __init__(self, *args, host: str, port: int, **kwargs):
+    def __init__(self, *args, host: Optional[str] = None, port: Optional[int] = None, **kwargs):
         super().__init__(*args, **kwargs)
+
+        if host is None:
+            host = "localhost"
+        if port is None:
+            port = 5672
+
         self.host = host
         self.port = port
+
+        self.connection = None
+        self.channel = None
 
     async def _setup(self) -> None:
         await super()._setup()
         self.connection = await connect(f"amqp://guest:guest@{self.host}:{self.port}/")
+        self.channel = await self.connection.channel()
 
     async def _destroy(self) -> None:
         await self.connection.close()
 
     async def _send(self, message: BrokerMessage) -> None:
-        async with self.connection:
-            channel = await self.connection.channel()
-            queue = await channel.declare_queue(message.topic)
-            await channel.default_exchange.publish(Message(message.avro_bytes), routing_key=queue.name)
+        await self.channel.default_exchange.publish(Message(message.avro_bytes), routing_key=message.topic)
 
 
 class RabbitMQBrokerPublisherBuilder(BrokerPublisherBuilder[RabbitMQBrokerPublisher], RabbitMQBrokerBuilderMixin):

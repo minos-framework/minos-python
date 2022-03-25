@@ -23,6 +23,11 @@ class TestRabbitMQBrokerPublisher(unittest.IsolatedAsyncioTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(RabbitMQBrokerPublisher, BrokerPublisher))
 
+    def test_constructor(self):
+        publisher = RabbitMQBrokerPublisher()
+        self.assertEqual("localhost", publisher.host)
+        self.assertEqual(5672, publisher.port)
+
     def test_from_config(self):
         config = Config(CONFIG_FILE_PATH)
         broker_config = config.get_interface_by_name("broker")["common"]
@@ -33,21 +38,14 @@ class TestRabbitMQBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(broker_config["host"], publisher.host)
         self.assertEqual(broker_config["port"], publisher.port)
 
-    @patch("minos.plugins.rabbitmq.publisher.connect")
-    async def test_send(self, connect_mock):
-        message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
-
+    async def test_send(self):
         async with RabbitMQBrokerPublisher.from_config(CONFIG_FILE_PATH) as publisher:
-            await publisher.send(message)
+            with patch("aio_pika.Exchange.publish") as mock:
+                await publisher.send(BrokerMessageV1("foo1", BrokerMessageV1Payload("bar")))
+                await publisher.send(BrokerMessageV1("foo2", BrokerMessageV1Payload("bar")))
+                await publisher.send(BrokerMessageV1("foo1", BrokerMessageV1Payload("bar")))
 
-            self.assertEqual(1, connect_mock.call_count)
-
-    @patch("minos.plugins.rabbitmq.publisher.connect")
-    async def test_destroy(self, destroy_mock):
-        async with RabbitMQBrokerPublisher.from_config(CONFIG_FILE_PATH) as publisher:
-            await publisher.destroy()
-
-            self.assertEqual(1, destroy_mock.call_count)
+        self.assertEqual(3, mock.call_count)
 
 
 if __name__ == "__main__":

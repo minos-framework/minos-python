@@ -8,6 +8,7 @@ from unittest.mock import (
 
 from minos.common import (
     Config,
+    ModelType,
 )
 from minos.networks import (
     BrokerSubscriber,
@@ -18,14 +19,22 @@ from minos.plugins.rabbitmq import (
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
+    FakeAsyncIterator,
 )
 
-_ConsumerMessage = namedtuple("_ConsumerMessage", ["value"])
+_Foo = ModelType.build("_Foo", {"bar": str})
+_ConsumerMessage = namedtuple("_ConsumerMessage", ["body"])
 
 
 class TestRabbitMQBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(RabbitMQBrokerSubscriber, BrokerSubscriber))
+
+    def test_constructor(self):
+        subscriber = RabbitMQBrokerSubscriber({"foo", "bar"})
+        self.assertEqual({"foo", "bar"}, subscriber.topics)
+        self.assertEqual("localhost", subscriber.host)
+        self.assertEqual(5672, subscriber.port)
 
     async def test_from_config(self):
         config = Config(CONFIG_FILE_PATH)
@@ -33,16 +42,16 @@ class TestRabbitMQBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
         async with RabbitMQBrokerSubscriber.from_config(config, topics={"foo", "bar"}) as subscriber:
             self.assertEqual(broker_config["host"], subscriber.host)
             self.assertEqual(broker_config["port"], subscriber.port)
-            self.assertEqual(False, subscriber.remove_topics_on_destroy)
             self.assertEqual({"foo", "bar"}, subscriber.topics)
 
-    @patch("minos.plugins.rabbitmq.subscriber.connect")
-    @patch("minos.networks.BrokerMessage.from_avro_bytes")
-    async def test_receive(self, connect_mock, mock_avro):
-        async with RabbitMQBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}) as subscriber:
-            await subscriber.receive()
+    async def test_receive(self):
+        message = _ConsumerMessage(_Foo("foobar").avro_bytes)
 
-            self.assertEqual(1, connect_mock.call_count)
+        async with RabbitMQBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}) as subscriber:
+            with patch("aio_pika.Queue.iterator", return_value=FakeAsyncIterator([message])):
+                observed = await subscriber.receive()
+
+        self.assertEqual(_Foo("foobar"), observed)
 
 
 class TestRabbitMQBrokerSubscriberBuilder(unittest.TestCase):

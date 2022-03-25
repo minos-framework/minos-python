@@ -1,3 +1,7 @@
+from asyncio import (
+    TimeoutError,
+    wait_for,
+)
 from unittest import (
     IsolatedAsyncioTestCase,
 )
@@ -29,4 +33,5 @@ class IntegrationTests(IsolatedAsyncioTestCase):
 
     async def test_empty_topic(self):
         async with RabbitMQBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"empty_topic"}) as subscriber:
-            await subscriber.receive()
+            with self.assertRaises(TimeoutError):
+                await wait_for(subscriber.receive(), 0.1)
