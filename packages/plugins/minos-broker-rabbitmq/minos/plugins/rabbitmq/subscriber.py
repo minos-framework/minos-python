@@ -22,7 +22,7 @@ from minos.networks import (
     BrokerSubscriber,
     BrokerSubscriberBuilder,
 )
-from minos.plugins.rabbitmq import (
+from .common import (
     RabbitMQBrokerBuilderMixin,
 )
 
