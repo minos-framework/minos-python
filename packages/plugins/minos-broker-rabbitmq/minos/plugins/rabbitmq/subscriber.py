@@ -47,6 +47,8 @@ class RabbitMQBrokerSubscriber(BrokerSubscriber):
         topics: Iterable[str],
         host: Optional[str] = None,
         port: Optional[int] = None,
+        user: Optional[str] = None,
+        password: Optional[str] = None,
         **kwargs,
     ):
         super().__init__(topics, **kwargs)
@@ -55,9 +57,15 @@ class RabbitMQBrokerSubscriber(BrokerSubscriber):
             host = "localhost"
         if port is None:
             port = 5672
+        if user is None:
+            user = "guest"
+        if password is None:
+            password = "guest"
 
         self.host = host
         self.port = port
+        self.user = user
+        self.password = password
 
         self.connection = None
 
@@ -66,7 +74,7 @@ class RabbitMQBrokerSubscriber(BrokerSubscriber):
 
     async def _setup(self) -> None:
         await super()._setup()
-        self.connection = await connect(f"amqp://guest:guest@{self.host}:{self.port}/")
+        self.connection = await connect(f"amqp://{self.user}:{self.password}@{self.host}:{self.port}/")
         await self._start_task()
 
     async def _destroy(self) -> None:

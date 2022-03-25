@@ -65,6 +65,8 @@ class TestRabbitMQBrokerSubscriberBuilder(unittest.TestCase):
         expected = {
             "host": common_config["host"],
             "port": common_config["port"],
+            "user": common_config["user"],
+            "password": common_config["password"],
         }
         self.assertEqual(expected, builder.kwargs)
 

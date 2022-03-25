@@ -23,6 +23,8 @@ class TestRabbitMQBrokerBuilderMixin(unittest.IsolatedAsyncioTestCase):
         expected = {
             "host": common_config["host"],
             "port": common_config["port"],
+            "user": common_config["user"],
+            "password": common_config["password"],
         }
         self.assertEqual(expected, mixin.kwargs)
 
