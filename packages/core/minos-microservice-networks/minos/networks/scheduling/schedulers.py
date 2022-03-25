@@ -162,12 +162,9 @@ class PeriodicTask:
 
         :return: This method never returns.
         """
-        now = current_datetime()
-        await asyncio.sleep(self._crontab.next(now))
 
-        while True:
-            now = current_datetime()
-            await asyncio.gather(asyncio.sleep(self._crontab.next(now)), self.run_once(now))
+        async for now in self._crontab:
+            await self.run_once(now)
 
     @property
     def running(self) -> bool:

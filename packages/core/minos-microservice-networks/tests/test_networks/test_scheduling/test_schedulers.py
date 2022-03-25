@@ -1,4 +1,5 @@
 import asyncio
+import math
 import unittest
 import warnings
 from unittest.mock import (
@@ -107,13 +108,25 @@ class TestPeriodicTask(unittest.IsolatedAsyncioTestCase):
 
     async def test_run_forever(self) -> None:
         with patch("asyncio.sleep") as mock_sleep:
-            run_once_mock = AsyncMock(side_effect=ValueError)
+            run_once_mock = AsyncMock(side_effect=[int, ValueError])
             self.periodic.run_once = run_once_mock
 
             with self.assertRaises(ValueError):
                 await self.periodic.run_forever()
 
             self.assertEqual(2, mock_sleep.call_count)
+            self.assertEqual(2, run_once_mock.call_count)
+
+    async def test_run_forever_once(self) -> None:
+        periodic = PeriodicTask("@reboot", self.fn_mock)
+        with patch("asyncio.sleep", AsyncMock(side_effect=[int, ValueError])) as mock_sleep:
+            run_once_mock = AsyncMock()
+            periodic.run_once = run_once_mock
+
+            with self.assertRaises(ValueError):
+                await periodic.run_forever()
+
+            self.assertEqual([call(0), call(math.inf)], mock_sleep.call_args_list)
             self.assertEqual(1, run_once_mock.call_count)
 
     async def test_run_once(self) -> None:
