@@ -29,10 +29,9 @@ class StocksAggregate(Aggregate[Stocks]):
     """StocksAggregate class."""
 
     @staticmethod
-    async def add_ticker_to_stock(ticker: str) -> UUID:
+    async def add_ticker_to_stock(ticker: str, updated: str) -> UUID:
         """Create a new instance."""
-
-        stocks = await Stocks.create(ticker=ticker, updated="Never", quotes=EntitySet())
+        stocks = await Stocks.create(ticker=ticker, updated=updated, quotes=EntitySet())
         return stocks
 
     @staticmethod

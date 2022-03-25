@@ -27,7 +27,9 @@ class StocksCommandService(CommandService):
     async def set_stock_ticker(self, request: Request):
         event: Event = await request.content()
         for ticker in event["tickers"]:
-            await StocksAggregate.add_ticker_to_stock(ticker["ticker"])
+            if ticker['flag'] == "ticker":
+                now = pendulum.now()
+                await StocksAggregate.add_ticker_to_stock(ticker["ticker"], now.to_datetime_string())
 
     def call_remote(self, ticker, from_: str, to_: str):
         with RESTClient("") as client:
@@ -43,16 +45,18 @@ class StocksCommandService(CommandService):
         if len(tickers) > 0:
             for ticker in tickers:
                 ticker_updated = pendulum.parse(ticker["updated"])
-                results = await self.call_remote(ticker["ticker"],
+                results = self.call_remote(ticker["ticker"],
                                                  now_minus_one_month.to_date_string(),
                                                  now.to_date_string())
                 for result in results:
-                    result_date = pendulum.parse(result["t"])
-                    difference_ticker_result = ticker_updated.diff(result_date).in_hours()
-                    if difference_ticker_result < 0:
+                    result_date = pendulum.from_timestamp(result["t"]/1000)
+                    # difference_ticker_result = ticker_updated.diff(result_date).in_hours()
+                    if ticker_updated < result_date:
                         await StocksAggregate.update_time_ticker(ticker["uuid"], result_date.to_datetime_string())
+                        logger.warning("Date time ticker updated")
                         when = result_date.to_datetime_string()
                         await StocksAggregate.add_quotes(ticker["uuid"], {"close": result['c'],
                                                                           "volume": result['v'],
                                                                           "when": when})
+                        logger.warning("Added new quote")
 
