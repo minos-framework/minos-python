@@ -47,8 +47,8 @@ class RabbitMQBrokerSubscriber(BrokerSubscriber):
         topics: Iterable[str],
         host: Optional[str] = None,
         port: Optional[int] = None,
-        user: Optional[str] = None,
-        password: Optional[str] = None,
+        user: str = None,
+        password: str = None,
         **kwargs,
     ):
         super().__init__(topics, **kwargs)
@@ -57,10 +57,6 @@ class RabbitMQBrokerSubscriber(BrokerSubscriber):
             host = "localhost"
         if port is None:
             port = 5672
-        if user is None:
-            user = "guest"
-        if password is None:
-            password = "guest"
 
         self.host = host
         self.port = port
