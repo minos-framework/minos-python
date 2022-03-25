@@ -17,8 +17,9 @@ from minos.networks import (
     BrokerPublisher,
     InMemoryBrokerPublisherQueue,
     PostgreSqlBrokerPublisherQueue,
-    QueuedBrokerPublisher,
+    QueuedBrokerPublisher, BrokerPublisherBuilder,
 )
+from minos.plugins.rabbitmq.common import RabbitMQBrokerBuilderMixin
 
 logger = logging.getLogger(__name__)
 
@@ -46,19 +47,19 @@ class InMemoryQueuedRabbitMQBrokerPublisher(QueuedBrokerPublisher):
 class RabbitMQBrokerPublisher(BrokerPublisher):
     """RabbitMQ Broker Publisher class."""
 
-    def __init__(self, *args, broker_host: str, broker_port: int, **kwargs):
+    def __init__(self, *args, host: str, port: int, **kwargs):
         super().__init__(*args, **kwargs)
-        self.broker_host = broker_host
-        self.broker_port = broker_port
+        self.broker_host = host
+        self.broker_port = port
 
-    @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> RabbitMQBrokerPublisher:
-        broker_config = config.get_interface_by_name("broker")
-        common_config = broker_config["common"]
-
-        kwargs["broker_host"] = common_config["host"]
-        kwargs["broker_port"] = common_config["port"]
-        return cls(**kwargs)
+    # @classmethod
+    # def _from_config(cls, config: MinosConfig, **kwargs) -> RabbitMQBrokerPublisher:
+    #     broker_config = config.get_interface_by_name("broker")
+    #     common_config = broker_config["common"]
+    #
+    #     kwargs["broker_host"] = common_config["host"]
+    #     kwargs["broker_port"] = common_config["port"]
+    #     return cls(**kwargs)
 
     async def _setup(self) -> None:
         await super()._setup()
@@ -72,3 +73,10 @@ class RabbitMQBrokerPublisher(BrokerPublisher):
             channel = await self.connection.channel()
             queue = await channel.declare_queue(message.topic)
             await channel.default_exchange.publish(Message(message.avro_bytes), routing_key=queue.name)
+
+
+class RabbitMQBrokerPublisherBuilder(BrokerPublisherBuilder[RabbitMQBrokerPublisher], RabbitMQBrokerBuilderMixin):
+    """RabbitMQ Broker Publisher Builder class."""
+
+
+RabbitMQBrokerPublisher.set_builder(RabbitMQBrokerPublisherBuilder)
