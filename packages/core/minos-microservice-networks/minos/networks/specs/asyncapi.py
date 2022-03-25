@@ -17,16 +17,12 @@ from ..requests import (
 
 
 class AsyncAPIService:
-    """TODO"""
-
     def __init__(self, config: Config):
         self.config = config
-        self.spec = BASE_SPEC.copy()
+        self.spec = SPECIFICATION_SCHEMA.copy()
 
     @enroute.rest.command("/spec/asyncapi", "GET")
-    def generate_spec(self, request: Request) -> Response:
-        """TODO"""
-
+    def generate_specification(self, request: Request) -> Response:
         events = self.get_events()
 
         for event in events:
@@ -38,8 +34,6 @@ class AsyncAPIService:
         return Response(self.spec)
 
     def get_events(self) -> list[dict]:
-        """TODO"""
-
         events = list()
         for name in self.config.services:
             decorators = EnrouteAnalyzer(name, self.config).get_broker_event()
@@ -48,7 +42,7 @@ class AsyncAPIService:
         return events
 
 
-BASE_SPEC = {
+SPECIFICATION_SCHEMA = {
     "asyncapi": "2.0.0",
     "info": {"title": None, "version": None},
     "description": None,

@@ -27,7 +27,7 @@ class TestAsyncAPIService(unittest.IsolatedAsyncioTestCase):
     def test_get_enroute(self):
         service = AsyncAPIService(self.config)
         expected = {
-            service.generate_spec.__name__: {RestCommandEnrouteDecorator("/spec/asyncapi", "GET")},
+            service.generate_specification.__name__: {RestCommandEnrouteDecorator("/spec/asyncapi", "GET")},
         }
         observed = EnrouteAnalyzer(service, self.config).get_all()
         self.assertEqual(expected, observed)
@@ -36,7 +36,7 @@ class TestAsyncAPIService(unittest.IsolatedAsyncioTestCase):
         service = AsyncAPIService(self.config)
 
         request = InMemoryRequest()
-        response = service.generate_spec(request)
+        response = service.generate_specification(request)
 
         expected = {
             "TicketAdded": {"publish": {"operationId": None, "message": None}},
