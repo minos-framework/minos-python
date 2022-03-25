@@ -38,17 +38,18 @@ class TestOpenAPIService(unittest.IsolatedAsyncioTestCase):
         request = InMemoryRequest()
         response = service.generate_specification(request)
 
-        expected_paths = {
-            "/order": {
-                "DELETE": {"description": None, "produces": [], "parameters": [], "requestBody": {}, "responses": {}},
-                "GET": {"description": None, "produces": [], "parameters": [], "requestBody": {}, "responses": {}},
-            },
-            "/ticket": {
-                "POST": {"description": None, "produces": [], "parameters": [], "requestBody": {}, "responses": {}}
+        expected = {
+            "openapi": "3.0.0",
+            "info": {"version": "1.0.0", "title": "Minos OpenAPI Spec", "description": "Minos OpenAPI Spec"},
+            "paths": {
+                "/order": {
+                    "delete": {"responses": {"200": {"description": ""}}},
+                    "get": {"responses": {"200": {"description": ""}}},
+                },
+                "/ticket": {"post": {"responses": {"200": {"description": ""}}}},
             },
         }
-
-        self.assertEqual(expected_paths, (await response.content())["paths"])
+        self.assertEqual(expected, await response.content())
 
 
 if __name__ == "__main__":

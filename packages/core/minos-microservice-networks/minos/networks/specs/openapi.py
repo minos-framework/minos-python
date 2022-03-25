@@ -29,7 +29,7 @@ class OpenAPIService:
     def generate_specification(self, request: Request) -> Response:
         for endpoint in self.endpoints:
             url = endpoint["url"]
-            method = endpoint["method"]
+            method = endpoint["method"].lower()
 
             if url in self.spec["paths"]:
                 self.spec["paths"][url][method] = PATH_SCHEMA
@@ -59,18 +59,9 @@ SPECIFICATION_SCHEMA = {
         "title": "Minos OpenAPI Spec",
         "description": "Minos OpenAPI Spec",
     },
-    "host": "TODO",
-    "basePath": "/api/specs/openapi",
-    "schemes": ["http"],
-    "consumes": ["application/json"],
-    "produces": ["application/json"],
     "paths": {},
 }
 
 PATH_SCHEMA = {
-    "description": None,
-    "produces": [],
-    "parameters": [],
-    "requestBody": {},
-    "responses": {},
+    "responses": {"200": {"description": ""}},
 }
