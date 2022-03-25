@@ -20,14 +20,14 @@ from uuid import (
     UUID,
 )
 
-from .....exceptions import (
+from ....exceptions import (
     MinosImportException,
     MinosMalformedAttributeException,
 )
-from .....importlib import (
+from ....importlib import (
     import_module,
 )
-from ....types import (
+from ....model import (
     MissingSentinel,
     ModelType,
     NoneType,

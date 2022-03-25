@@ -14,6 +14,7 @@ from collections.abc import (
     Mapping,
 )
 from typing import (
+    TYPE_CHECKING,
     Any,
     Iterable,
     Iterator,
@@ -38,18 +39,17 @@ from ..meta import (
 from ..protocol import (
     MinosAvroProtocol,
 )
+
+if TYPE_CHECKING:
+    from ..serializers import (
+        DataDecoder,
+        DataEncoder,
+        SchemaDecoder,
+        SchemaEncoder,
+    )
+
 from .fields import (
     Field,
-)
-from .serializers import (
-    AvroDataDecoder,
-    AvroDataEncoder,
-    AvroSchemaDecoder,
-    AvroSchemaEncoder,
-    DataDecoder,
-    DataEncoder,
-    SchemaDecoder,
-    SchemaEncoder,
 )
 from .types import (
     MissingSentinel,
@@ -138,6 +138,12 @@ class Model(Mapping):
         :param data: The avro data of the model.
         :return: A new ``DynamicModel`` instance.
         """
+
+        from ..serializers import (
+            AvroDataDecoder,
+            AvroSchemaDecoder,
+        )
+
         schema_decoder = AvroSchemaDecoder()
         type_ = schema_decoder.build(schema)
 
@@ -258,6 +264,11 @@ class Model(Mapping):
 
         :return: A dictionary object.
         """
+
+        from ..serializers import (
+            AvroSchemaEncoder,
+        )
+
         # noinspection PyTypeChecker
         encoder = AvroSchemaEncoder()
         return encoder.build(self_or_cls)
@@ -268,6 +279,11 @@ class Model(Mapping):
 
         :return: A dictionary object.
         """
+
+        from ..serializers import (
+            AvroDataEncoder,
+        )
+
         encoder = AvroDataEncoder()
         return encoder.build(self)
 

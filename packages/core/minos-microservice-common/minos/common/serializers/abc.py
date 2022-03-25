@@ -13,11 +13,9 @@ from typing import (
 )
 
 if TYPE_CHECKING:
-    from ..abc import (
-        Model,
-    )
-    from ..fields import (
+    from ..model import (
         Field,
+        Model,
     )
 
 

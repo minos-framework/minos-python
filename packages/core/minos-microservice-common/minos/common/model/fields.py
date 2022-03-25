@@ -21,12 +21,6 @@ from ..exceptions import (
     MinosReqAttributeException,
     MinosTypeAttributeException,
 )
-from .serializers import (
-    AvroDataDecoder,
-    AvroDataEncoder,
-    AvroSchemaDecoder,
-    AvroSchemaEncoder,
-)
 from .types import (
     MissingSentinel,
     TypeHintBuilder,
@@ -110,6 +104,11 @@ class Field:
         :param data: new value.
         :return: This method does not return anything.
         """
+
+        from ..serializers import (
+            AvroDataDecoder,
+        )
+
         logger.debug(f"Setting {data!r} value to {self._name!r} field with {self._type!r} type...")
 
         if self._parser is not None:
@@ -138,6 +137,11 @@ class Field:
 
         :return: A dictionary object.
         """
+
+        from ..serializers import (
+            AvroSchemaEncoder,
+        )
+
         encoder = AvroSchemaEncoder()
         return encoder.build(self)
 
@@ -147,6 +151,11 @@ class Field:
 
         :return: A dictionary object.
         """
+
+        from ..serializers import (
+            AvroDataEncoder,
+        )
+
         encoder = AvroDataEncoder()
         return encoder.build(self)
 
@@ -158,6 +167,11 @@ class Field:
         :param value: Field's value.
         :return: A ``Field`` instance.
         """
+
+        from ..serializers import (
+            AvroSchemaDecoder,
+        )
+
         type_val = AvroSchemaDecoder(schema).build()
         return cls(schema["name"], type_val, value)
 

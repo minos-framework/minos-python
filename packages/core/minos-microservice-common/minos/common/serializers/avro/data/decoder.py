@@ -21,7 +21,6 @@ from itertools import (
     zip_longest,
 )
 from typing import (
-    TYPE_CHECKING,
     Any,
     Optional,
     Type,
@@ -34,13 +33,14 @@ from uuid import (
     UUID,
 )
 
-from .....exceptions import (
+from ....exceptions import (
     DataDecoderMalformedTypeException,
     DataDecoderRequiredValueException,
     DataDecoderTypeException,
 )
-from ....types import (
+from ....model import (
     MissingSentinel,
+    Model,
     ModelType,
     NoneType,
     TypeHintBuilder,
@@ -51,11 +51,6 @@ from ....types import (
 from ...abc import (
     DataDecoder,
 )
-
-if TYPE_CHECKING:
-    from ....abc import (
-        Model,
-    )
 
 logger = logging.getLogger(__name__)
 

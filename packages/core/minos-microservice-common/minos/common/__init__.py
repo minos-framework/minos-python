@@ -70,13 +70,7 @@ from .meta import (
     self_or_classmethod,
 )
 from .model import (
-    AvroDataDecoder,
-    AvroDataEncoder,
-    AvroSchemaDecoder,
-    AvroSchemaEncoder,
     BucketModel,
-    DataDecoder,
-    DataEncoder,
     DataTransferObject,
     DeclarativeModel,
     DynamicModel,
@@ -88,8 +82,6 @@ from .model import (
     ModelField,
     ModelType,
     NoneType,
-    SchemaDecoder,
-    SchemaEncoder,
     TypeHintBuilder,
     TypeHintComparator,
     is_model_type,
@@ -113,6 +105,16 @@ from .protocol import (
 )
 from .retries import (
     CircuitBreakerMixin,
+)
+from .serializers import (
+    AvroDataDecoder,
+    AvroDataEncoder,
+    AvroSchemaDecoder,
+    AvroSchemaEncoder,
+    DataDecoder,
+    DataEncoder,
+    SchemaDecoder,
+    SchemaEncoder,
 )
 from .setup import (
     MinosSetup,

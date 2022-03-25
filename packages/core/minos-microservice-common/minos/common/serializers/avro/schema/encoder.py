@@ -13,7 +13,6 @@ from enum import (
     Enum,
 )
 from typing import (
-    TYPE_CHECKING,
     Any,
     Optional,
     Type,
@@ -26,12 +25,14 @@ from uuid import (
     uuid4,
 )
 
-from .....importlib import (
+from ....importlib import (
     classname,
 )
-from ....types import (
+from ....model import (
+    Field,
     FieldType,
     MissingSentinel,
+    Model,
     ModelType,
     NoneType,
     is_model_subclass,
@@ -56,14 +57,6 @@ from .constants import (
     AVRO_TIMESTAMP,
     AVRO_UUID,
 )
-
-if TYPE_CHECKING:
-    from ....abc import (
-        Model,
-    )
-    from ....fields import (
-        Field,
-    )
 
 logger = logging.getLogger(__name__)
 
@@ -145,18 +138,9 @@ class AvroSchemaEncoder(SchemaEncoder):
 
             if isinstance(type_, ModelType):
                 return self._build_model_type(type_, **kwargs)
-
-        from ....abc import (
-            Model,
-        )
-
         if isinstance(type_, Model) or is_model_subclass(type_):
             # noinspection PyTypeChecker
             return self._build_model(type_, **kwargs)
-
-        from ....fields import (
-            Field,
-        )
 
         if isinstance(type_, Field):
             return self._build_field(type_, **kwargs)

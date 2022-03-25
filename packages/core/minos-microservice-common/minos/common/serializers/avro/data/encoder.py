@@ -14,30 +14,23 @@ from decimal import (
     Decimal,
 )
 from typing import (
-    TYPE_CHECKING,
     Any,
 )
 from uuid import (
     UUID,
 )
 
-from .....exceptions import (
+from ....exceptions import (
     MinosMalformedAttributeException,
 )
-from ....types import (
+from ....model import (
+    Field,
     MissingSentinel,
+    Model,
 )
 from ...abc import (
     DataEncoder,
 )
-
-if TYPE_CHECKING:
-    from ....abc import (
-        Model,
-    )
-    from ....fields import (
-        Field,
-    )
 
 logger = logging.getLogger(__name__)
 
@@ -62,16 +55,8 @@ class AvroDataEncoder(DataEncoder):
         if value is None:
             return None
 
-        from ....abc import (
-            Model,
-        )
-
         if isinstance(value, Model):
             return self._build_model(value, **kwargs)
-
-        from ....abc import (
-            Field,
-        )
 
         if isinstance(value, Field):
             return self._build_field(value, **kwargs)
