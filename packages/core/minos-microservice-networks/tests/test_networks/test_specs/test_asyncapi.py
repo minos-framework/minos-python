@@ -38,9 +38,12 @@ class TestAsyncAPIService(unittest.IsolatedAsyncioTestCase):
         request = InMemoryRequest()
         response = service.generate_spec(request)
 
-        expected = ...  # TODO
+        expected = {
+            "TicketAdded": {"publish": {"operationId": None, "message": None}},
+            "TicketDeleted": {"publish": {"operationId": None, "message": None}},
+        }
 
-        self.assertEqual(expected, await response.content())
+        self.assertEqual(expected, (await response.content())["channels"])
 
 
 if __name__ == "__main__":

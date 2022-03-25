@@ -32,7 +32,7 @@ class CommandService:
         return BrokerResponse("update_order")
 
     @enroute.broker.event("TicketAdded")
-    def ticket_added(self, request: Request) -> None:
+    def ticket_added(self, request: Request) -> str:
         return "command_service_ticket_added"
 
     @enroute.periodic.event("@daily")
