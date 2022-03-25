@@ -47,9 +47,11 @@ class QueryService:
 ```
 
 ### Execute query
-Send `post` request to `http://your_ip_address:port/graphql` endpoint:
-```javascript
-{ SimpleQuery }
+Send `post` request to `http://your_ip_address:port/service_name/graphql` endpoint:
+```json
+{
+    "query": "{ SimpleQuery }"
+}
 ```
 
 You will receive:
@@ -164,19 +166,11 @@ class QueryService:
         return Response(User(firstName="Jack", lastName="Johnson", tweets=563, id=str(id), verified=True))
 ```
 
-If you POST `/graphql` endpoint passing the query and variables:
+If you POST `{service_name}/graphql` endpoint passing the query and variables:
 
 ```json
 {
-    "query": "query ($userId: Int!) {
-            order_query(request: $userId) {
-            id
-            firstName
-            lastName
-            tweets
-            verified
-        }
-    }",
+    "query": "query ($userId: Int!) { GetUser(request: $userId) {id firstName lastName tweets verified}}",
     "variables": {
         "userId": 3
     }
@@ -188,7 +182,7 @@ Yoy will receive:
 ```json
 {
     "data": {
-        "order_query": {
+        "GetUser": {
             "id": "3",
             "firstName": "Jack",
             "lastName": "Johnson",
@@ -270,7 +264,7 @@ class User(NamedTuple):
 
 
 class CommandService:
-    @enroute.graphql.command(name="GetUser", argument=GraphQLNonNull(user_input_type), output=user_type)
+    @enroute.graphql.command(name="CreateUser", argument=GraphQLNonNull(user_input_type), output=user_type)
     def test_command(self, request: Request):
         params = await request.content()
         return Response(
@@ -284,21 +278,17 @@ class CommandService:
         )
 ```
 
-If you POST `/graphql` endpoint passing the query and variables:
+If you POST `{service_name}/graphql` endpoint passing the query and variables:
 
 ```json
 {
-    "query": "mutation ($userData: UserInputType!) {
-            createUser(request: $userData) {
-                id, firstName, lastName, tweets, verified
-            }
-        }",
+    "query": "mutation ($userData: UserInputType!) { CreateUser(request: $userData) {id, firstName, lastName, tweets, verified}}",
     "variables": {
         "userData": {
-          "firstName": "John",
-          "lastName":"Doe",
-          "tweets": 42,
-          "verified":true
+            "firstName": "John",
+            "lastName": "Doe",
+            "tweets": 42,
+            "verified": true
         }
     }
 }
@@ -309,7 +299,7 @@ Yoy will receive:
 ```json
 {
     "data": {
-        "createUser": {
+        "CreateUser": {
             "id": "4kjjj43-l23k4l3-325kgaa2",
             "firstName": "John",
             "lastName": "Doe",
@@ -319,6 +309,12 @@ Yoy will receive:
     },
     "errors": []
 }
+```
+
+### Get Schema
+By calling `{service_name}/graphql/schema` with `GET` method, you will receive the schema:
+```text
+"type Query {\n  GetUser(request: Int): UserType\n}\n\ntype UserType {\n  id: ID!\n  firstName: String!\n  lastName: String!\n  tweets: Int\n  verified: Boolean!\n}\n\ntype Mutation {\n  CreateUser(request: UserInputType!): UserType\n}\n\ninput UserInputType {\n  firstName: String!\n  lastName: String!\n  tweets: Int\n  verified: Boolean\n}"
 ```
 
 ## Documentation
