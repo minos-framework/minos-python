@@ -6,6 +6,7 @@ from typing import (
 
 from graphql import (
     ExecutionResult,
+    GraphQLError,
     GraphQLSchema,
     graphql,
     print_schema,
@@ -53,30 +54,41 @@ class GraphQlHandler:
 
         return {"source": source, "variable_values": variables}
 
-    @staticmethod
-    def _build_response_from_graphql(result: ExecutionResult) -> Response:
-        errors = result.errors
-        if errors is None:
-            errors = list()
+    def _build_response_from_graphql(self, result: ExecutionResult) -> Response:
+        content = {"data": result.data}
+        if result.errors is not None:
+            content["errors"] = [err.message for err in result.errors]
+            self._log_errors(result.errors)
 
-        status = 200
-
-        if len(errors):
-            status = 500
-            for error in errors:
-                if error.original_error is None:
-                    logger.error(f"Raised an graphql exception:\n {error.formatted}")
-                else:
-
-                    if isinstance(error.original_error, ResponseException):
-                        status = error.original_error.status
-
-                    error_trace = "".join(traceback.format_tb(error.original_error.__traceback__))
-                    logger.exception(f"Raised a system exception:\n {error_trace}")
-
-        content = {"data": result.data, "errors": [err.message for err in errors]}
+        status = self._get_status(result)
 
         return Response(content, status=status)
+
+    @staticmethod
+    def _get_status(result: ExecutionResult) -> int:
+        status = 200
+        for error in result.errors or []:
+            if error.original_error is None:
+                current = 400
+            elif isinstance(error.original_error, ResponseException):
+                current = error.original_error.status
+            else:
+                current = 500
+            status = max(status, current)
+        return status
+
+    @staticmethod
+    def _log_errors(errors: list[GraphQLError]) -> None:
+        for error in errors:
+            if error.original_error is None:
+                tb = repr(error)
+            else:
+                tb = "".join(traceback.format_tb(error.__traceback__))
+
+            if error.original_error is None or isinstance(error.original_error, ResponseException):
+                logger.error(f"Raised an application exception:\n {tb}")
+            else:
+                logger.exception(f"Raised a system exception:\n {tb}")
 
     async def get_schema(self, request: Request) -> Response:
         """Get schema
