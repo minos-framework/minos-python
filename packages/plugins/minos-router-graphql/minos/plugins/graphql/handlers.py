@@ -71,7 +71,7 @@ class GraphQlHandler:
                     if isinstance(error.original_error, ResponseException):
                         status = error.original_error.status
 
-                    error_trace = ''.join(traceback.format_tb(error.original_error.__traceback__))
+                    error_trace = "".join(traceback.format_tb(error.original_error.__traceback__))
                     logger.exception(f"Raised a system exception:\n {error_trace}")
 
         content = {"data": result.data, "errors": [err.message for err in errors]}
