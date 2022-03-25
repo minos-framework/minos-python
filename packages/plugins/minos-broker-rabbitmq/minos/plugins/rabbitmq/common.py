@@ -21,7 +21,6 @@ class RabbitMQBrokerBuilderMixin(Builder):
         common_config = broker_config.get("common", dict())
 
         self.kwargs |= {
-            "group_id": config.get_name(),
             "host": common_config.get("host"),
             "port": common_config.get("port"),
         }

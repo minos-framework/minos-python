@@ -10,12 +10,8 @@ from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerPublisher,
-    InMemoryBrokerPublisherQueue,
-    PostgreSqlBrokerPublisherQueue,
 )
 from minos.plugins.rabbitmq import (
-    InMemoryQueuedRabbitMQBrokerPublisher,
-    PostgreSqlQueuedRabbitMQBrokerPublisher,
     RabbitMQBrokerPublisher,
 )
 from tests.utils import (
@@ -34,8 +30,8 @@ class TestRabbitMQBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         publisher = RabbitMQBrokerPublisher.from_config(config)
 
         self.assertIsInstance(publisher, RabbitMQBrokerPublisher)
-        self.assertEqual(broker_config["host"], publisher.broker_host)
-        self.assertEqual(broker_config["port"], publisher.broker_port)
+        self.assertEqual(broker_config["host"], publisher.host)
+        self.assertEqual(broker_config["port"], publisher.port)
 
     @patch("minos.plugins.rabbitmq.publisher.connect")
     async def test_send(self, connect_mock):
@@ -52,22 +48,6 @@ class TestRabbitMQBrokerPublisher(unittest.IsolatedAsyncioTestCase):
             await publisher.destroy()
 
             self.assertEqual(1, destroy_mock.call_count)
-
-
-class TestPostgreSqlQueuedRabbitMQBrokerPublisher(unittest.IsolatedAsyncioTestCase):
-    def test_from_config(self):
-        publisher = PostgreSqlQueuedRabbitMQBrokerPublisher.from_config(CONFIG_FILE_PATH)
-        self.assertIsInstance(publisher, PostgreSqlQueuedRabbitMQBrokerPublisher)
-        self.assertIsInstance(publisher.impl, RabbitMQBrokerPublisher)
-        self.assertIsInstance(publisher.queue, PostgreSqlBrokerPublisherQueue)
-
-
-class TestInMemoryQueuedRabbitMQBrokerPublisher(unittest.IsolatedAsyncioTestCase):
-    def test_from_config(self):
-        publisher = InMemoryQueuedRabbitMQBrokerPublisher.from_config(CONFIG_FILE_PATH)
-        self.assertIsInstance(publisher, InMemoryQueuedRabbitMQBrokerPublisher)
-        self.assertIsInstance(publisher.impl, RabbitMQBrokerPublisher)
-        self.assertIsInstance(publisher.queue, InMemoryBrokerPublisherQueue)
 
 
 if __name__ == "__main__":

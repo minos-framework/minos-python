@@ -11,13 +11,8 @@ from minos.common import (
 )
 from minos.networks import (
     BrokerSubscriber,
-    InMemoryBrokerSubscriberQueue,
-    PostgreSqlBrokerSubscriberQueue,
-    QueuedBrokerSubscriber,
 )
 from minos.plugins.rabbitmq import (
-    InMemoryQueuedRabbitMQBrokerSubscriberBuilder,
-    PostgreSqlQueuedRabbitMQBrokerSubscriberBuilder,
     RabbitMQBrokerSubscriber,
     RabbitMQBrokerSubscriberBuilder,
 )
@@ -36,9 +31,8 @@ class TestRabbitMQBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
         config = Config(CONFIG_FILE_PATH)
         broker_config = config.get_interface_by_name("broker")["common"]
         async with RabbitMQBrokerSubscriber.from_config(config, topics={"foo", "bar"}) as subscriber:
-            self.assertEqual(broker_config["host"], subscriber.broker_host)
-            self.assertEqual(broker_config["port"], subscriber.broker_port)
-            self.assertEqual(config.get_name(), subscriber.group_id)
+            self.assertEqual(broker_config["host"], subscriber.host)
+            self.assertEqual(broker_config["port"], subscriber.port)
             self.assertEqual(False, subscriber.remove_topics_on_destroy)
             self.assertEqual({"foo", "bar"}, subscriber.topics)
 
@@ -60,9 +54,8 @@ class TestRabbitMQBrokerSubscriberBuilder(unittest.TestCase):
         common_config = self.config.get_interface_by_name("broker")["common"]
 
         expected = {
-            "group_id": self.config.get_name(),
-            "broker_host": common_config["host"],
-            "broker_port": common_config["port"],
+            "host": common_config["host"],
+            "port": common_config["port"],
         }
         self.assertEqual(expected, builder.kwargs)
 
@@ -73,34 +66,8 @@ class TestRabbitMQBrokerSubscriberBuilder(unittest.TestCase):
 
         self.assertIsInstance(subscriber, RabbitMQBrokerSubscriber)
         self.assertEqual({"one", "two"}, subscriber.topics)
-        self.assertEqual(common_config["host"], subscriber.broker_host)
-        self.assertEqual(common_config["port"], subscriber.broker_port)
-
-
-class TestPostgreSqlQueuedRabbitMQBrokerSubscriberBuilder(unittest.TestCase):
-    def setUp(self) -> None:
-        self.config = Config(CONFIG_FILE_PATH)
-
-    def test_build(self):
-        builder = PostgreSqlQueuedRabbitMQBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
-        subscriber = builder.build()
-
-        self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
-        self.assertIsInstance(subscriber.impl, RabbitMQBrokerSubscriber)
-        self.assertIsInstance(subscriber.queue, PostgreSqlBrokerSubscriberQueue)
-
-
-class TestInMemoryQueuedRabbitMQBrokerSubscriberBuilder(unittest.TestCase):
-    def setUp(self) -> None:
-        self.config = Config(CONFIG_FILE_PATH)
-
-    def test_build(self):
-        builder = InMemoryQueuedRabbitMQBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
-        subscriber = builder.build()
-
-        self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
-        self.assertIsInstance(subscriber.impl, RabbitMQBrokerSubscriber)
-        self.assertIsInstance(subscriber.queue, InMemoryBrokerSubscriberQueue)
+        self.assertEqual(common_config["host"], subscriber.host)
+        self.assertEqual(common_config["port"], subscriber.port)
 
 
 if __name__ == "__main__":
