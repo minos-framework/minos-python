@@ -40,7 +40,7 @@ interfaces:
     subscriber:
       client: tests.utils.FakeBrokerSubscriber
       queue: builtins.int
-      idempotent: builtins.float
+      validator: builtins.float
   periodic:
     port: tests.utils.FakePeriodicPort
 pools:
