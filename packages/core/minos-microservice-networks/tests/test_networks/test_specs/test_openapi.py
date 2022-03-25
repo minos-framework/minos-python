@@ -27,7 +27,7 @@ class TestOpenAPIService(unittest.IsolatedAsyncioTestCase):
     def test_get_enroute(self):
         service = OpenAPIService(self.config)
         expected = {
-            service.generate_spec.__name__: {RestCommandEnrouteDecorator("/spec/openapi", "GET")},
+            service.generate_specification.__name__: {RestCommandEnrouteDecorator("/spec/openapi", "GET")},
         }
         observed = EnrouteAnalyzer(service, self.config).get_all()
         self.assertEqual(expected, observed)
@@ -36,7 +36,7 @@ class TestOpenAPIService(unittest.IsolatedAsyncioTestCase):
         service = OpenAPIService(self.config)
 
         request = InMemoryRequest()
-        response = service.generate_spec(request)
+        response = service.generate_specification(request)
 
         expected_paths = {
             "/order": {

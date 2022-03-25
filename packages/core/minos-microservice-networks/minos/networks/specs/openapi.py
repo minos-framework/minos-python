@@ -22,11 +22,11 @@ from ..requests import (
 class OpenAPIService:
     def __init__(self, config: Config):
         self.config = config
-        self.spec = SPEC_SCHEMA.copy()
+        self.spec = SPECIFICATION_SCHEMA.copy()
 
     # noinspection PyUnusedLocal
     @enroute.rest.command("/spec/openapi", "GET")
-    def generate_spec(self, request: Request) -> Response:
+    def generate_specification(self, request: Request) -> Response:
         for endpoint in self.endpoints:
             url = endpoint["url"]
             method = endpoint["method"]
@@ -52,7 +52,7 @@ class OpenAPIService:
         return endpoints
 
 
-SPEC_SCHEMA = {
+SPECIFICATION_SCHEMA = {
     "openapi": "3.0.0",
     "info": {
         "version": "1.0.0",
