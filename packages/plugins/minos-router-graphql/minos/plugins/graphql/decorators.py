@@ -25,7 +25,7 @@ class GraphQlEnrouteDecorator(EnrouteDecorator, ABC):
         self.output = output
 
     def __iter__(self) -> Iterable:
-        yield from (self.name,)
+        yield from (type(self), self.name,)
 
 
 class GraphQlCommandEnrouteDecorator(GraphQlEnrouteDecorator):
