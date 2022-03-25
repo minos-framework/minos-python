@@ -24,34 +24,26 @@ class OpenAPIService:
 
     def __init__(self, config: Config):
         self.config = config
-        self.spec = BASE_SPEC.copy()
+        self.spec = SPEC_SCHEMA.copy()
 
     # noinspection PyUnusedLocal
     @enroute.rest.command("/spec/openapi", "GET")
     def generate_spec(self, request: Request) -> Response:
         """TODO"""
 
-        endpoints = self.get_endpoints()
-
-        for endpoint in endpoints:
+        for endpoint in self.endpoints:
             url = endpoint["url"]
             method = endpoint["method"]
 
-            endpoint_spec = {
-                "description": None,
-                "produces": [None],
-                "parameters": [None],
-                "responses": {"200": {}, "default": {}},
-            }
-
             if url in self.spec["paths"]:
-                self.spec["paths"][url][method] = endpoint_spec
+                self.spec["paths"][url][method] = PATH_SCHEMA
             else:
-                self.spec["paths"][url] = {method: endpoint_spec}
+                self.spec["paths"][url] = {method: PATH_SCHEMA}
 
-            return Response(self.spec)
+        return Response(self.spec)
 
-    def get_endpoints(self) -> list[dict]:
+    @property
+    def endpoints(self) -> list[dict]:
         """TODO"""
 
         endpoints = list()
@@ -66,14 +58,12 @@ class OpenAPIService:
         return endpoints
 
 
-BASE_SPEC = {
-    "swagger": "2.0",
+SPEC_SCHEMA = {
+    "openapi": "3.0.0",
     "info": {
         "version": "1.0.0",
         "title": "Minos OpenAPI Spec",
-        "description": "An example API",
-        "contact": {"name": "Minos framework"},
-        "license": {"name": "MIT"},
+        "description": "Minos OpenAPI Spec",
     },
     "host": "TODO",
     "basePath": "/api/specs/openapi",
@@ -81,15 +71,12 @@ BASE_SPEC = {
     "consumes": ["application/json"],
     "produces": ["application/json"],
     "paths": {},
-    "definitions": {
-        "Pet": {
-            "type": "object",
-            "required": ["id", "name"],
-            "properties": {
-                "id": {"type": "integer", "format": "int64"},
-                "name": {"type": "string"},
-                "tag": {"type": "string"},
-            },
-        }
-    },
+}
+
+PATH_SCHEMA = {
+    "description": None,
+    "produces": [],
+    "parameters": [],
+    "requestBody": {},
+    "responses": {},
 }
