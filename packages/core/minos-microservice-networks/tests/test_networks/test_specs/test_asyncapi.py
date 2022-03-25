@@ -39,11 +39,12 @@ class TestAsyncAPIService(unittest.IsolatedAsyncioTestCase):
         response = service.generate_specification(request)
 
         expected = {
-            "TicketAdded": {"publish": {"operationId": None, "message": None}},
-            "TicketDeleted": {"publish": {"operationId": None, "message": None}},
+            "asyncapi": "2.3.0",
+            "info": {"title": "", "version": ""},
+            "channels": {"TicketAdded": {}, "TicketDeleted": {}},
         }
 
-        self.assertEqual(expected, (await response.content())["channels"])
+        self.assertEqual(expected, await response.content())
 
 
 if __name__ == "__main__":

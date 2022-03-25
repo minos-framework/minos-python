@@ -27,7 +27,7 @@ class AsyncAPIService:
 
         for event in events:
             topic: str = event["topic"]
-            event_spec = {"publish": {"operationId": None, "message": None}}
+            event_spec = {}
 
             self.spec["channels"][topic] = event_spec
 
@@ -43,9 +43,7 @@ class AsyncAPIService:
 
 
 SPECIFICATION_SCHEMA = {
-    "asyncapi": "2.0.0",
-    "info": {"title": None, "version": None},
-    "description": None,
-    "license": "MIT",
+    "asyncapi": "2.3.0",
+    "info": {"title": "", "version": ""},
     "channels": {},
 }

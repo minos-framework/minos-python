@@ -49,6 +49,7 @@ class TestOpenAPIService(unittest.IsolatedAsyncioTestCase):
                 "/ticket": {"post": {"responses": {"200": {"description": ""}}}},
             },
         }
+
         self.assertEqual(expected, await response.content())
 
 
