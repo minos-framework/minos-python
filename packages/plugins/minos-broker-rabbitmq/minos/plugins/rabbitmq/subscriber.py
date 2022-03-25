@@ -17,17 +17,10 @@ from aio_pika.exceptions import (
     QueueEmpty,
 )
 
-from minos.common import (
-    Config,
-    MinosConfig,
-)
 from minos.networks import (
     BrokerMessage,
     BrokerSubscriber,
     BrokerSubscriberBuilder,
-    InMemoryBrokerSubscriberQueueBuilder,
-    PostgreSqlBrokerSubscriberQueueBuilder,
-    QueuedBrokerSubscriberBuilder,
 )
 from minos.plugins.rabbitmq import (
     RabbitMQBrokerBuilderMixin,
