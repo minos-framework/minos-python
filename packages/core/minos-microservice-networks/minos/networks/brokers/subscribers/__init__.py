@@ -2,12 +2,14 @@ from .abc import (
     BrokerSubscriber,
     BrokerSubscriberBuilder,
 )
-from .idempotent import (
-    BrokerSubscriberDuplicateDetector,
-    IdempotentBrokerSubscriber,
-    InMemoryBrokerSubscriberDuplicateDetector,
-    PostgreSqlBrokerSubscriberDuplicateDetector,
-    PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory,
+from .filtered import (
+    BrokerSubscriberDuplicateValidator,
+    BrokerSubscriberValidator,
+    FilteredBrokerSubscriber,
+    InMemoryBrokerSubscriberDuplicateValidator,
+    PostgreSqlBrokerSubscriberDuplicateValidator,
+    PostgreSqlBrokerSubscriberDuplicateValidatorBuilder,
+    PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
 )
 from .memory import (
     InMemoryBrokerSubscriber,

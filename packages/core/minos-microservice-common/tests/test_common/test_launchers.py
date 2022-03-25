@@ -10,36 +10,47 @@ import uvloop
 
 from minos.common import (
     EntrypointLauncher,
+    InjectableMixin,
+    Port,
     classname,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
     FakeEntrypoint,
     FakeLoop,
 )
 
 
-class Foo:
+class FooPort(Port):
+    """For testing purposes."""
+
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.kwargs = kwargs
+
+    async def _start(self) -> None:
+        """For testing purposes."""
+
+    async def _stop(self, err: Exception = None) -> None:
+        """For testing purposes."""
 
 
 class TestEntrypointLauncher(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self):
         super().setUp()
-        self.injections = {}
-        self.services = [1, 2, Foo, classname(Foo)]
+        self.injections = list()
+        self.ports = [1, 2, FooPort, classname(FooPort)]
         import tests
 
         self.launcher = EntrypointLauncher(
             config=self.config,
             injections=self.injections,
-            services=self.services,
+            ports=self.ports,
             external_modules=[tests],
             external_packages=["tests"],
         )
@@ -48,13 +59,28 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         launcher = EntrypointLauncher.from_config(self.config)
         self.assertIsInstance(launcher, EntrypointLauncher)
         self.assertEqual(self.config, launcher.config)
-        self.assertEqual(dict(), launcher.injector.injections)
-        self.assertEqual(list(), launcher.services)
+        self.assertEqual(12, len(launcher.injections))
+
+        for injection in launcher.injections.values():
+            self.assertIsInstance(injection, InjectableMixin)
+
+        self.assertEqual(3, len(launcher.ports))
+        for port in launcher.ports:
+            self.assertIsInstance(port, Port)
+
+    def test_injections(self):
+        self.assertEqual(dict(), self.launcher.injections)
+
+    def test_ports(self):
+        self.assertEqual([1, 2], self.launcher.ports[:2])
+        self.assertIsInstance(self.launcher.ports[2], FooPort)
+        # noinspection PyUnresolvedReferences
+        self.assertEqual({"config": self.config}, self.launcher.ports[2].kwargs)
 
     def test_services(self):
-        self.assertEqual([1, 2], self.launcher.services[:2])
-        self.assertIsInstance(self.launcher.services[2], Foo)
-        self.assertEqual({"config": self.config}, self.launcher.services[2].kwargs)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            self.assertEqual(self.launcher.ports, self.launcher.services)
 
     async def test_entrypoint(self):
         mock_setup = AsyncMock()
@@ -81,7 +107,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
     async def test_setup(self):
         mock = AsyncMock()
-        self.launcher.injector.wire = mock
+        self.launcher.injector.wire_and_setup_injections = mock
         await self.launcher.setup()
 
         self.assertEqual(1, mock.call_count)
@@ -102,11 +128,11 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         await self.launcher.destroy()
 
     async def test_destroy(self):
-        self.launcher.injector.wire = AsyncMock()
+        self.launcher.injector.wire_and_setup_injections = AsyncMock()
         await self.launcher.setup()
 
         mock = AsyncMock()
-        self.launcher.injector.unwire = mock
+        self.launcher.injector.unwire_and_destroy_injections = mock
         await self.launcher.destroy()
 
         self.assertEqual(1, mock.call_count)
@@ -137,7 +163,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
 class TestEntryPointLauncherLoop(unittest.TestCase):
     def test_loop(self):
-        launcher = EntrypointLauncher.from_config(BASE_PATH / "test_config.yml")
+        launcher = EntrypointLauncher.from_config(CONFIG_FILE_PATH)
         self.assertIsInstance(launcher.loop, uvloop.Loop)
 
 

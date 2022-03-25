@@ -11,7 +11,7 @@ from minos.common import (
     SetupMixin,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
 )
 
 
@@ -64,26 +64,27 @@ class TestSetupMixin(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, instance.destroy_calls)
 
     def test_from_config(self):
-        config = Config(BASE_PATH / "test_config.yml")
+        config = Config(CONFIG_FILE_PATH)
         _SetupMixin.from_config(config)
 
     def test_from_config_file_path(self):
-        _SetupMixin.from_config(BASE_PATH / "test_config.yml")
+        _SetupMixin.from_config(CONFIG_FILE_PATH)
 
     async def test_from_config_with_dependency_injection(self):
-        config = Config(BASE_PATH / "test_config.yml")
+        config = Config(CONFIG_FILE_PATH)
         injector = DependencyInjector(config)
-        await injector.wire(modules=[sys.modules[__name__]])
+        await injector.wire_and_setup_injections(modules=[sys.modules[__name__]])
 
         _SetupMixin.from_config()
 
-        await injector.unwire()
+        await injector.unwire_and_destroy_injections()
 
     def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):
             _SetupMixin.from_config()
 
     def test_del(self):
+        # noinspection PyUnusedLocal
         instance = _SetupMixin(already_setup=True)
         with self.assertWarns(ResourceWarning):
             del instance

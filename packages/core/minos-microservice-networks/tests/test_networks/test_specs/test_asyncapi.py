@@ -5,7 +5,7 @@ from minos.common import (
 )
 from minos.networks import (
     AsyncAPIService,
-    EnrouteAnalyzer,
+    EnrouteCollector,
     InMemoryRequest,
     RestCommandEnrouteDecorator,
 )
@@ -29,7 +29,7 @@ class TestAsyncAPIService(unittest.IsolatedAsyncioTestCase):
         expected = {
             service.generate_specification.__name__: {RestCommandEnrouteDecorator("/spec/asyncapi", "GET")},
         }
-        observed = EnrouteAnalyzer(service, self.config).get_all()
+        observed = EnrouteCollector(service, self.config).get_all()
         self.assertEqual(expected, observed)
 
     async def test_generate_spec(self):

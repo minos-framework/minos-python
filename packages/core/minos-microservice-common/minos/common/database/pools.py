@@ -20,8 +20,14 @@ from psycopg2 import (
     OperationalError,
 )
 
+from ..injections import (
+    Injectable,
+)
+from ..locks import (
+    LockPool,
+)
 from ..pools import (
-    MinosPool,
+    Pool,
 )
 from .locks import (
     PostgreSqlLock,
@@ -30,20 +36,40 @@ from .locks import (
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlPool(MinosPool[ContextManager]):
+@Injectable("postgresql_pool")
+class PostgreSqlPool(Pool[ContextManager]):
     """Postgres Pool class."""
 
-    def __init__(self, host: str, port: int, database: str, user: str, password: str, *args, **kwargs):
+    def __init__(
+        self,
+        database: str,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
+        user: Optional[str] = None,
+        password: Optional[str] = None,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
+
+        if host is None:
+            host = "localhost"
+        if port is None:
+            port = 5432
+        if user is None:
+            user = "postgres"
+        if password is None:
+            password = ""
+
+        self.database = database
         self.host = host
         self.port = port
-        self.database = database
         self.user = user
         self.password = password
 
     @classmethod
     def _from_config(cls, *args, config, **kwargs):
-        return cls(*args, **config.repository._asdict(), **kwargs)
+        return cls(*args, **config.get_default_database(), **kwargs)
 
     async def _create_instance(self) -> Optional[Connection]:
         try:
@@ -76,7 +102,7 @@ class PostgreSqlPool(MinosPool[ContextManager]):
         return not instance.closed
 
 
-class PostgreSqlLockPool(PostgreSqlPool):
+class PostgreSqlLockPool(LockPool, PostgreSqlPool):
     """Postgres Locking Pool class."""
 
     def acquire(self, key: Hashable, *args, **kwargs) -> PostgreSqlLock:

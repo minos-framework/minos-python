@@ -14,7 +14,8 @@ from typing import (
 
 from minos.common import (
     Config,
-    MinosPool,
+    Injectable,
+    Pool,
 )
 
 from .clients import (
@@ -27,7 +28,8 @@ from .messages import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerClientPool(MinosPool):
+@Injectable("broker_pool")
+class BrokerClientPool(Pool):
     """Broker Client Pool class."""
 
     def __init__(

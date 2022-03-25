@@ -4,7 +4,7 @@ from minos.common import (
     Config,
 )
 from minos.networks import (
-    EnrouteAnalyzer,
+    EnrouteCollector,
     InMemoryRequest,
     OpenAPIService,
     RestCommandEnrouteDecorator,
@@ -29,7 +29,7 @@ class TestOpenAPIService(unittest.IsolatedAsyncioTestCase):
         expected = {
             service.generate_specification.__name__: {RestCommandEnrouteDecorator("/spec/openapi", "GET")},
         }
-        observed = EnrouteAnalyzer(service, self.config).get_all()
+        observed = EnrouteCollector(service, self.config).get_all()
         self.assertEqual(expected, observed)
 
     async def test_generate_spec(self):

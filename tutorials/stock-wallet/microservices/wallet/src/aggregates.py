@@ -1,3 +1,4 @@
+import logging
 from uuid import (
     UUID,
 )
@@ -12,15 +13,17 @@ from minos.aggregate import (
 
 class Ticker(Entity):
     ticker: str
-    is_crypto: bool
+    flag: str
 
 
-# LTSfWDXx9N2zMRNPyy_r
 class Wallet(RootEntity):
     """Wallet RootEntity class."""
 
     wallet_name: str
     tickers: EntitySet[Ticker]
+
+
+logger = logging.getLogger(__name__)
 
 
 class WalletAggregate(Aggregate[Wallet]):
@@ -33,10 +36,11 @@ class WalletAggregate(Aggregate[Wallet]):
         return root.uuid
 
     @staticmethod
-    async def add_ticker(wallet_uudi: str, ticker_value: str) -> UUID:
+    async def add_ticker(wallet_uudi: str, ticker_value: str, flag: str) -> UUID:
         """Create a new instance."""
         wallet = await Wallet.get(wallet_uudi)
-        ticker = Ticker(ticker=ticker_value, is_crypto=False)
+        ticker = Ticker(ticker=ticker_value, flag=flag)
+        logger.warning("Added following information ticker {}, {}, {}".format(wallet_uudi, ticker_value, is_crypto))
         wallet.tickers.add(ticker)
         await wallet.save()
         return ticker.uuid

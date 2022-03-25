@@ -1,0 +1,68 @@
+service:
+    name: Order
+    aggregate: builtins.int
+    services:
+        - tests.utils.FakePeriodicPort
+        - tests.utils.FakeHttpPort
+        - tests.utils.FakeBrokerPort
+    injections:
+        - tests.utils.FakeLockPool
+        - tests.utils.FakeDatabasePool
+        - tests.utils.FakeBrokerClientPool
+        - tests.utils.FakeHttpConnector
+        - tests.utils.FakeBrokerPublisher
+        - tests.utils.FakeBrokerSubscriberBuilder
+        - tests.utils.FakeEventRepository
+        - tests.utils.FakeSnapshotRepository
+        - tests.utils.FakeTransactionRepository
+        - tests.utils.FakeDiscoveryConnector
+        - tests.utils.FakeSagaManager
+        - tests.utils.FakeCustomInjection
+repository:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+query_repository:
+    database: order_query_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+snapshot:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+rest:
+    host: localhost
+    port: 8900
+broker:
+    host: localhost
+    port: 9092
+    queue:
+        database: order_db
+        user: minos
+        password: min0s
+        host: localhost
+        port: 5432
+        records: 10
+        retry: 2
+routers:
+    - builtins.set
+    - builtins.dict
+services:
+    - builtins.float
+    - builtins.int
+middleware:
+    - builtins.list
+    - builtins.tuple
+saga:
+    storage:
+        path: "./order.lmdb"
+discovery:
+    client: builtins.str
+    host: localhost
+    port: 8080

@@ -18,13 +18,10 @@ from uuid import (
     UUID,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     Config,
+    Inject,
+    Injectable,
     NotProvidedException,
     SetupMixin,
 )
@@ -58,20 +55,19 @@ from .messages import (
 logger = logging.getLogger(__name__)
 
 
+@Injectable("saga_manager")
 class SagaManager(SetupMixin):
     """Saga Manager implementation class.
 
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
     """
 
-    @inject
-    def __init__(
-        self, storage: SagaExecutionStorage, broker_pool: BrokerClientPool = Provide["broker_pool"], *args, **kwargs
-    ):
+    @Inject()
+    def __init__(self, storage: SagaExecutionStorage, broker_pool: BrokerClientPool, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.storage = storage
 
-        if broker_pool is None or isinstance(broker_pool, Provide):
+        if broker_pool is None:
             raise NotProvidedException("A handler pool instance is required.")
 
         self.broker_pool = broker_pool

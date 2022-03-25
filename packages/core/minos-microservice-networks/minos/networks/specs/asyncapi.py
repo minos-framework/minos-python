@@ -7,7 +7,7 @@ from minos.common import (
 )
 
 from ..decorators import (
-    EnrouteAnalyzer,
+    EnrouteCollector,
     enroute,
 )
 from ..requests import (
@@ -35,8 +35,8 @@ class AsyncAPIService:
 
     def get_events(self) -> list[dict]:
         events = list()
-        for name in self.config.services:
-            decorators = EnrouteAnalyzer(name, self.config).get_broker_event()
+        for name in self.config.get_services():
+            decorators = EnrouteCollector(name, self.config).get_broker_event()
             events += [{"topic": decorator.topic} for decorator in set(chain(*decorators.values()))]
 
         return events

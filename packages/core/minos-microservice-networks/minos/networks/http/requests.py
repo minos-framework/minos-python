@@ -119,7 +119,7 @@ class HttpResponse(Response, ABC):
         if response is None:
             return cls()
 
-        return cls(response._data)
+        return cls(response._data, status=response.status)
 
 
 class HttpResponseException(ResponseException):

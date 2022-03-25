@@ -41,7 +41,8 @@ class WalletCommandService(CommandService):
             content = await request.content()
             wallet_uuid = content["wallet"]
             ticker = content["ticker"]
-            uuid = await WalletAggregate.add_ticker(wallet_uuid, ticker)
-            return Response({"uuid": uuid, "ticker": ticker})
+            flag = content["flag"]
+            uuid = await WalletAggregate.add_ticker(wallet_uuid, ticker, flag)
+            return Response({"uuid": uuid, "ticker": ticker, "flag": flag})
         except Exception as exc:
             raise ResponseException(f"An error occurred during Wallet creation: {exc}")

@@ -27,6 +27,7 @@ from typing import (
 
 from minos.common import (
     Config,
+    Injectable,
     SetupMixin,
 )
 
@@ -51,22 +52,31 @@ RawResponse = TypeVar("RawResponse")
 logger = logging.getLogger(__name__)
 
 
+@Injectable("http_connector")
 class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
     """Http Application base class."""
 
-    def __init__(self, host: str, port: int, adapter: HttpAdapter, **kwargs):
+    def __init__(self, adapter: HttpAdapter, host: Optional[str] = None, port: Optional[int] = None, **kwargs):
         super().__init__(**kwargs)
+        if host is None:
+            host = "0.0.0.0"
+        if port is None:
+            port = 8080
 
+        self._adapter = adapter
         self._host = host
         self._port = port
-        self._adapter = adapter
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> HttpConnector:
-        host = config.rest.host
-        port = config.rest.port
+        http_config = config.get_interface_by_name("http")
+        connector_config = http_config["connector"]
+
+        host = connector_config.get("host")
+        port = connector_config.get("port")
         adapter = HttpAdapter.from_config(config)
-        return cls(host, port, adapter)
+
+        return cls(adapter, host, port)
 
     async def start(self) -> None:
         """Start the connector.

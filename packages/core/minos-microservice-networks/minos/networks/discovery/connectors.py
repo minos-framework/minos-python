@@ -14,18 +14,17 @@ from operator import (
 )
 from typing import (
     Any,
-    Type,
+    Optional,
 )
 
 from minos.common import (
     Config,
-    MinosImportException,
+    Injectable,
     SetupMixin,
-    import_module,
 )
 
 from ..decorators import (
-    EnrouteAnalyzer,
+    EnrouteCollector,
 )
 from ..exceptions import (
     MinosInvalidDiscoveryClient,
@@ -40,11 +39,23 @@ from .clients import (
 logger = logging.getLogger(__name__)
 
 
+@Injectable("discovery")
 class DiscoveryConnector(SetupMixin):
     """Discovery Connector class."""
 
-    def __init__(self, client, name: str, host: str, port: int, endpoints: list[dict[str, Any]], *args, **kwargs):
+    def __init__(
+        self,
+        client: DiscoveryClient,
+        name: str,
+        endpoints: list[dict[str, Any]],
+        host: str,
+        port: Optional[int] = None,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
+        if port is None:
+            port = 8080
 
         self.client = client
 
@@ -55,32 +66,43 @@ class DiscoveryConnector(SetupMixin):
 
     @classmethod
     def _from_config(cls, *args, config: Config, **kwargs) -> DiscoveryConnector:
-        client_cls = cls._client_cls_from_config(config)
-        client = client_cls(host=config.discovery.host, port=config.discovery.port)
-        port = config.rest.port
-        name = config.service.name
+        client = cls._client_from_config(config)
+        port = cls._port_from_config(config)
+        name = config.get_name()
         host = get_host_ip()
         endpoints = cls._endpoints_from_config(config)
 
-        return cls(client, name, host, port, endpoints, *args, **kwargs)
+        return cls(client, name, endpoints, host, port, *args, **kwargs)
+
+    @classmethod
+    def _client_from_config(cls, config: Config) -> DiscoveryClient:
+        discovery_config = config.get_discovery()
+
+        client_cls = cls._client_cls_from_config(discovery_config)
+        client_host = discovery_config.get("host")
+        client_port = discovery_config.get("port")
+
+        return client_cls(host=client_host, port=client_port)
 
     @staticmethod
-    def _client_cls_from_config(config: Config) -> Type[DiscoveryClient]:
-        try:
-            # noinspection PyTypeChecker
-            client_cls: type = import_module(config.discovery.client)
-        except MinosImportException:
-            raise MinosInvalidDiscoveryClient(f"{config.discovery.client} could not be imported.")
-
+    def _client_cls_from_config(discovery_config: dict[str, Any]) -> type[DiscoveryClient]:
+        client_cls = discovery_config["client"]
         if not isclass(client_cls) or not issubclass(client_cls, DiscoveryClient):
-            raise MinosInvalidDiscoveryClient(f"{config.discovery.client} not supported.")
+            raise MinosInvalidDiscoveryClient(f"{client_cls!r} not supported.")
         return client_cls
+
+    @staticmethod
+    def _port_from_config(config: Config) -> Optional[int]:
+        http_config = config.get_interface_by_name("http")
+        connector_config = http_config["connector"]
+        port = connector_config.get("port")
+        return port
 
     @staticmethod
     def _endpoints_from_config(config: Config) -> list[dict[str, Any]]:
         endpoints = list()
-        for name in config.services:
-            decorators = EnrouteAnalyzer(name, config).get_rest_command_query()
+        for name in config.get_services():
+            decorators = EnrouteCollector(name, config).get_rest_command_query()
             endpoints += [
                 {"url": decorator.url, "method": decorator.method} for decorator in set(chain(*decorators.values()))
             ]

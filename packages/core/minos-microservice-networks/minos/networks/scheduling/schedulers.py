@@ -21,9 +21,7 @@ from typing import (
     Union,
 )
 
-from crontab import (
-    CronTab,
-)
+from crontab import CronTab as CronTabImpl
 
 from minos.common import (
     Config,
@@ -32,10 +30,13 @@ from minos.common import (
 )
 
 from ..decorators import (
-    EnrouteBuilder,
+    EnrouteFactory,
 )
 from ..requests import (
     ResponseException,
+)
+from .crontab import (
+    CronTab,
 )
 from .requests import (
     ScheduledRequest,
@@ -58,7 +59,7 @@ class PeriodicTaskScheduler(SetupMixin):
 
     @staticmethod
     def _tasks_from_config(config: Config, **kwargs) -> set[PeriodicTask]:
-        builder = EnrouteBuilder(*config.services, middleware=config.middleware)
+        builder = EnrouteFactory(*config.get_services(), middleware=config.get_middleware())
         decorators = builder.get_periodic_event(config=config, **kwargs)
         tasks = {PeriodicTask(decorator.crontab, fn) for decorator, fn in decorators.items()}
         return tasks
@@ -93,8 +94,8 @@ class PeriodicTask:
 
     _task: Optional[asyncio.Task]
 
-    def __init__(self, crontab: Union[str, CronTab], fn: Callable[[ScheduledRequest], Awaitable[None]]):
-        if isinstance(crontab, str):
+    def __init__(self, crontab: Union[str, CronTab, CronTabImpl], fn: Callable[[ScheduledRequest], Awaitable[None]]):
+        if not isinstance(crontab, CronTab):
             crontab = CronTab(crontab)
 
         self._crontab = crontab
@@ -161,12 +162,9 @@ class PeriodicTask:
 
         :return: This method never returns.
         """
-        now = current_datetime()
-        await asyncio.sleep(self._crontab.next(now))
 
-        while True:
-            now = current_datetime()
-            await asyncio.gather(asyncio.sleep(self._crontab.next(now)), self.run_once(now))
+        async for now in self._crontab:
+            await self.run_once(now)
 
     @property
     def running(self) -> bool:

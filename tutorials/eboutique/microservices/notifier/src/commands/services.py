@@ -33,7 +33,7 @@ class NotifierCommandService(CommandService):
             port = 465
             content = await request.content()  # get the request payload
             email_from = "andrea@clariteia.com"
-            password = "khegjvbpqfrrlvgd"
+            password = ""
             email_to = content["to"]
             message = MIMEMultipart("alternative")
             message["Subject"] = content["subject"]

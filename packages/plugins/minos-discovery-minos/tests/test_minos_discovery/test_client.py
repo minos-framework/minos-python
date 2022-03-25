@@ -28,6 +28,11 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.client = MinosDiscoveryClient("123.456.123.1", 1234, circuit_breaker_time=0.1)
 
+    def test_constructor(self):
+        client = MinosDiscoveryClient()
+        self.assertEqual("localhost", client.host)
+        self.assertEqual(5567, client.port)
+
     def test_route(self):
         # noinspection HttpUrlsUsage
         self.assertEqual("http://123.456.123.1:1234", self.client.route)

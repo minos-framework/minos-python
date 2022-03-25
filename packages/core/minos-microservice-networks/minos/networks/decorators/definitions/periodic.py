@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 from abc import (
     ABC,
 )
@@ -5,12 +9,9 @@ from collections.abc import (
     Iterable,
 )
 from typing import (
+    TYPE_CHECKING,
     Final,
     Union,
-)
-
-from crontab import (
-    CronTab,
 )
 
 from .abc import (
@@ -20,17 +21,28 @@ from .kinds import (
     EnrouteDecoratorKind,
 )
 
+if TYPE_CHECKING:
+    from crontab import CronTab as CronTabImpl
+
+    from ...scheduling import (
+        CronTab,
+    )
+
 
 class PeriodicEnrouteDecorator(EnrouteDecorator, ABC):
     """Periodic Enroute class"""
 
-    def __init__(self, crontab: Union[str, CronTab]):
-        if isinstance(crontab, str):
+    def __init__(self, crontab: Union[str, CronTab, CronTabImpl]):
+        from ...scheduling import (
+            CronTab,
+        )
+
+        if not isinstance(crontab, CronTab):
             crontab = CronTab(crontab)
         self.crontab = crontab
 
     def __iter__(self) -> Iterable:
-        yield from (self.crontab.matchers,)
+        yield from (self.crontab,)
 
 
 class PeriodicEventEnrouteDecorator(PeriodicEnrouteDecorator):

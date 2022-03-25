@@ -112,6 +112,13 @@ class TestHttpResponse(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("application/json", observed.content_type)
         self.assertEqual({"foo": "bar"}, await observed.content())
 
+    async def test_status_from_response(self):
+        response = Response({"foo": "bar"}, status=401)
+        observed = _HttpResponse.from_response(response)
+        self.assertEqual("application/json", observed.content_type)
+        self.assertEqual({"foo": "bar"}, await observed.content())
+        self.assertEqual(401, observed.status)
+
     def test_from_response_already(self):
         response = _HttpResponse()
         observed = _HttpResponse.from_response(response)

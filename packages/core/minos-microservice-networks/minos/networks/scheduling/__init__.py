@@ -1,3 +1,6 @@
+from .crontab import (
+    CronTab,
+)
 from .ports import (
     PeriodicTaskSchedulerPort,
 )

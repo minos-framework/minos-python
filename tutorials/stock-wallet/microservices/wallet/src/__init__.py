@@ -3,8 +3,8 @@ __email__ = ""
 __version__ = "0.1.0"
 
 from .aggregates import (
+    Ticker,
     Wallet,
-    Ticker
 )
 from .cli import (
     main,
@@ -13,6 +13,6 @@ from .commands import (
     WalletCommandService,
 )
 from .queries import (
+    WalletQueryService,
     WalletQueryServiceRepository,
-    WalletQueryService
 )

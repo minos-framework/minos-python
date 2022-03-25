@@ -5,6 +5,7 @@ from .collections import (
     BrokerQueue,
     InMemoryBrokerQueue,
     PostgreSqlBrokerQueue,
+    PostgreSqlBrokerQueueBuilder,
 )
 from .dispatchers import (
     BrokerDispatcher,
@@ -30,6 +31,7 @@ from .pools import (
 )
 from .publishers import (
     BrokerPublisher,
+    BrokerPublisherBuilder,
     BrokerPublisherQueue,
     InMemoryBrokerPublisher,
     InMemoryBrokerPublisherQueue,
@@ -40,17 +42,19 @@ from .publishers import (
 from .subscribers import (
     BrokerSubscriber,
     BrokerSubscriberBuilder,
-    BrokerSubscriberDuplicateDetector,
+    BrokerSubscriberDuplicateValidator,
     BrokerSubscriberQueue,
     BrokerSubscriberQueueBuilder,
-    IdempotentBrokerSubscriber,
+    BrokerSubscriberValidator,
+    FilteredBrokerSubscriber,
     InMemoryBrokerSubscriber,
     InMemoryBrokerSubscriberBuilder,
-    InMemoryBrokerSubscriberDuplicateDetector,
+    InMemoryBrokerSubscriberDuplicateValidator,
     InMemoryBrokerSubscriberQueue,
     InMemoryBrokerSubscriberQueueBuilder,
-    PostgreSqlBrokerSubscriberDuplicateDetector,
-    PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory,
+    PostgreSqlBrokerSubscriberDuplicateValidator,
+    PostgreSqlBrokerSubscriberDuplicateValidatorBuilder,
+    PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
     PostgreSqlBrokerSubscriberQueue,
     PostgreSqlBrokerSubscriberQueueBuilder,
     PostgreSqlBrokerSubscriberQueueQueryFactory,

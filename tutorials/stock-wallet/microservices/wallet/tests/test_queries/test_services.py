@@ -1,7 +1,6 @@
 import sys
 import unittest
 
-
 from src import (
     WalletQueryService,
 )
@@ -35,7 +34,6 @@ class TestWalletQueryService(unittest.IsolatedAsyncioTestCase):
     #     response_wallets = await service.get_wallets()
     #     self.assertIsInstance(response_wallets, Response)
     #     response_content = await response_wallets.content()
-
 
 
 if __name__ == "__main__":

@@ -1,0 +1,72 @@
+version: 2
+name: Order
+injections:
+  - tests.utils.FakeCustomInjection
+serializer:
+  client: tests.utils.FakeSerializer
+databases:
+  default:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+  saga:
+    path: "./order.lmdb"
+  query:
+    database: order_query_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+interfaces:
+  http:
+    port: tests.utils.FakeHttpPort
+    connector:
+      client: tests.utils.FakeHttpConnector
+      host: localhost
+      port: 8900
+  broker:
+    port: tests.utils.FakeBrokerPort
+    common:
+      host: localhost
+      port: 9092
+      queue:
+        records: 10
+        retry: 2
+    publisher:
+      client: tests.utils.FakeBrokerPublisher
+      queue: builtins.int
+    subscriber:
+      client: tests.utils.FakeBrokerSubscriber
+      queue: builtins.int
+      validator: builtins.float
+  periodic:
+    port: tests.utils.FakePeriodicPort
+pools:
+  lock: tests.utils.FakeLockPool
+  database: tests.utils.FakeDatabasePool
+  broker: tests.utils.FakeBrokerClientPool
+discovery:
+  connector: tests.utils.FakeDiscoveryConnector
+  client: builtins.str
+  host: localhost
+  port: 8080
+saga:
+  manager: tests.utils.FakeSagaManager
+aggregate:
+  entities:
+    - builtins.int
+  repositories:
+    event: tests.utils.FakeEventRepository
+    snapshot: tests.utils.FakeSnapshotRepository
+    transaction: tests.utils.FakeTransactionRepository
+routers:
+  - builtins.set
+  - builtins.dict
+middleware:
+  - builtins.list
+  - builtins.tuple
+services:
+  - builtins.float
+  - builtins.int

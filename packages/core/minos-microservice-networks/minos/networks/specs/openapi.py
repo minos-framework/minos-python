@@ -10,7 +10,7 @@ from minos.common import (
 )
 
 from ..decorators import (
-    EnrouteAnalyzer,
+    EnrouteCollector,
     enroute,
 )
 from ..requests import (
@@ -41,8 +41,8 @@ class OpenAPIService:
     @property
     def endpoints(self) -> list[dict]:
         endpoints = list()
-        for name in self.config.services:
-            decorators = EnrouteAnalyzer(name, self.config).get_rest_command_query()
+        for name in self.config.get_services():
+            decorators = EnrouteCollector(name, self.config).get_rest_command_query()
             endpoints += [
                 {"url": decorator.url, "method": decorator.method} for decorator in set(chain(*decorators.values()))
             ]

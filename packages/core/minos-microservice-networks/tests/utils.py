@@ -1,6 +1,3 @@
-from collections.abc import (
-    Awaitable,
-)
 from datetime import (
     timedelta,
 )
@@ -14,7 +11,6 @@ from typing import (
     Any,
     Callable,
     Optional,
-    Union,
 )
 
 from minos.common import (
@@ -176,6 +172,8 @@ class FakeService:
 
 
 class FakeServiceWithGetEnroute:
+    """For testing purposes."""
+
     @staticmethod
     def __get_enroute__(*args, **kwargs) -> dict[str, set[EnrouteDecorator]]:
         return {"create_foo": {enroute.broker.command(topic="CreateFoo")}}

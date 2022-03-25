@@ -1,4 +1,5 @@
 import asyncio
+import math
 import unittest
 import warnings
 from unittest.mock import (
@@ -8,28 +9,25 @@ from unittest.mock import (
     patch,
 )
 
-from crontab import (
-    CronTab,
-)
-
 from minos.common import (
     Config,
     current_datetime,
 )
 from minos.networks import (
+    CronTab,
     PeriodicTask,
     PeriodicTaskScheduler,
     ScheduledRequest,
     ScheduledResponseException,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
 )
 
 
 class TestPeriodicTaskScheduler(unittest.IsolatedAsyncioTestCase):
     def test_from_config(self):
-        config = Config(BASE_PATH / "test_config.yml")
+        config = Config(CONFIG_FILE_PATH)
         scheduler = PeriodicTaskScheduler.from_config(config)
         self.assertEqual(1, len(scheduler.tasks))
         self.assertTrue(all(map(lambda t: isinstance(t, PeriodicTask), scheduler.tasks)))
@@ -81,7 +79,7 @@ class TestPeriodicTask(unittest.IsolatedAsyncioTestCase):
         self.periodic = PeriodicTask("@daily", self.fn_mock)
 
     def test_crontab(self) -> None:
-        self.assertEqual(CronTab("@daily").matchers, self.periodic.crontab.matchers)
+        self.assertEqual(CronTab("@daily"), self.periodic.crontab)
 
     def test_fn(self) -> None:
         self.assertEqual(self.fn_mock, self.periodic.fn)
@@ -110,13 +108,25 @@ class TestPeriodicTask(unittest.IsolatedAsyncioTestCase):
 
     async def test_run_forever(self) -> None:
         with patch("asyncio.sleep") as mock_sleep:
-            run_once_mock = AsyncMock(side_effect=ValueError)
+            run_once_mock = AsyncMock(side_effect=[int, ValueError])
             self.periodic.run_once = run_once_mock
 
             with self.assertRaises(ValueError):
                 await self.periodic.run_forever()
 
             self.assertEqual(2, mock_sleep.call_count)
+            self.assertEqual(2, run_once_mock.call_count)
+
+    async def test_run_forever_once(self) -> None:
+        periodic = PeriodicTask("@reboot", self.fn_mock)
+        with patch("asyncio.sleep", AsyncMock(side_effect=[int, ValueError])) as mock_sleep:
+            run_once_mock = AsyncMock()
+            periodic.run_once = run_once_mock
+
+            with self.assertRaises(ValueError):
+                await periodic.run_forever()
+
+            self.assertEqual([call(0), call(math.inf)], mock_sleep.call_args_list)
             self.assertEqual(1, run_once_mock.call_count)
 
     async def test_run_once(self) -> None:

@@ -16,13 +16,9 @@ from typing import (
     Optional,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
     Config,
+    Inject,
     NotProvidedException,
     SetupMixin,
 )
@@ -61,28 +57,28 @@ class BrokerHandler(SetupMixin):
         return cls(dispatcher, subscriber, **kwargs)
 
     @staticmethod
-    @inject
+    @Inject()
     def _get_dispatcher(
         config: Config,
         dispatcher: Optional[BrokerDispatcher] = None,
-        broker_dispatcher: Optional[BrokerDispatcher] = Provide["broker_dispatcher"],
+        broker_dispatcher: Optional[BrokerDispatcher] = None,
         **kwargs,
     ) -> BrokerDispatcher:
         if dispatcher is None:
             dispatcher = broker_dispatcher
-        if dispatcher is None or isinstance(dispatcher, Provide):
+        if dispatcher is None:
             dispatcher = BrokerDispatcher.from_config(config, **kwargs)
         return dispatcher
 
     @staticmethod
-    @inject
+    @Inject()
     def _get_subscriber(
         config: Config,
         topics: Iterable[str],
         subscriber: Optional[BrokerSubscriber] = None,
-        broker_subscriber: Optional[BrokerSubscriber] = Provide["broker_subscriber"],
+        broker_subscriber: Optional[BrokerSubscriber] = None,
         subscriber_builder: Optional[BrokerSubscriberBuilder] = None,
-        broker_subscriber_builder: Optional[BrokerSubscriberBuilder] = Provide["broker_subscriber_builder"],
+        broker_subscriber_builder: Optional[BrokerSubscriberBuilder] = None,
         **kwargs,
     ) -> BrokerSubscriber:
         if not isinstance(subscriber, BrokerSubscriber):
