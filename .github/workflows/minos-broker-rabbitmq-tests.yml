@@ -35,6 +35,11 @@ jobs:
                 ports:
                     - "5672:5672"
 
+        env:
+            MINOS_BROKER_QUEUE_HOST: postgres
+            MINOS_BROKER_HOST: rabbitmq
+            MINOS_REPOSITORY_HOST: postgres
+            MINOS_SNAPSHOT_HOST: postgres
 
         steps:
             -   name: Check out repository code
