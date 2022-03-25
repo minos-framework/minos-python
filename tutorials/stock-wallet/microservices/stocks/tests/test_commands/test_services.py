@@ -2,7 +2,6 @@ import sys
 import unittest
 
 import pendulum
-
 from src import (
     Stocks,
     StocksCommandService,
@@ -37,7 +36,6 @@ class TestStocksCommandService(unittest.IsolatedAsyncioTestCase):
         now_minus_one_month = now.subtract(months=1)
         response = service.call_remote("AAPL", now_minus_one_month.to_date_string(), now.to_date_string())
         self.assertIsInstance(response, list)
-
 
 
 if __name__ == "__main__":

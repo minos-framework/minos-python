@@ -1,6 +1,10 @@
 import logging
 
 import pendulum
+from polygon import (
+    RESTClient,
+)
+
 from minos.aggregate import (
     Event,
 )
@@ -15,7 +19,6 @@ from minos.networks import (
 from ..aggregates import (
     StocksAggregate,
 )
-from polygon import RESTClient
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +36,9 @@ class StocksCommandService(CommandService):
 
     def call_remote(self, ticker, from_: str, to_: str):
         with RESTClient("") as client:
-            resp = client.stocks_equities_aggregates(ticker, 1, "hour", from_, to_, adjusted=True, sort="asc",
-                                                     limit=50000)
+            resp = client.stocks_equities_aggregates(
+                ticker, 1, "hour", from_, to_, adjusted=True, sort="asc", limit=50000
+            )
         return resp.results
 
     @enroute.periodic.event("* * * * *")
@@ -48,6 +52,7 @@ class StocksCommandService(CommandService):
                 results = self.call_remote(ticker["ticker"],
                                                  now_minus_one_month.to_date_string(),
                                                  now.to_date_string())
+
                 for result in results:
                     result_date = pendulum.from_timestamp(result["t"]/1000)
                     # difference_ticker_result = ticker_updated.diff(result_date).in_hours()

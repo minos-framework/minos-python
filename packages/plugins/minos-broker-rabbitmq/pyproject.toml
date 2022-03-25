@@ -1,0 +1,55 @@
+[tool.poetry]
+name = "minos-broker-rabbitmq"
+version = "0.5.1"
+description = "The rabbitmq plugin of the Minos Framework"
+readme = "README.md"
+repository = "https://github.com/minos-framework/minos-python"
+homepage = "http://www.minos.run/"
+authors = ["Minos Framework Devs <hey@minos.run>"]
+license = "MIT"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+]
+keywords = [
+    "clariteia",
+    "minos",
+    "microservice",
+    "saga",
+]
+packages = [
+    { include = "minos" }
+]
+include = [
+    "AUTHORS.md",
+    "HISTORY.md",
+    "LICENSE",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+minos-microservice-common = "^0.5.0"
+minos-microservice-networks = "^0.5.0"
+aio-pika = "^7.1.0"
+
+[tool.poetry.dev-dependencies]
+minos-microservice-common = { path = "../../core/minos-microservice-common", develop = true }
+minos-microservice-networks = { path = "../../core/minos-microservice-networks", develop = true }
+black = "^22.1"
+isort = "^5.8.0"
+pytest = "^6.2.4"
+coverage = "^6.3"
+flake8 = "^4.0.1"
+Sphinx = "^4.0.1"
+pre-commit = "^2.12.1"
+sphinx-autodoc-typehints = "^1.12.0"
+sphinxcontrib-apidoc = "^0.3.0"
+sphinx-rtd-theme = "^1.0.0"
+m2r2 = "^0.3.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

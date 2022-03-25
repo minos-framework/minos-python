@@ -115,7 +115,7 @@ class TestConfigV2(unittest.TestCase):
                 "queue": {"records": 10, "retry": 2},
             },
             "publisher": {"client": FakeBrokerPublisher, "queue": int},
-            "subscriber": {"client": FakeBrokerSubscriber, "queue": int, "idempotent": float},
+            "subscriber": {"client": FakeBrokerSubscriber, "queue": int, "validator": float},
         }
 
         self.assertEqual(expected, broker)
