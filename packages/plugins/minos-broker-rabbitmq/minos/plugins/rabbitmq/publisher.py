@@ -28,23 +28,37 @@ logger = logging.getLogger(__name__)
 class RabbitMQBrokerPublisher(BrokerPublisher):
     """RabbitMQ Broker Publisher class."""
 
-    def __init__(self, *args, host: Optional[str] = None, port: Optional[int] = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
+        user: Optional[str] = None,
+        password: Optional[str] = None,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
 
         if host is None:
             host = "localhost"
         if port is None:
             port = 5672
+        if user is None:
+            user = "guest"
+        if password is None:
+            password = "guest"
 
         self.host = host
         self.port = port
+        self.user = user
+        self.password = password
 
         self.connection = None
         self.channel = None
 
     async def _setup(self) -> None:
         await super()._setup()
-        self.connection = await connect(f"amqp://guest:guest@{self.host}:{self.port}/")
+        self.connection = await connect(f"amqp://{self.user}:{self.password}@{self.host}:{self.port}/")
         self.channel = await self.connection.channel()
 
     async def _destroy(self) -> None:

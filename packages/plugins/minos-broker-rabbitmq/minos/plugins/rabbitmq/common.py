@@ -23,5 +23,7 @@ class RabbitMQBrokerBuilderMixin(Builder):
         self.kwargs |= {
             "host": common_config.get("host"),
             "port": common_config.get("port"),
+            "user": common_config.get("user"),
+            "password": common_config.get("password"),
         }
         return super().with_config(config)
