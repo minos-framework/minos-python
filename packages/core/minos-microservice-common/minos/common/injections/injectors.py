@@ -23,19 +23,14 @@ from dependency_injector import (
 from ..importlib import (
     import_module,
 )
+from .mixins import (
+    InjectableMixin,
+)
 
 if TYPE_CHECKING:
     from ..config import (
         Config,
     )
-    from ..setup import (
-        SetupMixin,
-    )
-    from .mixins import (
-        InjectableMixin,
-    )
-
-    _InjectableSetupMixin = Union[SetupMixin, InjectableMixin]
 
 
 class DependencyInjector:
@@ -44,7 +39,7 @@ class DependencyInjector:
     def __init__(
         self,
         config: Config,
-        injections: Optional[list[Union[_InjectableSetupMixin, Type[_InjectableSetupMixin], str]]] = None,
+        injections: Optional[list[Union[InjectableMixin, Type[InjectableMixin], str]]] = None,
     ):
         if injections is None:
             injections = list()
@@ -52,18 +47,17 @@ class DependencyInjector:
         self._raw_injections = injections
 
     @cached_property
-    def injections(self) -> dict[str, SetupMixin]:
+    def injections(self) -> dict[str, InjectableMixin]:
         """Get the injections' dictionary.
 
         :return: A dict of injections.
         """
         injections = dict()
 
-        def _fn(raw: Union[_InjectableSetupMixin, Type[_InjectableSetupMixin], str]) -> _InjectableSetupMixin:
+        def _fn(raw: Union[InjectableMixin, type[InjectableMixin], str]) -> InjectableMixin:
             if isinstance(raw, str):
                 raw = import_module(raw)
             if isinstance(raw, type):
-                # noinspection PyUnresolvedReferences
                 return raw.from_config(self.config, **injections)
             return raw
 
@@ -77,24 +71,24 @@ class DependencyInjector:
 
         return injections
 
-    async def wire_and_setup(self, *args, **kwargs) -> None:
+    async def wire_and_setup_injections(self, *args, **kwargs) -> None:
         """Connect the configuration.
 
         :return: This method does not return anything.
         """
 
-        self.wire(*args, **kwargs)
-        await self.setup()
+        self.wire_injections(*args, **kwargs)
+        await self.setup_injections()
 
-    async def unwire_and_destroy(self) -> None:
+    async def unwire_and_destroy_injections(self) -> None:
         """Disconnect the configuration.
 
         :return: This method does not return anything.
         """
-        await self.destroy()
-        self.unwire()
+        await self.destroy_injections()
+        self.unwire_injections()
 
-    def wire(self, modules=None, *args, **kwargs) -> None:
+    def wire_injections(self, modules=None, *args, **kwargs) -> None:
         """Connect the configuration.
 
         :return: This method does not return anything.
@@ -109,17 +103,25 @@ class DependencyInjector:
 
         self.container.wire(modules=modules, *args, **kwargs)
 
-    def unwire(self) -> None:
+    def unwire_injections(self) -> None:
         """Disconnect the configuration.
 
         :return: This method does not return anything.
         """
         self.container.unwire()
 
-    async def setup(self):
+    async def setup_injections(self) -> None:
+        """Set Up the injections.
+
+        :return: This method does not return anything.
+        """
         await gather(*(injection.setup() for injection in self.injections.values()))
 
-    async def destroy(self):
+    async def destroy_injections(self) -> None:
+        """Destroy the injections
+
+        :return: This method does not return anything.
+        """
         await gather(*(injection.destroy() for injection in self.injections.values()))
 
     @cached_property
@@ -135,7 +137,7 @@ class DependencyInjector:
             container.set_provider(name, providers.Object(injection))
         return container
 
-    def __getattr__(self, item: str) -> SetupMixin:
+    def __getattr__(self, item: str) -> InjectableMixin:
         if item not in self.injections:
             raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
         return self.injections[item]

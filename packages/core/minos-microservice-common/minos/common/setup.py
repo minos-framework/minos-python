@@ -8,20 +8,21 @@ from pathlib import (
     Path,
 )
 from typing import (
+    TYPE_CHECKING,
+    Optional,
     Type,
     TypeVar,
     Union,
 )
 
-from .config import (
-    Config,
-)
-from .injections import (
-    Inject,
-)
 from .object import (
     Object,
 )
+
+if TYPE_CHECKING:
+    from .config import (
+        Config,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +53,7 @@ class SetupMixin(Object):
         return not self._already_setup
 
     @classmethod
-    @Inject()
-    def from_config(cls: Type[S], config: Union[Config, Path], **kwargs) -> S:
+    def from_config(cls: Type[S], config: Optional[Union[Config, Path]] = None, **kwargs) -> S:
         """Build a new instance from config.
 
         :param config: Config instance. If `None` is provided, default config is chosen.
@@ -61,7 +61,21 @@ class SetupMixin(Object):
         :return: A instance of the called class.
         """
         if isinstance(config, Path):
+            from .config import (
+                Config,
+            )
+
             config = Config(config)
+
+        if config is None:
+            from .config import (
+                Config,
+            )
+            from .injections import (
+                Inject,
+            )
+
+            config = Inject.resolve(Config)
 
         logger.info(f"Building a {cls.__name__!r} instance from config...")
         return cls._from_config(config=config, **kwargs)

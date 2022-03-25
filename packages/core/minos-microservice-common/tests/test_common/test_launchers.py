@@ -10,6 +10,7 @@ import uvloop
 
 from minos.common import (
     EntrypointLauncher,
+    InjectableMixin,
     Port,
     classname,
 )
@@ -17,7 +18,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
     FakeEntrypoint,
     FakeLoop,
 )
@@ -30,15 +31,15 @@ class FooPort(Port):
         super().__init__(**kwargs)
         self.kwargs = kwargs
 
-    async def start(self) -> None:
+    async def _start(self) -> None:
         """For testing purposes."""
 
-    async def stop(self, err: Exception = None) -> None:
+    async def _stop(self, err: Exception = None) -> None:
         """For testing purposes."""
 
 
 class TestEntrypointLauncher(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self):
         super().setUp()
@@ -58,10 +59,17 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         launcher = EntrypointLauncher.from_config(self.config)
         self.assertIsInstance(launcher, EntrypointLauncher)
         self.assertEqual(self.config, launcher.config)
-        self.assertEqual(dict(), launcher.injector.injections)
+        self.assertEqual(12, len(launcher.injections))
+
+        for injection in launcher.injections.values():
+            self.assertIsInstance(injection, InjectableMixin)
+
         self.assertEqual(3, len(launcher.ports))
         for port in launcher.ports:
             self.assertIsInstance(port, Port)
+
+    def test_injections(self):
+        self.assertEqual(dict(), self.launcher.injections)
 
     def test_ports(self):
         self.assertEqual([1, 2], self.launcher.ports[:2])
@@ -99,7 +107,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
     async def test_setup(self):
         mock = AsyncMock()
-        self.launcher.injector.wire_and_setup = mock
+        self.launcher.injector.wire_and_setup_injections = mock
         await self.launcher.setup()
 
         self.assertEqual(1, mock.call_count)
@@ -120,11 +128,11 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         await self.launcher.destroy()
 
     async def test_destroy(self):
-        self.launcher.injector.wire_and_setup = AsyncMock()
+        self.launcher.injector.wire_and_setup_injections = AsyncMock()
         await self.launcher.setup()
 
         mock = AsyncMock()
-        self.launcher.injector.unwire_and_destroy = mock
+        self.launcher.injector.unwire_and_destroy_injections = mock
         await self.launcher.destroy()
 
         self.assertEqual(1, mock.call_count)
@@ -155,7 +163,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
 class TestEntryPointLauncherLoop(unittest.TestCase):
     def test_loop(self):
-        launcher = EntrypointLauncher.from_config(BASE_PATH / "test_config.yml")
+        launcher = EntrypointLauncher.from_config(CONFIG_FILE_PATH)
         self.assertIsInstance(launcher.loop, uvloop.Loop)
 
 

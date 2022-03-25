@@ -44,7 +44,7 @@ class TestPostgreSqlEventRepositorySubmit(PostgresAsyncTestCase, EventRepository
         return PostgreSqlEventRepository(**self.repository_db)
 
     def test_constructor(self):
-        repository = PostgreSqlEventRepository("host", 1234, "database", "user", "password")
+        repository = PostgreSqlEventRepository("database", "host", 1234, "user", "password")
         self.assertIsInstance(repository, EventRepository)
         self.assertEqual("host", repository.host)
         self.assertEqual(1234, repository.port)

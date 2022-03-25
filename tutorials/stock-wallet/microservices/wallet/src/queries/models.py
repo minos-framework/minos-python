@@ -31,7 +31,7 @@ class Ticker(Base):
     wallet_id = Column(Integer, ForeignKey("wallet.id"))
     wallet = relationship("Wallet", backref=backref("tickers"))
     ticker = Column(String(10), unique=True)
-    is_crypto = Column(Boolean, default=False, unique=False)
+    flag = Column(String(30))
     latest_value = Column(Float)
 
 

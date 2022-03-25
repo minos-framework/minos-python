@@ -36,9 +36,6 @@ from kafka.errors import (
     TopicAlreadyExistsError,
 )
 
-from minos.common import (
-    Config,
-)
 from minos.networks import (
     BrokerMessage,
     BrokerSubscriber,
@@ -48,7 +45,8 @@ from minos.networks import (
     QueuedBrokerSubscriberBuilder,
 )
 
-from .mixins import (
+from .common import (
+    KafkaBrokerBuilderMixin,
     KafkaCircuitBreakerMixin,
 )
 
@@ -61,24 +59,56 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
     def __init__(
         self,
         topics: Iterable[str],
-        broker_host: str,
-        broker_port: int,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
         group_id: Optional[str] = None,
         remove_topics_on_destroy: bool = False,
         **kwargs,
     ):
         super().__init__(topics, **kwargs)
+        if host is None:
+            host = "localhost"
 
-        self.broker_host = broker_host
-        self.broker_port = broker_port
-        self.group_id = group_id
+        if port is None:
+            port = 9092
 
-        self.remove_topics_on_destroy = remove_topics_on_destroy
+        self._host = host
+        self._port = port
+        self._group_id = group_id
 
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> KafkaBrokerSubscriber:
-        # noinspection PyTypeChecker
-        return KafkaBrokerSubscriberBuilder.new().with_config(config).with_kwargs(kwargs).build()
+        self._remove_topics_on_destroy = remove_topics_on_destroy
+
+    @property
+    def host(self) -> str:
+        """The host of kafka.
+
+        :return: A ``str`` value.
+        """
+        return self._host
+
+    @property
+    def port(self) -> int:
+        """The port of kafka.
+
+        :return: A ``int`` value.
+        """
+        return self._port
+
+    @property
+    def group_id(self) -> Optional[str]:
+        """The id of kafka's group.
+
+        :return: An ``Optional[str]``` value.
+        """
+        return self._group_id
+
+    @property
+    def remove_topics_on_destroy(self) -> int:
+        """Flag to check if topics should be removed on destroy.
+
+        :return: A ``bool`` value.
+        """
+        return self._remove_topics_on_destroy
 
     async def _setup(self) -> None:
         await super()._setup()
@@ -133,7 +163,7 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
 
         :return: An ``KafkaAdminClient`` instance.
         """
-        return KafkaAdminClient(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
+        return KafkaAdminClient(bootstrap_servers=f"{self.host}:{self.port}")
 
     async def _receive(self) -> BrokerMessage:
         record = await self.client.getone()
@@ -149,37 +179,17 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
         """
         return AIOKafkaConsumer(
             *self.topics,
-            bootstrap_servers=f"{self.broker_host}:{self.broker_port}",
+            bootstrap_servers=f"{self.host}:{self.port}",
             group_id=self.group_id,
             auto_offset_reset="earliest",
         )
 
 
-class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder):
+class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder[KafkaBrokerSubscriber], KafkaBrokerBuilderMixin):
     """Kafka Broker Subscriber Builder class."""
 
-    def with_config(self, config: Config) -> BrokerSubscriberBuilder:
-        """Set config.
 
-        :param config: The config to be set.
-        :return: This method return the builder instance.
-        """
-        broker_config = config.get_interface_by_name("broker")
-        common_config = broker_config["common"]
-
-        self.kwargs |= {
-            "group_id": config.get_name(),
-            "broker_host": common_config["host"],
-            "broker_port": common_config["port"],
-        }
-        return self
-
-    def build(self) -> BrokerSubscriber:
-        """Build the instance.
-
-        :return: A ``KafkaBrokerSubscriber`` instance.
-        """
-        return KafkaBrokerSubscriber(**self.kwargs)
+KafkaBrokerSubscriber.set_builder(KafkaBrokerSubscriberBuilder)
 
 
 class PostgreSqlQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):

@@ -3,11 +3,13 @@ __email__ = "hey@minos.run"
 __version__ = "0.5.3"
 
 from .builders import (
+    BuildableMixin,
     Builder,
 )
 from .config import (
     Config,
     ConfigV1,
+    ConfigV2,
     MinosConfig,
 )
 from .database import (

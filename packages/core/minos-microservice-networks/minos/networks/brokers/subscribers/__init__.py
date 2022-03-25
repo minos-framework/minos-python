@@ -7,6 +7,7 @@ from .idempotent import (
     IdempotentBrokerSubscriber,
     InMemoryBrokerSubscriberDuplicateDetector,
     PostgreSqlBrokerSubscriberDuplicateDetector,
+    PostgreSqlBrokerSubscriberDuplicateDetectorBuilder,
     PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory,
 )
 from .memory import (

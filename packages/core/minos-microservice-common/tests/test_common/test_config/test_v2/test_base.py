@@ -1,11 +1,15 @@
 import unittest
+from itertools import (
+    chain,
+    cycle,
+)
 from unittest.mock import (
     patch,
 )
 
 from minos.common import (
     Config,
-    ConfigV1,
+    ConfigV2,
     MinosConfigException,
 )
 from tests.utils import (
@@ -13,6 +17,7 @@ from tests.utils import (
     FakeBrokerClientPool,
     FakeBrokerPort,
     FakeBrokerPublisher,
+    FakeBrokerSubscriber,
     FakeBrokerSubscriberBuilder,
     FakeCustomInjection,
     FakeDatabasePool,
@@ -28,23 +33,27 @@ from tests.utils import (
 )
 
 
-class TestConfigV1(unittest.TestCase):
+class TestConfigV2(unittest.TestCase):
     def setUp(self) -> None:
-        self.file_path = BASE_PATH / "config" / "v1.yml"
-        self.config = ConfigV1(self.file_path)
+        self.file_path = BASE_PATH / "config" / "v2.yml"
+        self.config = ConfigV2(self.file_path)
 
     def test_is_subclass(self):
-        self.assertTrue(issubclass(ConfigV1, Config))
+        self.assertTrue(issubclass(ConfigV2, Config))
 
     def test_aggregate(self):
         expected = {
             "entities": [int],
-            "repositories": dict(),
+            "repositories": {
+                "event": FakeEventRepository,
+                "snapshot": FakeSnapshotRepository,
+                "transaction": FakeTransactionRepository,
+            },
         }
         self.assertEqual(expected, self.config.get_aggregate())
 
     def test_version(self):
-        self.assertEqual(1, self.config.version)
+        self.assertEqual(2, self.config.version)
 
     def test_name(self):
         self.assertEqual("Order", self.config.get_name())
@@ -56,7 +65,7 @@ class TestConfigV1(unittest.TestCase):
             FakeBrokerClientPool,
             FakeHttpConnector,
             FakeBrokerPublisher,
-            FakeBrokerSubscriberBuilder,
+            FakeBrokerSubscriberBuilder(FakeBrokerSubscriber),
             FakeEventRepository,
             FakeSnapshotRepository,
             FakeTransactionRepository,
@@ -67,8 +76,14 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(expected, self.config.get_injections())
 
     def test_injections_not_defined(self):
-        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
+        with patch.object(ConfigV2, "get_by_key", side_effect=MinosConfigException("")):
             self.assertEqual(list(), self.config.get_injections())
+
+    def test_injections_not_injectable(self):
+        side_effect = chain([{"client": "builtins.int"}], cycle([MinosConfigException("")]))
+        with patch.object(ConfigV2, "get_by_key", side_effect=side_effect):
+            with self.assertRaises(MinosConfigException):
+                self.config.get_injections()
 
     def test_interface_http(self):
         observed = self.config.get_interface_by_name("http")
@@ -76,36 +91,20 @@ class TestConfigV1(unittest.TestCase):
         expected = {
             "port": FakeHttpPort,
             "connector": {
+                "client": FakeHttpConnector,
                 "host": "localhost",
                 "port": 8900,
             },
         }
         self.assertEqual(expected, observed)
 
-    def test_interface_http_connector_not_defined(self):
-        base = self.config.get_by_key
-
-        def _fn(label):
-            if label == "rest":
-                raise MinosConfigException("")
-            return base(label)
-
-        with patch.object(ConfigV1, "get_by_key", side_effect=_fn):
-            observed = self.config.get_interface_by_name("http")
-
-        expected = {
-            "port": FakeHttpPort,
-            "connector": {},
-        }
-        self.assertEqual(expected, observed)
-
     def test_interface_http_not_defined(self):
-        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
+        with patch.object(ConfigV2, "get_by_key", side_effect=MinosConfigException("")):
             with self.assertRaises(MinosConfigException):
                 self.config.get_interface_by_name("http")
 
     def test_interface_broker(self):
-        config = ConfigV1(self.file_path, with_environment=False)
+        config = ConfigV2(self.file_path, with_environment=False)
         broker = config.get_interface_by_name("broker")
 
         expected = {
@@ -115,54 +114,14 @@ class TestConfigV1(unittest.TestCase):
                 "port": 9092,
                 "queue": {"records": 10, "retry": 2},
             },
-            "publisher": {},
-            "subscriber": {},
+            "publisher": {"client": FakeBrokerPublisher, "queue": int},
+            "subscriber": {"client": FakeBrokerSubscriber, "queue": int, "idempotent": float},
         }
 
         self.assertEqual(expected, broker)
 
-    def test_interface_broker_section_not_defined(self):
-        base = self.config.get_by_key
-
-        def _fn(label):
-            if label == "broker":
-                raise MinosConfigException("")
-            return base(label)
-
-        with patch.object(ConfigV1, "get_by_key", side_effect=_fn):
-            observed = self.config.get_interface_by_name("broker")
-
-        expected = {
-            "port": FakeBrokerPort,
-            "common": {
-                "queue": {"records": 10, "retry": 2},
-            },
-            "publisher": {},
-            "subscriber": {},
-        }
-        self.assertEqual(expected, observed)
-
-    def test_interface_broker_queue_not_defined(self):
-        base = self.config.get_by_key
-
-        def _fn(label):
-            if label == "broker.queue":
-                raise MinosConfigException("")
-            return base(label)
-
-        with patch.object(ConfigV1, "get_by_key", side_effect=_fn):
-            observed = self.config.get_interface_by_name("broker")
-
-        expected = {
-            "port": FakeBrokerPort,
-            "common": {"host": "localhost", "port": 9092, "queue": {}},
-            "publisher": {},
-            "subscriber": {},
-        }
-        self.assertEqual(expected, observed)
-
     def test_interface_broker_not_defined(self):
-        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
+        with patch.object(ConfigV2, "get_by_key", side_effect=MinosConfigException("")):
             with self.assertRaises(MinosConfigException):
                 self.config.get_interface_by_name("broker")
 
@@ -175,52 +134,59 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(expected, observed)
 
     def test_interface_periodic_not_defined(self):
-        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
+        with patch.object(ConfigV2, "get_by_key", side_effect=MinosConfigException("")):
             with self.assertRaises(MinosConfigException):
                 self.config.get_interface_by_name("periodic")
 
     def test_interface_unknown(self):
-        config = ConfigV1(self.file_path, with_environment=False)
+        config = ConfigV2(self.file_path, with_environment=False)
         with self.assertRaises(MinosConfigException):
             config.get_interface_by_name("unknown")
 
     def test_pools(self):
-        self.assertEqual(dict(), self.config.get_pools())
+        expected = {
+            "broker": FakeBrokerClientPool,
+            "database": FakeDatabasePool,
+            "lock": FakeLockPool,
+        }
+        self.assertEqual(expected, self.config.get_pools())
+
+    def test_pools_not_defined(self):
+        with patch.object(ConfigV2, "get_by_key", side_effect=MinosConfigException("")):
+            self.assertEqual(dict(), self.config.get_pools())
 
     def test_services(self):
         self.assertEqual([float, int], self.config.get_services())
 
     def test_services_not_defined(self):
-        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
+        with patch.object(ConfigV2, "get_by_key", side_effect=MinosConfigException("")):
             self.assertEqual(list(), self.config.get_services())
 
     def test_routers(self):
         self.assertEqual([set, dict], self.config.get_routers())
 
     def test_routers_not_defined(self):
-        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
+        with patch.object(ConfigV2, "get_by_key", side_effect=MinosConfigException("")):
             self.assertEqual(list(), self.config.get_routers())
 
     def test_middleware(self):
         self.assertEqual([list, tuple], self.config.get_middleware())
 
     def test_middleware_not_defined(self):
-        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
+        with patch.object(ConfigV2, "get_by_key", side_effect=MinosConfigException("")):
             self.assertEqual(list(), self.config.get_middleware())
 
     def test_saga(self):
-        config = ConfigV1(self.file_path, with_environment=False)
+        config = ConfigV2(self.file_path, with_environment=False)
         saga_config = config.get_saga()
-        expected = dict()
+        expected = {
+            "manager": FakeSagaManager,
+        }
 
         self.assertEqual(expected, saga_config)
 
-    def test_saga_not_defined(self):
-        with patch.object(ConfigV1, "get_by_key", side_effect=MinosConfigException("")):
-            self.assertEqual(dict(), self.config.get_saga())
-
     def test_database_default(self):
-        config = ConfigV1(self.file_path, with_environment=False)
+        config = ConfigV2(self.file_path, with_environment=False)
         database_config = config.get_default_database()
         self.assertEqual("order_db", database_config["database"])
         self.assertEqual("minos", database_config["user"])
@@ -229,7 +195,7 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(5432, database_config["port"])
 
     def test_database_event(self):
-        config = ConfigV1(self.file_path, with_environment=False)
+        config = ConfigV2(self.file_path, with_environment=False)
         database_config = config.get_database_by_name("event")
         self.assertEqual("order_db", database_config["database"])
         self.assertEqual("minos", database_config["user"])
@@ -238,7 +204,7 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(5432, database_config["port"])
 
     def test_database_query(self):
-        config = ConfigV1(self.file_path, with_environment=False)
+        config = ConfigV2(self.file_path, with_environment=False)
         query_database = config.get_database_by_name("query")
         self.assertEqual("order_query_db", query_database["database"])
         self.assertEqual("minos", query_database["user"])
@@ -247,7 +213,7 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(5432, query_database["port"])
 
     def test_database_snapshot(self):
-        config = ConfigV1(self.file_path, with_environment=False)
+        config = ConfigV2(self.file_path, with_environment=False)
         snapshot = config.get_database_by_name("snapshot")
         self.assertEqual("order_db", snapshot["database"])
         self.assertEqual("minos", snapshot["user"])
@@ -256,7 +222,7 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(5432, snapshot["port"])
 
     def test_database_broker(self):
-        config = ConfigV1(self.file_path, with_environment=False)
+        config = ConfigV2(self.file_path, with_environment=False)
         snapshot = config.get_database_by_name("broker")
         self.assertEqual("order_db", snapshot["database"])
         self.assertEqual("minos", snapshot["user"])
@@ -265,15 +231,16 @@ class TestConfigV1(unittest.TestCase):
         self.assertEqual(5432, snapshot["port"])
 
     def test_database_saga(self):
-        config = ConfigV1(self.file_path, with_environment=False)
+        config = ConfigV2(self.file_path, with_environment=False)
         saga = config.get_database_by_name("saga")
         self.assertEqual("./order.lmdb", saga["path"])
 
     def test_discovery(self):
-        config = ConfigV1(self.file_path, with_environment=False)
+        config = ConfigV2(self.file_path, with_environment=False)
         observed = config.get_discovery()
 
         expected = {
+            "connector": FakeDiscoveryConnector,
             "client": str,
             "host": "localhost",
             "port": 8080,

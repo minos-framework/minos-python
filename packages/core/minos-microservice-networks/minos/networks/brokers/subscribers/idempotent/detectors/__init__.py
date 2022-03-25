@@ -6,5 +6,6 @@ from .memory import (
 )
 from .pg import (
     PostgreSqlBrokerSubscriberDuplicateDetector,
+    PostgreSqlBrokerSubscriberDuplicateDetectorBuilder,
     PostgreSqlBrokerSubscriberDuplicateDetectorQueryFactory,
 )

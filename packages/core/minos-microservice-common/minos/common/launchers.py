@@ -45,6 +45,7 @@ from .importlib import (
 )
 from .injections import (
     DependencyInjector,
+    InjectableMixin,
 )
 from .ports import (
     Port,
@@ -186,7 +187,7 @@ class EntrypointLauncher(SetupMixin):
 
         :return: This method does not return anything.
         """
-        await self.injector.wire_and_setup(
+        await self.injector.wire_and_setup_injections(
             modules=self._external_modules + self._internal_modules, packages=self._external_packages
         )
 
@@ -199,7 +200,15 @@ class EntrypointLauncher(SetupMixin):
 
         :return: This method does not return anything.
         """
-        await self.injector.unwire_and_destroy()
+        await self.injector.unwire_and_destroy_injections()
+
+    @property
+    def injections(self) -> dict[str, InjectableMixin]:
+        """Get the injections mapping.
+
+        :return: A ``dict`` with injection names as keys and injection instances as values.
+        """
+        return self.injector.injections
 
     @cached_property
     def injector(self) -> DependencyInjector:

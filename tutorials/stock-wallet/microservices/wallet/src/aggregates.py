@@ -13,7 +13,7 @@ from minos.aggregate import (
 
 class Ticker(Entity):
     ticker: str
-    is_crypto: bool
+    flag: str
 
 
 class Wallet(RootEntity):
@@ -36,10 +36,10 @@ class WalletAggregate(Aggregate[Wallet]):
         return root.uuid
 
     @staticmethod
-    async def add_ticker(wallet_uudi: str, ticker_value: str, is_crypto: bool) -> UUID:
+    async def add_ticker(wallet_uudi: str, ticker_value: str, flag: str) -> UUID:
         """Create a new instance."""
         wallet = await Wallet.get(wallet_uudi)
-        ticker = Ticker(ticker=ticker_value, is_crypto=is_crypto)
+        ticker = Ticker(ticker=ticker_value, flag=flag)
         logger.warning("Added following information ticker {}, {}, {}".format(wallet_uudi, ticker_value, is_crypto))
         wallet.tickers.add(ticker)
         await wallet.save()

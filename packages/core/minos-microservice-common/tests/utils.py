@@ -3,13 +3,16 @@ from pathlib import (
 )
 
 from minos.common import (
+    BuildableMixin,
+    Builder,
+    Injectable,
     Lock,
     LockPool,
     Port,
 )
 
 BASE_PATH = Path(__file__).parent
-CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+CONFIG_FILE_PATH = BASE_PATH / "config" / "v1.yml"
 
 
 class FakeEntrypoint:
@@ -79,28 +82,102 @@ class FakeLockPool(LockPool):
 class FakePeriodicPort(Port):
     """For testing purposes."""
 
-    async def start(self) -> None:
+    async def _start(self) -> None:
         """For testing purposes."""
 
-    async def stop(self, err: Exception = None) -> None:
+    async def _stop(self, err: Exception = None) -> None:
         """For testing purposes."""
 
 
 class FakeHttpPort(Port):
     """For testing purposes."""
 
-    async def start(self) -> None:
+    async def _start(self) -> None:
         """For testing purposes."""
 
-    async def stop(self, err: Exception = None) -> None:
+    async def _stop(self, err: Exception = None) -> None:
         """For testing purposes."""
 
 
 class FakeBrokerPort(Port):
     """For testing purposes."""
 
-    async def start(self) -> None:
+    async def _start(self) -> None:
         """For testing purposes."""
 
-    async def stop(self, err: Exception = None) -> None:
+    async def _stop(self, err: Exception = None) -> None:
         """For testing purposes."""
+
+
+@Injectable("custom")
+class FakeCustomInjection:
+    """For testing purposes."""
+
+
+@Injectable("serializer")
+class FakeSerializer:
+    """For testing purposes."""
+
+
+@Injectable("http_connector")
+class FakeHttpConnector:
+    """For testing purposes."""
+
+
+@Injectable("broker_publisher")
+class FakeBrokerPublisher(BuildableMixin):
+    """For testing purposes."""
+
+
+class FakeBrokerPublisherBuilder(Builder[FakeBrokerPublisher]):
+    """For testing purposes."""
+
+
+FakeBrokerPublisher.set_builder(FakeBrokerPublisherBuilder)
+
+
+class FakeBrokerSubscriber(BuildableMixin):
+    """For testing purposes."""
+
+
+@Injectable("broker_subscriber_builder")
+class FakeBrokerSubscriberBuilder(Builder[FakeBrokerSubscriber]):
+    """For testing purposes."""
+
+
+FakeBrokerSubscriber.set_builder(FakeBrokerSubscriberBuilder)
+
+
+@Injectable("database_pool")
+class FakeDatabasePool:
+    """For testing purposes."""
+
+
+@Injectable("broker_pool")
+class FakeBrokerClientPool:
+    """For testing purposes."""
+
+
+@Injectable("discovery_connector")
+class FakeDiscoveryConnector:
+    """For testing purposes."""
+
+
+@Injectable("saga_manager")
+class FakeSagaManager:
+    """For testing purposes."""
+
+
+@Injectable("event_repository")
+class FakeEventRepository:
+    """For testing purposes."""
+
+
+@Injectable("snapshot_repository")
+class FakeSnapshotRepository:
+    """For testing purposes."""
+
+
+@Injectable("transaction_repository")
+class FakeTransactionRepository:
+    """For testing purposes."""

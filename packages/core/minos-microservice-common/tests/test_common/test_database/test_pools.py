@@ -21,16 +21,24 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
 )
 
 
 class TestPostgreSqlPool(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
         super().setUp()
         self.pool = PostgreSqlPool.from_config(self.config)
+
+    def test_constructor(self):
+        pool = PostgreSqlPool("foo")
+        self.assertEqual("foo", pool.database)
+        self.assertEqual("postgres", pool.user)
+        self.assertEqual("", pool.password)
+        self.assertEqual("localhost", pool.host)
+        self.assertEqual(5432, pool.port)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -75,7 +83,7 @@ class TestPostgreSqlPool(PostgresAsyncTestCase):
 
 
 class TestPostgreSqlLockPool(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
         super().setUp()

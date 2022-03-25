@@ -14,6 +14,7 @@ from operator import (
 )
 from typing import (
     Any,
+    Optional,
 )
 
 from minos.common import (
@@ -42,8 +43,19 @@ logger = logging.getLogger(__name__)
 class DiscoveryConnector(SetupMixin):
     """Discovery Connector class."""
 
-    def __init__(self, client, name: str, host: str, port: int, endpoints: list[dict[str, Any]], *args, **kwargs):
+    def __init__(
+        self,
+        client: DiscoveryClient,
+        name: str,
+        endpoints: list[dict[str, Any]],
+        host: str,
+        port: Optional[int] = None,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
+        if port is None:
+            port = 8080
 
         self.client = client
 
@@ -60,15 +72,15 @@ class DiscoveryConnector(SetupMixin):
         host = get_host_ip()
         endpoints = cls._endpoints_from_config(config)
 
-        return cls(client, name, host, port, endpoints, *args, **kwargs)
+        return cls(client, name, endpoints, host, port, *args, **kwargs)
 
     @classmethod
     def _client_from_config(cls, config: Config) -> DiscoveryClient:
         discovery_config = config.get_discovery()
 
         client_cls = cls._client_cls_from_config(discovery_config)
-        client_host = discovery_config["host"]
-        client_port = discovery_config["port"]
+        client_host = discovery_config.get("host")
+        client_port = discovery_config.get("port")
 
         return client_cls(host=client_host, port=client_port)
 
@@ -80,10 +92,10 @@ class DiscoveryConnector(SetupMixin):
         return client_cls
 
     @staticmethod
-    def _port_from_config(config: Config) -> int:
+    def _port_from_config(config: Config) -> Optional[int]:
         http_config = config.get_interface_by_name("http")
         connector_config = http_config["connector"]
-        port = connector_config["port"]
+        port = connector_config.get("port")
         return port
 
     @staticmethod

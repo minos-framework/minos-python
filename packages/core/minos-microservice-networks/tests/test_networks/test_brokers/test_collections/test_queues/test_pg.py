@@ -43,6 +43,13 @@ class TestPostgreSqlBrokerQueue(PostgresAsyncTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(PostgreSqlBrokerQueue, (BrokerQueue, PostgreSqlMinosDatabase)))
 
+    def test_constructor(self):
+        queue = PostgreSqlBrokerQueue("foo_db", query_factory=self.query_factory)
+        self.assertEqual("foo_db", queue.database)
+        self.assertEqual(self.query_factory, queue.query_factory)
+        self.assertEqual(2, queue.retry)
+        self.assertEqual(1000, queue.records)
+
     async def test_query_factory(self):
         queue = PostgreSqlBrokerQueue.from_config(self.config, query_factory=self.query_factory)
 

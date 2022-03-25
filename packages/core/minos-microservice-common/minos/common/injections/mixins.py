@@ -1,9 +1,9 @@
-from ..object import (
-    Object,
+from ..setup import (
+    SetupMixin,
 )
 
 
-class InjectableMixin(Object):
+class InjectableMixin(SetupMixin):
     """Injectable Mixin class."""
 
     _injectable_name: str

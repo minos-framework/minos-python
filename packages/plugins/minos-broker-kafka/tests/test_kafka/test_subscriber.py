@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from collections import (
     namedtuple,
 )
@@ -45,12 +46,19 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(KafkaBrokerSubscriber, BrokerSubscriber))
 
+    def test_constructor(self):
+        subscriber = KafkaBrokerSubscriber(["foo", "bar"])
+        self.assertEqual({"foo", "bar"}, subscriber.topics)
+        self.assertEqual("localhost", subscriber.host)
+        self.assertEqual(9092, subscriber.port)
+        self.assertEqual(None, subscriber.group_id)
+
     async def test_from_config(self):
         config = Config(CONFIG_FILE_PATH)
         broker_config = config.get_interface_by_name("broker")["common"]
         async with KafkaBrokerSubscriber.from_config(config, topics={"foo", "bar"}) as subscriber:
-            self.assertEqual(broker_config["host"], subscriber.broker_host)
-            self.assertEqual(broker_config["port"], subscriber.broker_port)
+            self.assertEqual(broker_config["host"], subscriber.host)
+            self.assertEqual(broker_config["port"], subscriber.port)
             self.assertEqual(config.get_name(), subscriber.group_id)
             self.assertEqual(False, subscriber.remove_topics_on_destroy)
             self.assertEqual({"foo", "bar"}, subscriber.topics)
@@ -209,8 +217,8 @@ class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
 
         expected = {
             "group_id": self.config.get_name(),
-            "broker_host": common_config["host"],
-            "broker_port": common_config["port"],
+            "host": common_config["host"],
+            "port": common_config["port"],
         }
         self.assertEqual(expected, builder.kwargs)
 
@@ -221,8 +229,8 @@ class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
 
         self.assertIsInstance(subscriber, KafkaBrokerSubscriber)
         self.assertEqual({"one", "two"}, subscriber.topics)
-        self.assertEqual(common_config["host"], subscriber.broker_host)
-        self.assertEqual(common_config["port"], subscriber.broker_port)
+        self.assertEqual(common_config["host"], subscriber.host)
+        self.assertEqual(common_config["port"], subscriber.port)
 
 
 class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
@@ -230,7 +238,12 @@ class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
         self.config = Config(CONFIG_FILE_PATH)
 
     def test_build(self):
-        builder = PostgreSqlQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            builder = (
+                PostgreSqlQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+            )
+
         subscriber = builder.build()
 
         self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
@@ -243,7 +256,10 @@ class TestInMemoryQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
         self.config = Config(CONFIG_FILE_PATH)
 
     def test_build(self):
-        builder = InMemoryQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            builder = InMemoryQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+
         subscriber = builder.build()
 
         self.assertIsInstance(subscriber, QueuedBrokerSubscriber)

@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from asyncio import (
     sleep,
 )
@@ -115,7 +116,9 @@ class TestQueuedBrokerSubscriberBuilder(unittest.TestCase):
         self.impl_builder.with_kwargs = impl_mock
         self.queue_builder.with_kwargs = queue_mock
 
-        builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_kwargs({"foo": "bar"})
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_kwargs({"foo": "bar"})
         self.assertIsInstance(builder, QueuedBrokerSubscriberBuilder)
 
         self.assertEqual([call({"foo": "bar"})], impl_mock.call_args_list)
@@ -127,7 +130,9 @@ class TestQueuedBrokerSubscriberBuilder(unittest.TestCase):
         self.impl_builder.with_config = impl_mock
         self.queue_builder.with_config = queue_mock
 
-        builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_config(self.config)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_config(self.config)
         self.assertIsInstance(builder, QueuedBrokerSubscriberBuilder)
 
         self.assertEqual([call(self.config)], impl_mock.call_args_list)
@@ -137,9 +142,11 @@ class TestQueuedBrokerSubscriberBuilder(unittest.TestCase):
         impl_mock = MagicMock(side_effect=self.impl_builder.with_group_id)
         self.impl_builder.with_group_id = impl_mock
 
-        builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_group_id("foobar")
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_group_id("foobar")
+
         self.assertIsInstance(builder, QueuedBrokerSubscriberBuilder)
-        self.assertEqual({"group_id": "foobar"}, builder.kwargs)
 
         self.assertEqual([call("foobar")], impl_mock.call_args_list)
 
@@ -147,9 +154,10 @@ class TestQueuedBrokerSubscriberBuilder(unittest.TestCase):
         impl_mock = MagicMock(side_effect=self.impl_builder.with_remove_topics_on_destroy)
         self.impl_builder.with_remove_topics_on_destroy = impl_mock
 
-        builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_remove_topics_on_destroy(False)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_remove_topics_on_destroy(False)
         self.assertIsInstance(builder, QueuedBrokerSubscriberBuilder)
-        self.assertEqual({"remove_topics_on_destroy": False}, builder.kwargs)
 
         self.assertEqual([call(False)], impl_mock.call_args_list)
 
@@ -159,9 +167,10 @@ class TestQueuedBrokerSubscriberBuilder(unittest.TestCase):
         self.impl_builder.with_topics = impl_mock
         self.queue_builder.with_topics = queue_mock
 
-        builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_topics({"one", "two"})
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_topics({"one", "two"})
         self.assertIsInstance(builder, QueuedBrokerSubscriberBuilder)
-        self.assertEqual({"topics": {"one", "two"}}, builder.kwargs)
 
         self.assertEqual([call({"one", "two"})], impl_mock.call_args_list)
         self.assertEqual([call({"one", "two"})], queue_mock.call_args_list)
@@ -172,7 +181,9 @@ class TestQueuedBrokerSubscriberBuilder(unittest.TestCase):
         self.impl_builder.build = impl_mock
         self.queue_builder.build = queue_mock
 
-        builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_topics({"one", "two"})
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            builder = QueuedBrokerSubscriberBuilder(**self._kwargs).with_topics({"one", "two"})
         self.assertIsInstance(builder, QueuedBrokerSubscriberBuilder)
         subscriber = builder.build()
         self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
