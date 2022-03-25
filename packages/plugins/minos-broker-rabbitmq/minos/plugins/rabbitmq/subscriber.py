@@ -89,9 +89,16 @@ class RabbitMQBrokerSubscriber(BrokerSubscriber):
 
     async def _run_one(self, topic: str) -> None:
         channel = await self.connection.channel()
-        queue = await channel.declare_queue(topic)
-        async for message in queue.iterator():
-            await self._queue.put(message.body)
+        try:
+            queue = await channel.declare_queue(topic)
+            iterator = queue.iterator()
+            try:
+                async for message in iterator:
+                    await self._queue.put(message.body)
+            finally:
+                await iterator.close()
+        finally:
+            await channel.close()
 
     async def _receive(self) -> BrokerMessage:
         bytes_ = await self._queue.get()
