@@ -14,6 +14,7 @@ from minos.networks import (
     BrokerPublisher,
     BrokerPublisherBuilder,
 )
+
 from .common import (
     RabbitMQBrokerBuilderMixin,
 )
