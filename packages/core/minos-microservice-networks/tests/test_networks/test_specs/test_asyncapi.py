@@ -14,7 +14,7 @@ from tests.utils import (
 )
 
 
-class TestAsyncAPIService(unittest.TestCase):
+class TestAsyncAPIService(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.config = Config(CONFIG_FILE_PATH)
@@ -32,7 +32,6 @@ class TestAsyncAPIService(unittest.TestCase):
         observed = EnrouteAnalyzer(service, self.config).get_all()
         self.assertEqual(expected, observed)
 
-    @unittest.skip("TODO")
     async def test_generate_spec(self):
         service = AsyncAPIService(self.config)
 
