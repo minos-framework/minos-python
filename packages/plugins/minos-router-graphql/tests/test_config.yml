@@ -1,5 +1,5 @@
 service:
-    name: Order
+    name: Foo
     aggregate: tests.utils.Order
 services:
     - tests.services.commands.CommandService

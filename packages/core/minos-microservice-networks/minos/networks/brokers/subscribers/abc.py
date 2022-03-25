@@ -33,9 +33,9 @@ from ..messages import (
 )
 
 if TYPE_CHECKING:
-    from .idempotent import (
-        BrokerSubscriberDuplicateDetector,
-        IdempotentBrokerSubscriber,
+    from .filtered import (
+        BrokerSubscriberValidator,
+        FilteredBrokerSubscriber,
     )
     from .queued import (
         BrokerSubscriberQueue,
@@ -94,20 +94,20 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriberCls], Generic[BrokerSubscr
     def __init__(
         self,
         *args,
-        idempotent_builder: Optional[Builder] = None,
+        validator_builder: Optional[Builder] = None,
         queue_builder: Optional[BrokerSubscriberQueueBuilder] = None,
-        idempotent_cls: Optional[type[IdempotentBrokerSubscriber]] = None,
+        filtered_cls: Optional[type[FilteredBrokerSubscriber]] = None,
         queued_cls: Optional[type[QueuedBrokerSubscriber]] = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
-        if idempotent_cls is None:
-            from .idempotent import (
-                IdempotentBrokerSubscriber,
+        if filtered_cls is None:
+            from .filtered import (
+                FilteredBrokerSubscriber,
             )
 
-            idempotent_cls = IdempotentBrokerSubscriber
+            filtered_cls = FilteredBrokerSubscriber
 
         if queued_cls is None:
             from .queued import (
@@ -116,19 +116,19 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriberCls], Generic[BrokerSubscr
 
             queued_cls = QueuedBrokerSubscriber
 
-        self.duplicate_detector_builder = idempotent_builder
+        self.validator_builder = validator_builder
         self.queue_builder = queue_builder
 
-        self.idempotent_cls = idempotent_cls
+        self.filtered_cls = filtered_cls
         self.queued_cls = queued_cls
 
-    def with_idempotent_cls(self, idempotent_cls: type[IdempotentBrokerSubscriber]):
-        """Set the idempotent class.
+    def with_filtered_cls(self, filtered_cls: type[FilteredBrokerSubscriber]):
+        """Set the filtered class.
 
-        :param idempotent_cls: A subclass of ``IdempotentBrokerSubscriber``.
+        :param filtered_cls: A subclass of ``FilteredBrokerSubscriber``.
         :return: This method return the builder instance.
         """
-        self.idempotent_cls = idempotent_cls
+        self.filtered_cls = filtered_cls
 
         return self
 
@@ -150,8 +150,8 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriberCls], Generic[BrokerSubscr
         """
         self._with_builders_from_config(config)
 
-        if self.duplicate_detector_builder is not None:
-            self.duplicate_detector_builder.with_config(config)
+        if self.validator_builder is not None:
+            self.validator_builder.with_config(config)
         if self.queue_builder is not None:
             self.queue_builder.with_config(config)
         return super().with_config(config)
@@ -164,24 +164,24 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriberCls], Generic[BrokerSubscr
 
         broker_subscriber_config = broker_config["subscriber"]
 
-        if "idempotent" in broker_subscriber_config:
-            self.with_duplicate_detector(broker_subscriber_config["idempotent"])
+        if "validator" in broker_subscriber_config:
+            self.with_validator(broker_subscriber_config["validator"])
 
         if "queue" in broker_subscriber_config:
             self.with_queue(broker_subscriber_config["queue"])
 
-    def with_duplicate_detector(
+    def with_validator(
         self,
-        duplicate_detector: Union[type[BrokerSubscriberDuplicateDetector], Builder[BrokerSubscriberDuplicateDetector]],
+        validator: Union[type[BrokerSubscriberValidator], Builder[BrokerSubscriberValidator]],
     ):
         """Set the duplicate detector.
 
-        :param duplicate_detector: The duplicate detector to be set.
+        :param validator: The duplicate detector to be set.
         :return: This method return the builder instance.
         """
-        if not isinstance(duplicate_detector, Builder):
-            duplicate_detector = duplicate_detector.get_builder()
-        self.duplicate_detector_builder = duplicate_detector.copy()
+        if not isinstance(validator, Builder):
+            validator = validator.get_builder()
+        self.validator_builder = validator.copy()
         return self
 
     def with_queue(self, queue: Union[type[BrokerSubscriberQueue], BrokerSubscriberQueueBuilder]):
@@ -201,8 +201,8 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriberCls], Generic[BrokerSubscr
         :param kwargs: The kwargs to be set.
         :return: This method return the builder instance.
         """
-        if self.duplicate_detector_builder is not None:
-            self.duplicate_detector_builder.with_kwargs(kwargs)
+        if self.validator_builder is not None:
+            self.validator_builder.with_kwargs(kwargs)
 
         if self.queue_builder is not None:
             self.queue_builder.with_kwargs(kwargs)
@@ -250,9 +250,9 @@ class BrokerSubscriberBuilder(Builder[BrokerSubscriberCls], Generic[BrokerSubscr
         """
         impl = super().build()
 
-        if self.duplicate_detector_builder is not None:
-            duplicate_detector = self.duplicate_detector_builder.build()
-            impl = self.idempotent_cls(impl=impl, duplicate_detector=duplicate_detector, **self.kwargs)
+        if self.validator_builder is not None:
+            validator = self.validator_builder.build()
+            impl = self.filtered_cls(impl=impl, validator=validator, **self.kwargs)
 
         if self.queue_builder is not None:
             queue = self.queue_builder.build()
