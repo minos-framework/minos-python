@@ -55,7 +55,14 @@ class TestDiscoveryConnector(unittest.IsolatedAsyncioTestCase):
         await self.discovery.subscribe()
         self.assertEqual(1, mock.call_count)
         expected = call(
-            self.ip, 8080, "Order", [{"url": "/order", "method": "GET"}, {"url": "/ticket", "method": "POST"}]
+            self.ip,
+            8080,
+            "Order",
+            [
+                {"url": "/order", "method": "DELETE"},
+                {"url": "/order", "method": "GET"},
+                {"url": "/ticket", "method": "POST"},
+            ],
         )
         self.assertEqual(expected, mock.call_args)
 
