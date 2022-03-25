@@ -68,6 +68,6 @@ repos:
             -   id: minos-broker-rabbitmq-check
                 pass_filenames: false
                 entry: make --directory=packages/plugins/minos-broker-rabbitmq check
-                name: minos-broker-rabbitmq
+                name: Check minos-broker-rabbitmq
                 files: ^packages/plugins/minos-broker-rabbitmq/
                 language: system
