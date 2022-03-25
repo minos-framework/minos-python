@@ -58,7 +58,9 @@ class RabbitMQBrokerPublisher(BrokerPublisher):
         self.channel = await self.connection.channel()
 
     async def _destroy(self) -> None:
+        await self.channel.close()
         await self.connection.close()
+        await super()._destroy()
 
     async def _send(self, message: BrokerMessage) -> None:
         await self.channel.default_exchange.publish(Message(message.avro_bytes), routing_key=message.topic)
