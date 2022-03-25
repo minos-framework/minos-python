@@ -20,8 +20,6 @@ from ..requests import (
 
 
 class OpenAPIService:
-    """TODO"""
-
     def __init__(self, config: Config):
         self.config = config
         self.spec = SPEC_SCHEMA.copy()
@@ -29,8 +27,6 @@ class OpenAPIService:
     # noinspection PyUnusedLocal
     @enroute.rest.command("/spec/openapi", "GET")
     def generate_spec(self, request: Request) -> Response:
-        """TODO"""
-
         for endpoint in self.endpoints:
             url = endpoint["url"]
             method = endpoint["method"]
@@ -44,8 +40,6 @@ class OpenAPIService:
 
     @property
     def endpoints(self) -> list[dict]:
-        """TODO"""
-
         endpoints = list()
         for name in self.config.services:
             decorators = EnrouteAnalyzer(name, self.config).get_rest_command_query()
