@@ -80,7 +80,7 @@ class WalletQueryServiceRepository(MinosSetup):
         quotes_query = self.session.query(Quotes).filter(Quotes.ticker == ticker).order_by(Quotes.when.desc()).all()
         quotes = []
         for quote in quotes_query:
-            quotes.append({"close": quote.close_value, "when": quote.when})
+            quotes.append([quote.when, quote.close_value])
         return quotes
 
     def add_quote(self, ticker: str, close: float, volume: int, when: str):

@@ -82,5 +82,12 @@ services:
       target: production
     environment: *id001
     depends_on: *id002
+  microservice-crypto:
+    restart: always
+    build:
+      context: microservices/crypto
+      target: production
+    environment: *id001
+    depends_on: *id002
 x-microservice-environment: *id001
 x-microservice-depends-on: *id002

@@ -40,7 +40,7 @@ class WalletAggregate(Aggregate[Wallet]):
         """Create a new instance."""
         wallet = await Wallet.get(wallet_uudi)
         ticker = Ticker(ticker=ticker_value, flag=flag)
-        logger.warning("Added following information ticker {}, {}, {}".format(wallet_uudi, ticker_value, is_crypto))
+        logger.warning("Added following information ticker {}, {}, {}".format(wallet_uudi, ticker_value, flag))
         wallet.tickers.add(ticker)
         await wallet.save()
         return ticker.uuid

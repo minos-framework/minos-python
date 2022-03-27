@@ -6,3 +6,5 @@ CREATE DATABASE wallet_query_db;
 
 CREATE DATABASE stocks_db;
 CREATE DATABASE stocks_query_db;
+CREATE DATABASE crypto_db;
+CREATE DATABASE crypto_query_db;

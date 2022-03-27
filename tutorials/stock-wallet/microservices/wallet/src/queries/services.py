@@ -93,14 +93,7 @@ class WalletQueryService(QueryService):
         for ticker in event["tickers"]:
             self.repository.add_tickers(event["uuid"], ticker)
 
-    @enroute.broker.event("StocksUpdated.quotes.create")
-    async def wallet_add_quotes(self, request: Request) -> None:
-        """Handle the Wallet update events.
-
-        :param request: A request instance containing the aggregate difference.
-        :return: This method does not return anything.
-        """
+    @enroute.broker.event("QuotesChannel")
+    async def quotes_custom_event_receiver(self, request: Request):
         event: Event = await request.content()
-
-        for quote in event["quotes"]:
-            self.repository.add_quote(quote["ticker_name"], quote["close_value"], quote["volume"], quote["when"])
+        self.repository.add_quote(event["ticker"], event["close"], event["volume"], event["when"])
