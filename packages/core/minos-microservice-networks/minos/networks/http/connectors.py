@@ -84,6 +84,7 @@ class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
         :return: This method does not return anything.
         """
 
+        logger.info(f"Starting {self!r}...")
         self.mount_routes()
         await self._start()
 
@@ -92,6 +93,7 @@ class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
 
         :return: This method does not return anything.
         """
+        logger.info(f"Stopping {self!r}...")
         await self._stop()
 
     @abstractmethod
@@ -205,3 +207,6 @@ class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
         :return: A ``int`` value.
         """
         return self._adapter
+
+    def __repr__(self):
+        return f"{type(self).__name__}({self._host!r}, {self._port})"

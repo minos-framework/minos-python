@@ -4,6 +4,7 @@ from __future__ import (
 
 import asyncio
 import logging
+import traceback
 from contextlib import (
     suppress,
 )
@@ -185,15 +186,18 @@ class PeriodicTask:
 
         request = ScheduledRequest(now)
         logger.debug("Running periodic task...")
+        # noinspection PyBroadException
         try:
             self._running = True
             with suppress(asyncio.CancelledError):
                 response = self._fn(request)
                 if isawaitable(response):
                     await response
-        except ResponseException as exc:
-            logger.error(f"Raised an application exception: {exc!s}")
-        except Exception as exc:
-            logger.exception(f"Raised a system exception: {exc!r}")
+        except ResponseException:
+            tb = traceback.format_exc()
+            logger.error(f"Raised an application exception:\n {tb}")
+        except Exception:
+            tb = traceback.format_exc()
+            logger.exception(f"Raised a system exception:\n {tb}")
         finally:
             self._running = False
