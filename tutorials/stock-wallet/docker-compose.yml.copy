@@ -18,26 +18,23 @@ services:
       POSTGRES_PASSWORD: min0s
   zookeeper:
     restart: always
-    image: confluentinc/cp-zookeeper:latest
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - 22181:2181
+    image: digitalwonderland/zookeeper:latest
+    volumes:
+    - zookeeper:/var/lib/zookeeper
   kafka:
     restart: always
-    image: confluentinc/cp-kafka:latest
-    depends_on:
-      - zookeeper
+    image: wurstmeister/kafka:latest
     ports:
-      - 29092:29092
+    - '9092'
+    depends_on:
+    - zookeeper
+    volumes:
+    - kafka:/kafka/kafka-logs
     environment:
-      KAFKA_BROKER_ID: 1
+      KAFKA_LOG_DIRS: /kafka/kafka-logs
+      KAFKA_DELETE_TOPIC_ENABLE: 'true'
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ADVERTISED_HOST_NAME: kafka
   discovery:
     restart: always
     build: external/discovery

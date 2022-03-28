@@ -74,10 +74,12 @@ class CryptoCommandService(CommandService):
     @enroute.periodic.event("* * * * *")
     async def get_crypto_values(self, request: Request):
         tickers = await CryptoAggregate.get_all_tickers()
+        logger.warning("Periodic call Crypto----------")
         now = pendulum.now()
         now_minus_one_month = now.subtract(months=1)
         if len(tickers) > 0:
             for ticker in tickers:
+                logger.warning("Num tickers {}".format(len(tickers)))
                 ticker_updated = pendulum.parse(ticker["updated"])
                 results = self.call_remote(ticker["ticker"], now_minus_one_month.to_datetime_string())
                 for result in results:

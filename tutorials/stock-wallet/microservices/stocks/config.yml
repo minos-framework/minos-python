@@ -4,8 +4,8 @@ service:
   injections:
     lock_pool: minos.common.PostgreSqlLockPool
     postgresql_pool: minos.common.PostgreSqlPool
-    broker_publisher: minos.plugins.kafka.InMemoryQueuedKafkaBrokerPublisher
-    broker_subscriber_builder: minos.plugins.kafka.InMemoryQueuedKafkaBrokerSubscriberBuilder
+    broker_publisher: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerPublisher
+    broker_subscriber_builder: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
     broker_pool: minos.networks.BrokerClientPool
     transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
     event_repository: minos.aggregate.PostgreSqlEventRepository
