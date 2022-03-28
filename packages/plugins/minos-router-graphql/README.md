@@ -27,7 +27,7 @@ Modify `config.yml` file:
 ```yaml
 ...
 routers:
-   - minos.plugins.graphql.GraphQlRouter
+  - minos.plugins.graphql.GraphQlRouter
 ...
 ```
 
@@ -36,6 +36,7 @@ routers:
 ### Define your business operation
 
 We will use simple query for this demonstration:
+
 ```python
 from graphql import (
     GraphQLString,
@@ -57,27 +58,32 @@ class QueryService:
 ```
 
 ### Execute query
+
 Send `post` request to `http://your_ip_address:port/service_name/graphql` endpoint:
+
 ```json
 {
-    "query": "{ SimpleQuery }"
+  "query": "{ SimpleQuery }"
 }
 ```
 
 You will receive:
+
 ```json
 {
-    "data": {
-        "SimpleQuery": "ABCD"
-    },
-    "errors": []
+  "data": {
+    "SimpleQuery": "ABCD"
+  },
+  "errors": []
 }
 ```
+
 That's all you need to make it work !
 
 For more information about graphql and how to define fields or structures, please see the official [graphql-core](https://github.com/graphql-python/graphql-core). library.
 
 ## Decorators
+
 There are 2 types of decorators, one for `queries` and one for `mutations` (commands).
 
 ```python
@@ -86,6 +92,7 @@ def test_query(self, request: Request):
     ...
     return Responnse(...)
 
+
 @enroute.graphql.command(name="TestCommand", argument=GraphQLString, output=GraphQLString)
 def test_command(self, request: Request):
     ...
@@ -93,11 +100,13 @@ def test_command(self, request: Request):
 ```
 
 Both decorators have the following arguments:
-   - `name`: The name of the query or command
-   - `argument` [Optional]: The arguments it receives, if any.
-   - `output`: The expected output.
+
+- `name`: The name of the query or command
+- `argument` [Optional]: The arguments it receives, if any.
+- `output`: The expected output.
 
 ### Resolvers
+
 As you have seen above, the decorator does not specify the function that will resolve it.
 
 This is because it automatically takes the decorated function.
@@ -114,9 +123,11 @@ def test_query(self, request: Request):
 The function in charge of resolving the query is the decorated function `test_query`.
 
 ### Queries (Query Service)
+
 Queries are used for a single purpose as their name indicates and that is to obtain information, that is, for queries.
 
 Base structure example:
+
 ```python
 class QueryService:
     @enroute.graphql.query(name="TestQuery", argument=GraphQLString, output=GraphQLString)
@@ -126,6 +137,7 @@ class QueryService:
 ```
 
 More complex example:
+
 ```python
 from graphql import (
     GraphQLBoolean,
@@ -145,7 +157,6 @@ from minos.networks import (
     Response,
     enroute,
 )
-
 
 user_type = GraphQLObjectType(
     "UserType",
@@ -180,10 +191,10 @@ If you POST `{service_name}/graphql` endpoint passing the query and variables:
 
 ```json
 {
-    "query": "query ($userId: Int!) { GetUser(request: $userId) {id firstName lastName tweets verified}}",
-    "variables": {
-        "userId": 3
-    }
+  "query": "query ($userId: Int!) { GetUser(request: $userId) {id firstName lastName tweets verified}}",
+  "variables": {
+    "userId": 3
+  }
 }
 ```
 
@@ -191,23 +202,25 @@ Yoy will receive:
 
 ```json
 {
-    "data": {
-        "GetUser": {
-            "id": "3",
-            "firstName": "Jack",
-            "lastName": "Johnson",
-            "tweets": 563,
-            "verified": true
-        }
-    },
-    "errors": []
+  "data": {
+    "GetUser": {
+      "id": "3",
+      "firstName": "Jack",
+      "lastName": "Johnson",
+      "tweets": 563,
+      "verified": true
+    }
+  },
+  "errors": []
 }
 ```
 
 ### Mutations (Command Service)
+
 Mutations are used to create, update or delete information.
 
 Base structure example:
+
 ```python
 class CommandService:
     @enroute.graphql.command(name="TestQuery", argument=GraphQLString, output=GraphQLString)
@@ -217,6 +230,7 @@ class CommandService:
 ```
 
 More complex example:
+
 ```python
 from graphql import (
     GraphQLBoolean,
@@ -239,7 +253,6 @@ from minos.networks import (
     enroute,
 )
 
-
 user_type = GraphQLObjectType(
     "UserType",
     {
@@ -250,7 +263,6 @@ user_type = GraphQLObjectType(
         "verified": GraphQLField(GraphQLNonNull(GraphQLBoolean)),
     },
 )
-
 
 user_input_type = GraphQLInputObjectType(
     "UserInputType",
@@ -292,15 +304,15 @@ If you POST `{service_name}/graphql` endpoint passing the query and variables:
 
 ```json
 {
-    "query": "mutation ($userData: UserInputType!) { CreateUser(request: $userData) {id, firstName, lastName, tweets, verified}}",
-    "variables": {
-        "userData": {
-            "firstName": "John",
-            "lastName": "Doe",
-            "tweets": 42,
-            "verified": true
-        }
+  "query": "mutation ($userData: UserInputType!) { CreateUser(request: $userData) {id, firstName, lastName, tweets, verified}}",
+  "variables": {
+    "userData": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "tweets": 42,
+      "verified": true
     }
+  }
 }
 ```
 
@@ -308,21 +320,23 @@ Yoy will receive:
 
 ```json
 {
-    "data": {
-        "CreateUser": {
-            "id": "4kjjj43-l23k4l3-325kgaa2",
-            "firstName": "John",
-            "lastName": "Doe",
-            "tweets": 42,
-            "verified": true
-        }
-    },
-    "errors": []
+  "data": {
+    "CreateUser": {
+      "id": "4kjjj43-l23k4l3-325kgaa2",
+      "firstName": "John",
+      "lastName": "Doe",
+      "tweets": 42,
+      "verified": true
+    }
+  },
+  "errors": []
 }
 ```
 
 ### Get Schema
+
 By calling `{service_name}/graphql/schema` with `GET` method, you will receive the schema:
+
 ```text
 "type Query {\n  GetUser(request: Int): UserType\n}\n\ntype UserType {\n  id: ID!\n  firstName: String!\n  lastName: String!\n  tweets: Int\n  verified: Boolean!\n}\n\ntype Mutation {\n  CreateUser(request: UserInputType!): UserType\n}\n\ninput UserInputType {\n  firstName: String!\n  lastName: String!\n  tweets: Int\n  verified: Boolean\n}"
 ```
@@ -340,6 +354,7 @@ The source code of this project is hosted at the [GitHub Repository](https://git
 For usage questions, the best place to go to is [StackOverflow](https://stackoverflow.com/questions/tagged/minos).
 
 ## Discussion and Development
+
 Most development discussions take place over the [GitHub Issues](https://github.com/minos-framework/minos-python/issues). In addition, a [Gitter channel](https://gitter.im/minos-framework/community) is available for development-related questions.
 
 ## License
