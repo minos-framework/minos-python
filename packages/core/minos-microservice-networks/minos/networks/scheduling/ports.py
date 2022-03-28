@@ -16,8 +16,8 @@ from .schedulers import (
 logger = logging.getLogger(__name__)
 
 
-class PeriodicTaskSchedulerPort(Port):
-    """Task Scheduler Service class."""
+class PeriodicPort(Port):
+    """Periodic Port class."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -46,12 +46,12 @@ class PeriodicTaskSchedulerPort(Port):
         return PeriodicTaskScheduler.from_config(**self._init_kwargs)
 
 
-class PeriodicTaskSchedulerService(PeriodicTaskSchedulerPort):
+class PeriodicTaskSchedulerService(PeriodicPort):
     """Periodic Task Scheduler Service class."""
 
     def __init__(self, **kwargs):
         warnings.warn(
-            f"{PeriodicTaskSchedulerService!r} has been deprecated. Use {PeriodicTaskSchedulerPort} instead.",
+            f"{PeriodicTaskSchedulerService!r} has been deprecated. Use {PeriodicPort} instead.",
             DeprecationWarning,
         )
         super().__init__(**kwargs)

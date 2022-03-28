@@ -15,7 +15,7 @@ from .dispatchers import (
 )
 from .handlers import (
     BrokerHandler,
-    BrokerHandlerPort,
+    BrokerPort,
     BrokerHandlerService,
 )
 from .messages import (

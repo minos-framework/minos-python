@@ -176,7 +176,7 @@ databases:
     path: "./foo.lmdb"
 interfaces:
   broker:
-    port: minos.networks.BrokerHandlerPort
+    port: minos.networks.BrokerPort
     publisher:
       client: minos.plugins.kafka.KafkaBrokerPublisher
       queue: minos.networks.PostgreSqlBrokerPublisherQueue
@@ -190,7 +190,7 @@ interfaces:
       client: minos.plugins.aiohttp.AioHttpConnector
       port: 4545
   periodic:
-    port: minos.networks.PeriodicTaskSchedulerPort
+    port: minos.networks.PeriodicPort
 pools:
   lock: minos.common.PostgreSqlLockPool
   databasse: minos.common.PostgreSqlPool
@@ -992,7 +992,7 @@ databases:
     path: "./foobar.lmdb"
 interfaces:
   broker:
-    port: minos.networks.BrokerHandlerPort
+    port: minos.networks.BrokerPort
     publisher:
       client: minos.plugins.kafka.KafkaBrokerPublisher
       queue: minos.networks.PostgreSqlBrokerPublisherQueue
@@ -1006,7 +1006,7 @@ interfaces:
       client: minos.plugins.aiohttp.AioHttpConnector
       port: 4546
   periodic:
-    port: minos.networks.PeriodicTaskSchedulerPort
+    port: minos.networks.PeriodicPort
 pools:
   lock: minos.common.PostgreSqlLockPool
   databasse: minos.common.PostgreSqlPool

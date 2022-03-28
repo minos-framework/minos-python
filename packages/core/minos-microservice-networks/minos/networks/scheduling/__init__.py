@@ -2,7 +2,7 @@ from .crontab import (
     CronTab,
 )
 from .ports import (
-    PeriodicTaskSchedulerPort,
+    PeriodicPort,
     PeriodicTaskSchedulerService,
 )
 from .requests import (

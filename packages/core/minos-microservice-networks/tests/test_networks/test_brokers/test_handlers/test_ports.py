@@ -12,7 +12,7 @@ from minos.common.testing import (
 )
 from minos.networks import (
     BrokerHandler,
-    BrokerHandlerPort,
+    BrokerPort,
     BrokerHandlerService,
     InMemoryBrokerPublisher,
     InMemoryBrokerSubscriberBuilder,
@@ -22,7 +22,7 @@ from tests.utils import (
 )
 
 
-class TestBrokerHandlerPort(PostgresAsyncTestCase):
+class TestBrokerPort(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
@@ -31,17 +31,17 @@ class TestBrokerHandlerPort(PostgresAsyncTestCase):
         self.subscriber_builder = InMemoryBrokerSubscriberBuilder()
 
     def test_is_instance(self):
-        service = BrokerHandlerPort(config=self.config, publisher=self.publisher)
+        service = BrokerPort(config=self.config, publisher=self.publisher)
         self.assertIsInstance(service, Port)
 
     def test_handler(self):
-        service = BrokerHandlerPort(
+        service = BrokerPort(
             config=self.config, publisher=self.publisher, subscriber_builder=self.subscriber_builder
         )
         self.assertIsInstance(service.handler, BrokerHandler)
 
     async def test_start_stop(self):
-        service = BrokerHandlerPort(
+        service = BrokerPort(
             config=self.config, publisher=self.publisher, subscriber_builder=self.subscriber_builder
         )
 
@@ -72,13 +72,13 @@ class TestBrokerHandlerPort(PostgresAsyncTestCase):
 
 class TestBrokerHandlerService(unittest.TestCase):
     def test_is_subclass(self):
-        self.assertTrue(issubclass(BrokerHandlerService, BrokerHandlerPort))
+        self.assertTrue(issubclass(BrokerHandlerService, BrokerPort))
 
     def test_warnings(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
             port = BrokerHandlerService(config=CONFIG_FILE_PATH)
-            self.assertIsInstance(port, BrokerHandlerPort)
+            self.assertIsInstance(port, BrokerPort)
 
 
 if __name__ == "__main__":

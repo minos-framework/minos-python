@@ -28,7 +28,7 @@ Modify `config.yml` file:
 ...
 interfaces:
   broker:
-    port: minos.networks.BrokerHandlerPort
+    port: minos.networks.BrokerPort
     common:
       host: localhost
       port: 5672

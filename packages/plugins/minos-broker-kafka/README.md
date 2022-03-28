@@ -28,7 +28,7 @@ Modify `config.yml` file:
 ...
 interfaces:
   broker:
-    port: minos.networks.BrokerHandlerPort
+    port: minos.networks.BrokerPort
     common:
       host: localhost
       port: 9092
@@ -41,7 +41,6 @@ interfaces:
     subscriber:
       client: minos.plugins.kafka.KafkaBrokerSubscriber
       queue: minos.networks.PostgreSqlBrokerSubscriberQueue
-      validator: minos.networks.PostgreSqlBrokerSubscriberDuplicateValidator
 ...
 ```
 
