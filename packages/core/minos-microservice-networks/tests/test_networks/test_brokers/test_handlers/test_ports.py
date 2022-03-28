@@ -12,8 +12,8 @@ from minos.common.testing import (
 )
 from minos.networks import (
     BrokerHandler,
-    BrokerPort,
     BrokerHandlerService,
+    BrokerPort,
     InMemoryBrokerPublisher,
     InMemoryBrokerSubscriberBuilder,
 )
@@ -35,15 +35,11 @@ class TestBrokerPort(PostgresAsyncTestCase):
         self.assertIsInstance(service, Port)
 
     def test_handler(self):
-        service = BrokerPort(
-            config=self.config, publisher=self.publisher, subscriber_builder=self.subscriber_builder
-        )
+        service = BrokerPort(config=self.config, publisher=self.publisher, subscriber_builder=self.subscriber_builder)
         self.assertIsInstance(service.handler, BrokerHandler)
 
     async def test_start_stop(self):
-        service = BrokerPort(
-            config=self.config, publisher=self.publisher, subscriber_builder=self.subscriber_builder
-        )
+        service = BrokerPort(config=self.config, publisher=self.publisher, subscriber_builder=self.subscriber_builder)
 
         setup_mock = AsyncMock()
         destroy_mock = AsyncMock()

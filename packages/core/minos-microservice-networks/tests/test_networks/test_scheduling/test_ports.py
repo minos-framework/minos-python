@@ -11,8 +11,8 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    PeriodicTaskScheduler,
     PeriodicPort,
+    PeriodicTaskScheduler,
     PeriodicTaskSchedulerService,
 )
 from tests.utils import (
