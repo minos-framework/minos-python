@@ -1,5 +1,7 @@
 # History
 
-## 0.6.0 (2022-03-25)
+## 0.6.0 (2022-03-28)
 
-* Created RabbitMQ plugin.
+* Add `RabbitMQBrokerPublisher` as the implementation of the `rabbitmq` publisher.
+* Add `RabbitMQBrokerSubscriber` as the implementation of the `rabbitmq` subscriber.
+* Add `RabbitMQBrokerPublisherBuilder`, `RabbitMQBrokerSubscriberBuilder` and `RabbitMQBrokerBuilderMixin` classes to ease the building proces.

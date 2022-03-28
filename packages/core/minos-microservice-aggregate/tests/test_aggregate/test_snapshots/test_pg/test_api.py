@@ -43,6 +43,14 @@ class TestPostgreSqlSnapshotRepository(MinosTestCase, PostgresAsyncTestCase):
 
         self.classname = "path.to.Product"
 
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.snapshot_repository.setup()
+
+    async def asyncTearDown(self):
+        await self.snapshot_repository.destroy()
+        await super().asyncTearDown()
+
     def test_from_config(self):
         self.assertIsInstance(self.snapshot_repository.reader, PostgreSqlSnapshotReader)
         self.assertIsInstance(self.snapshot_repository.writer, PostgreSqlSnapshotWriter)
