@@ -12,8 +12,8 @@ from minos.common.testing import (
 )
 from minos.networks import (
     BrokerHandler,
-    BrokerPort,
     BrokerHandlerService,
+    BrokerPort,
     InMemoryBrokerPublisher,
     InMemoryBrokerSubscriberBuilder,
 )
