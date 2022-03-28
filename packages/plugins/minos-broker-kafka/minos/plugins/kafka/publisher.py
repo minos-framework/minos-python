@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 import logging
+import warnings
 from asyncio import (
     TimeoutError,
     wait_for,
@@ -10,23 +11,32 @@ from asyncio import (
 from contextlib import (
     suppress,
 )
+from functools import (
+    partial,
+)
+from typing import (
+    Optional,
+)
 
 from aiokafka import (
     AIOKafkaProducer,
 )
-from cached_property import (
-    cached_property,
-)
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerMessage,
     BrokerPublisher,
+    BrokerPublisherBuilder,
     InMemoryBrokerPublisherQueue,
     PostgreSqlBrokerPublisherQueue,
     QueuedBrokerPublisher,
+)
+
+from .common import (
+    KafkaBrokerBuilderMixin,
+    KafkaCircuitBreakerMixin,
 )
 
 logger = logging.getLogger(__name__)
@@ -35,8 +45,12 @@ logger = logging.getLogger(__name__)
 class PostgreSqlQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
     """PostgreSql Queued Kafka Broker Publisher class."""
 
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{PostgreSqlQueuedKafkaBrokerPublisher!r} has been deprecated.", DeprecationWarning)
+        super().__init__(*args, **kwargs)
+
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlQueuedKafkaBrokerPublisher:
+    def _from_config(cls, config: Config, **kwargs) -> PostgreSqlQueuedKafkaBrokerPublisher:
         impl = KafkaBrokerPublisher.from_config(config, **kwargs)
         queue = PostgreSqlBrokerPublisherQueue.from_config(config, **kwargs)
         return cls(impl, queue, **kwargs)
@@ -45,44 +59,94 @@ class PostgreSqlQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
 class InMemoryQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
     """In Memory Queued Kafka Broker Publisher class."""
 
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{InMemoryQueuedKafkaBrokerPublisher!r} has been deprecated.", DeprecationWarning)
+        super().__init__(*args, **kwargs)
+
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> InMemoryQueuedKafkaBrokerPublisher:
+    def _from_config(cls, config: Config, **kwargs) -> InMemoryQueuedKafkaBrokerPublisher:
         impl = KafkaBrokerPublisher.from_config(config, **kwargs)
         queue = InMemoryBrokerPublisherQueue.from_config(config, **kwargs)
         return cls(impl, queue, **kwargs)
 
 
-class KafkaBrokerPublisher(BrokerPublisher):
+class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
     """Kafka Broker Publisher class."""
 
-    def __init__(self, *args, broker_host: str, broker_port: int, **kwargs):
+    def __init__(self, *args, host: Optional[str] = None, port: Optional[int] = None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.broker_host = broker_host
-        self.broker_port = broker_port
 
-    @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> KafkaBrokerPublisher:
-        kwargs["broker_host"] = config.broker.host
-        kwargs["broker_port"] = config.broker.port
-        # noinspection PyProtectedMember
-        return cls(**config.broker.queue._asdict(), **kwargs)
+        if host is None:
+            host = "localhost"
+
+        if port is None:
+            port = 9092
+
+        self._host = host
+        self._port = port
+
+        self._client = None
+
+    @property
+    def host(self) -> str:
+        """The host of kafka.
+
+        :return: A ``str`` value.
+        """
+        return self._host
+
+    @property
+    def port(self) -> int:
+        """The port of kafka.
+
+        :return: A ``int`` value.
+        """
+        return self._port
 
     async def _setup(self) -> None:
         await super()._setup()
-        await self.client.start()
+        await self._start_client()
 
     async def _destroy(self) -> None:
-        with suppress(TimeoutError):
-            await wait_for(self.client.stop(), 0.5)
+        await self._stop_client()
         await super()._destroy()
 
-    async def _send(self, message: BrokerMessage) -> None:
-        await self.client.send_and_wait(message.topic, message.avro_bytes)
+    async def _start_client(self) -> None:
+        # noinspection PyBroadException
+        try:
+            await self.with_circuit_breaker(self.client.start)
+        except Exception as exc:
+            await self._stop_client()
+            raise exc
 
-    @cached_property
+    async def _stop_client(self):
+        with suppress(TimeoutError):
+            await wait_for(self._client.stop(), 0.5)
+
+    async def _send(self, message: BrokerMessage) -> None:
+        fn = partial(self.client.send_and_wait, message.topic, message.avro_bytes)
+        await self.with_circuit_breaker(fn)
+
+    @property
     def client(self) -> AIOKafkaProducer:
         """Get the client instance.
 
         :return: An ``AIOKafkaProducer`` instance.
         """
-        return AIOKafkaProducer(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
+        if self._client is None:
+            self._client = self._build_client()
+        return self._client
+
+    def _build_client(self) -> AIOKafkaProducer:
+        return AIOKafkaProducer(bootstrap_servers=self._bootstrap_servers)
+
+    @property
+    def _bootstrap_servers(self):
+        return f"{self.host}:{self.port}"
+
+
+class KafkaBrokerPublisherBuilder(BrokerPublisherBuilder[KafkaBrokerPublisher], KafkaBrokerBuilderMixin):
+    """Kafka Broker Publisher Builder class."""
+
+
+KafkaBrokerPublisher.set_builder(KafkaBrokerPublisherBuilder)

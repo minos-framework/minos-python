@@ -12,14 +12,22 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
 )
 
 
 class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def test_constructor(self):
+        pool = PostgreSqlMinosDatabase("foo")
+        self.assertEqual("foo", pool.database)
+        self.assertEqual("postgres", pool.user)
+        self.assertEqual("", pool.password)
+        self.assertEqual("localhost", pool.host)
+        self.assertEqual(5432, pool.port)
+
+    def test_constructor_extended(self):
         database = PostgreSqlMinosDatabase(**self.repository_db)
         self.assertEqual(self.repository_db["host"], database.host)
         self.assertEqual(self.repository_db["port"], database.port)
@@ -32,13 +40,13 @@ class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
             self.assertIsInstance(database.pool, PostgreSqlPool)
 
     async def test_pool_with_dependency_injections(self):
-        injector = DependencyInjector(self.config, postgresql_pool=PostgreSqlPool)
-        await injector.wire(modules=[sys.modules[__name__]])
+        injector = DependencyInjector(self.config, [PostgreSqlPool])
+        await injector.wire_and_setup_injections(modules=[sys.modules[__name__]])
 
         async with PostgreSqlMinosDatabase(**self.repository_db) as database:
             self.assertEqual(injector.postgresql_pool, database.pool)
 
-        await injector.unwire()
+        await injector.unwire_and_destroy_injections()
 
     async def test_submit_query(self):
         async with PostgreSqlMinosDatabase(**self.repository_db) as database:

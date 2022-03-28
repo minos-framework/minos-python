@@ -13,16 +13,13 @@ from uuid import (
     UUID,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
+    Inject,
+    Injectable,
     Lock,
-    MinosPool,
-    MinosSetup,
+    LockPool,
     NotProvidedException,
+    SetupMixin,
 )
 
 from ...exceptions import (
@@ -34,14 +31,15 @@ from ..entries import (
 )
 
 
-class TransactionRepository(ABC, MinosSetup):
+@Injectable("transaction_repository")
+class TransactionRepository(ABC, SetupMixin):
     """Transaction Repository base class."""
 
-    @inject
-    def __init__(self, lock_pool: MinosPool[Lock] = Provide["lock_pool"], *args, **kwargs):
+    @Inject()
+    def __init__(self, lock_pool: LockPool, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if lock_pool is None or isinstance(lock_pool, Provide):
+        if lock_pool is None:
             raise NotProvidedException("A lock pool instance is required.")
 
         self._lock_pool = lock_pool

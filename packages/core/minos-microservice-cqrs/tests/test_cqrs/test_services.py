@@ -1,18 +1,15 @@
 """tests.test_cqrs.test_services module."""
-
+import sys
 import unittest
 from unittest.mock import (
     AsyncMock,
     patch,
 )
 
-from dependency_injector import (
-    providers,
+from minos.common import (
+    DependencyInjector,
+    PostgreSqlLockPool,
 )
-from dependency_injector.containers import (
-    DynamicContainer,
-)
-
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -21,6 +18,7 @@ from minos.cqrs import (
     Service,
 )
 from minos.networks import (
+    BrokerClientPool,
     BrokerCommandEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
     InMemoryRequest,
@@ -34,23 +32,26 @@ from tests.utils import (
 )
 
 
-class TestServices(PostgresAsyncTestCase):
+class TestService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
-        self.broker_pool = AsyncMock()
-        self.saga_manager = AsyncMock()
 
-        self.container = DynamicContainer()
-        self.container.broker_pool = providers.Object(self.broker_pool)
+        self.lock_pool = PostgreSqlLockPool.from_config(self.config)
 
-        self.service = FakeService(self.container, config=self.config, saga_manager=self.saga_manager)
+        self.injector = DependencyInjector(self.config, [BrokerClientPool])
+        self.injector.wire_injections(modules=[sys.modules[__name__]])
+
+        self.service = FakeService(config=self.config, lock_pool=self.lock_pool)
+
+    def tearDown(self) -> None:
+        self.injector.unwire_injections()
 
     async def test_constructor(self):
         self.assertEqual(self.config, self.service.config)
-        self.assertEqual(self.saga_manager, self.service.saga_manager)
-        self.assertEqual(self.broker_pool, self.service.broker_pool)
+        self.assertEqual(self.lock_pool, self.service.lock_pool)
+        self.assertEqual(self.injector.broker_pool, self.service.broker_pool)
 
         with self.assertRaises(AttributeError):
             self.service.event_repository

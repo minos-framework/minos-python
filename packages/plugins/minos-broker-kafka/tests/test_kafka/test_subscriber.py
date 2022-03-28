@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from collections import (
     namedtuple,
 )
@@ -13,9 +14,12 @@ from aiokafka import (
 from kafka import (
     KafkaAdminClient,
 )
+from kafka.errors import (
+    KafkaConnectionError,
+)
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -42,12 +46,20 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(KafkaBrokerSubscriber, BrokerSubscriber))
 
+    def test_constructor(self):
+        subscriber = KafkaBrokerSubscriber(["foo", "bar"])
+        self.assertEqual({"foo", "bar"}, subscriber.topics)
+        self.assertEqual("localhost", subscriber.host)
+        self.assertEqual(9092, subscriber.port)
+        self.assertEqual(None, subscriber.group_id)
+
     async def test_from_config(self):
-        config = MinosConfig(CONFIG_FILE_PATH)
+        config = Config(CONFIG_FILE_PATH)
+        broker_config = config.get_interface_by_name("broker")["common"]
         async with KafkaBrokerSubscriber.from_config(config, topics={"foo", "bar"}) as subscriber:
-            self.assertEqual(config.broker.host, subscriber.broker_host)
-            self.assertEqual(config.broker.port, subscriber.broker_port)
-            self.assertEqual(config.service.name, subscriber.group_id)
+            self.assertEqual(broker_config["host"], subscriber.host)
+            self.assertEqual(broker_config["port"], subscriber.port)
+            self.assertEqual(config.get_name(), subscriber.group_id)
             self.assertEqual(False, subscriber.remove_topics_on_destroy)
             self.assertEqual({"foo", "bar"}, subscriber.topics)
 
@@ -66,6 +78,25 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
         async with KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}) as subscriber:
             client = subscriber.admin_client
             self.assertIsInstance(client, KafkaAdminClient)
+
+    async def test_setup_destroy_without_connection(self):
+        publisher = KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}, circuit_breaker_time=0.1)
+        stop_mock = AsyncMock(side_effect=publisher.client.stop)
+
+        async def _fn():
+            if publisher.is_circuit_breaker_recovering:
+                raise ValueError()
+            raise KafkaConnectionError()
+
+        start_mock = AsyncMock(side_effect=_fn)
+        publisher.client.start = start_mock
+        publisher.client.stop = stop_mock
+
+        with self.assertRaises(ValueError):
+            async with publisher:
+                pass
+
+        self.assertEqual(1, stop_mock.call_count)
 
     async def test_setup_destroy_client(self):
         subscriber = KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"})
@@ -178,34 +209,41 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
 
 class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_with_config(self):
         builder = KafkaBrokerSubscriberBuilder().with_config(self.config)
+        common_config = self.config.get_interface_by_name("broker")["common"]
 
         expected = {
-            "group_id": self.config.service.name,
-            "broker_host": self.config.broker.host,
-            "broker_port": self.config.broker.port,
+            "group_id": self.config.get_name(),
+            "host": common_config["host"],
+            "port": common_config["port"],
         }
         self.assertEqual(expected, builder.kwargs)
 
     def test_build(self):
+        common_config = self.config.get_interface_by_name("broker")["common"]
         builder = KafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
         subscriber = builder.build()
 
         self.assertIsInstance(subscriber, KafkaBrokerSubscriber)
         self.assertEqual({"one", "two"}, subscriber.topics)
-        self.assertEqual(self.config.broker.port, subscriber.broker_port)
-        self.assertEqual(self.config.broker.host, subscriber.broker_host)
+        self.assertEqual(common_config["host"], subscriber.host)
+        self.assertEqual(common_config["port"], subscriber.port)
 
 
 class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_build(self):
-        builder = PostgreSqlQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            builder = (
+                PostgreSqlQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+            )
+
         subscriber = builder.build()
 
         self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
@@ -215,10 +253,13 @@ class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
 
 class TestInMemoryQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(CONFIG_FILE_PATH)
+        self.config = Config(CONFIG_FILE_PATH)
 
     def test_build(self):
-        builder = InMemoryQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            builder = InMemoryQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+
         subscriber = builder.build()
 
         self.assertIsInstance(subscriber, QueuedBrokerSubscriber)

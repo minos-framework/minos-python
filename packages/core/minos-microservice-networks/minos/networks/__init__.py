@@ -1,6 +1,6 @@
 __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
-__version__ = "0.5.3"
+__version__ = "0.6.0"
 
 from .brokers import (
     REQUEST_HEADERS_CONTEXT_VAR,
@@ -15,7 +15,9 @@ from .brokers import (
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
     BrokerMessageV1Strategy,
+    BrokerPort,
     BrokerPublisher,
+    BrokerPublisherBuilder,
     BrokerPublisherQueue,
     BrokerQueue,
     BrokerRequest,
@@ -23,18 +25,26 @@ from .brokers import (
     BrokerResponseException,
     BrokerSubscriber,
     BrokerSubscriberBuilder,
+    BrokerSubscriberDuplicateValidator,
     BrokerSubscriberQueue,
     BrokerSubscriberQueueBuilder,
+    BrokerSubscriberValidator,
+    FilteredBrokerSubscriber,
     InMemoryBrokerPublisher,
     InMemoryBrokerPublisherQueue,
     InMemoryBrokerQueue,
     InMemoryBrokerSubscriber,
     InMemoryBrokerSubscriberBuilder,
+    InMemoryBrokerSubscriberDuplicateValidator,
     InMemoryBrokerSubscriberQueue,
     InMemoryBrokerSubscriberQueueBuilder,
     PostgreSqlBrokerPublisherQueue,
     PostgreSqlBrokerPublisherQueueQueryFactory,
     PostgreSqlBrokerQueue,
+    PostgreSqlBrokerQueueBuilder,
+    PostgreSqlBrokerSubscriberDuplicateValidator,
+    PostgreSqlBrokerSubscriberDuplicateValidatorBuilder,
+    PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
     PostgreSqlBrokerSubscriberQueue,
     PostgreSqlBrokerSubscriberQueueBuilder,
     PostgreSqlBrokerSubscriberQueueQueryFactory,
@@ -51,13 +61,14 @@ from .decorators import (
     Checker,
     CheckerMeta,
     CheckerWrapper,
-    EnrouteAnalyzer,
-    EnrouteBuilder,
+    EnrouteCollector,
     EnrouteDecorator,
     EnrouteDecoratorKind,
+    EnrouteFactory,
     Handler,
     HandlerMeta,
     HandlerWrapper,
+    HttpEnrouteDecorator,
     PeriodicEnrouteDecorator,
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
@@ -69,7 +80,6 @@ from .discovery import (
     DiscoveryClient,
     DiscoveryConnector,
     InMemoryDiscoveryClient,
-    KongDiscoveryClient,
 )
 from .exceptions import (
     MinosActionNotFoundException,
@@ -85,6 +95,15 @@ from .exceptions import (
     NotSatisfiedCheckerException,
     RequestException,
 )
+from .http import (
+    HttpAdapter,
+    HttpConnector,
+    HttpPort,
+    HttpRequest,
+    HttpResponse,
+    HttpResponseException,
+    RestService,
+)
 from .requests import (
     REQUEST_USER_CONTEXT_VAR,
     InMemoryRequest,
@@ -93,20 +112,29 @@ from .requests import (
     ResponseException,
     WrappedRequest,
 )
-from .rest import (
-    RestHandler,
-    RestRequest,
-    RestResponse,
-    RestResponseException,
-    RestService,
+from .routers import (
+    BrokerRouter,
+    HttpRouter,
+    PeriodicRouter,
+    RestHttpRouter,
+    Router,
 )
 from .scheduling import (
+    CronTab,
+    PeriodicPort,
     PeriodicTask,
     PeriodicTaskScheduler,
     PeriodicTaskSchedulerService,
     ScheduledRequest,
     ScheduledRequestContent,
     ScheduledResponseException,
+)
+from .specs import (
+    AsyncAPIService,
+    OpenAPIService,
+)
+from .system import (
+    SystemService,
 )
 from .utils import (
     Builder,

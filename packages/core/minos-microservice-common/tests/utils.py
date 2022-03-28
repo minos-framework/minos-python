@@ -1,44 +1,18 @@
-import sys
-import unittest
 from pathlib import (
     Path,
 )
 
-from dependency_injector import (
-    containers,
-    providers,
-)
-
 from minos.common import (
+    BuildableMixin,
+    Builder,
+    Injectable,
     Lock,
-    MinosPool,
+    LockPool,
+    Port,
 )
 
 BASE_PATH = Path(__file__).parent
-
-
-class MinosTestCase(unittest.IsolatedAsyncioTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.lock_pool = FakeLockPool()
-        self.container = containers.DynamicContainer()
-        self.container.lock_pool = providers.Object(self.lock_pool)
-        self.container.wire(modules=[sys.modules[__name__]])
-
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-
-        await self.lock_pool.setup()
-
-    async def asyncTearDown(self):
-        await self.lock_pool.destroy()
-
-        await super().asyncTearDown()
-
-    def tearDown(self) -> None:
-        self.container.unwire()
-        super().tearDown()
+CONFIG_FILE_PATH = BASE_PATH / "config" / "v1.yml"
 
 
 class FakeEntrypoint:
@@ -50,7 +24,7 @@ class FakeEntrypoint:
     async def __aenter__(self):
         """For testing purposes."""
 
-    async def graceful_shutdown(*args, **kwargs):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
         """For testing purposes."""
 
 
@@ -95,7 +69,7 @@ class FakeLock(Lock):
         return
 
 
-class FakeLockPool(MinosPool):
+class FakeLockPool(LockPool):
     """For testing purposes."""
 
     async def _create_instance(self):
@@ -103,3 +77,107 @@ class FakeLockPool(MinosPool):
 
     async def _destroy_instance(self, instance) -> None:
         """For testing purposes."""
+
+
+class FakePeriodicPort(Port):
+    """For testing purposes."""
+
+    async def _start(self) -> None:
+        """For testing purposes."""
+
+    async def _stop(self, err: Exception = None) -> None:
+        """For testing purposes."""
+
+
+class FakeHttpPort(Port):
+    """For testing purposes."""
+
+    async def _start(self) -> None:
+        """For testing purposes."""
+
+    async def _stop(self, err: Exception = None) -> None:
+        """For testing purposes."""
+
+
+class FakeBrokerPort(Port):
+    """For testing purposes."""
+
+    async def _start(self) -> None:
+        """For testing purposes."""
+
+    async def _stop(self, err: Exception = None) -> None:
+        """For testing purposes."""
+
+
+@Injectable("custom")
+class FakeCustomInjection:
+    """For testing purposes."""
+
+
+@Injectable("serializer")
+class FakeSerializer:
+    """For testing purposes."""
+
+
+@Injectable("http_connector")
+class FakeHttpConnector:
+    """For testing purposes."""
+
+
+@Injectable("broker_publisher")
+class FakeBrokerPublisher(BuildableMixin):
+    """For testing purposes."""
+
+
+class FakeBrokerPublisherBuilder(Builder[FakeBrokerPublisher]):
+    """For testing purposes."""
+
+
+FakeBrokerPublisher.set_builder(FakeBrokerPublisherBuilder)
+
+
+class FakeBrokerSubscriber(BuildableMixin):
+    """For testing purposes."""
+
+
+@Injectable("broker_subscriber_builder")
+class FakeBrokerSubscriberBuilder(Builder[FakeBrokerSubscriber]):
+    """For testing purposes."""
+
+
+FakeBrokerSubscriber.set_builder(FakeBrokerSubscriberBuilder)
+
+
+@Injectable("database_pool")
+class FakeDatabasePool:
+    """For testing purposes."""
+
+
+@Injectable("broker_pool")
+class FakeBrokerClientPool:
+    """For testing purposes."""
+
+
+@Injectable("discovery_connector")
+class FakeDiscoveryConnector:
+    """For testing purposes."""
+
+
+@Injectable("saga_manager")
+class FakeSagaManager:
+    """For testing purposes."""
+
+
+@Injectable("event_repository")
+class FakeEventRepository:
+    """For testing purposes."""
+
+
+@Injectable("snapshot_repository")
+class FakeSnapshotRepository:
+    """For testing purposes."""
+
+
+@Injectable("transaction_repository")
+class FakeTransactionRepository:
+    """For testing purposes."""

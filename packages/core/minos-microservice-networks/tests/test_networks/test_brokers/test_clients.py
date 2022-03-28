@@ -9,8 +9,8 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    MinosSetup,
     NotProvidedException,
+    SetupMixin,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -24,13 +24,13 @@ from minos.networks import (
     MinosHandlerNotFoundEnoughEntriesException,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
     FakeModel,
 )
 
 
 class TestBrokerClient(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
         super().setUp()
@@ -67,7 +67,7 @@ class TestBrokerClient(PostgresAsyncTestCase):
         self.assertTrue(broker.already_destroyed)
 
     def test_base_classes(self):
-        self.assertIsInstance(self.broker, MinosSetup)
+        self.assertIsInstance(self.broker, SetupMixin)
 
     async def test_send(self):
         mock = AsyncMock()

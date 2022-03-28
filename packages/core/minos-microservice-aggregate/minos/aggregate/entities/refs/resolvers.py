@@ -16,12 +16,8 @@ from uuid import (
     UUID,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
+    Inject,
     Model,
 )
 from minos.networks import (
@@ -48,8 +44,8 @@ class RefResolver:
     """Ref Resolver class."""
 
     # noinspection PyUnusedLocal
-    @inject
-    def __init__(self, broker_pool: BrokerClientPool = Provide["broker_pool"], **kwargs):
+    @Inject()
+    def __init__(self, broker_pool: BrokerClientPool, **kwargs):
         self.broker_pool = broker_pool
 
     # noinspection PyUnusedLocal

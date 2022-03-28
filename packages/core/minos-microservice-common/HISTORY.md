@@ -292,3 +292,20 @@ History
 * Big performance improvement related with a caching layer over type hint comparisons at `TypeHintComparator`.
 * Improve attribute and item accessors of `Model`.
 * Fix bug related with casting from `dict` to `Model` instances on field setters.
+
+0.6.0 (2022-03-28)
+------------------
+
+* Add `Config` with support for config versioning.
+* Add `ConfigV1` as the class that supports the V1 config file.
+* Add `ConfigV2` as the class that supports the V1 config file.
+* Deprecate `MinosConfig` in favor of `Config`. 
+* Add `get_internal_modules` function.
+* Add `Injectable` decorator to provide a way to set a class as injectable.
+* Add `InjectableMixin` class that provides the necessary methods to be injectable.
+* Add `Inject` decorator to provide a way to inject variables on functions based on types.
+* Add `LockPool` base class as the base class for lock pools.
+* Add `Object` base class with the purpose to avoid issues related with multi-inheritance and mixins.
+* Add `Port` base class as the base class for ports.
+* Add `CircuitBreakerMixin` class to provide circuit breaker functionalities.
+* Add `SetupMixin` class as a replacement of the `MinosSetup` class.

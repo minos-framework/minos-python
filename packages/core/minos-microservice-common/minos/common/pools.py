@@ -1,4 +1,5 @@
 import logging
+import warnings
 from abc import (
     ABC,
 )
@@ -20,7 +21,7 @@ from aiomisc.pool import (
 )
 
 from .setup import (
-    MinosSetup,
+    SetupMixin,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,24 +29,24 @@ logger = logging.getLogger(__name__)
 P = TypeVar("P")
 
 
-class MinosPool(MinosSetup, PoolBase, Generic[P], ABC):
+class Pool(SetupMixin, PoolBase, Generic[P], ABC):
     """Base class for Pool implementations in minos"""
 
     def __init__(self, *args, maxsize: int = 10, recycle: Optional[int] = 300, already_setup: bool = True, **kwargs):
-        MinosSetup.__init__(self, *args, already_setup=already_setup, **kwargs)
-        PoolBase.__init__(self, maxsize=maxsize, recycle=recycle)
+        super().__init__(*args, maxsize=maxsize, recycle=recycle, already_setup=already_setup, **kwargs)
 
+    # noinspection PyUnresolvedReferences
     async def __acquire(self) -> Any:  # pragma: no cover
-        # FIXME: This method inheritance should be improved.
-
         if self._instances.empty() and not self._semaphore.locked():
             await self._PoolBase__create_new_instance()
 
         instance = await self._instances.get()
 
+        # noinspection PyBroadException
         try:
             result = await self._check_instance(instance)
         except Exception:
+            logger.warning("Check instance %r failed", instance)
             self._PoolBase__recycle_instance(instance)
         else:
             if not result:
@@ -53,7 +54,13 @@ class MinosPool(MinosSetup, PoolBase, Generic[P], ABC):
                 return await self._PoolBase__acquire()
 
         self._used.add(instance)
+        logger.debug(f"Acquired instance: {instance!r}")
         return instance
+
+    # noinspection PyUnresolvedReferences
+    async def __release(self, instance: Any) -> Any:  # pragma: no cover
+        await self._PoolBase__release(instance)
+        logger.debug(f"Released instance: {instance!r}")
 
     def acquire(self, *args, **kwargs) -> P:
         """Acquire a new instance wrapped on an asynchronous context manager.
@@ -62,7 +69,8 @@ class MinosPool(MinosSetup, PoolBase, Generic[P], ABC):
         :param kwargs: Additional named arguments.
         :return: An asynchronous context manager.
         """
-        return ContextManager(self.__acquire, self._PoolBase__release)
+        # noinspection PyUnresolvedReferences
+        return ContextManager(self.__acquire, self.__release)
 
     async def _destroy(self) -> None:
         if len(self._used):
@@ -74,3 +82,11 @@ class MinosPool(MinosSetup, PoolBase, Generic[P], ABC):
 
     async def _check_instance(self, instance: P) -> bool:
         return True
+
+
+class MinosPool(Pool, Generic[P], ABC):
+    """MinosPool class."""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{MinosPool!r} has been deprecated. Use {Pool} instead.", DeprecationWarning)
+        super().__init__(*args, **kwargs)

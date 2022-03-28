@@ -1,0 +1,26 @@
+aggregate: Crypto
+apigateway: minos
+apigateway_deploy: self-hosted
+author: Clariteia Devs
+broker: kafka
+broker_deploy: self-hosted
+database: postgres
+deploy: docker-compose
+description: Crypto crawler
+discovery: minos
+discovery_database: redis
+discovery_deploy: self-hosted
+email: devs@clariteia.com
+language: python
+name: crypto
+package_manager: poetry
+postgres_deploy: self-hosted
+project_deploy: docker-compose
+project_description: A Microservice example for stock options
+project_name: stock-wallet
+project_version: 0.1.0
+redis_deploy: self-hosted
+template_name: project-init
+template_registry: https://github.com/minos-framework/minos-templates/releases/download/v0.1.3
+template_version: v0.1.3
+version: 0.1.0

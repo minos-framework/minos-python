@@ -1,19 +1,16 @@
 __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
-__version__ = "0.5.3"
+__version__ = "0.6.0"
 
-from .configuration import (
-    BROKER,
-    DISCOVERY,
-    QUEUE,
-    REPOSITORY,
-    REST,
-    SAGA,
-    SERVICE,
-    SNAPSHOT,
-    STORAGE,
+from .builders import (
+    BuildableMixin,
+    Builder,
+)
+from .config import (
+    Config,
+    ConfigV1,
+    ConfigV2,
     MinosConfig,
-    MinosConfigAbstract,
 )
 from .database import (
     PostgreSqlLock,
@@ -51,16 +48,21 @@ from .exceptions import (
 )
 from .importlib import (
     classname,
+    get_internal_modules,
     import_module,
 )
-from .injectors import (
+from .injections import (
     DependencyInjector,
+    Inject,
+    Injectable,
+    InjectableMixin,
 )
 from .launchers import (
     EntrypointLauncher,
 )
 from .locks import (
     Lock,
+    LockPool,
 )
 from .meta import (
     classproperty,
@@ -92,8 +94,15 @@ from .model import (
     TypeHintComparator,
     is_model_type,
 )
+from .object import (
+    Object,
+)
 from .pools import (
     MinosPool,
+    Pool,
+)
+from .ports import (
+    Port,
 )
 from .protocol import (
     MinosAvroDatabaseProtocol,
@@ -102,8 +111,12 @@ from .protocol import (
     MinosBinaryProtocol,
     MinosJsonBinaryProtocol,
 )
+from .retries import (
+    CircuitBreakerMixin,
+)
 from .setup import (
     MinosSetup,
+    SetupMixin,
 )
 from .storage import (
     MinosStorage,

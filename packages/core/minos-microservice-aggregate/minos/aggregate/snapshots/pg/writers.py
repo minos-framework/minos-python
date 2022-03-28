@@ -10,12 +10,8 @@ from uuid import (
     UUID,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
+    Inject,
     NotProvidedException,
     import_module,
 )
@@ -40,34 +36,34 @@ from ..entries import (
 from .abc import (
     PostgreSqlSnapshotSetup,
 )
+from .readers import (
+    PostgreSqlSnapshotReader,
+)
 
 if TYPE_CHECKING:
     from ...entities import (
         RootEntity,
-    )
-    from .readers import (
-        PostgreSqlSnapshotReader,
     )
 
 
 class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
     """Minos Snapshot Dispatcher class."""
 
-    @inject
+    @Inject()
     def __init__(
         self,
         *args,
         reader: PostgreSqlSnapshotReader,
-        event_repository: EventRepository = Provide["event_repository"],
-        transaction_repository: TransactionRepository = Provide["transaction_repository"],
+        event_repository: EventRepository,
+        transaction_repository: TransactionRepository,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
-        if event_repository is None or isinstance(event_repository, Provide):
+        if event_repository is None:
             raise NotProvidedException("An event repository instance is required.")
 
-        if transaction_repository is None or isinstance(transaction_repository, Provide):
+        if transaction_repository is None:
             raise NotProvidedException("A transaction repository instance is required.")
 
         self._reader = reader

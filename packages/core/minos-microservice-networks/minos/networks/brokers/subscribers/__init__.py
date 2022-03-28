@@ -2,6 +2,15 @@ from .abc import (
     BrokerSubscriber,
     BrokerSubscriberBuilder,
 )
+from .filtered import (
+    BrokerSubscriberDuplicateValidator,
+    BrokerSubscriberValidator,
+    FilteredBrokerSubscriber,
+    InMemoryBrokerSubscriberDuplicateValidator,
+    PostgreSqlBrokerSubscriberDuplicateValidator,
+    PostgreSqlBrokerSubscriberDuplicateValidatorBuilder,
+    PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
+)
 from .memory import (
     InMemoryBrokerSubscriber,
     InMemoryBrokerSubscriberBuilder,

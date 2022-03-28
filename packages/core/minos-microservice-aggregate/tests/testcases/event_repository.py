@@ -39,11 +39,18 @@ class EventRepositoryTestCase(MinosTestCase):
         self.uuid = uuid4()
 
         self.event_repository = self.build_event_repository()
-
         self.field_diff_container_patcher = patch(
             "minos.aggregate.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
         )
         self.field_diff_container_patcher.start()
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.event_repository.setup()
+
+    async def asyncTearDown(self):
+        await self.event_repository.destroy()
+        await super().asyncTearDown()
 
     def tearDown(self):
         self.field_diff_container_patcher.stop()

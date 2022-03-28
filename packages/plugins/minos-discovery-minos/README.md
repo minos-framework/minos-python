@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
+  <a href="https://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
 </p>
 
 ## minos-discovery-minos
@@ -12,9 +12,27 @@
 
 ## Summary
 
-Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python.
-Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
-asynchronous environment.
+Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python. Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an asynchronous environment.
+
+## Installation
+
+Install the dependency:
+
+```shell
+pip install minos-discovery-minos
+```
+
+Modify `config.yml` file:
+
+```yaml
+...
+discovery:
+  connector: minos.networks.DiscoveryConnector
+  client: minos.plugins.minos_discovery.MinosDiscoveryClient
+  host: localhost
+  port: 5567
+...
+```
 
 ## Documentation
 
@@ -29,6 +47,7 @@ The source code of this project is hosted at the [GitHub Repository](https://git
 For usage questions, the best place to go to is [StackOverflow](https://stackoverflow.com/questions/tagged/minos).
 
 ## Discussion and Development
+
 Most development discussions take place over the [GitHub Issues](https://github.com/minos-framework/minos-python/issues). In addition, a [Gitter channel](https://gitter.im/minos-framework/community) is available for development-related questions.
 
 ## License

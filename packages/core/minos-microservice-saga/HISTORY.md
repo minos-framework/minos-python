@@ -180,3 +180,9 @@ History
 ------------------
 
 * Improve attribute and item accessors of `SagaContext`.
+
+0.6.0 (2022-03-28)
+------------------
+
+* Replace `dependency-injector`'s injection classes by the ones provided by the `minos.common.injections` module.
+* Be compatible with latest `minos.common.Config` API.

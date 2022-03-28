@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
+  <a href="https://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
 </p>
 
 ## minos-broker-kafka
@@ -12,9 +12,37 @@
 
 ## Summary
 
-Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python.
-Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
-asynchronous environment.
+Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python. Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an asynchronous environment.
+
+## Installation
+
+Install the dependency:
+
+```shell
+pip install minos-broker-kafka
+```
+
+Modify `config.yml` file:
+
+```yaml
+...
+interfaces:
+  broker:
+    port: minos.networks.BrokerPort
+    common:
+      host: localhost
+      port: 9092
+      queue:
+        records: 1000
+        retry: 2
+    publisher:
+      client: minos.plugins.kafka.KafkaBrokerPublisher
+      queue: minos.networks.PostgreSqlBrokerPublisherQueue
+    subscriber:
+      client: minos.plugins.kafka.KafkaBrokerSubscriber
+      queue: minos.networks.PostgreSqlBrokerSubscriberQueue
+...
+```
 
 ## Documentation
 
@@ -29,6 +57,7 @@ The source code of this project is hosted at the [GitHub Repository](https://git
 For usage questions, the best place to go to is [StackOverflow](https://stackoverflow.com/questions/tagged/minos).
 
 ## Discussion and Development
+
 Most development discussions take place over the [GitHub Issues](https://github.com/minos-framework/minos-python/issues). In addition, a [Gitter channel](https://gitter.im/minos-framework/community) is available for development-related questions.
 
 ## License

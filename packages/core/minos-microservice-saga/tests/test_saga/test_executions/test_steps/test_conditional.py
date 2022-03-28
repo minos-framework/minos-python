@@ -81,7 +81,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
         with patch("minos.saga.SagaExecution.commit") as commit_mock:
             context = await self.execution.execute(context, response=response, **self.execute_kwargs)
         self.assertEqual(SagaStepStatus.Finished, self.execution.status)
-        self.assertEqual({self.config.service.name}, self.execution.related_services)
+        self.assertEqual({self.config.get_name()}, self.execution.related_services)
         self.assertEqual(SagaContext(option=1, order=Foo("order")), context)
         self.assertEqual(0, commit_mock.call_count)
 
