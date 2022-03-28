@@ -12,9 +12,38 @@
 
 ## Summary
 
-Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python.
-Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
-asynchronous environment.
+Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python. Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an asynchronous environment.
+
+## Installation
+
+Install the dependency:
+
+```shell
+pip install minos-broker-rabbitmq
+```
+
+Modify `config.yml` file:
+
+```yaml
+...
+interfaces:
+  broker:
+    port: minos.networks.BrokerHandlerPort
+    common:
+      host: localhost
+      port: 5672
+      queue:
+        records: 1000
+        retry: 2
+    publisher:
+      client: minos.plugins.rabbitmq.RabbitMQBrokerPublisher
+      queue: minos.networks.PostgreSqlBrokerPublisherQueue
+    subscriber:
+      client: minos.plugins.rabbitmq.RabbitMQBrokerSubscriber
+      queue: minos.networks.PostgreSqlBrokerSubscriberQueue
+      validator: minos.networks.PostgreSqlBrokerSubscriberDuplicateValidator
+...
+```
 
 ## Documentation
 
@@ -29,6 +58,7 @@ The source code of this project is hosted at the [GitHub Repository](https://git
 For usage questions, the best place to go to is [StackOverflow](https://stackoverflow.com/questions/tagged/minos).
 
 ## Discussion and Development
+
 Most development discussions take place over the [GitHub Issues](https://github.com/minos-framework/minos-python/issues). In addition, a [Gitter channel](https://gitter.im/minos-framework/community) is available for development-related questions.
 
 ## License

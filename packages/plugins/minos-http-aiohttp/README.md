@@ -16,6 +16,28 @@ Minos is a framework which helps you create [reactive](https://www.reactivemanif
 Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
 asynchronous environment.
 
+## Installation
+
+Install the dependency:
+
+```shell
+pip install minos-http-aiohttp
+```
+
+Modify `config.yml` file:
+
+```yaml
+...
+interfaces:
+  http:
+    port: minos.networks.HttpPort
+    connector:
+      client: minos.plugins.aiohttp.AioHttpConnector
+      host: 0.0.0.0
+      port: 8082
+...
+```
+
 ## Documentation
 
 The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).
