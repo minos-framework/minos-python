@@ -18,7 +18,6 @@ from tests.utils import (
 
 
 class TestCryptoCommandService(unittest.IsolatedAsyncioTestCase):
-
     def setUp(self) -> None:
         self.injector = build_dependency_injector()
 
@@ -40,5 +39,6 @@ class TestCryptoCommandService(unittest.IsolatedAsyncioTestCase):
         response = service.call_remote("BTC/USD", now_minus_one_month.to_datetime_string())
         self.assertIsInstance(service, CryptoCommandService)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

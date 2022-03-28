@@ -8,6 +8,7 @@ from minos.aggregate import (
     RootEntity,
 )
 
+
 class Stocks(RootEntity):
     """Stocks RootEntity class."""
 
