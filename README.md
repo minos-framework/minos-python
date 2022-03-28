@@ -1155,6 +1155,7 @@ The core packages provide the base implementation of the framework.
 The plugin packages provide connectors to external technologies like brokers, discovery services, databases, serializers and so on.
 
 * [minos-broker-kafka](https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-kafka): The `kafka` plugin package.
+* [minos-broker-rabbitmq](https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-rabbitmq): The `rabbitmq` plugin package.
 * [minos-discovery-minos](https://minos-framework.github.io/minos-python/packages/plugins/minos-discovery-minos): The `minos-discovery` plugin package.
 * [minos-http-aiohttp](https://minos-framework.github.io/minos-python/packages/plugins/minos-http-aiohttp): The `aiohttp` plugin package.
 * [minos-router-graphql](https://minos-framework.github.io/minos-python/packages/plugins/minos-router-graphql): The `grapqhl` plugin package.
