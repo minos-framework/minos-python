@@ -9,7 +9,7 @@ from typing import (
 )
 
 from minos.common import (
-    MinosConfig,
+    Config,
 )
 
 from ..abc import (
@@ -44,14 +44,14 @@ class PostgreSqlSnapshotRepository(SnapshotRepository):
         self.writer = writer
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotRepository:
+    def _from_config(cls, config: Config, **kwargs) -> PostgreSqlSnapshotRepository:
         if "reader" not in kwargs:
             kwargs["reader"] = PostgreSqlSnapshotReader.from_config(config, **kwargs)
 
         if "writer" not in kwargs:
             kwargs["writer"] = PostgreSqlSnapshotWriter.from_config(config, **kwargs)
 
-        return cls(**config.snapshot._asdict(), **kwargs)
+        return cls(**config.get_database_by_name("snapshot"), **kwargs)
 
     async def _setup(self) -> None:
         await self.writer.setup()

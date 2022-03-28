@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from typing import (
     Optional,
 )
@@ -180,22 +181,54 @@ class TestEventAccessors(unittest.TestCase):
             self.diff.wheels
 
     def test_get_one_single(self):
-        observed = self.diff.get_one("color")
-        expected = "red"
+        expected = self.diff.get_field("color")
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            observed = self.diff.get_one("color")
         self.assertEqual(expected, observed)
 
     def test_get_one_single_diff(self):
-        observed = self.diff.get_one("color", return_diff=True)
-        expected = FieldDiff("color", str, "red")
+        expected = self.diff.get_field("color", return_diff=True)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            observed = self.diff.get_one("color", return_diff=True)
         self.assertEqual(expected, observed)
 
     def test_get_one_multiple(self):
-        observed = self.diff.get_one("doors")
-        expected = [5, 3]
+        expected = self.diff.get_field("doors")
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            observed = self.diff.get_one("doors")
         self.assertEqual(expected, observed)
 
     def test_get_one_multiple_diff(self):
-        observed = self.diff.get_one("doors", return_diff=True)
+        expected = self.diff.get_field("doors", return_diff=True)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            observed = self.diff.get_one("doors", return_diff=True)
+        self.assertEqual(expected, observed)
+
+    def test_get_field_single(self):
+        observed = self.diff.get_field("color")
+        expected = "red"
+        self.assertEqual(expected, observed)
+
+    def test_get_field_single_diff(self):
+        observed = self.diff.get_field("color", return_diff=True)
+        expected = FieldDiff("color", str, "red")
+        self.assertEqual(expected, observed)
+
+    def test_get_field_multiple(self):
+        observed = self.diff.get_field("doors")
+        expected = [5, 3]
+        self.assertEqual(expected, observed)
+
+    def test_get_field_multiple_diff(self):
+        observed = self.diff.get_field("doors", return_diff=True)
         expected = [
             IncrementalFieldDiff("doors", int, 5, Action.CREATE),
             IncrementalFieldDiff("doors", int, 3, Action.CREATE),
@@ -203,15 +236,31 @@ class TestEventAccessors(unittest.TestCase):
         self.assertEqual(expected, observed)
 
     def test_get_all(self):
-        observed = self.diff.get_all()
+        expected = self.diff.get_fields()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            observed = self.diff.get_all()
+        self.assertEqual(expected, observed)
+
+    def test_get_all_diffs(self):
+        expected = self.diff.get_fields(return_diff=True)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            observed = self.diff.get_all(return_diff=True)
+        self.assertEqual(expected, observed)
+
+    def test_get_fields(self):
+        observed = self.diff.get_fields()
         expected = {
             "color": "red",
             "doors": [5, 3],
         }
         self.assertEqual(expected, observed)
 
-    def test_get_all_diffs(self):
-        observed = self.diff.get_all(return_diff=True)
+    def test_get_fields_diffs(self):
+        observed = self.diff.get_fields(return_diff=True)
         expected = {
             "color": FieldDiff("color", str, "red"),
             "doors": [

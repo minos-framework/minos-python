@@ -1,5 +1,6 @@
 import unittest
 from typing import (
+    Optional,
     TypedDict,
 )
 
@@ -11,6 +12,7 @@ from minos.common import (
 )
 from tests.model_classes import (
     Foo,
+    User,
 )
 
 
@@ -92,6 +94,18 @@ class TestModelType(unittest.TestCase):
     def test_from_typed_dict_without_namespace(self):
         expected = ModelType.build("Foo", {"text": int})
         observed = ModelType.from_typed_dict(TypedDict("Foo", {"text": int}))
+        self.assertEqual(expected, observed)
+
+    def test_from_model(self):
+        model = User
+        expected = ModelType.build("tests.model_classes.User", {"id": int, "username": Optional[str]})
+        observed = ModelType.from_model(model)
+        self.assertEqual(expected, observed)
+
+    def test_from_model_instance(self):
+        model = User(1234, "johndoe")
+        expected = ModelType.build("tests.model_classes.User", {"id": int, "username": Optional[str]})
+        observed = ModelType.from_model(model)
         self.assertEqual(expected, observed)
 
     def test_call_declarative_model(self):

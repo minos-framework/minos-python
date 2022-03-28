@@ -33,14 +33,14 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
     Car,
     MinosTestCase,
 )
 
 
 class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
         super().setUp()
@@ -104,11 +104,12 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         self.assertTrue(issubclass(PostgreSqlSnapshotWriter, PostgreSqlSnapshotSetup))
 
     def test_from_config(self):
-        self.assertEqual(self.config.snapshot.host, self.writer.host)
-        self.assertEqual(self.config.snapshot.port, self.writer.port)
-        self.assertEqual(self.config.snapshot.database, self.writer.database)
-        self.assertEqual(self.config.snapshot.user, self.writer.user)
-        self.assertEqual(self.config.snapshot.password, self.writer.password)
+        snapshot_config = self.config.get_database_by_name("snapshot")
+        self.assertEqual(snapshot_config["host"], self.writer.host)
+        self.assertEqual(snapshot_config["port"], self.writer.port)
+        self.assertEqual(snapshot_config["database"], self.writer.database)
+        self.assertEqual(snapshot_config["user"], self.writer.user)
+        self.assertEqual(snapshot_config["password"], self.writer.password)
 
     def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):

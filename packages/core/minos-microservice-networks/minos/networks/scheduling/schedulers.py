@@ -4,6 +4,7 @@ from __future__ import (
 
 import asyncio
 import logging
+import traceback
 from contextlib import (
     suppress,
 )
@@ -21,21 +22,22 @@ from typing import (
     Union,
 )
 
-from crontab import (
-    CronTab,
-)
+from crontab import CronTab as CronTabImpl
 
 from minos.common import (
-    MinosConfig,
-    MinosSetup,
+    Config,
+    SetupMixin,
     current_datetime,
 )
 
 from ..decorators import (
-    EnrouteBuilder,
+    EnrouteFactory,
 )
 from ..requests import (
     ResponseException,
+)
+from .crontab import (
+    CronTab,
 )
 from .requests import (
     ScheduledRequest,
@@ -44,7 +46,7 @@ from .requests import (
 logger = logging.getLogger(__name__)
 
 
-class PeriodicTaskScheduler(MinosSetup):
+class PeriodicTaskScheduler(SetupMixin):
     """Periodic Task Scheduler class."""
 
     def __init__(self, tasks: set[PeriodicTask], *args, **kwargs):
@@ -52,13 +54,13 @@ class PeriodicTaskScheduler(MinosSetup):
         self._tasks = tasks
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> PeriodicTaskScheduler:
+    def _from_config(cls, config: Config, **kwargs) -> PeriodicTaskScheduler:
         tasks = cls._tasks_from_config(config, **kwargs)
         return cls(tasks, **kwargs)
 
     @staticmethod
-    def _tasks_from_config(config: MinosConfig, **kwargs) -> set[PeriodicTask]:
-        builder = EnrouteBuilder(*config.services, middleware=config.middleware)
+    def _tasks_from_config(config: Config, **kwargs) -> set[PeriodicTask]:
+        builder = EnrouteFactory(*config.get_services(), middleware=config.get_middleware())
         decorators = builder.get_periodic_event(config=config, **kwargs)
         tasks = {PeriodicTask(decorator.crontab, fn) for decorator, fn in decorators.items()}
         return tasks
@@ -93,8 +95,8 @@ class PeriodicTask:
 
     _task: Optional[asyncio.Task]
 
-    def __init__(self, crontab: Union[str, CronTab], fn: Callable[[ScheduledRequest], Awaitable[None]]):
-        if isinstance(crontab, str):
+    def __init__(self, crontab: Union[str, CronTab, CronTabImpl], fn: Callable[[ScheduledRequest], Awaitable[None]]):
+        if not isinstance(crontab, CronTab):
             crontab = CronTab(crontab)
 
         self._crontab = crontab
@@ -161,12 +163,9 @@ class PeriodicTask:
 
         :return: This method never returns.
         """
-        now = current_datetime()
-        await asyncio.sleep(self._crontab.next(now))
 
-        while True:
-            now = current_datetime()
-            await asyncio.gather(asyncio.sleep(self._crontab.next(now)), self.run_once(now))
+        async for now in self._crontab:
+            await self.run_once(now)
 
     @property
     def running(self) -> bool:
@@ -187,15 +186,18 @@ class PeriodicTask:
 
         request = ScheduledRequest(now)
         logger.debug("Running periodic task...")
+        # noinspection PyBroadException
         try:
             self._running = True
             with suppress(asyncio.CancelledError):
                 response = self._fn(request)
                 if isawaitable(response):
                     await response
-        except ResponseException as exc:
-            logger.warning(f"Raised an application exception: {exc!s}")
-        except Exception as exc:
-            logger.exception(f"Raised a system exception: {exc!r}")
+        except ResponseException:
+            tb = traceback.format_exc()
+            logger.error(f"Raised an application exception:\n {tb}")
+        except Exception:
+            tb = traceback.format_exc()
+            logger.exception(f"Raised a system exception:\n {tb}")
         finally:
             self._running = False

@@ -41,7 +41,7 @@ class InMemoryBrokerSubscriber(BrokerSubscriber):
         return await self._queue.get()
 
 
-class InMemoryBrokerSubscriberBuilder(BrokerSubscriberBuilder):
+class InMemoryBrokerSubscriberBuilder(BrokerSubscriberBuilder[InMemoryBrokerSubscriber]):
     """In Memory Broker Subscriber Builder class."""
 
     def with_messages(self, messages: Iterable[BrokerMessage]) -> InMemoryBrokerSubscriberBuilder:
@@ -53,9 +53,5 @@ class InMemoryBrokerSubscriberBuilder(BrokerSubscriberBuilder):
         self.kwargs["messages"] = messages
         return self
 
-    def build(self) -> BrokerSubscriber:
-        """Build the instance.
 
-        :return: An ``InMemoryBrokerSubscriber`` instance.
-        """
-        return InMemoryBrokerSubscriber(**self.kwargs)
+InMemoryBrokerSubscriber.set_builder(InMemoryBrokerSubscriberBuilder)

@@ -18,6 +18,7 @@ from minos.common import (
 )
 from minos.networks import (
     EnrouteDecorator,
+    HttpConnector,
     Request,
     Response,
     WrappedRequest,
@@ -104,7 +105,7 @@ class FakeService:
         return Response(f"({await response.content()})")
 
     # noinspection PyUnusedLocal
-    @enroute.rest.command(url="orders/", method="GET")
+    @enroute.rest.command(path="orders/", method="GET")
     @enroute.broker.command(topic="CreateTicket")
     @enroute.broker.command(topic="AddTicket")
     def create_ticket(self, request: Request) -> Response:
@@ -121,7 +122,7 @@ class FakeService:
 
     # noinspection PyUnusedLocal
     @classmethod
-    @enroute.rest.command(url="orders/", method="DELETE")
+    @enroute.rest.command(path="orders/", method="DELETE")
     @enroute.broker.command(topic="DeleteTicket")
     def delete_ticket(cls, request: Request) -> None:
         """For testing purposes."""
@@ -132,7 +133,7 @@ class FakeService:
     def check_classmethod(cls, request: Request) -> bool:
         return True
 
-    @enroute.rest.query(url="tickets/", method="GET")
+    @enroute.rest.query(path="tickets/", method="GET")
     @enroute.broker.query(topic="GetTickets")
     async def get_tickets(self, request: Request) -> Response:
         """For testing purposes."""
@@ -171,9 +172,33 @@ class FakeService:
 
 
 class FakeServiceWithGetEnroute:
+    """For testing purposes."""
+
     @staticmethod
     def __get_enroute__(*args, **kwargs) -> dict[str, set[EnrouteDecorator]]:
         return {"create_foo": {enroute.broker.command(topic="CreateFoo")}}
 
     def create_foo(self, request: Request) -> Response:
+        """For testing purposes."""
+
+
+class FakeHttpConnector(HttpConnector[Any, Any]):
+    """For testing purposes."""
+
+    def _mount_route(self, path: str, method: str, adapted_callback: Callable):
+        """For testing purposes."""
+
+    async def _build_request(self, request: Any) -> Request:
+        """For testing purposes."""
+
+    async def _build_response(self, response: Optional[Response]) -> Any:
+        """For testing purposes."""
+
+    async def _build_error_response(self, message: str, status: int) -> Any:
+        """For testing purposes."""
+
+    async def _start(self) -> None:
+        """For testing purposes."""
+
+    async def _stop(self) -> None:
         """For testing purposes."""

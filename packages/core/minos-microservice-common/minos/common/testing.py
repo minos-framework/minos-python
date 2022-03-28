@@ -14,8 +14,8 @@ from uuid import (
 
 import aiopg
 
-from .configuration import (
-    MinosConfig,
+from .config import (
+    Config,
 )
 
 
@@ -24,15 +24,13 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
 
     def setUp(self) -> None:
         self._uuid = uuid4()
-        self._config = MinosConfig(self.CONFIG_FILE_PATH)
+        self._config = Config(self.CONFIG_FILE_PATH)
 
-        self._meta_repository_db = self._config.repository._asdict()
+        self._meta_repository_db = self._config.get_database_by_name("aggregate")
 
-        self._meta_broker_queue_db = self._config.broker.queue._asdict()
-        self._meta_broker_queue_db.pop("records")
-        self._meta_broker_queue_db.pop("retry")
+        self._meta_broker_queue_db = self._config.get_database_by_name("broker")
 
-        self._meta_snapshot_db = self._config.snapshot._asdict()
+        self._meta_snapshot_db = self._config.get_database_by_name("aggregate")
 
         self._test_db = {"database": f"test_db_{self._uuid.hex}", "user": f"test_user_{self._uuid.hex}"}
 
@@ -40,7 +38,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         self.broker_queue_db = self._meta_broker_queue_db | self._test_db
         self.snapshot_db = self._meta_snapshot_db | self._test_db
 
-        self.config = MinosConfig(
+        self.config = Config(
             self.CONFIG_FILE_PATH,
             repository_database=self.repository_db["database"],
             repository_user=self.repository_db["user"],

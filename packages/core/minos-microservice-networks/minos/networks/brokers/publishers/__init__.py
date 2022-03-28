@@ -1,5 +1,6 @@
 from .abc import (
     BrokerPublisher,
+    BrokerPublisherBuilder,
 )
 from .memory import (
     InMemoryBrokerPublisher,

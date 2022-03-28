@@ -9,11 +9,10 @@ from uuid import (
 from cached_property import (
     cached_property,
 )
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
 
+from minos.common import (
+    Inject,
+)
 from minos.networks import (
     BrokerClient,
     BrokerClientPool,
@@ -34,13 +33,13 @@ class TransactionCommitter:
     """Transaction Committer class."""
 
     # noinspection PyUnusedLocal
-    @inject
+    @Inject()
     def __init__(
         self,
         execution_uuid: UUID,
         executed_steps: list[SagaStepExecution],
-        broker_pool: BrokerClientPool = Provide["broker_pool"],
-        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
+        broker_pool: BrokerClientPool,
+        broker_publisher: BrokerPublisher,
         **kwargs,
     ):
         self.executed_steps = executed_steps
@@ -67,7 +66,7 @@ class TransactionCommitter:
     async def _reserve(self) -> bool:
         async with self.broker_pool.acquire() as broker:
             futures = (
-                broker.send(BrokerMessageV1(f"Reserve{service_name.title()}Transaction", BrokerMessageV1Payload(uuid)))
+                broker.send(BrokerMessageV1(f"_Reserve{service_name.title()}Transaction", BrokerMessageV1Payload(uuid)))
                 for (uuid, service_name) in self.transactions
             )
             await gather(*futures)
@@ -77,7 +76,7 @@ class TransactionCommitter:
     async def _commit(self) -> None:
         futures = (
             self.broker_publisher.send(
-                BrokerMessageV1(f"Commit{service_name.title()}Transaction", BrokerMessageV1Payload(uuid))
+                BrokerMessageV1(f"_Commit{service_name.title()}Transaction", BrokerMessageV1Payload(uuid))
             )
             for (uuid, service_name) in self.transactions
         )
@@ -93,7 +92,7 @@ class TransactionCommitter:
         """
         futures = (
             self.broker_publisher.send(
-                BrokerMessageV1(f"Reject{service_name.title()}Transaction", BrokerMessageV1Payload(uuid))
+                BrokerMessageV1(f"_Reject{service_name.title()}Transaction", BrokerMessageV1Payload(uuid))
             )
             for (uuid, service_name) in self.transactions
         )

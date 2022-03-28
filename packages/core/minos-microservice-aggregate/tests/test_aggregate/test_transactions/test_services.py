@@ -31,14 +31,14 @@ from minos.networks import (
     ResponseException,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
     FakeAsyncIterator,
     MinosTestCase,
 )
 
 
 class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
         super().setUp()
@@ -47,9 +47,9 @@ class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
 
     def test_get_enroute(self):
         expected = {
-            "__reserve__": {BrokerCommandEnrouteDecorator("ReserveOrderTransaction")},
-            "__reject__": {BrokerCommandEnrouteDecorator("RejectOrderTransaction")},
-            "__commit__": {BrokerCommandEnrouteDecorator("CommitOrderTransaction")},
+            "__reserve__": {BrokerCommandEnrouteDecorator("_ReserveOrderTransaction")},
+            "__reject__": {BrokerCommandEnrouteDecorator("_RejectOrderTransaction")},
+            "__commit__": {BrokerCommandEnrouteDecorator("_CommitOrderTransaction")},
             "__reject_blocked__": {PeriodicEventEnrouteDecorator("* * * * *")},
         }
         observed = TransactionService.__get_enroute__(self.config)

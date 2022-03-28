@@ -209,3 +209,37 @@ History
 ------------------
 
 * Fix bug related with dependency specification.
+
+0.5.2 (2022-02-08)
+------------------
+
+* Fix bug related with enroute decorator collisions in which the `MinosRedefinedEnrouteDecoratorException` was not raised. 
+* Minor changes.
+
+0.5.3 (2022-03-04)
+------------------
+
+* Improve error messages of  `BrokerDispatcher`, `RestHandler` and `PeriodicTask`.
+
+0.6.0 (2022-03-28)
+------------------
+
+* Add `BrokerPort` class and deprecate `BrokerHandlerService`.
+* Add `BrokerPublisherBuilder` to ease the building of `BrokerPublisher` instances.
+* Add `FilteredBrokerSubscriber` implemented as a Chain-of-Responsibility Design Pattern to be able to filter `BrokerMessage` instances during subscription. 
+* Add `BrokerSubscriberValidator` and `BrokerSubscriberDuplicateValidator` base classes and the `InMemoryBrokerSubscriberDuplicateValidator` and `PostgreSqlBrokerSubscriberDuplicateValidator` implementations.
+* Rename `EnrouteAnalyzer` as `EnrouteCollector`.
+* Rename `EnrouteBuilder` as `EnrouteFactory`.
+* Add `HttpEnrouteDecorator`.
+* Remove `KongDiscoveryClient` class (there are plans to re-include it as an external plugin in the future).
+* Add `HttpConnector` as the base class that connects to the `http` server.
+* Add `HttpAdapter` as the class that coordinates `HttpRouter` instances.
+* Add `HttpPort` class and deprecate `RestService`.
+* Add `HttpRequest`, `HttpResponse` and `HttpResponseException` as request/response wrappers of the `http` server. 
+* Add `Router`, `HttpRouter`, `RestHttpRouter`, `BrokerRouter` and  `PeriodicRouter` as the classes that route requests to the corresponding services' handling functions 
+* Add `PeriodicPort` class and deprecate `PeriodicTaskSchedulerService`.
+* Add `CronTab` class to support `"@reboot"` pattern.
+* Add `OpenAPIService` and `AsynAPIService` classes as the services that provide `openapi` and `asynciapi` specifications of the microservice.
+* Add `SystemService` as the service that implements System Health checker.
+* Replace `dependency-injector`'s injection classes by the ones provided by the `minos.common.injections` module.
+* Be compatible with latest `minos.common.Config` API.

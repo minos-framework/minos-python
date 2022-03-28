@@ -225,29 +225,31 @@ class Model(Mapping):
 
     def __setitem__(self, key: str, value: Any) -> None:
         try:
-            setattr(self, key, value)
-        except AttributeError as exc:
-            raise KeyError(str(exc))
+            self._fields[key].value = value
+        except KeyError:
+            raise KeyError(f"{type(self).__name__!r} does not contain the {key!r} field")
 
     def __getitem__(self, item: str) -> Any:
         try:
-            return getattr(self, item)
-        except AttributeError as exc:
-            raise KeyError(str(exc))
+            return self._fields[item].value
+        except KeyError:
+            raise KeyError(f"{type(self).__name__!r} does not contain the {item!r} field.")
 
     def __setattr__(self, key: str, value: Any) -> None:
         if key.startswith("_"):
             object.__setattr__(self, key, value)
-        elif key in self._fields:
-            self._fields[key].value = value
-        else:
-            raise AttributeError(f"{type(self).__name__!r} does not contain the {key!r} field")
+            return
+
+        if key not in self._fields:
+            raise AttributeError(f"{type(self).__name__!r} does not contain the {key!r} attribute.")
+
+        self[key] = value
 
     def __getattr__(self, item: str) -> Any:
-        if item != "_fields" and item in self._fields:
-            return self._fields[item].value
-        else:
-            raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} field.")
+        if item.startswith("_") or item not in self._fields:
+            raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
+
+        return self[item]
 
     # noinspection PyMethodParameters
     @property_or_classproperty

@@ -325,3 +325,5 @@ $RECYCLE.BIN/
 # Sphinx Api Documentation
 **/docs/api*
 **/docs/_build
+
+tutorials/stock-wallet/front/stock-front

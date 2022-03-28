@@ -1,0 +1,13 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Update Package Dependencies
+      shell: poetry run pytest
+      args:
+        chdir: ../
+      register: results
+
+    - debug: var=results.stdout_lines
+
+    - debug: var=results.stderr_lines

@@ -69,3 +69,33 @@
 ## 0.5.1 (2022-02-03)
 
 * Fix bug related with dependency specification.
+
+## 0.5.2 (2022-02-08)
+
+* Add `Condition.LIKE` operator to be used with the `find` method from `SnapshotRepository`.
+* Add `get_all` method to `RootEntity` and `SnapshotRepository` to get all the stored instance on the repository. 
+* Rename `SnapshotService` command topics to avoid collisions with application-level topics. 
+* Rename `TransactionService` command topics to avoid collisions with application-level topics. 
+* Minor changes.
+
+0.5.3 (2022-03-04)
+------------------
+
+* Add `RefException` to be raised when some reference cannot be resolved.
+* Improve attribute and item accessors of `Ref`, `Event` and `FieldDiffContainer`
+* Deprecate `Event.get_one` in favor of `Event.get_field`.
+* Deprecate `Event.get_all` in favor of `Event.get_fields`.
+
+0.5.4 (2022-03-07)
+------------------
+
+* Fix bug related with `Ref.resolve`.
+* Add `RefResolver.build_topic_name` static method.
+* Remove `SnapshotService.__get_one__` method.
+* Minor changes.
+
+0.6.0 (2022-03-28)
+------------------
+
+* Replace `dependency-injector`'s injection classes by the ones provided by the `minos.common.injections` module.
+* Be compatible with latest `minos.common.Config` API.

@@ -10,12 +10,14 @@ from collections.abc import (
     Iterable,
 )
 from typing import (
+    Generic,
     TypeVar,
 )
 
-from .....utils import (
+from minos.common import (
     Builder,
 )
+
 from ....collections import (
     BrokerQueue,
 )
@@ -42,7 +44,10 @@ class BrokerSubscriberQueue(BrokerQueue, ABC):
         return self._topics
 
 
-class BrokerSubscriberQueueBuilder(Builder[BrokerSubscriberQueue], ABC):
+BrokerSubscriberQueueCls = TypeVar("BrokerSubscriberQueueCls", bound=BrokerSubscriberQueue)
+
+
+class BrokerSubscriberQueueBuilder(Builder[BrokerSubscriberQueueCls], Generic[BrokerSubscriberQueueCls]):
     """Broker Subscriber Queue Builder class."""
 
     def with_topics(self: B, topics: Iterable[str]) -> B:
@@ -54,5 +59,7 @@ class BrokerSubscriberQueueBuilder(Builder[BrokerSubscriberQueue], ABC):
         self.kwargs["topics"] = set(topics)
         return self
 
+
+BrokerSubscriberQueue.set_builder(BrokerSubscriberQueueBuilder)
 
 B = TypeVar("B", bound=BrokerSubscriberQueueBuilder)

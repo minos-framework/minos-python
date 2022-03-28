@@ -4,6 +4,7 @@ from __future__ import (
     annotations,
 )
 
+import re
 from abc import (
     ABC,
     abstractmethod,
@@ -18,6 +19,10 @@ from typing import (
     Any,
     Callable,
     Iterable,
+)
+
+from cached_property import (
+    cached_property,
 )
 
 from minos.common import (
@@ -141,6 +146,15 @@ class _InCondition(_SimpleCondition):
         return self._get_field(value) in self.parameter
 
 
+class _LikeCondition(_SimpleCondition):
+    def _evaluate(self, value: Model) -> bool:
+        return bool(self._pattern.fullmatch(self._get_field(value)))
+
+    @cached_property
+    def _pattern(self):
+        return re.compile(self.parameter.replace("%", ".*").replace("_", "."))
+
+
 _TRUE_CONDITION = _TrueCondition()
 _FALSE_CONDITION = _FalseCondition()
 
@@ -164,6 +178,8 @@ class Condition:
     * `NOT_EQUAL`: Evaluates as `True` only if the field of the given model is not equal (!=) to the parameter.
     * `IN`: Evaluates as `True` only if the field of the given model belongs (in) to the parameter (which must be a
     collection).
+    * `LIKE`: Evaluates as `True` only if the field of the given model matches to the parameter _pattern.
+
 
     For example, to define a condition in which the `year` must be between `1994` and `2003` or the `color` must be
     `blue`, the condition can be writen as:
@@ -189,6 +205,7 @@ class Condition:
     EQUAL = _EqualCondition
     NOT_EQUAL = _NotEqualCondition
     IN = _InCondition
+    LIKE = _LikeCondition
 
 
 class _Ordering:

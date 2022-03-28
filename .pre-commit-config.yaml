@@ -43,3 +43,31 @@ repos:
                 name: Check minos-broker-kafka
                 files: ^packages/plugins/minos-broker-kafka/
                 language: system
+
+            -   id: minos-discovery-minos-check
+                pass_filenames: false
+                entry: make --directory=packages/plugins/minos-discovery-minos check
+                name: Check minos-discovery-minos
+                files: ^packages/plugins/minos-discovery-minos/
+                language: system
+
+            -   id: minos-http-aiohttp-check
+                pass_filenames: false
+                entry: make --directory=packages/plugins/minos-http-aiohttp check
+                name: Check minos-http-aiohttp
+                files: ^packages/plugins/minos-http-aiohttp/
+                language: system
+
+            -   id: minos-router-graphql-check
+                pass_filenames: false
+                entry: make --directory=packages/plugins/minos-router-graphql check
+                name: Check minos-router-graphql
+                files: ^packages/plugins/minos-router-graphql/
+                language: system
+
+            -   id: minos-broker-rabbitmq-check
+                pass_filenames: false
+                entry: make --directory=packages/plugins/minos-broker-rabbitmq check
+                name: Check minos-broker-rabbitmq
+                files: ^packages/plugins/minos-broker-rabbitmq/
+                language: system

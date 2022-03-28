@@ -11,6 +11,10 @@ from typing import (
     NoReturn,
 )
 
+from minos.common import (
+    Builder,
+)
+
 from ...messages import (
     BrokerMessage,
 )
@@ -65,3 +69,6 @@ class QueuedBrokerPublisher(BrokerPublisher):
 
     async def _send(self, message: BrokerMessage) -> None:
         await self.queue.enqueue(message)
+
+
+QueuedBrokerPublisher.set_builder(Builder)

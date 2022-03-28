@@ -20,14 +20,14 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
     FakeAsyncIterator,
     MinosTestCase,
 )
 
 
 class TestPostgreSqlSnapshotRepository(MinosTestCase, PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
         super().setUp()
@@ -42,6 +42,14 @@ class TestPostgreSqlSnapshotRepository(MinosTestCase, PostgresAsyncTestCase):
         self.snapshot_repository.writer.dispatch = self.dispatch_mock
 
         self.classname = "path.to.Product"
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.snapshot_repository.setup()
+
+    async def asyncTearDown(self):
+        await self.snapshot_repository.destroy()
+        await super().asyncTearDown()
 
     def test_from_config(self):
         self.assertIsInstance(self.snapshot_repository.reader, PostgreSqlSnapshotReader)

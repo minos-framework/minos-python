@@ -19,12 +19,8 @@ class InMemoryBrokerSubscriberQueue(InMemoryBrokerQueue, BrokerSubscriberQueue):
     """In Memory Broker Subscriber Queue class."""
 
 
-class InMemoryBrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder):
+class InMemoryBrokerSubscriberQueueBuilder(BrokerSubscriberQueueBuilder[InMemoryBrokerSubscriberQueue]):
     """In Memory Broker Subscriber Queue Builder class."""
 
-    def build(self) -> BrokerSubscriberQueue:
-        """Build the instance.
 
-        :return: An ``InMemoryBrokerSubscriberQueue`` instance.
-        """
-        return InMemoryBrokerSubscriberQueue(**self.kwargs)
+InMemoryBrokerSubscriberQueue.set_builder(InMemoryBrokerSubscriberQueueBuilder)

@@ -8,15 +8,11 @@ from typing import (
     get_args,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
 from minos.common import (
-    MinosConfig,
-    MinosSetup,
+    Config,
+    Inject,
     NotProvidedException,
+    SetupMixin,
 )
 
 from .entities import (
@@ -35,7 +31,7 @@ from .transactions import (
 RT = TypeVar("RT", bound=RootEntity)
 
 
-class Aggregate(Generic[RT], MinosSetup):
+class Aggregate(Generic[RT], SetupMixin):
     """Base Service class"""
 
     transaction_repository: TransactionRepository
@@ -58,7 +54,7 @@ class Aggregate(Generic[RT], MinosSetup):
         self.snapshot_repository = snapshot_repository
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> Aggregate:
+    def _from_config(cls, config: Config, **kwargs) -> Aggregate:
         kwargs["transaction_repository"] = cls._get_transaction_repository(**kwargs)
         kwargs["event_repository"] = cls._get_event_repository(**kwargs)
         kwargs["snapshot_repository"] = cls._get_snapshot_repository(**kwargs)
@@ -66,31 +62,25 @@ class Aggregate(Generic[RT], MinosSetup):
 
     # noinspection PyUnusedLocal
     @staticmethod
-    @inject
-    def _get_transaction_repository(
-        transaction_repository: TransactionRepository = Provide["transaction_repository"], **kwargs
-    ) -> TransactionRepository:
-        if transaction_repository is None or isinstance(transaction_repository, Provide):
+    @Inject()
+    def _get_transaction_repository(transaction_repository: TransactionRepository, **kwargs) -> TransactionRepository:
+        if transaction_repository is None:
             raise NotProvidedException(f"A {TransactionRepository!r} object must be provided.")
         return transaction_repository
 
     # noinspection PyUnusedLocal
     @staticmethod
-    @inject
-    def _get_event_repository(
-        event_repository: EventRepository = Provide["event_repository"], **kwargs
-    ) -> EventRepository:
-        if event_repository is None or isinstance(event_repository, Provide):
+    @Inject()
+    def _get_event_repository(event_repository: EventRepository, **kwargs) -> EventRepository:
+        if event_repository is None:
             raise NotProvidedException(f"A {EventRepository!r} object must be provided.")
         return event_repository
 
     # noinspection PyUnusedLocal
     @staticmethod
-    @inject
-    def _get_snapshot_repository(
-        snapshot_repository: SnapshotRepository = Provide["snapshot_repository"], **kwargs
-    ) -> SnapshotRepository:
-        if snapshot_repository is None or isinstance(snapshot_repository, Provide):
+    @Inject()
+    def _get_snapshot_repository(snapshot_repository: SnapshotRepository, **kwargs) -> SnapshotRepository:
+        if snapshot_repository is None:
             raise NotProvidedException(f"A {SnapshotRepository!r} object must be provided.")
         return snapshot_repository
 

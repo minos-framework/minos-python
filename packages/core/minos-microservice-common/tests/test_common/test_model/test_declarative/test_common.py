@@ -1,5 +1,6 @@
 import unittest
 from typing import (
+    Callable,
     Optional,
 )
 
@@ -18,6 +19,7 @@ from tests.model_classes import (
     CustomerFailDict,
     CustomerFailList,
     GenericUser,
+    ReservedWordUser,
     ShoppingList,
     T,
     User,
@@ -51,6 +53,10 @@ class TestDeclarativeModel(unittest.TestCase):
         self.assertEqual("Doe", model.surname)
         self.assertEqual("John", model.name)
 
+    def test_getattr_reserved_word(self):
+        model = ReservedWordUser("foo")
+        self.assertIsInstance(model.items, Callable)
+
     def test_setattr(self):
         expected = Customer(1234, name="John", surname="Doe")
 
@@ -59,6 +65,12 @@ class TestDeclarativeModel(unittest.TestCase):
         observed.surname = "Doe"
 
         self.assertEqual(expected, observed)
+
+    def test_setattr_reserved_word(self):
+        model = ReservedWordUser("foo")
+        model.items = "bar"
+        self.assertIsInstance(model.items, Callable)
+        self.assertEqual("bar", model.fields["items"].value)
 
     def test_setattr_raises(self):
         model = Customer(123)
@@ -76,6 +88,10 @@ class TestDeclarativeModel(unittest.TestCase):
         self.assertEqual("Doe", model["surname"])
         self.assertEqual("John", model["name"])
 
+    def test_getitem_reserved_word(self):
+        model = ReservedWordUser("foo")
+        self.assertEqual("foo", model["items"])
+
     def test_getitem_raises(self):
         model = Customer(1234)
         with self.assertRaises(KeyError):
@@ -89,6 +105,11 @@ class TestDeclarativeModel(unittest.TestCase):
         observed["surname"] = "Doe"
 
         self.assertEqual(expected, observed)
+
+    def test_setitem_reserved_word(self):
+        model = ReservedWordUser("foo")
+        model["items"] = "bar"
+        self.assertEqual("bar", model.fields["items"].value)
 
     def test_setitem_raises(self):
         model = Customer(1234)

@@ -35,7 +35,7 @@ from minos.saga import (
 )
 from tests.utils import (
     ADD_ORDER,
-    BASE_PATH,
+    DB_PATH,
     DELETE_ORDER,
     Foo,
     MinosTestCase,
@@ -43,7 +43,7 @@ from tests.utils import (
 
 
 class TestSagaManager(MinosTestCase):
-    DB_PATH = BASE_PATH / "test_db.lmdb"
+    DB_PATH = DB_PATH
 
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
@@ -293,24 +293,24 @@ class TestSagaManager(MinosTestCase):
                 reply_topic=observed[1].reply_topic,
             ),
             BrokerMessageV1(
-                topic="ReserveFooTransaction",
+                topic="_ReserveFooTransaction",
                 payload=BrokerMessageV1Payload(self.uuid),
                 identifier=observed[2].identifier,
                 reply_topic=observed[2].reply_topic,
             ),
             BrokerMessageV1(
-                topic="ReserveOrderTransaction",
+                topic="_ReserveOrderTransaction",
                 payload=BrokerMessageV1Payload(self.uuid),
                 identifier=observed[3].identifier,
                 reply_topic=observed[3].reply_topic,
             ),
             BrokerMessageV1(
-                topic="CommitFooTransaction",
+                topic="_CommitFooTransaction",
                 payload=BrokerMessageV1Payload(self.uuid),
                 identifier=observed[4].identifier,
             ),
             BrokerMessageV1(
-                topic="CommitOrderTransaction",
+                topic="_CommitOrderTransaction",
                 payload=BrokerMessageV1Payload(self.uuid),
                 identifier=observed[5].identifier,
             ),

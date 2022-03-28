@@ -13,12 +13,12 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    BASE_PATH,
+    CONFIG_FILE_PATH,
 )
 
 
 class TestPostgreSqlLock(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def test_base(self):
         self.assertTrue(issubclass(PostgreSqlLock, Lock))
