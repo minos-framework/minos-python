@@ -6,6 +6,7 @@ import logging
 import warnings
 from asyncio import (
     AbstractEventLoop,
+    gather,
 )
 from enum import (
     Enum,
@@ -126,8 +127,7 @@ class EntrypointLauncher(SetupMixin):
 
         exception = None
         try:
-            self.loop.run_until_complete(self.setup())
-            self.loop.run_until_complete(self.entrypoint.__aenter__())
+            self.graceful_launch()
             logger.info("Microservice is up and running!")
             self.loop.run_forever()
         except KeyboardInterrupt as exc:  # pragma: no cover
@@ -138,13 +138,19 @@ class EntrypointLauncher(SetupMixin):
         finally:
             self.graceful_shutdown(exception)
 
+    def graceful_launch(self) -> None:
+        """Launch the execution gracefully.
+
+        :return: This method does not return anything.
+        """
+        self.loop.run_until_complete(gather(self.setup(), self.entrypoint.__aenter__()))
+
     def graceful_shutdown(self, err: Exception = None) -> None:
         """Shutdown the execution gracefully.
 
         :return: This method does not return anything.
         """
-        self.loop.run_until_complete(self.entrypoint.graceful_shutdown(err))
-        self.loop.run_until_complete(self.destroy())
+        self.loop.run_until_complete(gather(self.entrypoint.__aexit__(None, err, None), self.destroy()))
 
     @cached_property
     def entrypoint(self) -> Entrypoint:
