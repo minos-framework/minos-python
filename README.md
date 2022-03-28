@@ -143,7 +143,8 @@ pip install \
   minos-microservice-cqrs \
   minos-microservice-networks \
   minos-microservice-saga \ 
-  minos-broker-kafka
+  minos-broker-kafka \
+  minos-http-aiohttp
 ```
 
 ### Configure a Microservice
@@ -166,65 +167,58 @@ Create a `foo/config.yml` file and add the following lines:
 ```yaml
 # foo/config.yml
 
-service:
-  name: foo
-  aggregate: main.Foo
-  injections:
-    lock_pool: minos.common.PostgreSqlLockPool
-    postgresql_pool: minos.common.PostgreSqlPool
-    broker_publisher: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerPublisher
-    broker_subscriber_builder: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
-    broker_pool: minos.networks.BrokerClientPool
-    transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
-    event_repository: minos.aggregate.PostgreSqlEventRepository
-    snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
-    saga_manager: minos.saga.SagaManager
-    discovery: minos.networks.DiscoveryConnector
-  services:
-    - minos.networks.BrokerHandlerService
-    - minos.networks.RestService
-    - minos.networks.PeriodicTaskSchedulerService
+version: 2
+name: foo
+aggregate:
+  entities:
+    - main.Foo
+  repositories:
+    transaction: minos.aggregate.PostgreSqlTransactionRepository
+    event: minos.aggregate.PostgreSqlEventRepository
+    snapshot: minos.aggregate.PostgreSqlSnapshotRepository
+databases:
+  default:
+    database: foo_db
+    user: minos
+    password: min0s
+  saga:
+    path: "./foo.lmdb"
+interfaces:
+  broker:
+    port: minos.networks.BrokerHandlerPort
+    publisher:
+      client: minos.plugins.kafka.KafkaBrokerPublisher
+      queue: minos.networks.PostgreSqlBrokerPublisherQueue
+    subscriber:
+      client: minos.plugins.kafka.KafkaBrokerSubscriber
+      queue: minos.networks.PostgreSqlBrokerSubscriberQueue
+      validator: minos.networks.PostgreSqlBrokerSubscriberDuplicateValidator
+  http:
+    port: minos.networks.HttpPort
+    connector:
+      client: minos.plugins.aiohttp.AioHttpConnector
+      port: 4545
+  periodic:
+    port: minos.networks.PeriodicTaskSchedulerPort
+pools:
+  lock: minos.common.PostgreSqlLockPool
+  databasse: minos.common.PostgreSqlPool
+  broker: minos.networks.BrokerClientPool
+saga:
+  manager: minos.saga.SagaManager
+routers:
+  - minos.networks.BrokerRouter
+  - minos.networks.PeriodicRouter
+  - minos.networks.RestHttpRouter
 middleware:
   - minos.saga.transactional_command
 services:
+  - minos.networks.SystemService
   - minos.aggregate.TransactionService
   - minos.aggregate.SnapshotService
   - minos.saga.SagaService
   - main.FooCommandService
   - main.FooQueryService
-rest:
-  host: 0.0.0.0
-  port: 4545
-broker:
-  host: localhost
-  port: 9092
-  queue:
-    database: foo_db
-    user: user
-    password: pass
-    host: localhost
-    port: 5432
-    records: 1000
-    retry: 2
-repository:
-  database: foo_db
-  user: user
-  password: pass
-  host: localhost
-  port: 5432
-snapshot:
-  database: foo_db
-  user: user
-  password: pass
-  host: localhost
-  port: 5432
-saga:
-  storage:
-    path: "./foo.lmdb"
-discovery:
-  client: minos.networks.InMemoryDiscoveryClient
-  host: localhost
-  port: 5567
 ```
 
 </details>
@@ -989,64 +983,57 @@ Here is the `foobar/config.yml` config file:
 ```yaml
 # foobar/config.yml
 
-service:
-  name: foobar
-  aggregate: main.FooBar
-  injections:
-    lock_pool: minos.common.PostgreSqlLockPool
-    postgresql_pool: minos.common.PostgreSqlPool
-    broker_publisher: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerPublisher
-    broker_subscriber_builder: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
-    broker_pool: minos.networks.BrokerClientPool
-    transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
-    event_repository: minos.aggregate.PostgreSqlEventRepository
-    snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
-    saga_manager: minos.saga.SagaManager
-    discovery: minos.networks.DiscoveryConnector
-  services:
-    - minos.networks.BrokerHandlerService
-    - minos.networks.RestService
-    - minos.networks.PeriodicTaskSchedulerService
+version: 2
+name: foobar
+aggregate:
+  entities:
+    - main.FooBar
+  repositories:
+    transaction: minos.aggregate.PostgreSqlTransactionRepository
+    event: minos.aggregate.PostgreSqlEventRepository
+    snapshot: minos.aggregate.PostgreSqlSnapshotRepository
+databases:
+  default:
+    database: foobar_db
+    user: minos
+    password: min0s
+  saga:
+    path: "./foobar.lmdb"
+interfaces:
+  broker:
+    port: minos.networks.BrokerHandlerPort
+    publisher:
+      client: minos.plugins.kafka.KafkaBrokerPublisher
+      queue: minos.networks.PostgreSqlBrokerPublisherQueue
+    subscriber:
+      client: minos.plugins.kafka.KafkaBrokerSubscriber
+      queue: minos.networks.PostgreSqlBrokerSubscriberQueue
+      validator: minos.networks.PostgreSqlBrokerSubscriberDuplicateValidator
+  http:
+    port: minos.networks.HttpPort
+    connector:
+      client: minos.plugins.aiohttp.AioHttpConnector
+      port: 4546
+  periodic:
+    port: minos.networks.PeriodicTaskSchedulerPort
+pools:
+  lock: minos.common.PostgreSqlLockPool
+  databasse: minos.common.PostgreSqlPool
+  broker: minos.networks.BrokerClientPool
+saga:
+  manager: minos.saga.SagaManager
+routers:
+  - minos.networks.BrokerRouter
+  - minos.networks.PeriodicRouter
+  - minos.networks.RestHttpRouter
 middleware:
   - minos.saga.transactional_command
 services:
+  - minos.networks.SystemService
   - minos.aggregate.TransactionService
   - minos.aggregate.SnapshotService
   - minos.saga.SagaService
   - main.FooBarCommandService
-rest:
-  host: 0.0.0.0
-  port: 4546
-broker:
-  host: localhost
-  port: 9092
-  queue:
-    database: foobar_db
-    user: user
-    password: pass
-    host: localhost
-    port: 5432
-    records: 1000
-    retry: 2
-repository:
-  database: foobar_db
-  user: user
-  password: pass
-  host: localhost
-  port: 5432
-snapshot:
-  database: foobar_db
-  user: user
-  password: pass
-  host: localhost
-  port: 5432
-saga:
-  storage:
-    path: "./foobar.lmdb"
-discovery:
-  client: minos.networks.InMemoryDiscoveryClient
-  host: localhost
-  port: 5567
 ```
 
 </details>
