@@ -21,11 +21,11 @@ class IntegrationTests(unittest.IsolatedAsyncioTestCase):
     async def test_one_topic(self):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
 
-        async with RabbitMQBrokerPublisher.from_config(CONFIG_FILE_PATH) as publisher:
-            await publisher.send(message)
-
         async with RabbitMQBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo"}) as subscriber:
-            observed = await wait_for(subscriber.receive(), 1)
+            async with RabbitMQBrokerPublisher.from_config(CONFIG_FILE_PATH) as publisher:
+
+                await publisher.send(message)
+                observed = await wait_for(subscriber.receive(), 1)
 
         self.assertEqual(message.content, observed.content)
 
