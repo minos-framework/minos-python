@@ -25,7 +25,7 @@ class IntegrationTests(unittest.IsolatedAsyncioTestCase):
             await publisher.send(message)
 
         async with RabbitMQBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo"}) as subscriber:
-            observed = await subscriber.receive()
+            observed = await wait_for(subscriber.receive(), 1)
 
         self.assertEqual(message.content, observed.content)
 
