@@ -107,7 +107,9 @@ class EntrypointLauncher(SetupMixin):
         if "injections" not in kwargs:
             kwargs["injections"] = config.get_injections()
         if "ports" not in kwargs:
-            kwargs["ports"] = [interface["port"] for interface in config.get_interfaces().values()]
+            kwargs["ports"] = [
+                interface["port"] for interface in config.get_interfaces().values() if "port" in interface
+            ]
         return cls(config, *args, **kwargs)
 
     def launch(self) -> NoReturn:
