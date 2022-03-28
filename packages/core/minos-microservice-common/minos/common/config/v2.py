@@ -77,6 +77,9 @@ class ConfigV2(Config):
 
         ans = list()
         for type_ in partial_ans:
+            if type_ is None:
+                continue
+
             if isinstance(type_, dict):
                 type_ = type_["client"]
 

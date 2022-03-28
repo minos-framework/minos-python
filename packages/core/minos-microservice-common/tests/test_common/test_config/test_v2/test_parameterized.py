@@ -9,6 +9,18 @@ from minos.common import (
 )
 from tests.utils import (
     BASE_PATH,
+    FakeBrokerClientPool,
+    FakeBrokerPublisher,
+    FakeBrokerSubscriber,
+    FakeBrokerSubscriberBuilder,
+    FakeCustomInjection,
+    FakeDatabasePool,
+    FakeDiscoveryConnector,
+    FakeEventRepository,
+    FakeLockPool,
+    FakeSagaManager,
+    FakeSnapshotRepository,
+    FakeTransactionRepository,
 )
 
 
@@ -20,6 +32,24 @@ class TestConfigV2Parameterized(unittest.TestCase):
         config = ConfigV2(self.file_path, databases_default_database="foo")
         database_config = config.get_default_database()
         self.assertEqual("foo", database_config["database"])
+
+    def test_injections_nones(self):
+        config = ConfigV2(self.file_path, interfaces_http={"port": "tests.utils.FakeHttpPort"})
+
+        expected = [
+            FakeLockPool,
+            FakeDatabasePool,
+            FakeBrokerClientPool,
+            FakeBrokerPublisher,
+            FakeBrokerSubscriberBuilder(FakeBrokerSubscriber),
+            FakeEventRepository,
+            FakeSnapshotRepository,
+            FakeTransactionRepository,
+            FakeDiscoveryConnector,
+            FakeSagaManager,
+            FakeCustomInjection,
+        ]
+        self.assertEqual(expected, config.get_injections())
 
     @mock.patch.dict(os.environ, {"MINOS_DATABASES_DEFAULT_DATABASE": "foo"})
     def test_overwrite_with_parameter_priority(self):
