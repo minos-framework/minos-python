@@ -8,21 +8,22 @@ from polygon import (
 from minos.aggregate import (
     Event,
 )
+from minos.common import (
+    ModelType,
+)
 from minos.cqrs import (
     CommandService,
 )
 from minos.networks import (
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
     Request,
     enroute,
-    BrokerMessageV1,
-    BrokerMessageV1Payload
 )
 
 from ..aggregates import (
     StocksAggregate,
 )
-
-from minos.common import ModelType
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,8 @@ class StocksCommandService(CommandService):
         event: Event = await request.content()
         for ticker in event["tickers"]:
             logger.warning(ticker)
-            if ticker['flag'] == "ticker":
-                now = pendulum.parse('1975-08-27T05:00:00')
+            if ticker["flag"] == "ticker":
+                now = pendulum.parse("1975-08-27T05:00:00")
                 logger.warning("Added ticker to stock")
                 await StocksAggregate.add_ticker_to_stock(ticker["ticker"], now.to_datetime_string())
 
@@ -59,9 +60,7 @@ class StocksCommandService(CommandService):
             for ticker in tickers:
                 logger.warning("Called Ticker Remote")
                 ticker_updated = pendulum.parse(ticker["updated"])
-                results = self.call_remote(ticker["ticker"],
-                                           now_minus_one_month.to_date_string(),
-                                           now.to_date_string())
+                results = self.call_remote(ticker["ticker"], now_minus_one_month.to_date_string(), now.to_date_string())
 
                 for result in results:
                     result_date = pendulum.from_timestamp(result["t"] / 1000)
@@ -70,9 +69,8 @@ class StocksCommandService(CommandService):
                         logger.warning("Date time ticker updated")
                         when = result_date.to_datetime_string()
                         message = BrokerMessageV1(
-                            "QuotesChannel", BrokerMessageV1Payload(QuoteContent(ticker["ticker"], result['c'],
-                                                                                 result['v'], when))
+                            "QuotesChannel",
+                            BrokerMessageV1Payload(QuoteContent(ticker["ticker"], result["c"], result["v"], when)),
                         )
                         await self.broker_publisher.send(message)
                         logger.warning("Added new quote")
-

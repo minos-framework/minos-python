@@ -4,12 +4,13 @@ from uuid import (
 
 from minos.aggregate import (
     Aggregate,
-    RootEntity
+    RootEntity,
 )
 
 
 class Crypto(RootEntity):
     """Crypto RootEntity class."""
+
     ticker: str
     updated: str
 
