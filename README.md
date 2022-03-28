@@ -16,18 +16,9 @@
 
 Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python. Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an asynchronous environment.
 
-### Roadmap
+## Roadmap
 
-#### 0.6.x
-
-* [#78](https://github.com/minos-framework/minos-python/issues/78) Implement a circuit breaker for `minos-broker-kafka`.
-* [#87](https://github.com/minos-framework/minos-python/issues/87) Implement idempotency for `BrokerSubscriber` message processing.
-* [#100](https://github.com/minos-framework/minos-python/issues/100) Create the `minos-serializers-avro` plugin.
-* [#148](https://github.com/minos-framework/minos-python/issues/148) Create the `minos-http-aiohttp`.
-* [#149](https://github.com/minos-framework/minos-python/issues/149) Add `minos-graphql-aiohttp` plugin.
-* [#150](https://github.com/minos-framework/minos-python/issues/150) Refactor configuration file and `MinosConfig` accessor.
-* [#151](https://github.com/minos-framework/minos-python/issues/151) Expose `OpenAPI` and `AsyncAPI` specifications.
-* [#152](https://github.com/minos-framework/minos-python/issues/152) Provide a testing suite to test the microservice.
+The roadmap of this project is publicly accessible at this [GitHub Repository](https://github.com/minos-framework/roadmap).
 
 ## Foundational Patterns
 
@@ -1149,7 +1140,7 @@ The plugin packages provide connectors to external technologies like brokers, di
 
 ## Source Code
 
-The source code of this project is hosted at the [GitHub Repository](https://github.com/minos-framework/minos-python).
+The source code of this project is hosted at this [GitHub Repository](https://github.com/minos-framework/minos-python).
 
 ## Getting Help
 
@@ -1157,7 +1148,7 @@ For usage questions, the best place to go to is [StackOverflow](https://stackove
 
 ## Discussion and Development
 
-Most development discussions take place over the [GitHub Issues](https://github.com/minos-framework/minos-python/issues). In addition, a [Gitter channel](https://gitter.im/minos-framework/community) is available for development-related questions.
+Most development discussions take place over this [GitHub Issues](https://github.com/minos-framework/minos-python/issues). In addition, a [Gitter channel](https://gitter.im/minos-framework/community) is available for development-related questions.
 
 ## How to contribute
 
