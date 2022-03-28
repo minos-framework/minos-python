@@ -1,5 +1,0 @@
----
-- name: Create Database
-  import_playbook: ../../../external/postgres/playbooks/create-database.yaml
-  vars:
-    db_name: coinbase_db
