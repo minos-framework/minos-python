@@ -1,18 +1,28 @@
 import logging
 import time
 
+import ccxt
 import pendulum
+
+from minos.aggregate import (
+    Event,
+)
+from minos.common import (
+    ModelType,
+)
 from minos.cqrs import (
     CommandService,
 )
-from minos.common import ModelType
+from minos.networks import (
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
+    Request,
+    enroute,
+)
 
-from minos.networks import Request, enroute, BrokerMessageV1, BrokerMessageV1Payload
-from minos.aggregate import Event
 from ..aggregates import (
     CryptoAggregate,
 )
-import ccxt
 
 logger = logging.getLogger(__name__)
 QuoteContent = ModelType.build("QuoteContent", {"ticker": str, "close": float, "volume": float, "when": str})

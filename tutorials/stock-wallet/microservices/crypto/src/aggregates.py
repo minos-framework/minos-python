@@ -2,7 +2,10 @@ from uuid import (
     UUID,
 )
 
-from minos.aggregate import Aggregate, RootEntity
+from minos.aggregate import (
+    Aggregate,
+    RootEntity,
+)
 
 
 class Crypto(RootEntity):

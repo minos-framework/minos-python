@@ -8,16 +8,22 @@ from polygon import (
 from minos.aggregate import (
     Event,
 )
+from minos.common import (
+    ModelType,
+)
 from minos.cqrs import (
     CommandService,
 )
-from minos.networks import Request, enroute, BrokerMessageV1, BrokerMessageV1Payload
+from minos.networks import (
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
+    Request,
+    enroute,
+)
 
 from ..aggregates import (
     StocksAggregate,
 )
-
-from minos.common import ModelType
 
 logger = logging.getLogger(__name__)
 
