@@ -35,6 +35,8 @@ class TestRabbitMQBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
         self.assertEqual({"foo", "bar"}, subscriber.topics)
         self.assertEqual("localhost", subscriber.host)
         self.assertEqual(5672, subscriber.port)
+        self.assertEqual("guest", subscriber.user)
+        self.assertEqual("guest", subscriber.password)
 
     async def test_from_config(self):
         config = Config(CONFIG_FILE_PATH)

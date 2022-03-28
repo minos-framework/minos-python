@@ -27,6 +27,8 @@ class TestRabbitMQBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         publisher = RabbitMQBrokerPublisher()
         self.assertEqual("localhost", publisher.host)
         self.assertEqual(5672, publisher.port)
+        self.assertEqual("guest", publisher.user)
+        self.assertEqual("guest", publisher.password)
 
     def test_from_config(self):
         config = Config(CONFIG_FILE_PATH)
