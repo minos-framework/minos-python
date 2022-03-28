@@ -49,7 +49,5 @@ class BrokerHandlerService(BrokerPort):
     """Broker Handler Service class."""
 
     def __init__(self, **kwargs):
-        warnings.warn(
-            f"{BrokerHandlerService!r} has been deprecated. Use {BrokerPort} instead.", DeprecationWarning
-        )
+        warnings.warn(f"{BrokerHandlerService!r} has been deprecated. Use {BrokerPort} instead.", DeprecationWarning)
         super().__init__(**kwargs)
