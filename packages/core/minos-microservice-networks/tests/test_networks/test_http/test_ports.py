@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from unittest.mock import (
     AsyncMock,
 )
@@ -9,6 +10,7 @@ from minos.common import (
 )
 from minos.networks import (
     HttpPort,
+    RestService,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -62,6 +64,17 @@ class TestHttpPort(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(0, setup_mock.call_count)
         self.assertEqual(1, destroy_mock.call_count)
+
+
+class TestRestService(unittest.TestCase):
+    def test_is_subclass(self):
+        self.assertTrue(issubclass(RestService, HttpPort))
+
+    def test_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            port = RestService(config=CONFIG_FILE_PATH)
+            self.assertIsInstance(port, HttpPort)
 
 
 if __name__ == "__main__":

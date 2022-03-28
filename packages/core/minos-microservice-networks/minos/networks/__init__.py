@@ -10,6 +10,7 @@ from .brokers import (
     BrokerDispatcher,
     BrokerHandler,
     BrokerHandlerPort,
+    BrokerHandlerService,
     BrokerMessage,
     BrokerMessageV1,
     BrokerMessageV1Payload,
@@ -101,6 +102,7 @@ from .http import (
     HttpRequest,
     HttpResponse,
     HttpResponseException,
+    RestService,
 )
 from .requests import (
     REQUEST_USER_CONTEXT_VAR,
@@ -122,6 +124,7 @@ from .scheduling import (
     PeriodicTask,
     PeriodicTaskScheduler,
     PeriodicTaskSchedulerPort,
+    PeriodicTaskSchedulerService,
     ScheduledRequest,
     ScheduledRequestContent,
     ScheduledResponseException,

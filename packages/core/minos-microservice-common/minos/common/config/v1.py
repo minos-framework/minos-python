@@ -149,7 +149,11 @@ class ConfigV1(Config):
 
     def _get_interface_http(self) -> dict[str, Any]:
         try:
-            port = next(port for port in self.get_by_key("service.services") if "http" in port.lower())
+            port = next(
+                port
+                for port in self.get_by_key("service.services")
+                if ("http" in port.lower() or "rest" in port.lower())
+            )
         except Exception as exc:
             raise MinosConfigException(f"The 'http' interface is not available: {exc!r}")
 

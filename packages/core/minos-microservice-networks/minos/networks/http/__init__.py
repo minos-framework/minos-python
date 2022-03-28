@@ -6,6 +6,7 @@ from .connectors import (
 )
 from .ports import (
     HttpPort,
+    RestService,
 )
 from .requests import (
     HttpRequest,

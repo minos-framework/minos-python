@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 from cached_property import (
     cached_property,
@@ -43,3 +44,14 @@ class PeriodicTaskSchedulerPort(Port):
         :return: A ``PeriodicTaskScheduler`` instance.
         """
         return PeriodicTaskScheduler.from_config(**self._init_kwargs)
+
+
+class PeriodicTaskSchedulerService(PeriodicTaskSchedulerPort):
+    """Periodic Task Scheduler Service class."""
+
+    def __init__(self, **kwargs):
+        warnings.warn(
+            f"{PeriodicTaskSchedulerService!r} has been deprecated. Use {PeriodicTaskSchedulerPort} instead.",
+            DeprecationWarning,
+        )
+        super().__init__(**kwargs)

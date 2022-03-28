@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from unittest.mock import (
     AsyncMock,
 )
@@ -12,6 +13,7 @@ from minos.common.testing import (
 from minos.networks import (
     BrokerHandler,
     BrokerHandlerPort,
+    BrokerHandlerService,
     InMemoryBrokerPublisher,
     InMemoryBrokerSubscriberBuilder,
 )
@@ -66,6 +68,17 @@ class TestBrokerHandlerPort(PostgresAsyncTestCase):
         self.assertEqual(0, setup_mock.call_count)
         self.assertEqual(0, run_mock.call_count)
         self.assertEqual(1, destroy_mock.call_count)
+
+
+class TestBrokerHandlerService(unittest.TestCase):
+    def test_is_subclass(self):
+        self.assertTrue(issubclass(BrokerHandlerService, BrokerHandlerPort))
+
+    def test_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            port = BrokerHandlerService(config=CONFIG_FILE_PATH)
+            self.assertIsInstance(port, BrokerHandlerPort)
 
 
 if __name__ == "__main__":

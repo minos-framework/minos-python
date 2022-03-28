@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 from cached_property import (
     cached_property,
@@ -42,3 +43,13 @@ class BrokerHandlerPort(Port):
         :return: A ``Handler`` instance.
         """
         return BrokerHandler.from_config(**self._init_kwargs)
+
+
+class BrokerHandlerService(BrokerHandlerPort):
+    """Broker Handler Service class."""
+
+    def __init__(self, **kwargs):
+        warnings.warn(
+            f"{BrokerHandlerService!r} has been deprecated. Use {BrokerHandlerPort} instead.", DeprecationWarning
+        )
+        super().__init__(**kwargs)

@@ -3,4 +3,5 @@ from .impl import (
 )
 from .ports import (
     BrokerHandlerPort,
+    BrokerHandlerService,
 )

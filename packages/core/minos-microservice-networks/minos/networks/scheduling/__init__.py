@@ -3,6 +3,7 @@ from .crontab import (
 )
 from .ports import (
     PeriodicTaskSchedulerPort,
+    PeriodicTaskSchedulerService,
 )
 from .requests import (
     ScheduledRequest,
