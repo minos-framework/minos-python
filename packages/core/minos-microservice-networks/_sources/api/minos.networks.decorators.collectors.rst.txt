@@ -1,0 +1,7 @@
+minos.networks.decorators.collectors module
+===========================================
+
+.. automodule:: minos.networks.decorators.collectors
+   :members:
+   :undoc-members:
+   :show-inheritance:

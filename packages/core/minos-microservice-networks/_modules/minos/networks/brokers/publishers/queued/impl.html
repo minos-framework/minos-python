@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.brokers.publishers.queued.impl &mdash; Minos Microservice Network 0.5.3 documentation</title>
+  <title>minos.networks.brokers.publishers.queued.impl &mdash; Minos Microservice Network 0.6.0 documentation</title>
       <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.5.3
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
@@ -86,6 +86,10 @@
     <span class="n">NoReturn</span><span class="p">,</span>
 <span class="p">)</span>
 
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Builder</span><span class="p">,</span>
+<span class="p">)</span>
+
 <span class="kn">from</span> <span class="nn">...messages</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">BrokerMessage</span><span class="p">,</span>
 <span class="p">)</span>
@@ -140,6 +144,9 @@
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">BrokerMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+
+<span class="n">QueuedBrokerPublisher</span><span class="o">.</span><span class="n">set_builder</span><span class="p">(</span><span class="n">Builder</span><span class="p">)</span>
 </pre></div>
 
            </div>

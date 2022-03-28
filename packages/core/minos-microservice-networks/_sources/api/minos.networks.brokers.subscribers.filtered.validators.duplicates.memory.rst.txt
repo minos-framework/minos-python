@@ -1,0 +1,7 @@
+minos.networks.brokers.subscribers.filtered.validators.duplicates.memory module
+===============================================================================
+
+.. automodule:: minos.networks.brokers.subscribers.filtered.validators.duplicates.memory
+   :members:
+   :undoc-members:
+   :show-inheritance:

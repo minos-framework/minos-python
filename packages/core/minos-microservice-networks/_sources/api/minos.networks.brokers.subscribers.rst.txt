@@ -12,6 +12,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   minos.networks.brokers.subscribers.filtered
    minos.networks.brokers.subscribers.queued
 
 Submodules

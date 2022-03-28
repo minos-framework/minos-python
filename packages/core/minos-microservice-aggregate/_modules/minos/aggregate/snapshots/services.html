@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.snapshots.services &mdash; Minos Microservice Aggregate 0.5.4 documentation</title>
+  <title>minos.aggregate.snapshots.services &mdash; Minos Microservice Aggregate 0.6.0 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.5.4
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -91,15 +91,11 @@
 <span class="kn">from</span> <span class="nn">cached_property</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">cached_property</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">dependency_injector.wiring</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Provide</span><span class="p">,</span>
-    <span class="n">inject</span><span class="p">,</span>
-<span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">MinosConfig</span><span class="p">,</span>
+    <span class="n">Config</span><span class="p">,</span>
+    <span class="n">Inject</span><span class="p">,</span>
     <span class="n">ModelType</span><span class="p">,</span>
-    <span class="n">import_module</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">EnrouteDecorator</span><span class="p">,</span>
@@ -125,24 +121,27 @@
     <span class="sd">&quot;&quot;&quot;Snapshot Service class.&quot;&quot;&quot;</span>
 
     <span class="c1"># noinspection PyUnusedLocal</span>
-<div class="viewcode-block" id="SnapshotService.__init__"><a class="viewcode-back" href="../../../../api/minos.aggregate.snapshots.services.html#minos.aggregate.snapshots.services.SnapshotService.__init__">[docs]</a>    <span class="nd">@inject</span>
+<div class="viewcode-block" id="SnapshotService.__init__"><a class="viewcode-back" href="../../../../api/minos.aggregate.snapshots.services.html#minos.aggregate.snapshots.services.SnapshotService.__init__">[docs]</a>    <span class="nd">@Inject</span><span class="p">()</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="n">args</span><span class="p">,</span>
-        <span class="n">config</span><span class="p">:</span> <span class="n">MinosConfig</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">],</span>
-        <span class="n">snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;snapshot_repository&quot;</span><span class="p">],</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span>
+        <span class="n">snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span> <span class="o">=</span> <span class="n">snapshot_repository</span></div>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">__get_enroute__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">MinosConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="n">EnrouteDecorator</span><span class="p">]]:</span>
+    <span class="k">def</span> <span class="nf">__get_enroute__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="n">EnrouteDecorator</span><span class="p">]]:</span>
         <span class="kn">from</span> <span class="nn">..entities</span> <span class="kn">import</span> <span class="p">(</span>
             <span class="n">RefResolver</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="n">name</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">aggregate</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">aggregate_config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_aggregate</span><span class="p">()</span>
+        <span class="n">root_entity</span> <span class="o">=</span> <span class="n">aggregate_config</span><span class="p">[</span><span class="s2">&quot;entities&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">root_entity</span><span class="o">.</span><span class="vm">__name__</span>
+
         <span class="k">return</span> <span class="p">{</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">__get_many__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="p">{</span><span class="n">enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">RefResolver</span><span class="o">.</span><span class="n">build_topic_name</span><span class="p">(</span><span class="n">name</span><span class="p">))},</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">__synchronize__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="p">{</span><span class="n">enroute</span><span class="o">.</span><span class="n">periodic</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;* * * * *&quot;</span><span class="p">)},</span>
@@ -172,8 +171,8 @@
 
 <span class="sd">        :return: A ``Type`` object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># noinspection PyTypeChecker</span>
-        <span class="k">return</span> <span class="n">import_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">aggregate</span><span class="p">)</span>
+        <span class="n">aggregate_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_aggregate</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">aggregate_config</span><span class="p">[</span><span class="s2">&quot;entities&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># noinspection PyUnusedLocal</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">__synchronize__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

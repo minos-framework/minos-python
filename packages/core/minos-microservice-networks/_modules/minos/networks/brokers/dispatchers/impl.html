@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.brokers.dispatchers.impl &mdash; Minos Microservice Network 0.5.3 documentation</title>
+  <title>minos.networks.brokers.dispatchers.impl &mdash; Minos Microservice Network 0.6.0 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.5.3
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -78,6 +78,7 @@
 <span class="p">)</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Awaitable</span><span class="p">,</span>
     <span class="n">Callable</span><span class="p">,</span>
@@ -93,19 +94,15 @@
     <span class="n">Union</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">dependency_injector.wiring</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Provide</span><span class="p">,</span>
-    <span class="n">inject</span><span class="p">,</span>
-<span class="p">)</span>
-
 <span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">MinosConfig</span><span class="p">,</span>
-    <span class="n">MinosSetup</span><span class="p">,</span>
+    <span class="n">Config</span><span class="p">,</span>
+    <span class="n">Inject</span><span class="p">,</span>
     <span class="n">NotProvidedException</span><span class="p">,</span>
+    <span class="n">SetupMixin</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">...decorators</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">EnrouteBuilder</span><span class="p">,</span>
+    <span class="n">EnrouteFactory</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">...exceptions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">MinosActionNotFoundException</span><span class="p">,</span>
@@ -134,7 +131,7 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="BrokerDispatcher"><a class="viewcode-back" href="../../../../../api/minos.networks.brokers.dispatchers.impl.html#minos.networks.brokers.dispatchers.impl.BrokerDispatcher">[docs]</a><span class="k">class</span> <span class="nc">BrokerDispatcher</span><span class="p">(</span><span class="n">MinosSetup</span><span class="p">):</span>
+<div class="viewcode-block" id="BrokerDispatcher"><a class="viewcode-back" href="../../../../../api/minos.networks.brokers.dispatchers.impl.html#minos.networks.brokers.dispatchers.impl.BrokerDispatcher">[docs]</a><span class="k">class</span> <span class="nc">BrokerDispatcher</span><span class="p">(</span><span class="n">SetupMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Broker Dispatcher class.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="BrokerDispatcher.__init__"><a class="viewcode-back" href="../../../../../api/minos.networks.brokers.dispatchers.impl.html#minos.networks.brokers.dispatchers.impl.BrokerDispatcher.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]],</span> <span class="n">publisher</span><span class="p">:</span> <span class="n">BrokerPublisher</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -143,33 +140,33 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_publisher</span> <span class="o">=</span> <span class="n">publisher</span></div>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">MinosConfig</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BrokerDispatcher</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BrokerDispatcher</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_actions</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;publisher&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_publisher</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="c1"># noinspection PyProtectedMember</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">_asdict</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_get_actions</span><span class="p">(</span>
-        <span class="n">config</span><span class="p">:</span> <span class="n">MinosConfig</span><span class="p">,</span> <span class="n">handlers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="n">handlers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">BrokerRequest</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">BrokerResponse</span><span class="p">]]]]:</span>
         <span class="k">if</span> <span class="n">handlers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">builder</span> <span class="o">=</span> <span class="n">EnrouteBuilder</span><span class="p">(</span><span class="o">*</span><span class="n">config</span><span class="o">.</span><span class="n">services</span><span class="p">,</span> <span class="n">middleware</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="p">)</span>
+            <span class="n">builder</span> <span class="o">=</span> <span class="n">EnrouteFactory</span><span class="p">(</span><span class="o">*</span><span class="n">config</span><span class="o">.</span><span class="n">get_services</span><span class="p">(),</span> <span class="n">middleware</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get_middleware</span><span class="p">())</span>
             <span class="n">decorators</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">get_broker_command_query_event</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">handlers</span> <span class="o">=</span> <span class="p">{</span><span class="n">decorator</span><span class="o">.</span><span class="n">topic</span><span class="p">:</span> <span class="n">fn</span> <span class="k">for</span> <span class="n">decorator</span><span class="p">,</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">decorators</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">return</span> <span class="n">handlers</span>
 
     <span class="c1"># noinspection PyUnusedLocal</span>
     <span class="nd">@staticmethod</span>
-    <span class="nd">@inject</span>
+    <span class="nd">@Inject</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">_get_publisher</span><span class="p">(</span>
         <span class="n">publisher</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BrokerPublisher</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">broker_publisher</span><span class="p">:</span> <span class="n">BrokerPublisher</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;broker_publisher&quot;</span><span class="p">],</span>
+        <span class="n">broker_publisher</span><span class="p">:</span> <span class="n">BrokerPublisher</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BrokerPublisher</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">publisher</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">publisher</span> <span class="o">=</span> <span class="n">broker_publisher</span>
-        <span class="k">if</span> <span class="n">publisher</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">publisher</span><span class="p">,</span> <span class="n">Provide</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">publisher</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">NotProvidedException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">BrokerPublisher</span><span class="si">!r}</span><span class="s2"> object must be provided.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">publisher</span>
 
@@ -231,10 +228,12 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">content</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">BrokerMessageV1Status</span><span class="o">.</span><span class="n">SUCCESS</span>
             <span class="k">except</span> <span class="n">ResponseException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Raised an application exception: </span><span class="si">{</span><span class="n">exc</span><span class="si">!s}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">tb</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Raised an application exception:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">tb</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">content</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span> <span class="n">exc</span><span class="o">.</span><span class="n">status</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Raised a system exception: </span><span class="si">{</span><span class="n">exc</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">tb</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Raised a system exception:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">tb</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">content</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span> <span class="n">BrokerMessageV1Status</span><span class="o">.</span><span class="n">SYSTEM_ERROR</span>
             <span class="k">finally</span><span class="p">:</span>
                 <span class="n">headers</span> <span class="o">=</span> <span class="n">REQUEST_HEADERS_CONTEXT_VAR</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>

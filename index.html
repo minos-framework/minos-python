@@ -40,13 +40,8 @@
               <!-- Local TOC -->
               <div class="local-toc"><ul>
 <li><a class="reference internal" href="#">minos-python: The framework which helps you create reactive microservices in Python</a><ul>
-<li><a class="reference internal" href="#summary">Summary</a><ul>
-<li><a class="reference internal" href="#roadmap">Roadmap</a><ul>
-<li><a class="reference internal" href="#x">0.6.x</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a class="reference internal" href="#summary">Summary</a></li>
+<li><a class="reference internal" href="#roadmap">Roadmap</a></li>
 <li><a class="reference internal" href="#foundational-patterns">Foundational Patterns</a></li>
 <li><a class="reference internal" href="#installation">Installation</a></li>
 <li><a class="reference internal" href="#documentation">Documentation</a></li>
@@ -106,7 +101,7 @@
            <div itemprop="articleBody">
              
   <p align="center">
-  <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
+  <a href="https://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
 </p><section id="minos-python-the-framework-which-helps-you-create-reactive-microservices-in-python">
 <h1>minos-python: The framework which helps you create reactive microservices in Python<a class="headerlink" href="#minos-python-the-framework-which-helps-you-create-reactive-microservices-in-python" title="Permalink to this headline"></a></h1>
 <a class="reference external image-reference" href="https://pypi.org/project/minos-microservice-common/"><img alt="PyPI Latest Release" src="https://img.shields.io/pypi/v/minos-microservice-common.svg" /></a>
@@ -119,22 +114,10 @@
 <section id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline"></a></h2>
 <p>Minos is a framework which helps you create <a class="reference external" href="https://www.reactivemanifesto.org/">reactive</a> microservices in Python. Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an asynchronous environment.</p>
+</section>
 <section id="roadmap">
-<h3>Roadmap<a class="headerlink" href="#roadmap" title="Permalink to this headline"></a></h3>
-<section id="x">
-<h4>0.6.x<a class="headerlink" href="#x" title="Permalink to this headline"></a></h4>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/78">#78</a> Implement a circuit breaker for <code class="docutils literal notranslate"><span class="pre">minos-broker-kafka</span></code>.</p></li>
-<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/87">#87</a> Implement idempotency for <code class="docutils literal notranslate"><span class="pre">BrokerSubscriber</span></code> message processing.</p></li>
-<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/100">#100</a> Create the <code class="docutils literal notranslate"><span class="pre">minos-serializers-avro</span></code> plugin.</p></li>
-<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/148">#148</a> Create the <code class="docutils literal notranslate"><span class="pre">minos-rest-aiohttp</span></code>.</p></li>
-<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/149">#149</a> Add <code class="docutils literal notranslate"><span class="pre">minos-graphql-aiohttp</span></code> plugin.</p></li>
-<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/150">#150</a> Refactor configuration file and <code class="docutils literal notranslate"><span class="pre">MinosConfig</span></code> accessor.</p></li>
-<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/151">#151</a> Expose <code class="docutils literal notranslate"><span class="pre">OpenAPI</span></code> and <code class="docutils literal notranslate"><span class="pre">AsyncAPI</span></code> specifications.</p></li>
-<li><p><a class="reference external" href="https://github.com/minos-framework/minos-python/issues/152">#152</a> Provide a testing suite to test the microservice.</p></li>
-</ul>
-</section>
-</section>
+<h2>Roadmap<a class="headerlink" href="#roadmap" title="Permalink to this headline"></a></h2>
+<p>The roadmap of this project is publicly accessible at this <a class="reference external" href="https://github.com/minos-framework/roadmap">GitHub Repository</a>.</p>
 </section>
 <section id="foundational-patterns">
 <h2>Foundational Patterns<a class="headerlink" href="#foundational-patterns" title="Permalink to this headline"></a></h2>
@@ -175,7 +158,7 @@
 </section>
 <section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline"></a></h2>
-<p>The best place to start learning how to use the Minos Framework is at <a class="reference external" href="http://www.minos.run/learn/">Minos Learn</a>. The official API Reference is publicly available at the <a class="reference external" href="https://minos-framework.github.io/minos-python">GitHub Pages</a>.</p>
+<p>The best place to start learning how to use the Minos Framework is at <a class="reference external" href="https://www.minos.run/learn/">Minos Learn</a>. The official API Reference is publicly available at the <a class="reference external" href="https://minos-framework.github.io/minos-python">GitHub Pages</a>.</p>
 </section>
 <section id="quickstart">
 <h2>QuickStart<a class="headerlink" href="#quickstart" title="Permalink to this headline"></a></h2>
@@ -242,7 +225,8 @@ docker-compose exec postgres psql -U user -tc 'CREATE database foobar_db'
   minos-microservice-cqrs <span class="se">\</span>
   minos-microservice-networks <span class="se">\</span>
   minos-microservice-saga
-  minos-broker-kafka
+  minos-broker-kafka <span class="se">\</span>
+  minos-http-aiohttp
 </pre></div>
 </div>
 </section>
@@ -263,65 +247,58 @@ docker-compose exec postgres psql -U user -tc 'CREATE database foobar_db'
 ```yaml
 # foo/config.yml
 
-service:
-  name: foo
-  aggregate: main.Foo
-  injections:
-    lock_pool: minos.common.PostgreSqlLockPool
-    postgresql_pool: minos.common.PostgreSqlPool
-    broker_publisher: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerPublisher
-    broker_subscriber_builder: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
-    broker_pool: minos.networks.BrokerClientPool
-    transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
-    event_repository: minos.aggregate.PostgreSqlEventRepository
-    snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
-    saga_manager: minos.saga.SagaManager
-    discovery: minos.networks.DiscoveryConnector
-  services:
-    - minos.networks.BrokerHandlerService
-    - minos.networks.RestService
-    - minos.networks.PeriodicTaskSchedulerService
+version: 2
+name: foo
+aggregate:
+  entities:
+    - main.Foo
+  repositories:
+    transaction: minos.aggregate.PostgreSqlTransactionRepository
+    event: minos.aggregate.PostgreSqlEventRepository
+    snapshot: minos.aggregate.PostgreSqlSnapshotRepository
+databases:
+  default:
+    database: foo_db
+    user: minos
+    password: min0s
+  saga:
+    path: "./foo.lmdb"
+interfaces:
+  broker:
+    port: minos.networks.BrokerPort
+    publisher:
+      client: minos.plugins.kafka.KafkaBrokerPublisher
+      queue: minos.networks.PostgreSqlBrokerPublisherQueue
+    subscriber:
+      client: minos.plugins.kafka.KafkaBrokerSubscriber
+      queue: minos.networks.PostgreSqlBrokerSubscriberQueue
+      validator: minos.networks.PostgreSqlBrokerSubscriberDuplicateValidator
+  http:
+    port: minos.networks.HttpPort
+    connector:
+      client: minos.plugins.aiohttp.AioHttpConnector
+      port: 4545
+  periodic:
+    port: minos.networks.PeriodicPort
+pools:
+  lock: minos.common.PostgreSqlLockPool
+  databasse: minos.common.PostgreSqlPool
+  broker: minos.networks.BrokerClientPool
+saga:
+  manager: minos.saga.SagaManager
+routers:
+  - minos.networks.BrokerRouter
+  - minos.networks.PeriodicRouter
+  - minos.networks.RestHttpRouter
 middleware:
   - minos.saga.transactional_command
 services:
+  - minos.networks.SystemService
   - minos.aggregate.TransactionService
   - minos.aggregate.SnapshotService
   - minos.saga.SagaService
   - main.FooCommandService
   - main.FooQueryService
-rest:
-  host: 0.0.0.0
-  port: 4545
-broker:
-  host: localhost
-  port: 9092
-  queue:
-    database: foo_db
-    user: user
-    password: pass
-    host: localhost
-    port: 5432
-    records: 1000
-    retry: 2
-repository:
-  database: foo_db
-  user: user
-  password: pass
-  host: localhost
-  port: 5432
-snapshot:
-  database: foo_db
-  user: user
-  password: pass
-  host: localhost
-  port: 5432
-saga:
-  storage:
-    path: "./foo.lmdb"
-discovery:
-  client: minos.networks.InMemoryDiscoveryClient
-  host: localhost
-  port: 5567
 ```
 
 </details><p>Create a <code class="docutils literal notranslate"><span class="pre">foo/main.py</span></code> file and add the following content:</p>
@@ -369,7 +346,7 @@ discovery:
 <li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.Ref</span></code>: A wrapper class that provides the functionality to store a reference of other <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> or <code class="docutils literal notranslate"><span class="pre">ExternalEntity</span></code> instances.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.EntitySet</span></code>: A container of <code class="docutils literal notranslate"><span class="pre">Entity</span></code> instances that takes advantage of the incremental behaviour of the <code class="docutils literal notranslate"><span class="pre">EventRepository</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.ValueObject</span></code>: A model that is only identified by the values that compose it, so that if some of them changes, then the model becomes completely different (for that reason, these models are immutable).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.ValueObjectSet</span></code>: A container of <code class="docutils literal notranslate"><span class="pre">ValueObject</span></code> instances that takes advantage of the incremental behaviour of the <a href="#id10"><span class="problematic" id="id11">`</span></a>EventRepository.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.ValueObjectSet</span></code>: A container of <code class="docutils literal notranslate"><span class="pre">ValueObject</span></code> instances that takes advantage of the incremental behaviour of the <a href="#id2"><span class="problematic" id="id3">`</span></a>EventRepository.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.Aggregate</span></code>: A collection of <code class="docutils literal notranslate"><span class="pre">Entity</span></code> and/or <code class="docutils literal notranslate"><span class="pre">ValueObject</span></code> models that are related to each other through a <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">minos.aggregate.Event</span></code>: A model that contains the difference between the a <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> instance and its previous version (if any).</p></li>
 </ul>
@@ -1047,64 +1024,57 @@ if __name__ == '__main__':
 ```yaml
 # foobar/config.yml
 
-service:
-  name: foobar
-  aggregate: main.FooBar
-  injections:
-    lock_pool: minos.common.PostgreSqlLockPool
-    postgresql_pool: minos.common.PostgreSqlPool
-    broker_publisher: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerPublisher
-    broker_subscriber_builder: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
-    broker_pool: minos.networks.BrokerClientPool
-    transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
-    event_repository: minos.aggregate.PostgreSqlEventRepository
-    snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
-    saga_manager: minos.saga.SagaManager
-    discovery: minos.networks.DiscoveryConnector
-  services:
-    - minos.networks.BrokerHandlerService
-    - minos.networks.RestService
-    - minos.networks.PeriodicTaskSchedulerService
+version: 2
+name: foobar
+aggregate:
+  entities:
+    - main.FooBar
+  repositories:
+    transaction: minos.aggregate.PostgreSqlTransactionRepository
+    event: minos.aggregate.PostgreSqlEventRepository
+    snapshot: minos.aggregate.PostgreSqlSnapshotRepository
+databases:
+  default:
+    database: foobar_db
+    user: minos
+    password: min0s
+  saga:
+    path: "./foobar.lmdb"
+interfaces:
+  broker:
+    port: minos.networks.BrokerPort
+    publisher:
+      client: minos.plugins.kafka.KafkaBrokerPublisher
+      queue: minos.networks.PostgreSqlBrokerPublisherQueue
+    subscriber:
+      client: minos.plugins.kafka.KafkaBrokerSubscriber
+      queue: minos.networks.PostgreSqlBrokerSubscriberQueue
+      validator: minos.networks.PostgreSqlBrokerSubscriberDuplicateValidator
+  http:
+    port: minos.networks.HttpPort
+    connector:
+      client: minos.plugins.aiohttp.AioHttpConnector
+      port: 4546
+  periodic:
+    port: minos.networks.PeriodicPort
+pools:
+  lock: minos.common.PostgreSqlLockPool
+  databasse: minos.common.PostgreSqlPool
+  broker: minos.networks.BrokerClientPool
+saga:
+  manager: minos.saga.SagaManager
+routers:
+  - minos.networks.BrokerRouter
+  - minos.networks.PeriodicRouter
+  - minos.networks.RestHttpRouter
 middleware:
   - minos.saga.transactional_command
 services:
+  - minos.networks.SystemService
   - minos.aggregate.TransactionService
   - minos.aggregate.SnapshotService
   - minos.saga.SagaService
   - main.FooBarCommandService
-rest:
-  host: 0.0.0.0
-  port: 4546
-broker:
-  host: localhost
-  port: 9092
-  queue:
-    database: foobar_db
-    user: user
-    password: pass
-    host: localhost
-    port: 5432
-    records: 1000
-    retry: 2
-repository:
-  database: foobar_db
-  user: user
-  password: pass
-  host: localhost
-  port: 5432
-snapshot:
-  database: foobar_db
-  user: user
-  password: pass
-  host: localhost
-  port: 5432
-saga:
-  storage:
-    path: "./foobar.lmdb"
-discovery:
-  client: minos.networks.InMemoryDiscoveryClient
-  host: localhost
-  port: 5567
 ```
 
 </details><p>Here is the <code class="docutils literal notranslate"><span class="pre">foobar/main.py</span></code> source file:</p>
@@ -1206,13 +1176,16 @@ if __name__ == '__main__':
 <p>The plugin packages provide connectors to external technologies like brokers, discovery services, databases, serializers and so on.</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-kafka">minos-broker-kafka</a>: The <code class="docutils literal notranslate"><span class="pre">kafka</span></code> plugin package.</p></li>
+<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-rabbitmq">minos-broker-rabbitmq</a>: The <code class="docutils literal notranslate"><span class="pre">rabbitmq</span></code> plugin package.</p></li>
 <li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/plugins/minos-discovery-minos">minos-discovery-minos</a>: The <code class="docutils literal notranslate"><span class="pre">minos-discovery</span></code> plugin package.</p></li>
+<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/plugins/minos-http-aiohttp">minos-http-aiohttp</a>: The <code class="docutils literal notranslate"><span class="pre">aiohttp</span></code> plugin package.</p></li>
+<li><p><a class="reference external" href="https://minos-framework.github.io/minos-python/packages/plugins/minos-router-graphql">minos-router-graphql</a>: The <code class="docutils literal notranslate"><span class="pre">grapqhl</span></code> plugin package.</p></li>
 </ul>
 </section>
 </section>
 <section id="source-code">
 <h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this headline"></a></h2>
-<p>The source code of this project is hosted at the <a class="reference external" href="https://github.com/minos-framework/minos-python">GitHub Repository</a>.</p>
+<p>The source code of this project is hosted at this <a class="reference external" href="https://github.com/minos-framework/minos-python">GitHub Repository</a>.</p>
 </section>
 <section id="getting-help">
 <h2>Getting Help<a class="headerlink" href="#getting-help" title="Permalink to this headline"></a></h2>
@@ -1220,7 +1193,7 @@ if __name__ == '__main__':
 </section>
 <section id="discussion-and-development">
 <h2>Discussion and Development<a class="headerlink" href="#discussion-and-development" title="Permalink to this headline"></a></h2>
-<p>Most development discussions take place over the <a class="reference external" href="https://github.com/minos-framework/minos-python/issues">GitHub Issues</a>. In addition, a <a class="reference external" href="https://gitter.im/minos-framework/community">Gitter channel</a> is available for development-related questions.</p>
+<p>Most development discussions take place over this <a class="reference external" href="https://github.com/minos-framework/minos-python/issues">GitHub Issues</a>. In addition, a <a class="reference external" href="https://gitter.im/minos-framework/community">Gitter channel</a> is available for development-related questions.</p>
 </section>
 <section id="how-to-contribute">
 <h2>How to contribute<a class="headerlink" href="#how-to-contribute" title="Permalink to this headline"></a></h2>

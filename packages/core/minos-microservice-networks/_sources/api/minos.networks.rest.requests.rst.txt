@@ -1,7 +1,0 @@
-minos.networks.rest.requests module
-===================================
-
-.. automodule:: minos.networks.rest.requests
-   :members:
-   :undoc-members:
-   :show-inheritance:

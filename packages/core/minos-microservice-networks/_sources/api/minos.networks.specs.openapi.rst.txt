@@ -1,0 +1,7 @@
+minos.networks.specs.openapi module
+===================================
+
+.. automodule:: minos.networks.specs.openapi
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,7 +1,0 @@
-minos.networks.decorators.definitions.rest module
-=================================================
-
-.. automodule:: minos.networks.decorators.definitions.rest
-   :members:
-   :undoc-members:
-   :show-inheritance:

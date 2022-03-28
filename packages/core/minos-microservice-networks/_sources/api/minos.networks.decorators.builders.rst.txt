@@ -1,7 +1,0 @@
-minos.networks.decorators.builders module
-=========================================
-
-.. automodule:: minos.networks.decorators.builders
-   :members:
-   :undoc-members:
-   :show-inheritance:

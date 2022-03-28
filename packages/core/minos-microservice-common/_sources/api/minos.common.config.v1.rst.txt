@@ -1,0 +1,7 @@
+minos.common.config.v1 module
+=============================
+
+.. automodule:: minos.common.config.v1
+   :members:
+   :undoc-members:
+   :show-inheritance:

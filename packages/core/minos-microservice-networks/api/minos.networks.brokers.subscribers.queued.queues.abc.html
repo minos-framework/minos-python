@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.brokers.subscribers.queued.queues.abc module &mdash; Minos Microservice Network 0.5.3 documentation</title>
+  <title>minos.networks.brokers.subscribers.queued.queues.abc module &mdash; Minos Microservice Network 0.6.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.5.3
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -174,15 +174,46 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.configuration.config.MinosConfig</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
+<li><p><strong>config</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">abc.Config</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
 <li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">S</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.MinosSetup</span></code>)</p>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">S</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.SetupMixin</span></code>)</p>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A instance of the called class.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueue.get_builder">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_builder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueue.get_builder" title="Permalink to this definition"></a></dt>
+<dd><p>Get the builder class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.builders.Builder</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">Ins</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.builders.BuildableMixin</span></code>)]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">Builder</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueue.set_builder">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">builder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueue.set_builder" title="Permalink to this definition"></a></dt>
+<dd><p>Set a builder class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>builder</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.builders.Builder</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">Ins</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.builders.BuildableMixin</span></code>)], <code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.builders.Builder</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">Ins</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.builders.BuildableMixin</span></code>)]]]) – The builder class to be set.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -219,12 +250,12 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.networks.brokers.subscribers.queued.queues.abc.</span></span><span class="sig-name descname"><span class="pre">BrokerSubscriberQueueBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/brokers/subscribers/queued/queues/abc.html#BrokerSubscriberQueueBuilder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="minos.networks.utils.html#minos.networks.utils.Builder" title="minos.networks.utils.Builder"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.utils.Builder</span></code></a>[<a class="reference internal" href="#minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueue" title="minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueue"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueue</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.networks.brokers.subscribers.queued.queues.abc.</span></span><span class="sig-name descname"><span class="pre">BrokerSubscriberQueueBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance_cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/brokers/subscribers/queued/queues/abc.html#BrokerSubscriberQueueBuilder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.builders.Builder</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueCls</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueCls</span></code>]</p>
 <p>Broker Subscriber Queue Builder class.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder.__init__" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance_cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder.__init__" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -257,14 +288,14 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder.build">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder.build" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder.build" title="Permalink to this definition"></a></dt>
 <dd><p>Build the instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">Instance</span></code>)</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">BrokerSubscriber</span></code> instance.</p>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">Instance</span></code> instance.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -275,10 +306,10 @@
 <dd><p>Get a copy of the instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">B</span></code>, bound= <a class="reference internal" href="minos.networks.utils.html#minos.networks.utils.Builder" title="minos.networks.utils.Builder"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.utils.Builder</span></code></a>)</p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">B</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.builders.Builder</span></code>)</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">BrokerSubscriberBuilder</span></code> instance.</p>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">Builder</span></code> instance.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -304,12 +335,12 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.configuration.config.MinosConfig</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
+<li><p><strong>config</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">abc.Config</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
 <li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">S</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.MinosSetup</span></code>)</p>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">S</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.SetupMixin</span></code>)</p>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A instance of the called class.</p>
@@ -323,10 +354,10 @@
 <dd><p>Get a new instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">B</span></code>, bound= <a class="reference internal" href="minos.networks.utils.html#minos.networks.utils.Builder" title="minos.networks.utils.Builder"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.utils.Builder</span></code></a>)</p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">B</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.builders.Builder</span></code>)</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">BrokerSubscriberBuilder</span></code> instance.</p>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">Builder</span></code> instance.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -346,15 +377,32 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder.with_cls">
+<span class="sig-name descname"><span class="pre">with_cls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder.with_cls" title="Permalink to this definition"></a></dt>
+<dd><p>Set class to be built.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cls</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code>) – The class to be set.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">B</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.builders.Builder</span></code>)</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method return the builder instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder.with_config">
 <span class="sig-name descname"><span class="pre">with_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder.with_config" title="Permalink to this definition"></a></dt>
 <dd><p>Set config.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>config</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.configuration.config.MinosConfig</span></code>) – The config to be set.</p>
+<dd class="field-odd"><p><strong>config</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">abc.Config</span></code>) – The config to be set.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">B</span></code>, bound= <a class="reference internal" href="minos.networks.utils.html#minos.networks.utils.Builder" title="minos.networks.utils.Builder"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.utils.Builder</span></code></a>)</p>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">B</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.builders.Builder</span></code>)</p>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>This method return the builder instance.</p>
@@ -371,7 +419,7 @@
 <dd class="field-odd"><p><strong>kwargs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code>]) – The kwargs to be set.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">B</span></code>, bound= <a class="reference internal" href="minos.networks.utils.html#minos.networks.utils.Builder" title="minos.networks.utils.Builder"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.utils.Builder</span></code></a>)</p>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">B</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.builders.Builder</span></code>)</p>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>This method return the builder instance.</p>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; Minos Broker Kafka 0.5.1 documentation</title>
+  <title>Index &mdash; Minos Broker Kafka 0.6.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="index.html" class="icon icon-home"> Minos Broker Kafka
           </a>
               <div class="version">
-                0.5.1
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -43,7 +43,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="runthetests.html">Run the tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/minos.html">minos namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/minos.plugins.html">minos.plugins namespace</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
 </ul>
@@ -81,6 +81,8 @@
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -96,10 +98,16 @@
 <h2 id="_">_</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.__init__">__init__() (minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher method)</a>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaBrokerBuilderMixin.__init__">__init__() (minos.plugins.kafka.common.KafkaBrokerBuilderMixin method)</a>
 
       <ul>
+        <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaCircuitBreakerMixin.__init__">(minos.plugins.kafka.common.KafkaCircuitBreakerMixin method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.__init__">(minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher method)</a>
+</li>
         <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.__init__">(minos.plugins.kafka.publisher.KafkaBrokerPublisher method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.__init__">(minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder method)</a>
 </li>
         <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher.__init__">(minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher method)</a>
 </li>
@@ -120,10 +128,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.admin_client">admin_client (minos.plugins.kafka.subscriber.KafkaBrokerSubscriber attribute)</a>
 </li>
-      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.already_destroyed">already_destroyed (minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher property)</a>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaBrokerBuilderMixin.already_destroyed">already_destroyed (minos.plugins.kafka.common.KafkaBrokerBuilderMixin property)</a>
 
       <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.already_destroyed">(minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher property)</a>
+</li>
         <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.already_destroyed">(minos.plugins.kafka.publisher.KafkaBrokerPublisher property)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.already_destroyed">(minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder property)</a>
 </li>
         <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher.already_destroyed">(minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher property)</a>
 </li>
@@ -138,10 +150,14 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.already_setup">already_setup (minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher property)</a>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaBrokerBuilderMixin.already_setup">already_setup (minos.plugins.kafka.common.KafkaBrokerBuilderMixin property)</a>
 
       <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.already_setup">(minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher property)</a>
+</li>
         <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.already_setup">(minos.plugins.kafka.publisher.KafkaBrokerPublisher property)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.already_setup">(minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder property)</a>
 </li>
         <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher.already_setup">(minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher property)</a>
 </li>
@@ -160,10 +176,12 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.build">build() (minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder method)</a>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaBrokerBuilderMixin.build">build() (minos.plugins.kafka.common.KafkaBrokerBuilderMixin method)</a>
 
       <ul>
-        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder.build">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder method)</a>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.build">(minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.build">(minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder method)</a>
 </li>
         <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder.build">(minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder method)</a>
 </li>
@@ -174,17 +192,37 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.client">client (minos.plugins.kafka.publisher.KafkaBrokerPublisher attribute)</a>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaCircuitBreakerMixin.circuit_breaker">circuit_breaker (minos.plugins.kafka.common.KafkaCircuitBreakerMixin property)</a>
+
+      <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.circuit_breaker">(minos.plugins.kafka.publisher.KafkaBrokerPublisher property)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.circuit_breaker">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriber property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaCircuitBreakerMixin.circuit_breaker_exceptions">circuit_breaker_exceptions (minos.plugins.kafka.common.KafkaCircuitBreakerMixin property)</a>
+
+      <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.circuit_breaker_exceptions">(minos.plugins.kafka.publisher.KafkaBrokerPublisher property)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.circuit_breaker_exceptions">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriber property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.client">client (minos.plugins.kafka.publisher.KafkaBrokerPublisher property)</a>
 
       <ul>
         <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.client">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriber attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.copy">copy() (minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder method)</a>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaBrokerBuilderMixin.copy">copy() (minos.plugins.kafka.common.KafkaBrokerBuilderMixin method)</a>
 
       <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.copy">(minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.copy">(minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder method)</a>
+</li>
         <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder.copy">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder method)</a>
 </li>
         <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder.copy">(minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder method)</a>
@@ -196,10 +234,14 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.destroy">destroy() (minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher method)</a>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaBrokerBuilderMixin.destroy">destroy() (minos.plugins.kafka.common.KafkaBrokerBuilderMixin method)</a>
 
       <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.destroy">(minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher method)</a>
+</li>
         <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.destroy">(minos.plugins.kafka.publisher.KafkaBrokerPublisher method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.destroy">(minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder method)</a>
 </li>
         <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher.destroy">(minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher method)</a>
 </li>
@@ -218,10 +260,14 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.from_config">from_config() (minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher class method)</a>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaBrokerBuilderMixin.from_config">from_config() (minos.plugins.kafka.common.KafkaBrokerBuilderMixin class method)</a>
 
       <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.from_config">(minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher class method)</a>
+</li>
         <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.from_config">(minos.plugins.kafka.publisher.KafkaBrokerPublisher class method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.from_config">(minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder class method)</a>
 </li>
         <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher.from_config">(minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher class method)</a>
 </li>
@@ -237,6 +283,52 @@
   </ul></td>
 </tr></table>
 
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.get_builder">get_builder() (minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher class method)</a>
+
+      <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.get_builder">(minos.plugins.kafka.publisher.KafkaBrokerPublisher class method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher.get_builder">(minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher class method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.get_builder">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriber class method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.get_injectable_name">get_injectable_name() (minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher class method)</a>
+
+      <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.get_injectable_name">(minos.plugins.kafka.publisher.KafkaBrokerPublisher class method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher.get_injectable_name">(minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher class method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.get_injectable_name">(minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder class method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder.get_injectable_name">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder class method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder.get_injectable_name">(minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder class method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.group_id">group_id (minos.plugins.kafka.subscriber.KafkaBrokerSubscriber property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.host">host (minos.plugins.kafka.publisher.KafkaBrokerPublisher property)</a>
+
+      <ul>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.host">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriber property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -246,25 +338,55 @@
         <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher.impl">(minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher">InMemoryQueuedKafkaBrokerPublisher (class in minos.plugins.kafka.publisher)</a>
 </li>
       <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder">InMemoryQueuedKafkaBrokerSubscriberBuilder (class in minos.plugins.kafka.subscriber)</a>
 </li>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaCircuitBreakerMixin.is_circuit_breaker_broken">is_circuit_breaker_broken (minos.plugins.kafka.common.KafkaCircuitBreakerMixin property)</a>
+
+      <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.is_circuit_breaker_broken">(minos.plugins.kafka.publisher.KafkaBrokerPublisher property)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.is_circuit_breaker_broken">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriber property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaCircuitBreakerMixin.is_circuit_breaker_passing">is_circuit_breaker_passing (minos.plugins.kafka.common.KafkaCircuitBreakerMixin property)</a>
+
+      <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.is_circuit_breaker_passing">(minos.plugins.kafka.publisher.KafkaBrokerPublisher property)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.is_circuit_breaker_passing">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriber property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaCircuitBreakerMixin.is_circuit_breaker_recovering">is_circuit_breaker_recovering (minos.plugins.kafka.common.KafkaCircuitBreakerMixin property)</a>
+
+      <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.is_circuit_breaker_recovering">(minos.plugins.kafka.publisher.KafkaBrokerPublisher property)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.is_circuit_breaker_recovering">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriber property)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="K">K</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaBrokerBuilderMixin">KafkaBrokerBuilderMixin (class in minos.plugins.kafka.common)</a>
+</li>
       <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher">KafkaBrokerPublisher (class in minos.plugins.kafka.publisher)</a>
+</li>
+      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder">KafkaBrokerPublisherBuilder (class in minos.plugins.kafka.publisher)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber">KafkaBrokerSubscriber (class in minos.plugins.kafka.subscriber)</a>
 </li>
       <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder">KafkaBrokerSubscriberBuilder (class in minos.plugins.kafka.subscriber)</a>
+</li>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaCircuitBreakerMixin">KafkaCircuitBreakerMixin (class in minos.plugins.kafka.common)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -294,6 +416,13 @@
 </li>
       </ul></li>
       <li>
+    minos.plugins.kafka.common
+
+      <ul>
+        <li><a href="api/minos.plugins.kafka.common.html#module-minos.plugins.kafka.common">module</a>
+</li>
+      </ul></li>
+      <li>
     minos.plugins.kafka.publisher
 
       <ul>
@@ -319,6 +448,8 @@
 </li>
         <li><a href="api/minos.plugins.kafka.html#module-minos.plugins.kafka">minos.plugins.kafka</a>
 </li>
+        <li><a href="api/minos.plugins.kafka.common.html#module-minos.plugins.kafka.common">minos.plugins.kafka.common</a>
+</li>
         <li><a href="api/minos.plugins.kafka.publisher.html#module-minos.plugins.kafka.publisher">minos.plugins.kafka.publisher</a>
 </li>
         <li><a href="api/minos.plugins.kafka.subscriber.html#module-minos.plugins.kafka.subscriber">minos.plugins.kafka.subscriber</a>
@@ -330,9 +461,13 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.new">new() (minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder class method)</a>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaBrokerBuilderMixin.new">new() (minos.plugins.kafka.common.KafkaBrokerBuilderMixin class method)</a>
 
       <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.new">(minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder class method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.new">(minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder class method)</a>
+</li>
         <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder.new">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder class method)</a>
 </li>
         <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder.new">(minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder class method)</a>
@@ -344,10 +479,16 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher">PostgreSqlQueuedKafkaBrokerPublisher (class in minos.plugins.kafka.publisher)</a>
+      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.port">port (minos.plugins.kafka.publisher.KafkaBrokerPublisher property)</a>
+
+      <ul>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.port">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriber property)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher">PostgreSqlQueuedKafkaBrokerPublisher (class in minos.plugins.kafka.publisher)</a>
+</li>
       <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder">PostgreSqlQueuedKafkaBrokerSubscriberBuilder (class in minos.plugins.kafka.subscriber)</a>
 </li>
   </ul></td>
@@ -371,23 +512,33 @@
       <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.receive">receive() (minos.plugins.kafka.subscriber.KafkaBrokerSubscriber method)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.remove_topics_on_destroy">remove_topics_on_destroy (minos.plugins.kafka.subscriber.KafkaBrokerSubscriber property)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.send">send() (minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher method)</a>
+      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.set_builder">set_builder() (minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher class method)</a>
 
       <ul>
-        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.send">(minos.plugins.kafka.publisher.KafkaBrokerPublisher method)</a>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.set_builder">(minos.plugins.kafka.publisher.KafkaBrokerPublisher class method)</a>
 </li>
-        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher.send">(minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher method)</a>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher.set_builder">(minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher class method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.set_builder">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriber class method)</a>
 </li>
       </ul></li>
-      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.setup">setup() (minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher method)</a>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaBrokerBuilderMixin.setup">setup() (minos.plugins.kafka.common.KafkaBrokerBuilderMixin method)</a>
 
       <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.setup">(minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher method)</a>
+</li>
         <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.setup">(minos.plugins.kafka.publisher.KafkaBrokerPublisher method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.setup">(minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder method)</a>
 </li>
         <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher.setup">(minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher method)</a>
 </li>
@@ -414,45 +565,67 @@
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.with_config">with_config() (minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder method)</a>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaCircuitBreakerMixin.with_circuit_breaker">with_circuit_breaker() (minos.plugins.kafka.common.KafkaCircuitBreakerMixin method)</a>
 
       <ul>
-        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder.with_config">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder method)</a>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.with_circuit_breaker">(minos.plugins.kafka.publisher.KafkaBrokerPublisher method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.with_circuit_breaker">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriber method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaBrokerBuilderMixin.with_cls">with_cls() (minos.plugins.kafka.common.KafkaBrokerBuilderMixin method)</a>
+
+      <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.with_cls">(minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.with_cls">(minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder.with_cls">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder.with_cls">(minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaBrokerBuilderMixin.with_config">with_config() (minos.plugins.kafka.common.KafkaBrokerBuilderMixin method)</a>
+
+      <ul>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.with_config">(minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.with_config">(minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder method)</a>
 </li>
         <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder.with_config">(minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.with_group_id">with_group_id() (minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder method)</a>
 
       <ul>
-        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder.with_group_id">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder method)</a>
-</li>
         <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder.with_group_id">(minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder method)</a>
 </li>
       </ul></li>
-      <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.with_kwargs">with_kwargs() (minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder method)</a>
+      <li><a href="api/minos.plugins.kafka.common.html#minos.plugins.kafka.common.KafkaBrokerBuilderMixin.with_kwargs">with_kwargs() (minos.plugins.kafka.common.KafkaBrokerBuilderMixin method)</a>
 
       <ul>
-        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder.with_kwargs">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder method)</a>
+        <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.with_kwargs">(minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder method)</a>
+</li>
+        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.with_kwargs">(minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder method)</a>
 </li>
         <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder.with_kwargs">(minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.with_queue">with_queue() (minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder method)</a>
+</li>
+      <li><a href="api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder.with_queued_cls">with_queued_cls() (minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder method)</a>
+</li>
       <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.with_remove_topics_on_destroy">with_remove_topics_on_destroy() (minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder method)</a>
 
       <ul>
-        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder.with_remove_topics_on_destroy">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder method)</a>
-</li>
         <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder.with_remove_topics_on_destroy">(minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder method)</a>
 </li>
       </ul></li>
       <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder.with_topics">with_topics() (minos.plugins.kafka.subscriber.InMemoryQueuedKafkaBrokerSubscriberBuilder method)</a>
 
       <ul>
-        <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder.with_topics">(minos.plugins.kafka.subscriber.KafkaBrokerSubscriberBuilder method)</a>
-</li>
         <li><a href="api/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder.with_topics">(minos.plugins.kafka.subscriber.PostgreSqlQueuedKafkaBrokerSubscriberBuilder method)</a>
 </li>
       </ul></li>

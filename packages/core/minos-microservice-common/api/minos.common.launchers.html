@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.common.launchers module &mdash; Minos Microservice Common 0.5.3 documentation</title>
+  <title>minos.common.launchers module &mdash; Minos Microservice Common 0.6.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -19,7 +19,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="minos.common.locks module" href="minos.common.locks.html" />
-    <link rel="prev" title="minos.common.injectors module" href="minos.common.injectors.html" />
+    <link rel="prev" title="minos.common.importlib module" href="minos.common.importlib.html" />
     <link href="../_static/style.css" rel="stylesheet" type="text/css">
 
 </head>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Common
           </a>
               <div class="version">
-                0.5.3
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -91,12 +91,12 @@
 <span id="minos-common-launchers-module"></span><h1>minos.common.launchers module<a class="headerlink" href="#module-minos.common.launchers" title="Permalink to this headline"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="minos.common.launchers.EntrypointLauncher">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.common.launchers.</span></span><span class="sig-name descname"><span class="pre">EntrypointLauncher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">injections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">services</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'color'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_date_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">DateFormat.color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_modules</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/launchers.html#EntrypointLauncher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.launchers.EntrypointLauncher" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="minos.common.setup.html#minos.common.setup.MinosSetup" title="minos.common.setup.MinosSetup"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.MinosSetup</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.common.launchers.</span></span><span class="sig-name descname"><span class="pre">EntrypointLauncher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">injections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ports</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'color'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_date_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">DateFormat.color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_modules</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_packages</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/launchers.html#EntrypointLauncher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.launchers.EntrypointLauncher" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.common.setup.html#minos.common.setup.SetupMixin" title="minos.common.setup.SetupMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.SetupMixin</span></code></a></p>
 <p>EntryPoint Launcher class.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.common.launchers.EntrypointLauncher.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">injections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">services</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'color'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_date_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">DateFormat.color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_modules</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/launchers.html#EntrypointLauncher.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.launchers.EntrypointLauncher.__init__" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">injections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ports</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'color'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_date_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">DateFormat.color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_modules</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_packages</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/launchers.html#EntrypointLauncher.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.launchers.EntrypointLauncher.__init__" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -159,12 +159,12 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<a class="reference internal" href="minos.common.configuration.config.html#minos.common.configuration.config.MinosConfig" title="minos.common.configuration.config.MinosConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.configuration.config.MinosConfig</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
+<li><p><strong>config</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">abc.Config</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
 <li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">S</span></code>, bound= <a class="reference internal" href="minos.common.setup.html#minos.common.setup.MinosSetup" title="minos.common.setup.MinosSetup"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.MinosSetup</span></code></a>)</p>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">S</span></code>, bound= <a class="reference internal" href="minos.common.setup.html#minos.common.setup.SetupMixin" title="minos.common.setup.SetupMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.SetupMixin</span></code></a>)</p>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A instance of the called class.</p>
@@ -173,15 +173,43 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="minos.common.launchers.EntrypointLauncher.graceful_shutdown">
-<span class="sig-name descname"><span class="pre">graceful_shutdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/launchers.html#EntrypointLauncher.graceful_shutdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.launchers.EntrypointLauncher.graceful_shutdown" title="Permalink to this definition"></a></dt>
-<dd><p>Shutdown the services execution gracefully.</p>
+<dt class="sig sig-object py" id="minos.common.launchers.EntrypointLauncher.graceful_launch">
+<span class="sig-name descname"><span class="pre">graceful_launch</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/launchers.html#EntrypointLauncher.graceful_launch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.launchers.EntrypointLauncher.graceful_launch" title="Permalink to this definition"></a></dt>
+<dd><p>Launch the execution gracefully.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>This method does not return anything.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.launchers.EntrypointLauncher.graceful_shutdown">
+<span class="sig-name descname"><span class="pre">graceful_shutdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/launchers.html#EntrypointLauncher.graceful_shutdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.launchers.EntrypointLauncher.graceful_shutdown" title="Permalink to this definition"></a></dt>
+<dd><p>Shutdown the execution gracefully.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method does not return anything.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.launchers.EntrypointLauncher.injections">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">injections</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="minos.common.injections.mixins.html#minos.common.injections.mixins.InjectableMixin" title="minos.common.injections.mixins.InjectableMixin"><span class="pre">minos.common.injections.mixins.InjectableMixin</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#minos.common.launchers.EntrypointLauncher.injections" title="Permalink to this definition"></a></dt>
+<dd><p>Get the injections mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="minos.common.injections.mixins.html#minos.common.injections.mixins.InjectableMixin" title="minos.common.injections.mixins.InjectableMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.injections.mixins.InjectableMixin</span></code></a>]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">dict</span></code> with injection names as keys and injection instances as values.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -223,12 +251,26 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="minos.common.launchers.EntrypointLauncher.services">
-<span class="sig-name descname"><span class="pre">services</span></span><a class="headerlink" href="#minos.common.launchers.EntrypointLauncher.services" title="Permalink to this definition"></a></dt>
-<dd><p>List of services to be launched.</p>
+<dt class="sig sig-object py" id="minos.common.launchers.EntrypointLauncher.ports">
+<span class="sig-name descname"><span class="pre">ports</span></span><a class="headerlink" href="#minos.common.launchers.EntrypointLauncher.ports" title="Permalink to this definition"></a></dt>
+<dd><p>List of ports to be launched.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A list of <code class="docutils literal notranslate"><span class="pre">Service</span></code> instances.</p>
+<dd class="field-odd"><p>A list of <code class="docutils literal notranslate"><span class="pre">Port</span></code> instances.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.launchers.EntrypointLauncher.services">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">services</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="minos.common.ports.html#minos.common.ports.Port" title="minos.common.ports.Port"><span class="pre">minos.common.ports.Port</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#minos.common.launchers.EntrypointLauncher.services" title="Permalink to this definition"></a></dt>
+<dd><p>List of ports to be launched.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="minos.common.ports.html#minos.common.ports.Port" title="minos.common.ports.Port"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.ports.Port</span></code></a>]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of <code class="docutils literal notranslate"><span class="pre">Port</span></code> instances.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -255,7 +297,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="minos.common.injectors.html" class="btn btn-neutral float-left" title="minos.common.injectors module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.common.importlib.html" class="btn btn-neutral float-left" title="minos.common.importlib module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="minos.common.locks.html" class="btn btn-neutral float-right" title="minos.common.locks module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

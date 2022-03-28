@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.saga.utils &mdash; Minos Microservice Saga 0.5.3 documentation</title>
+  <title>minos.saga.utils &mdash; Minos Microservice Saga 0.6.0 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../index.html" class="icon icon-home"> Minos Microservice Saga
           </a>
               <div class="version">
-                0.5.3
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -76,23 +76,19 @@
     <span class="n">annotations</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">dependency_injector.wiring</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Provide</span><span class="p">,</span>
-    <span class="n">inject</span><span class="p">,</span>
-<span class="p">)</span>
-
 <span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">MinosConfig</span><span class="p">,</span>
+    <span class="n">Config</span><span class="p">,</span>
+    <span class="n">Inject</span><span class="p">,</span>
     <span class="n">NotProvidedException</span><span class="p">,</span>
 <span class="p">)</span>
 
 
-<div class="viewcode-block" id="get_service_name"><a class="viewcode-back" href="../../../api/minos.saga.utils.html#minos.saga.utils.get_service_name">[docs]</a><span class="nd">@inject</span>
-<span class="k">def</span> <span class="nf">get_service_name</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">MinosConfig</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="get_service_name"><a class="viewcode-back" href="../../../api/minos.saga.utils.html#minos.saga.utils.get_service_name">[docs]</a><span class="nd">@Inject</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">get_service_name</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Get the service name.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">Provide</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">NotProvidedException</span><span class="p">(</span><span class="s2">&quot;The config object must be provided.&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">name</span></div>
+    <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span></div>
 </pre></div>
 
            </div>

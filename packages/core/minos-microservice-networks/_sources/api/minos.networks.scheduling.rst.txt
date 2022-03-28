@@ -12,6 +12,7 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
+   minos.networks.scheduling.crontab
+   minos.networks.scheduling.ports
    minos.networks.scheduling.requests
    minos.networks.scheduling.schedulers
-   minos.networks.scheduling.services

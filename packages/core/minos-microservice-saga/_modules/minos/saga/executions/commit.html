@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.saga.executions.commit &mdash; Minos Microservice Saga 0.5.3 documentation</title>
+  <title>minos.saga.executions.commit &mdash; Minos Microservice Saga 0.6.0 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Saga
           </a>
               <div class="version">
-                0.5.3
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -83,11 +83,10 @@
 <span class="kn">from</span> <span class="nn">cached_property</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">cached_property</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">dependency_injector.wiring</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Provide</span><span class="p">,</span>
-    <span class="n">inject</span><span class="p">,</span>
-<span class="p">)</span>
 
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Inject</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">BrokerClient</span><span class="p">,</span>
     <span class="n">BrokerClientPool</span><span class="p">,</span>
@@ -108,13 +107,13 @@
     <span class="sd">&quot;&quot;&quot;Transaction Committer class.&quot;&quot;&quot;</span>
 
     <span class="c1"># noinspection PyUnusedLocal</span>
-<div class="viewcode-block" id="TransactionCommitter.__init__"><a class="viewcode-back" href="../../../../api/minos.saga.executions.commit.html#minos.saga.executions.commit.TransactionCommitter.__init__">[docs]</a>    <span class="nd">@inject</span>
+<div class="viewcode-block" id="TransactionCommitter.__init__"><a class="viewcode-back" href="../../../../api/minos.saga.executions.commit.html#minos.saga.executions.commit.TransactionCommitter.__init__">[docs]</a>    <span class="nd">@Inject</span><span class="p">()</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">execution_uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span>
         <span class="n">executed_steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SagaStepExecution</span><span class="p">],</span>
-        <span class="n">broker_pool</span><span class="p">:</span> <span class="n">BrokerClientPool</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;broker_pool&quot;</span><span class="p">],</span>
-        <span class="n">broker_publisher</span><span class="p">:</span> <span class="n">BrokerPublisher</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;broker_publisher&quot;</span><span class="p">],</span>
+        <span class="n">broker_pool</span><span class="p">:</span> <span class="n">BrokerClientPool</span><span class="p">,</span>
+        <span class="n">broker_publisher</span><span class="p">:</span> <span class="n">BrokerPublisher</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">executed_steps</span> <span class="o">=</span> <span class="n">executed_steps</span>

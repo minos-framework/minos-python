@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>History &mdash; Minos Broker Kafka 0.5.1 documentation</title>
+  <title>History &mdash; Minos Broker Kafka 0.6.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <a href="index.html" class="icon icon-home"> Minos Broker Kafka
           </a>
               <div class="version">
-                0.5.1
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -45,11 +45,12 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="runthetests.html">Run the tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/minos.html">minos namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/minos.plugins.html">minos.plugins namespace</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">History</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#id1">0.5.0 (2022-02-03)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id2">0.5.1 (2022-02-03)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">0.6.0 (2022-03-28)</a></li>
 </ul>
 </li>
 </ul>
@@ -97,6 +98,13 @@
 <h2>0.5.1 (2022-02-03)<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
 <ul class="simple">
 <li><p>Fix bug related with dependency specification.</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>0.6.0 (2022-03-28)<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">KafkaCircuitBreakerMixin</span></code> to integrate <code class="docutils literal notranslate"><span class="pre">minos.common.CircuitBreakerMixin</span></code> into the <code class="docutils literal notranslate"><span class="pre">KafkaBrokerPublisher</span></code> and <code class="docutils literal notranslate"><span class="pre">KafkaBrokerSubscriber</span></code> classes to be tolerant to connection failures to <code class="docutils literal notranslate"><span class="pre">kafka</span></code>.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">KafkaBrokerPublisherBuilder</span></code> and <code class="docutils literal notranslate"><span class="pre">KafkaBrokerBuilderMixin</span></code> classes to ease the building process.</p></li>
 </ul>
 </section>
 </section>

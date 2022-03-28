@@ -12,5 +12,6 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
+   minos.plugins.kafka.common
    minos.plugins.kafka.publisher
    minos.plugins.kafka.subscriber

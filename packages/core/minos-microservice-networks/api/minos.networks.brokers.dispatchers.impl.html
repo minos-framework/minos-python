@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.brokers.dispatchers.impl module &mdash; Minos Microservice Network 0.5.3 documentation</title>
+  <title>minos.networks.brokers.dispatchers.impl module &mdash; Minos Microservice Network 0.6.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.5.3
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -94,7 +94,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="minos.networks.brokers.dispatchers.impl.BrokerDispatcher">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.networks.brokers.dispatchers.impl.</span></span><span class="sig-name descname"><span class="pre">BrokerDispatcher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">publisher</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/brokers/dispatchers/impl.html#BrokerDispatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.brokers.dispatchers.impl.BrokerDispatcher" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.MinosSetup</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.SetupMixin</span></code></p>
 <p>Broker Dispatcher class.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="minos.networks.brokers.dispatchers.impl.BrokerDispatcher.__init__">
@@ -181,12 +181,12 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.configuration.config.MinosConfig</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
+<li><p><strong>config</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">abc.Config</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
 <li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">S</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.MinosSetup</span></code>)</p>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">S</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.SetupMixin</span></code>)</p>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A instance of the called class.</p>
@@ -230,11 +230,11 @@
 
 <dl class="py property">
 <dt class="sig sig-object py" id="minos.networks.brokers.dispatchers.impl.BrokerDispatcher.publisher">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">publisher</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="minos.networks.brokers.publishers.abc.html#minos.networks.brokers.publishers.abc.BrokerPublisher" title="minos.networks.brokers.publishers.abc.BrokerPublisher"><span class="pre">minos.networks.brokers.publishers.abc.BrokerPublisher</span></a></em><a class="headerlink" href="#minos.networks.brokers.dispatchers.impl.BrokerDispatcher.publisher" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">publisher</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">abc.BrokerPublisher</span></em><a class="headerlink" href="#minos.networks.brokers.dispatchers.impl.BrokerDispatcher.publisher" title="Permalink to this definition"></a></dt>
 <dd><p>Get the publisher instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="minos.networks.brokers.publishers.abc.html#minos.networks.brokers.publishers.abc.BrokerPublisher" title="minos.networks.brokers.publishers.abc.BrokerPublisher"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.brokers.publishers.abc.BrokerPublisher</span></code></a></p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">abc.BrokerPublisher</span></code></p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">BrokerPublisher</span></code> instance.</p>

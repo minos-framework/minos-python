@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.entities.models &mdash; Minos Microservice Aggregate 0.5.4 documentation</title>
+  <title>minos.aggregate.entities.models &mdash; Minos Microservice Aggregate 0.6.0 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.5.4
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -92,15 +92,11 @@
     <span class="n">uuid4</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">dependency_injector.wiring</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Provide</span><span class="p">,</span>
-    <span class="n">inject</span><span class="p">,</span>
-<span class="p">)</span>
-
 <span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">NULL_DATETIME</span><span class="p">,</span>
     <span class="n">NULL_UUID</span><span class="p">,</span>
     <span class="n">DeclarativeModel</span><span class="p">,</span>
+    <span class="n">Inject</span><span class="p">,</span>
     <span class="n">NotProvidedException</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -144,6 +140,9 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">uuid</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 
 
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;RootEntity&quot;</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="RootEntity"><a class="viewcode-back" href="../../../../api/minos.aggregate.entities.models.html#minos.aggregate.entities.models.RootEntity">[docs]</a><span class="k">class</span> <span class="nc">RootEntity</span><span class="p">(</span><span class="n">Entity</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Base Root Entity class.&quot;&quot;&quot;</span>
 
@@ -151,7 +150,10 @@
     <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span>
     <span class="n">updated_at</span><span class="p">:</span> <span class="n">datetime</span>
 
-<div class="viewcode-block" id="RootEntity.__init__"><a class="viewcode-back" href="../../../../api/minos.aggregate.entities.models.html#minos.aggregate.entities.models.RootEntity.__init__">[docs]</a>    <span class="nd">@inject</span>
+    <span class="n">_event_repository</span><span class="p">:</span> <span class="n">EventRepository</span>
+    <span class="n">_snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span>
+
+<div class="viewcode-block" id="RootEntity.__init__"><a class="viewcode-back" href="../../../../api/minos.aggregate.entities.models.html#minos.aggregate.entities.models.RootEntity.__init__">[docs]</a>    <span class="nd">@Inject</span><span class="p">()</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="n">args</span><span class="p">,</span>
@@ -159,46 +161,44 @@
         <span class="n">version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">NULL_DATETIME</span><span class="p">,</span>
         <span class="n">updated_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">NULL_DATETIME</span><span class="p">,</span>
-        <span class="n">_event_repository</span><span class="p">:</span> <span class="n">EventRepository</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;event_repository&quot;</span><span class="p">],</span>
-        <span class="n">_snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;snapshot_repository&quot;</span><span class="p">],</span>
+        <span class="n">_event_repository</span><span class="p">:</span> <span class="n">EventRepository</span><span class="p">,</span>
+        <span class="n">_snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">created_at</span><span class="p">,</span> <span class="n">updated_at</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="n">uuid</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">_event_repository</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_event_repository</span><span class="p">,</span> <span class="n">Provide</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">_event_repository</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">NotProvidedException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">EventRepository</span><span class="si">!r}</span><span class="s2"> instance is required.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">_snapshot_repository</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_snapshot_repository</span><span class="p">,</span> <span class="n">Provide</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">_snapshot_repository</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">NotProvidedException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">SnapshotRepository</span><span class="si">!r}</span><span class="s2"> instance is required.&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_event_repository</span> <span class="o">=</span> <span class="n">_event_repository</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_snapshot_repository</span> <span class="o">=</span> <span class="n">_snapshot_repository</span></div>
 
 <div class="viewcode-block" id="RootEntity.get"><a class="viewcode-back" href="../../../../api/minos.aggregate.entities.models.html#minos.aggregate.entities.models.RootEntity.get">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="nd">@inject</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">get</span><span class="p">(</span>
-        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">_snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;snapshot_repository&quot;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+    <span class="nd">@Inject</span><span class="p">()</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">_snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Get one instance from the database based on its identifier.</span>
 
 <span class="sd">        :param uuid: The identifier of the instance.</span>
 <span class="sd">        :param _snapshot_repository: Snapshot to be set to the root entity.</span>
 <span class="sd">        :return: A ``RootEntity`` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">_snapshot_repository</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_snapshot_repository</span><span class="p">,</span> <span class="n">Provide</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">_snapshot_repository</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">NotProvidedException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">SnapshotRepository</span><span class="si">!r}</span><span class="s2"> instance is required.&quot;</span><span class="p">)</span>
 
         <span class="c1"># noinspection PyTypeChecker</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">_snapshot_repository</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">classname</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">_snapshot_repository</span><span class="o">=</span><span class="n">_snapshot_repository</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RootEntity.get_all"><a class="viewcode-back" href="../../../../api/minos.aggregate.entities.models.html#minos.aggregate.entities.models.RootEntity.get_all">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="nd">@inject</span>
+    <span class="nd">@Inject</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">get_all</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
         <span class="n">ordering</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_Ordering</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">_snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;snapshot_repository&quot;</span><span class="p">],</span>
+        <span class="n">_snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Get all instance from the database.</span>
@@ -210,7 +210,7 @@
 <span class="sd">        :param _snapshot_repository: Snapshot to be set to the root entity.</span>
 <span class="sd">        :return: A ``RootEntity`` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">_snapshot_repository</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_snapshot_repository</span><span class="p">,</span> <span class="n">Provide</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">_snapshot_repository</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">NotProvidedException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">SnapshotRepository</span><span class="si">!r}</span><span class="s2"> instance is required.&quot;</span><span class="p">)</span>
 
         <span class="c1"># noinspection PyTypeChecker</span>
@@ -219,14 +219,14 @@
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="RootEntity.find"><a class="viewcode-back" href="../../../../api/minos.aggregate.entities.models.html#minos.aggregate.entities.models.RootEntity.find">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="nd">@inject</span>
+    <span class="nd">@Inject</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">find</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
         <span class="n">condition</span><span class="p">:</span> <span class="n">_Condition</span><span class="p">,</span>
         <span class="n">ordering</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_Ordering</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">_snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;snapshot_repository&quot;</span><span class="p">],</span>
+        <span class="n">_snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Find a collection of instances based on a given ``Condition``.</span>
@@ -239,7 +239,7 @@
 <span class="sd">        :param _snapshot_repository: Snapshot to be set to the instances.</span>
 <span class="sd">        :return: An asynchronous iterator of ``RootEntity`` instances.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">_snapshot_repository</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_snapshot_repository</span><span class="p">,</span> <span class="n">Provide</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">_snapshot_repository</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">NotProvidedException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">SnapshotRepository</span><span class="si">!r}</span><span class="s2"> instance is required.&quot;</span><span class="p">)</span>
         <span class="c1"># noinspection PyTypeChecker</span>
         <span class="k">return</span> <span class="n">_snapshot_repository</span><span class="o">.</span><span class="n">find</span><span class="p">(</span>
@@ -427,9 +427,6 @@
             <span class="o">**</span><span class="n">event</span><span class="o">.</span><span class="n">get_fields</span><span class="p">(),</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span></div></div>
-
-
-<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">RootEntity</span><span class="p">)</span>
 </pre></div>
 
            </div>

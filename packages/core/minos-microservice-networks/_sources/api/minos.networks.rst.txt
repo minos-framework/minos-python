@@ -15,9 +15,11 @@ Subpackages
    minos.networks.brokers
    minos.networks.decorators
    minos.networks.discovery
+   minos.networks.http
    minos.networks.requests
-   minos.networks.rest
    minos.networks.scheduling
+   minos.networks.specs
+   minos.networks.system
 
 Submodules
 ----------
@@ -26,4 +28,5 @@ Submodules
    :maxdepth: 4
 
    minos.networks.exceptions
+   minos.networks.routers
    minos.networks.utils

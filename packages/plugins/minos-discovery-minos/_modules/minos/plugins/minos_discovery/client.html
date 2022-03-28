@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.plugins.minos_discovery.client &mdash; Minos Discovery Minos 0.5.1 documentation</title>
+  <title>minos.plugins.minos_discovery.client &mdash; Minos Discovery Minos 0.6.0 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Discovery Minos
           </a>
               <div class="version">
-                0.5.1
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -43,7 +43,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../runthetests.html">Run the tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../api/minos.html">minos namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/minos.plugins.html">minos.plugins namespace</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../history.html">History</a></li>
 </ul>
@@ -74,7 +74,24 @@
              
   <h1>Source code for minos.plugins.minos_discovery.client</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">partial</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Optional</span><span class="p">,</span>
+<span class="p">)</span>
 
+<span class="kn">from</span> <span class="nn">aiohttp</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ClientError</span><span class="p">,</span>
+    <span class="n">ClientSession</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CircuitBreakerMixin</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">DiscoveryClient</span><span class="p">,</span>
 <span class="p">)</span>
@@ -82,17 +99,24 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="MinosDiscoveryClient"><a class="viewcode-back" href="../../../../api/minos.plugins.minos_discovery.client.html#minos.plugins.minos_discovery.client.MinosDiscoveryClient">[docs]</a><span class="k">class</span> <span class="nc">MinosDiscoveryClient</span><span class="p">(</span><span class="n">DiscoveryClient</span><span class="p">):</span>
+<div class="viewcode-block" id="MinosDiscoveryClient"><a class="viewcode-back" href="../../../../api/minos.plugins.minos_discovery.client.html#minos.plugins.minos_discovery.client.MinosDiscoveryClient">[docs]</a><span class="k">class</span> <span class="nc">MinosDiscoveryClient</span><span class="p">(</span><span class="n">DiscoveryClient</span><span class="p">,</span> <span class="n">CircuitBreakerMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Minos Discovery Client class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="MinosDiscoveryClient.subscribe"><a class="viewcode-back" href="../../../../api/minos.plugins.minos_discovery.client.html#minos.plugins.minos_discovery.client.MinosDiscoveryClient.subscribe">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">subscribe</span><span class="p">(</span>
+<div class="viewcode-block" id="MinosDiscoveryClient.__init__"><a class="viewcode-back" href="../../../../api/minos.plugins.minos_discovery.client.html#minos.plugins.minos_discovery.client.MinosDiscoveryClient.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">endpoints</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
-        <span class="n">retry_tries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
-        <span class="n">retry_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="n">host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">port</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">circuit_breaker_exceptions</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(),</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span>
+        <span class="k">if</span> <span class="n">port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="mi">5567</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">circuit_breaker_exceptions</span><span class="o">=</span><span class="p">(</span><span class="n">ClientError</span><span class="p">,</span> <span class="o">*</span><span class="n">circuit_breaker_exceptions</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MinosDiscoveryClient.subscribe"><a class="viewcode-back" href="../../../../api/minos.plugins.minos_discovery.client.html#minos.plugins.minos_discovery.client.MinosDiscoveryClient.subscribe">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">subscribe</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">endpoints</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Perform the subscription query.</span>
 
@@ -100,8 +124,8 @@
 <span class="sd">        :param port: The port of the microservice to be subscribed.</span>
 <span class="sd">        :param name: The name of the microservice to be subscribed.</span>
 <span class="sd">        :param endpoints: List of endpoints exposed by the microservice.</span>
-<span class="sd">        :param retry_tries: Number of attempts before raising a failure exception.</span>
-<span class="sd">        :param retry_delay: Seconds to wait between attempts.</span>
+<span class="sd">        :param args: Additional positional arguments.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
 <span class="sd">        :return: This method does not return anything.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">route</span><span class="si">}</span><span class="s2">/microservices/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -111,19 +135,37 @@
             <span class="s2">&quot;endpoints&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="n">endpoint</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">],</span> <span class="n">endpoint</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]]</span> <span class="k">for</span> <span class="n">endpoint</span> <span class="ow">in</span> <span class="n">endpoints</span><span class="p">],</span>
         <span class="p">}</span>
 
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rest_subscribe</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">service_metadata</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">endpoints</span><span class="p">,</span> <span class="n">retry_tries</span><span class="p">,</span> <span class="n">retry_delay</span><span class="p">)</span></div>
+        <span class="n">fn</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_subscribe</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">service_metadata</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_circuit_breaker</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="MinosDiscoveryClient.unsubscribe"><a class="viewcode-back" href="../../../../api/minos.plugins.minos_discovery.client.html#minos.plugins.minos_discovery.client.MinosDiscoveryClient.unsubscribe">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">unsubscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">retry_tries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">retry_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_subscribe</span><span class="p">(</span><span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">service_metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subscribing into </span><span class="si">{</span><span class="n">endpoint</span><span class="si">!r}</span><span class="s2">...&quot;</span><span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">with</span> <span class="n">ClientSession</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">service_metadata</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MinosDiscoveryClient.unsubscribe"><a class="viewcode-back" href="../../../../api/minos.plugins.minos_discovery.client.html#minos.plugins.minos_discovery.client.MinosDiscoveryClient.unsubscribe">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">unsubscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Perform the unsubscription query.</span>
 
 <span class="sd">        :param name: The name of the microservice to be unsubscribed.</span>
-<span class="sd">        :param retry_tries: Number of attempts before raising a failure exception.</span>
-<span class="sd">        :param retry_delay: Seconds to wait between attempts.</span>
+<span class="sd">        :param args: Additional positional arguments.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
 <span class="sd">        :return: This method does not return anything.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">route</span><span class="si">}</span><span class="s2">/microservices/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
 
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rest_unsubscribe</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">retry_tries</span><span class="p">,</span> <span class="n">retry_delay</span><span class="p">)</span></div></div>
+        <span class="n">fn</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unsubscribe</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_circuit_breaker</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_unsubscribe</span><span class="p">(</span><span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsubscribing into </span><span class="si">{</span><span class="n">endpoint</span><span class="si">!r}</span><span class="s2">...&quot;</span><span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">with</span> <span class="n">ClientSession</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">endpoint</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span></div>
 </pre></div>
 
            </div>

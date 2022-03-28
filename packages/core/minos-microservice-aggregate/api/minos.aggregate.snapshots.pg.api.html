@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.snapshots.pg.api module &mdash; Minos Microservice Aggregate 0.5.4 documentation</title>
+  <title>minos.aggregate.snapshots.pg.api module &mdash; Minos Microservice Aggregate 0.6.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.5.4
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -94,7 +94,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.aggregate.snapshots.pg.api.</span></span><span class="sig-name descname"><span class="pre">PostgreSqlSnapshotRepository</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writer</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/snapshots/pg/api.html#PostgreSqlSnapshotRepository"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="minos.aggregate.snapshots.abc.html#minos.aggregate.snapshots.abc.SnapshotRepository" title="minos.aggregate.snapshots.abc.SnapshotRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.snapshots.abc.SnapshotRepository</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.SnapshotRepository</span></code></p>
 <p>PostgreSQL Snapshot class.</p>
 <p>The snapshot provides a direct accessor to the <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> instances stored as events by the event repository
 class.</p>
@@ -146,48 +146,18 @@ class.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository.find">
-<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">find</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ordering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">streaming_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository.find" title="Permalink to this definition"></a></dt>
-<dd><p>Find a collection of <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> instances based on a <code class="docutils literal notranslate"><span class="pre">Condition</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – Class name of the <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code>.</p></li>
-<li><p><strong>condition</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.queries._Condition</span></code>) – The condition that must be satisfied by the <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> instances.</p></li>
-<li><p><strong>ordering</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.queries._Ordering</span></code>]) – Optional argument to return the instance with specific ordering strategy. The default behaviour
-is to retrieve them without any order pattern.</p></li>
-<li><p><strong>limit</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – Optional argument to return only a subset of instances. The default behaviour is to return all the
-instances that meet the given condition.</p></li>
-<li><p><strong>streaming_mode</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> return the values in streaming directly from the database (keep an open
-database connection), otherwise preloads the full set of values on memory and then retrieves them.</p></li>
-<li><p><strong>transaction</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<a class="reference internal" href="minos.aggregate.transactions.entries.html#minos.aggregate.transactions.entries.TransactionEntry" title="minos.aggregate.transactions.entries.TransactionEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.transactions.entries.TransactionEntry</span></code></a>]) – The transaction within the operation is performed. If not any value is provided, then the
-transaction is extracted from the context var. If not any transaction is being scoped then the query is
-performed to the global snapshot.</p></li>
-<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.AsyncIterator</span></code>[<a class="reference internal" href="minos.aggregate.entities.models.html#minos.aggregate.entities.models.RootEntity" title="minos.aggregate.entities.models.RootEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.entities.models.RootEntity</span></code></a>]</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>An asynchronous iterator that containing the <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> instances.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository.from_config">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository.from_config" title="Permalink to this definition"></a></dt>
 <dd><p>Build a new instance from config.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.configuration.config.MinosConfig</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
+<li><p><strong>config</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">abc.Config</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
 <li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">S</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.MinosSetup</span></code>)</p>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">S</span></code>, bound= <code class="xref py py-class docutils literal notranslate"><span class="pre">minos.common.setup.SetupMixin</span></code>)</p>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A instance of the called class.</p>
@@ -196,54 +166,15 @@ performed to the global snapshot.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository.get">
-<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uuid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository.get" title="Permalink to this definition"></a></dt>
-<dd><p>Get a <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> instance from its identifier.</p>
+<dt class="sig sig-object py" id="minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository.get_injectable_name">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_injectable_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository.get_injectable_name" title="Permalink to this definition"></a></dt>
+<dd><p>Get the injectable name.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – Class name of the <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code>.</p></li>
-<li><p><strong>uuid</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">uuid.UUID</span></code>) – Identifier of the <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code>.</p></li>
-<li><p><strong>transaction</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<a class="reference internal" href="minos.aggregate.transactions.entries.html#minos.aggregate.transactions.entries.TransactionEntry" title="minos.aggregate.transactions.entries.TransactionEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.transactions.entries.TransactionEntry</span></code></a>]) – The transaction within the operation is performed. If not any value is provided, then the
-transaction is extracted from the context var. If not any transaction is being scoped then the query is
-performed to the global snapshot.</p></li>
-<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
-</ul>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="minos.aggregate.entities.models.html#minos.aggregate.entities.models.RootEntity" title="minos.aggregate.entities.models.RootEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.entities.models.RootEntity</span></code></a></p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> instance.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository.get_all">
-<span class="sig-name descname"><span class="pre">get_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ordering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">streaming_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository.get_all" title="Permalink to this definition"></a></dt>
-<dd><p>Get all <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> instances.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – Class name of the <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code>.</p></li>
-<li><p><strong>ordering</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.queries._Ordering</span></code>]) – Optional argument to return the instance with specific ordering strategy. The default behaviour
-is to retrieve them without any order pattern.</p></li>
-<li><p><strong>limit</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – Optional argument to return only a subset of instances. The default behaviour is to return all the
-instances that meet the given condition.</p></li>
-<li><p><strong>streaming_mode</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> return the values in streaming directly from the database (keep an open
-database connection), otherwise preloads the full set of values on memory and then retrieves them.</p></li>
-<li><p><strong>transaction</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code>[<a class="reference internal" href="minos.aggregate.transactions.entries.html#minos.aggregate.transactions.entries.TransactionEntry" title="minos.aggregate.transactions.entries.TransactionEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.transactions.entries.TransactionEntry</span></code></a>]) – The transaction within the operation is performed. If not any value is provided, then the
-transaction is extracted from the context var. If not any transaction is being scoped then the query is
-performed to the global snapshot.</p></li>
-<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.AsyncIterator</span></code>[<a class="reference internal" href="minos.aggregate.entities.models.html#minos.aggregate.entities.models.RootEntity" title="minos.aggregate.entities.models.RootEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.aggregate.entities.models.RootEntity</span></code></a>]</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>An asynchronous iterator that containing the <code class="docutils literal notranslate"><span class="pre">RootEntity</span></code> instances.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">str</span></code> value.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -263,23 +194,6 @@ performed to the global snapshot.</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>This method does not return anything.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository.synchronize">
-<span class="sig-name descname"><span class="pre">synchronize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.snapshots.pg.api.PostgreSqlSnapshotRepository.synchronize" title="Permalink to this definition"></a></dt>
-<dd><p>Synchronize the snapshot to the latest available version.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>kwargs</strong> – Additional named arguments.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Awaitable</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>This method does not return anything.</p>
 </dd>
 </dl>
 </dd></dl>

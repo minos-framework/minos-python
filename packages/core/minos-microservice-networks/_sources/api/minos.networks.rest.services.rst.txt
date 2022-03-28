@@ -1,7 +1,0 @@
-minos.networks.rest.services module
-===================================
-
-.. automodule:: minos.networks.rest.services
-   :members:
-   :undoc-members:
-   :show-inheritance:

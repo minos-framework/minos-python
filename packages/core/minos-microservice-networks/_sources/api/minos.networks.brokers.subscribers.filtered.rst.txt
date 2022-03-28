@@ -1,0 +1,23 @@
+minos.networks.brokers.subscribers.filtered package
+===================================================
+
+.. automodule:: minos.networks.brokers.subscribers.filtered
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.brokers.subscribers.filtered.validators
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.brokers.subscribers.filtered.impl

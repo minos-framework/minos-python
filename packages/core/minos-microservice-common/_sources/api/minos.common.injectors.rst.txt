@@ -1,7 +1,0 @@
-minos.common.injectors module
-=============================
-
-.. automodule:: minos.common.injectors
-   :members:
-   :undoc-members:
-   :show-inheritance:

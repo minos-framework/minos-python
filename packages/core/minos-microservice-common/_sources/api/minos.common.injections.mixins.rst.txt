@@ -1,0 +1,7 @@
+minos.common.injections.mixins module
+=====================================
+
+.. automodule:: minos.common.injections.mixins
+   :members:
+   :undoc-members:
+   :show-inheritance:

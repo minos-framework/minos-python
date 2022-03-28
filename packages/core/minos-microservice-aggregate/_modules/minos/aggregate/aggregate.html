@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.aggregate.aggregate &mdash; Minos Microservice Aggregate 0.5.4 documentation</title>
+  <title>minos.aggregate.aggregate &mdash; Minos Microservice Aggregate 0.6.0 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../index.html" class="icon icon-home"> Minos Microservice Aggregate
           </a>
               <div class="version">
-                0.5.4
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -83,15 +83,11 @@
     <span class="n">get_args</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">dependency_injector.wiring</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Provide</span><span class="p">,</span>
-    <span class="n">inject</span><span class="p">,</span>
-<span class="p">)</span>
-
 <span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">MinosConfig</span><span class="p">,</span>
-    <span class="n">MinosSetup</span><span class="p">,</span>
+    <span class="n">Config</span><span class="p">,</span>
+    <span class="n">Inject</span><span class="p">,</span>
     <span class="n">NotProvidedException</span><span class="p">,</span>
+    <span class="n">SetupMixin</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">.entities</span> <span class="kn">import</span> <span class="p">(</span>
@@ -110,7 +106,7 @@
 <span class="n">RT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;RT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">RootEntity</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Aggregate"><a class="viewcode-back" href="../../../api/minos.aggregate.aggregate.html#minos.aggregate.aggregate.Aggregate">[docs]</a><span class="k">class</span> <span class="nc">Aggregate</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">RT</span><span class="p">],</span> <span class="n">MinosSetup</span><span class="p">):</span>
+<div class="viewcode-block" id="Aggregate"><a class="viewcode-back" href="../../../api/minos.aggregate.aggregate.html#minos.aggregate.aggregate.Aggregate">[docs]</a><span class="k">class</span> <span class="nc">Aggregate</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">RT</span><span class="p">],</span> <span class="n">SetupMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Base Service class&quot;&quot;&quot;</span>
 
     <span class="n">transaction_repository</span><span class="p">:</span> <span class="n">TransactionRepository</span>
@@ -133,7 +129,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span> <span class="o">=</span> <span class="n">snapshot_repository</span></div>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">MinosConfig</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Aggregate</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Aggregate</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;transaction_repository&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_transaction_repository</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;event_repository&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_event_repository</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;snapshot_repository&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_snapshot_repository</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -141,31 +137,25 @@
 
     <span class="c1"># noinspection PyUnusedLocal</span>
     <span class="nd">@staticmethod</span>
-    <span class="nd">@inject</span>
-    <span class="k">def</span> <span class="nf">_get_transaction_repository</span><span class="p">(</span>
-        <span class="n">transaction_repository</span><span class="p">:</span> <span class="n">TransactionRepository</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;transaction_repository&quot;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionRepository</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">transaction_repository</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transaction_repository</span><span class="p">,</span> <span class="n">Provide</span><span class="p">):</span>
+    <span class="nd">@Inject</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">_get_transaction_repository</span><span class="p">(</span><span class="n">transaction_repository</span><span class="p">:</span> <span class="n">TransactionRepository</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionRepository</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">transaction_repository</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">NotProvidedException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">TransactionRepository</span><span class="si">!r}</span><span class="s2"> object must be provided.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">transaction_repository</span>
 
     <span class="c1"># noinspection PyUnusedLocal</span>
     <span class="nd">@staticmethod</span>
-    <span class="nd">@inject</span>
-    <span class="k">def</span> <span class="nf">_get_event_repository</span><span class="p">(</span>
-        <span class="n">event_repository</span><span class="p">:</span> <span class="n">EventRepository</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;event_repository&quot;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventRepository</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">event_repository</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event_repository</span><span class="p">,</span> <span class="n">Provide</span><span class="p">):</span>
+    <span class="nd">@Inject</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">_get_event_repository</span><span class="p">(</span><span class="n">event_repository</span><span class="p">:</span> <span class="n">EventRepository</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventRepository</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">event_repository</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">NotProvidedException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">EventRepository</span><span class="si">!r}</span><span class="s2"> object must be provided.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">event_repository</span>
 
     <span class="c1"># noinspection PyUnusedLocal</span>
     <span class="nd">@staticmethod</span>
-    <span class="nd">@inject</span>
-    <span class="k">def</span> <span class="nf">_get_snapshot_repository</span><span class="p">(</span>
-        <span class="n">snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;snapshot_repository&quot;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SnapshotRepository</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">snapshot_repository</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">snapshot_repository</span><span class="p">,</span> <span class="n">Provide</span><span class="p">):</span>
+    <span class="nd">@Inject</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">_get_snapshot_repository</span><span class="p">(</span><span class="n">snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SnapshotRepository</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">snapshot_repository</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">NotProvidedException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">SnapshotRepository</span><span class="si">!r}</span><span class="s2"> object must be provided.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">snapshot_repository</span>
 

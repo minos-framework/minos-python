@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.decorators.api module &mdash; Minos Microservice Network 0.5.3 documentation</title>
+  <title>minos.networks.decorators.api module &mdash; Minos Microservice Network 0.6.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -18,8 +18,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="minos.networks.decorators.builders module" href="minos.networks.decorators.builders.html" />
-    <link rel="prev" title="minos.networks.decorators.analyzers module" href="minos.networks.decorators.analyzers.html" />
+    <link rel="next" title="minos.networks.decorators.collectors module" href="minos.networks.decorators.collectors.html" />
+    <link rel="prev" title="minos.networks.decorators.definitions.periodic module" href="minos.networks.decorators.definitions.periodic.html" />
     <link href="../_static/style.css" rel="stylesheet" type="text/css">
 
 </head>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.5.3
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -141,6 +141,24 @@
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="minos.networks.decorators.api.EnrouteType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.networks.decorators.api.</span></span><span class="sig-name descname"><span class="pre">EnrouteType</span></span><a class="reference internal" href="../_modules/minos/networks/decorators/api.html#EnrouteType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.decorators.api.EnrouteType" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></p>
+<p>Enroute type.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.decorators.api.EnrouteType.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.decorators.api.EnrouteType.__init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.decorators.api.EnrouteType.mro">
+<span class="sig-name descname"><span class="pre">mro</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.decorators.api.EnrouteType.mro" title="Permalink to this definition"></a></dt>
+<dd><p>Return a type’s method resolution order.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="minos.networks.decorators.api.PeriodicEnroute">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.networks.decorators.api.</span></span><span class="sig-name descname"><span class="pre">PeriodicEnroute</span></span><a class="reference internal" href="../_modules/minos/networks/decorators/api.html#PeriodicEnroute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.decorators.api.PeriodicEnroute" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
@@ -161,14 +179,41 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="minos.networks.decorators.api.RestEnroute.command">
 <span class="sig-name descname"><span class="pre">command</span></span><a class="headerlink" href="#minos.networks.decorators.api.RestEnroute.command" title="Permalink to this definition"></a></dt>
-<dd><p>alias of <a class="reference internal" href="minos.networks.decorators.definitions.rest.html#minos.networks.decorators.definitions.rest.RestCommandEnrouteDecorator" title="minos.networks.decorators.definitions.rest.RestCommandEnrouteDecorator"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.decorators.definitions.rest.RestCommandEnrouteDecorator</span></code></a></p>
+<dd><p>alias of <a class="reference internal" href="minos.networks.decorators.definitions.http.rest.html#minos.networks.decorators.definitions.http.rest.RestCommandEnrouteDecorator" title="minos.networks.decorators.definitions.http.rest.RestCommandEnrouteDecorator"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.decorators.definitions.http.rest.RestCommandEnrouteDecorator</span></code></a></p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="minos.networks.decorators.api.RestEnroute.query">
 <span class="sig-name descname"><span class="pre">query</span></span><a class="headerlink" href="#minos.networks.decorators.api.RestEnroute.query" title="Permalink to this definition"></a></dt>
-<dd><p>alias of <a class="reference internal" href="minos.networks.decorators.definitions.rest.html#minos.networks.decorators.definitions.rest.RestQueryEnrouteDecorator" title="minos.networks.decorators.definitions.rest.RestQueryEnrouteDecorator"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.decorators.definitions.rest.RestQueryEnrouteDecorator</span></code></a></p>
+<dd><p>alias of <a class="reference internal" href="minos.networks.decorators.definitions.http.rest.html#minos.networks.decorators.definitions.http.rest.RestQueryEnrouteDecorator" title="minos.networks.decorators.definitions.http.rest.RestQueryEnrouteDecorator"><code class="xref py py-class docutils literal notranslate"><span class="pre">minos.networks.decorators.definitions.http.rest.RestQueryEnrouteDecorator</span></code></a></p>
 </dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.networks.decorators.api.SubEnroute">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">minos.networks.decorators.api.</span></span><span class="sig-name descname"><span class="pre">SubEnroute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/decorators/api.html#SubEnroute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.decorators.api.SubEnroute" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Sub Enroute protocol class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.decorators.api.SubEnroute.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.decorators.api.SubEnroute.__init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.networks.decorators.api.SubEnroute.command">
+<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="minos.networks.decorators.definitions.abc.html#minos.networks.decorators.definitions.abc.EnrouteDecorator" title="minos.networks.decorators.definitions.abc.EnrouteDecorator"><span class="pre">minos.networks.decorators.definitions.abc.EnrouteDecorator</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#minos.networks.decorators.api.SubEnroute.command" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.networks.decorators.api.SubEnroute.event">
+<span class="sig-name descname"><span class="pre">event</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="minos.networks.decorators.definitions.abc.html#minos.networks.decorators.definitions.abc.EnrouteDecorator" title="minos.networks.decorators.definitions.abc.EnrouteDecorator"><span class="pre">minos.networks.decorators.definitions.abc.EnrouteDecorator</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#minos.networks.decorators.api.SubEnroute.event" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.networks.decorators.api.SubEnroute.query">
+<span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="minos.networks.decorators.definitions.abc.html#minos.networks.decorators.definitions.abc.EnrouteDecorator" title="minos.networks.decorators.definitions.abc.EnrouteDecorator"><span class="pre">minos.networks.decorators.definitions.abc.EnrouteDecorator</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#minos.networks.decorators.api.SubEnroute.query" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -184,8 +229,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="minos.networks.decorators.analyzers.html" class="btn btn-neutral float-left" title="minos.networks.decorators.analyzers module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="minos.networks.decorators.builders.html" class="btn btn-neutral float-right" title="minos.networks.decorators.builders module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="minos.networks.decorators.definitions.periodic.html" class="btn btn-neutral float-left" title="minos.networks.decorators.definitions.periodic module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.networks.decorators.collectors.html" class="btn btn-neutral float-right" title="minos.networks.decorators.collectors module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -1,0 +1,7 @@
+minos.networks.routers module
+=============================
+
+.. automodule:: minos.networks.routers
+   :members:
+   :undoc-members:
+   :show-inheritance:

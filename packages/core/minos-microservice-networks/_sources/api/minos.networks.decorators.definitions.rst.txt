@@ -6,6 +6,14 @@ minos.networks.decorators.definitions package
    :undoc-members:
    :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.networks.decorators.definitions.http
+
 Submodules
 ----------
 
@@ -17,4 +25,3 @@ Submodules
    minos.networks.decorators.definitions.checkers
    minos.networks.decorators.definitions.kinds
    minos.networks.decorators.definitions.periodic
-   minos.networks.decorators.definitions.rest

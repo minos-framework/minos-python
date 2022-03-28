@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.plugins.kafka.publisher &mdash; Minos Broker Kafka 0.5.1 documentation</title>
+  <title>minos.plugins.kafka.publisher &mdash; Minos Broker Kafka 0.6.0 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Broker Kafka
           </a>
               <div class="version">
-                0.5.1
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -43,7 +43,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../runthetests.html">Run the tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../api/minos.html">minos namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/minos.plugins.html">minos.plugins namespace</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../history.html">History</a></li>
 </ul>
@@ -78,6 +78,7 @@
 <span class="p">)</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">asyncio</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="ne">TimeoutError</span><span class="p">,</span>
     <span class="n">wait_for</span><span class="p">,</span>
@@ -85,23 +86,32 @@
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">suppress</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">partial</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Optional</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">aiokafka</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AIOKafkaProducer</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">cached_property</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">cached_property</span><span class="p">,</span>
-<span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">MinosConfig</span><span class="p">,</span>
+    <span class="n">Config</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">BrokerMessage</span><span class="p">,</span>
     <span class="n">BrokerPublisher</span><span class="p">,</span>
+    <span class="n">BrokerPublisherBuilder</span><span class="p">,</span>
     <span class="n">InMemoryBrokerPublisherQueue</span><span class="p">,</span>
     <span class="n">PostgreSqlBrokerPublisherQueue</span><span class="p">,</span>
     <span class="n">QueuedBrokerPublisher</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">KafkaBrokerBuilderMixin</span><span class="p">,</span>
+    <span class="n">KafkaCircuitBreakerMixin</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -110,8 +120,12 @@
 <div class="viewcode-block" id="PostgreSqlQueuedKafkaBrokerPublisher"><a class="viewcode-back" href="../../../../api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher">[docs]</a><span class="k">class</span> <span class="nc">PostgreSqlQueuedKafkaBrokerPublisher</span><span class="p">(</span><span class="n">QueuedBrokerPublisher</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;PostgreSql Queued Kafka Broker Publisher class.&quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="PostgreSqlQueuedKafkaBrokerPublisher.__init__"><a class="viewcode-back" href="../../../../api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.PostgreSqlQueuedKafkaBrokerPublisher.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">PostgreSqlQueuedKafkaBrokerPublisher</span><span class="si">!r}</span><span class="s2"> has been deprecated.&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">MinosConfig</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PostgreSqlQueuedKafkaBrokerPublisher</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PostgreSqlQueuedKafkaBrokerPublisher</span><span class="p">:</span>
         <span class="n">impl</span> <span class="o">=</span> <span class="n">KafkaBrokerPublisher</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">queue</span> <span class="o">=</span> <span class="n">PostgreSqlBrokerPublisherQueue</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">impl</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
@@ -120,47 +134,97 @@
 <div class="viewcode-block" id="InMemoryQueuedKafkaBrokerPublisher"><a class="viewcode-back" href="../../../../api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher">[docs]</a><span class="k">class</span> <span class="nc">InMemoryQueuedKafkaBrokerPublisher</span><span class="p">(</span><span class="n">QueuedBrokerPublisher</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;In Memory Queued Kafka Broker Publisher class.&quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="InMemoryQueuedKafkaBrokerPublisher.__init__"><a class="viewcode-back" href="../../../../api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.InMemoryQueuedKafkaBrokerPublisher.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">InMemoryQueuedKafkaBrokerPublisher</span><span class="si">!r}</span><span class="s2"> has been deprecated.&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">MinosConfig</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InMemoryQueuedKafkaBrokerPublisher</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InMemoryQueuedKafkaBrokerPublisher</span><span class="p">:</span>
         <span class="n">impl</span> <span class="o">=</span> <span class="n">KafkaBrokerPublisher</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">queue</span> <span class="o">=</span> <span class="n">InMemoryBrokerPublisherQueue</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">impl</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="KafkaBrokerPublisher"><a class="viewcode-back" href="../../../../api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher">[docs]</a><span class="k">class</span> <span class="nc">KafkaBrokerPublisher</span><span class="p">(</span><span class="n">BrokerPublisher</span><span class="p">):</span>
+<div class="viewcode-block" id="KafkaBrokerPublisher"><a class="viewcode-back" href="../../../../api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher">[docs]</a><span class="k">class</span> <span class="nc">KafkaBrokerPublisher</span><span class="p">(</span><span class="n">BrokerPublisher</span><span class="p">,</span> <span class="n">KafkaCircuitBreakerMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Kafka Broker Publisher class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="KafkaBrokerPublisher.__init__"><a class="viewcode-back" href="../../../../api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">broker_host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">broker_port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="KafkaBrokerPublisher.__init__"><a class="viewcode-back" href="../../../../api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">broker_host</span> <span class="o">=</span> <span class="n">broker_host</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">broker_port</span> <span class="o">=</span> <span class="n">broker_port</span></div>
 
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">MinosConfig</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KafkaBrokerPublisher</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;broker_host&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">host</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;broker_port&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">port</span>
-        <span class="c1"># noinspection PyProtectedMember</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">_asdict</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span>
+
+        <span class="k">if</span> <span class="n">port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="mi">9092</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_host</span> <span class="o">=</span> <span class="n">host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">=</span> <span class="n">port</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">host</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The host of kafka.</span>
+
+<span class="sd">        :return: A ``str`` value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">port</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The port of kafka.</span>
+
+<span class="sd">        :return: A ``int`` value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_port</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_setup</span><span class="p">()</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_client</span><span class="p">()</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">TimeoutError</span><span class="p">):</span>
-            <span class="k">await</span> <span class="n">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">stop</span><span class="p">(),</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_client</span><span class="p">()</span>
         <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_destroy</span><span class="p">()</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">BrokerMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send_and_wait</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_start_client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># noinspection PyBroadException</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_circuit_breaker</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_client</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">exc</span>
 
-    <span class="nd">@cached_property</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_stop_client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">TimeoutError</span><span class="p">):</span>
+            <span class="k">await</span> <span class="n">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">stop</span><span class="p">(),</span> <span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">BrokerMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send_and_wait</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_circuit_breaker</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AIOKafkaProducer</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Get the client instance.</span>
 
 <span class="sd">        :return: An ``AIOKafkaProducer`` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">AIOKafkaProducer</span><span class="p">(</span><span class="n">bootstrap_servers</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">broker_host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">broker_port</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_client</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span>
+
+    <span class="k">def</span> <span class="nf">_build_client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AIOKafkaProducer</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">AIOKafkaProducer</span><span class="p">(</span><span class="n">bootstrap_servers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_bootstrap_servers</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_bootstrap_servers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="KafkaBrokerPublisherBuilder"><a class="viewcode-back" href="../../../../api/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisherBuilder">[docs]</a><span class="k">class</span> <span class="nc">KafkaBrokerPublisherBuilder</span><span class="p">(</span><span class="n">BrokerPublisherBuilder</span><span class="p">[</span><span class="n">KafkaBrokerPublisher</span><span class="p">],</span> <span class="n">KafkaBrokerBuilderMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Kafka Broker Publisher Builder class.&quot;&quot;&quot;</span></div>
+
+
+<span class="n">KafkaBrokerPublisher</span><span class="o">.</span><span class="n">set_builder</span><span class="p">(</span><span class="n">KafkaBrokerPublisherBuilder</span><span class="p">)</span>
 </pre></div>
 
            </div>

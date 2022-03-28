@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>History &mdash; Minos Microservice Network 0.5.3 documentation</title>
+  <title>History &mdash; Minos Microservice Network 0.6.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <a href="index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.5.3
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -77,6 +77,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#id27">0.5.1 (2022-02-03)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id28">0.5.2 (2022-02-08)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id29">0.5.3 (2022-03-04)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id30">0.6.0 (2022-03-28)</a></li>
 </ul>
 </li>
 </ul>
@@ -359,6 +360,30 @@
 <h2>0.5.3 (2022-03-04)<a class="headerlink" href="#id29" title="Permalink to this headline"></a></h2>
 <ul class="simple">
 <li><p>Improve error messages of  <code class="docutils literal notranslate"><span class="pre">BrokerDispatcher</span></code>, <code class="docutils literal notranslate"><span class="pre">RestHandler</span></code> and <code class="docutils literal notranslate"><span class="pre">PeriodicTask</span></code>.</p></li>
+</ul>
+</section>
+<section id="id30">
+<h2>0.6.0 (2022-03-28)<a class="headerlink" href="#id30" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">BrokerPort</span></code> class and deprecate <code class="docutils literal notranslate"><span class="pre">BrokerHandlerService</span></code>.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">BrokerPublisherBuilder</span></code> to ease the building of <code class="docutils literal notranslate"><span class="pre">BrokerPublisher</span></code> instances.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">FilteredBrokerSubscriber</span></code> implemented as a Chain-of-Responsibility Design Pattern to be able to filter <code class="docutils literal notranslate"><span class="pre">BrokerMessage</span></code> instances during subscription.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">BrokerSubscriberValidator</span></code> and <code class="docutils literal notranslate"><span class="pre">BrokerSubscriberDuplicateValidator</span></code> base classes and the <code class="docutils literal notranslate"><span class="pre">InMemoryBrokerSubscriberDuplicateValidator</span></code> and <code class="docutils literal notranslate"><span class="pre">PostgreSqlBrokerSubscriberDuplicateValidator</span></code> implementations.</p></li>
+<li><p>Rename <code class="docutils literal notranslate"><span class="pre">EnrouteAnalyzer</span></code> as <code class="docutils literal notranslate"><span class="pre">EnrouteCollector</span></code>.</p></li>
+<li><p>Rename <code class="docutils literal notranslate"><span class="pre">EnrouteBuilder</span></code> as <code class="docutils literal notranslate"><span class="pre">EnrouteFactory</span></code>.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">HttpEnrouteDecorator</span></code>.</p></li>
+<li><p>Remove <code class="docutils literal notranslate"><span class="pre">KongDiscoveryClient</span></code> class (there are plans to re-include it as an external plugin in the future).</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">HttpConnector</span></code> as the base class that connects to the <code class="docutils literal notranslate"><span class="pre">http</span></code> server.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">HttpAdapter</span></code> as the class that coordinates <code class="docutils literal notranslate"><span class="pre">HttpRouter</span></code> instances.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">HttpPort</span></code> class and deprecate <code class="docutils literal notranslate"><span class="pre">RestService</span></code>.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">HttpRequest</span></code>, <code class="docutils literal notranslate"><span class="pre">HttpResponse</span></code> and <code class="docutils literal notranslate"><span class="pre">HttpResponseException</span></code> as request/response wrappers of the <code class="docutils literal notranslate"><span class="pre">http</span></code> server.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">Router</span></code>, <code class="docutils literal notranslate"><span class="pre">HttpRouter</span></code>, <code class="docutils literal notranslate"><span class="pre">RestHttpRouter</span></code>, <code class="docutils literal notranslate"><span class="pre">BrokerRouter</span></code> and  <code class="docutils literal notranslate"><span class="pre">PeriodicRouter</span></code> as the classes that route requests to the corresponding services’ handling functions</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">PeriodicPort</span></code> class and deprecate <code class="docutils literal notranslate"><span class="pre">PeriodicTaskSchedulerService</span></code>.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">CronTab</span></code> class to support <code class="docutils literal notranslate"><span class="pre">&quot;&#64;reboot&quot;</span></code> pattern.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">OpenAPIService</span></code> and <code class="docutils literal notranslate"><span class="pre">AsynAPIService</span></code> classes as the services that provide <code class="docutils literal notranslate"><span class="pre">openapi</span></code> and <code class="docutils literal notranslate"><span class="pre">asynciapi</span></code> specifications of the microservice.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">SystemService</span></code> as the service that implements System Health checker.</p></li>
+<li><p>Replace <code class="docutils literal notranslate"><span class="pre">dependency-injector</span></code>‘s injection classes by the ones provided by the <code class="docutils literal notranslate"><span class="pre">minos.common.injections</span></code> module.</p></li>
+<li><p>Be compatible with latest <code class="docutils literal notranslate"><span class="pre">minos.common.Config</span></code> API.</p></li>
 </ul>
 </section>
 </section>

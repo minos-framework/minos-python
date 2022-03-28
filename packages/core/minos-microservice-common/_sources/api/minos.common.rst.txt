@@ -12,8 +12,9 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   minos.common.configuration
+   minos.common.config
    minos.common.database
+   minos.common.injections
    minos.common.model
    minos.common.protocol
    minos.common.storage
@@ -24,13 +25,16 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
+   minos.common.builders
    minos.common.datetime
    minos.common.exceptions
    minos.common.importlib
-   minos.common.injectors
    minos.common.launchers
    minos.common.locks
    minos.common.meta
+   minos.common.object
    minos.common.pools
+   minos.common.ports
+   minos.common.retries
    minos.common.setup
    minos.common.uuid

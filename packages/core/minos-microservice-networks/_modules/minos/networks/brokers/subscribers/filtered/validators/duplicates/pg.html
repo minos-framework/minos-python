@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.networks.brokers.subscribers.filtered.validators.duplicates.pg &mdash; Minos Microservice Network 0.6.0 documentation</title>
+      <link rel="stylesheet" href="../../../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../../search.html" />
+    <link href="../../../../../../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../../../index.html" class="icon icon-home"> Minos Microservice Network
+          </a>
+              <div class="version">
+                0.6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../runthetests.html">Run the tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../api/minos.html">minos namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../history.html">History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../../../index.html">Minos Microservice Network</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.networks.brokers.subscribers.filtered.validators.duplicates.pg</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.networks.brokers.subscribers.filtered.validators.duplicates.pg</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Optional</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UUID</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">psycopg2</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">IntegrityError</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">psycopg2.sql</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SQL</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Builder</span><span class="p">,</span>
+    <span class="n">Config</span><span class="p">,</span>
+    <span class="n">PostgreSqlMinosDatabase</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">.abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BrokerSubscriberDuplicateValidator</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="PostgreSqlBrokerSubscriberDuplicateValidator"><a class="viewcode-back" href="../../../../../../../../api/minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.PostgreSqlBrokerSubscriberDuplicateValidator">[docs]</a><span class="k">class</span> <span class="nc">PostgreSqlBrokerSubscriberDuplicateValidator</span><span class="p">(</span><span class="n">BrokerSubscriberDuplicateValidator</span><span class="p">,</span> <span class="n">PostgreSqlMinosDatabase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;PostgreSql Broker Subscriber Duplicate Detector class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PostgreSqlBrokerSubscriberDuplicateValidator.__init__"><a class="viewcode-back" href="../../../../../../../../api/minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.PostgreSqlBrokerSubscriberDuplicateValidator.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">query_factory</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">query_factory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">query_factory</span> <span class="o">=</span> <span class="n">PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_query_factory</span> <span class="o">=</span> <span class="n">query_factory</span></div>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_setup</span><span class="p">()</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_table</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_create_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">submit_query</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_query_factory</span><span class="o">.</span><span class="n">build_activate_uuid_extension</span><span class="p">(),</span>
+            <span class="n">lock</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_factory</span><span class="o">.</span><span class="n">build_uuid_extension_name</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">submit_query</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_query_factory</span><span class="o">.</span><span class="n">build_create_table</span><span class="p">(),</span>
+            <span class="n">lock</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_factory</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">query_factory</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the query factory.</span>
+
+<span class="sd">        :return: A ``PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_factory</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_is_unique</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">submit_query</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_factory</span><span class="o">.</span><span class="n">build_insert_row</span><span class="p">(),</span> <span class="p">{</span><span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="n">topic</span><span class="p">,</span> <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">uuid</span><span class="p">})</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="n">IntegrityError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="PostgreSqlBrokerSubscriberDuplicateValidatorBuilder"><a class="viewcode-back" href="../../../../../../../../api/minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.PostgreSqlBrokerSubscriberDuplicateValidatorBuilder">[docs]</a><span class="k">class</span> <span class="nc">PostgreSqlBrokerSubscriberDuplicateValidatorBuilder</span><span class="p">(</span><span class="n">Builder</span><span class="p">[</span><span class="n">PostgreSqlBrokerSubscriberDuplicateValidator</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;PostgreSql Broker Subscriber Duplicate Detector Builder class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PostgreSqlBrokerSubscriberDuplicateValidatorBuilder.with_config"><a class="viewcode-back" href="../../../../../../../../api/minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.PostgreSqlBrokerSubscriberDuplicateValidatorBuilder.with_config">[docs]</a>    <span class="k">def</span> <span class="nf">with_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set config.</span>
+
+<span class="sd">        :param config: The config to be set.</span>
+<span class="sd">        :return: This method return the builder instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">|=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_database_by_name</span><span class="p">(</span><span class="s2">&quot;broker&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">with_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div></div>
+
+
+<span class="n">PostgreSqlBrokerSubscriberDuplicateValidator</span><span class="o">.</span><span class="n">set_builder</span><span class="p">(</span><span class="n">PostgreSqlBrokerSubscriberDuplicateValidatorBuilder</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory"><a class="viewcode-back" href="../../../../../../../../api/minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory">[docs]</a><span class="k">class</span> <span class="nc">PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;PostgreSql Broker Subscriber Duplicate Detector Query Factory class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory.build_uuid_extension_name"><a class="viewcode-back" href="../../../../../../../../api/minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory.build_uuid_extension_name">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">build_uuid_extension_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the uuid extension name.</span>
+
+<span class="sd">        :return: A ``str`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;uuid-ossp&quot;</span></div>
+
+<div class="viewcode-block" id="PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory.build_activate_uuid_extension"><a class="viewcode-back" href="../../../../../../../../api/minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory.build_activate_uuid_extension">[docs]</a>    <span class="k">def</span> <span class="nf">build_activate_uuid_extension</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SQL</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build activate uuid extension query.</span>
+
+<span class="sd">        :return: A ``SQL`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SQL</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;CREATE EXTENSION IF NOT EXISTS &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_uuid_extension_name</span><span class="p">()</span><span class="si">}</span><span class="s1">&quot;;&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory.build_table_name"><a class="viewcode-back" href="../../../../../../../../api/minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory.build_table_name">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">build_table_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the table name.</span>
+
+<span class="sd">        :return: A ``str`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;broker_subscriber_processed_messages&quot;</span></div>
+
+<div class="viewcode-block" id="PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory.build_create_table"><a class="viewcode-back" href="../../../../../../../../api/minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory.build_create_table">[docs]</a>    <span class="k">def</span> <span class="nf">build_create_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SQL</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the &quot;create table&quot; query.</span>
+
+<span class="sd">        :return: A ``SQL`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SQL</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;CREATE TABLE IF NOT EXISTS </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> (&quot;</span>
+            <span class="s2">&quot;   topic VARCHAR(255) NOT NULL, &quot;</span>
+            <span class="s2">&quot;   uuid UUID NOT NULL, &quot;</span>
+            <span class="s2">&quot;   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),&quot;</span>
+            <span class="s2">&quot;   PRIMARY KEY (topic, uuid)&quot;</span>
+            <span class="s2">&quot;)&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory.build_insert_row"><a class="viewcode-back" href="../../../../../../../../api/minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.pg.PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory.build_insert_row">[docs]</a>    <span class="k">def</span> <span class="nf">build_insert_row</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SQL</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the &quot;insert row&quot; query.</span>
+
+<span class="sd">        :return: A ``SQL`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SQL</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;INSERT INTO </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2">(topic, uuid) VALUES(%(topic)s, %(uuid)s)&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

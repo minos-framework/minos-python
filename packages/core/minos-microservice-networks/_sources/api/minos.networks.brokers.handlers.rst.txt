@@ -13,4 +13,4 @@ Submodules
    :maxdepth: 4
 
    minos.networks.brokers.handlers.impl
-   minos.networks.brokers.handlers.services
+   minos.networks.brokers.handlers.ports

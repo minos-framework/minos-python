@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.brokers.subscribers.memory &mdash; Minos Microservice Network 0.5.3 documentation</title>
+  <title>minos.networks.brokers.subscribers.memory &mdash; Minos Microservice Network 0.6.0 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.5.3
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -116,7 +116,7 @@
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="InMemoryBrokerSubscriberBuilder"><a class="viewcode-back" href="../../../../../api/minos.networks.brokers.subscribers.memory.html#minos.networks.brokers.subscribers.memory.InMemoryBrokerSubscriberBuilder">[docs]</a><span class="k">class</span> <span class="nc">InMemoryBrokerSubscriberBuilder</span><span class="p">(</span><span class="n">BrokerSubscriberBuilder</span><span class="p">):</span>
+<div class="viewcode-block" id="InMemoryBrokerSubscriberBuilder"><a class="viewcode-back" href="../../../../../api/minos.networks.brokers.subscribers.memory.html#minos.networks.brokers.subscribers.memory.InMemoryBrokerSubscriberBuilder">[docs]</a><span class="k">class</span> <span class="nc">InMemoryBrokerSubscriberBuilder</span><span class="p">(</span><span class="n">BrokerSubscriberBuilder</span><span class="p">[</span><span class="n">InMemoryBrokerSubscriber</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;In Memory Broker Subscriber Builder class.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="InMemoryBrokerSubscriberBuilder.with_messages"><a class="viewcode-back" href="../../../../../api/minos.networks.brokers.subscribers.memory.html#minos.networks.brokers.subscribers.memory.InMemoryBrokerSubscriberBuilder.with_messages">[docs]</a>    <span class="k">def</span> <span class="nf">with_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">BrokerMessage</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">InMemoryBrokerSubscriberBuilder</span><span class="p">:</span>
@@ -126,14 +126,10 @@
 <span class="sd">        :return: This method return the builder instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">messages</span>
-        <span class="k">return</span> <span class="bp">self</span></div>
+        <span class="k">return</span> <span class="bp">self</span></div></div>
 
-<div class="viewcode-block" id="InMemoryBrokerSubscriberBuilder.build"><a class="viewcode-back" href="../../../../../api/minos.networks.brokers.subscribers.memory.html#minos.networks.brokers.subscribers.memory.InMemoryBrokerSubscriberBuilder.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BrokerSubscriber</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Build the instance.</span>
 
-<span class="sd">        :return: An ``InMemoryBrokerSubscriber`` instance.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">InMemoryBrokerSubscriber</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+<span class="n">InMemoryBrokerSubscriber</span><span class="o">.</span><span class="n">set_builder</span><span class="p">(</span><span class="n">InMemoryBrokerSubscriberBuilder</span><span class="p">)</span>
 </pre></div>
 
            </div>

@@ -13,5 +13,4 @@ Submodules
    :maxdepth: 4
 
    minos.networks.discovery.clients.abc
-   minos.networks.discovery.clients.kong
    minos.networks.discovery.clients.memory

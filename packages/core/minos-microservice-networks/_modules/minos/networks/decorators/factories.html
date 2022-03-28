@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.networks.decorators.factories &mdash; Minos Microservice Network 0.6.0 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link href="../../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Minos Microservice Network
+          </a>
+              <div class="version">
+                0.6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../runthetests.html">Run the tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/minos.html">minos namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../history.html">History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Minos Microservice Network</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.networks.decorators.factories</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.networks.decorators.factories</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">asyncio</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">gather</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">defaultdict</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Awaitable</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Collection</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">partial</span><span class="p">,</span>
+    <span class="n">wraps</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">isawaitable</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">import_module</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">..exceptions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MinosRedefinedEnrouteDecoratorException</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..requests</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Request</span><span class="p">,</span>
+    <span class="n">Response</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.collectors</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EnrouteCollector</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.definitions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BrokerEnrouteDecorator</span><span class="p">,</span>
+    <span class="n">EnrouteDecorator</span><span class="p">,</span>
+    <span class="n">EnrouteDecoratorKind</span><span class="p">,</span>
+    <span class="n">PeriodicEnrouteDecorator</span><span class="p">,</span>
+    <span class="n">RestEnrouteDecorator</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">Handler</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Request</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Response</span><span class="p">]]]</span>
+
+
+<div class="viewcode-block" id="EnrouteFactory"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.factories.html#minos.networks.decorators.factories.EnrouteFactory">[docs]</a><span class="k">class</span> <span class="nc">EnrouteFactory</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Enroute factory class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="EnrouteFactory.__init__"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.factories.html#minos.networks.decorators.factories.EnrouteFactory.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">classes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">],</span> <span class="n">middleware</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">middleware</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">middleware</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">middleware</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+            <span class="n">middleware</span> <span class="o">=</span> <span class="p">[</span><span class="n">middleware</span><span class="p">]</span>
+
+        <span class="n">middleware</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">fn</span><span class="p">:</span> <span class="n">fn</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">import_module</span><span class="p">(</span><span class="n">fn</span><span class="p">),</span> <span class="n">middleware</span><span class="p">))</span>
+
+        <span class="n">classes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">class_</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">class_</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">import_module</span><span class="p">(</span><span class="n">class_</span><span class="p">))</span> <span class="k">for</span> <span class="n">class_</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="n">classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">middleware</span> <span class="o">=</span> <span class="n">middleware</span></div>
+
+<div class="viewcode-block" id="EnrouteFactory.get_rest_command_query"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.factories.html#minos.networks.decorators.factories.EnrouteFactory.get_rest_command_query">[docs]</a>    <span class="k">def</span> <span class="nf">get_rest_command_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">RestEnrouteDecorator</span><span class="p">,</span> <span class="n">Handler</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the rest actions for commands and queries.</span>
+
+<span class="sd">        :return: A dictionary with decorator classes as keys and callable actions as values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="s2">&quot;get_rest_command_query&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EnrouteFactory.get_broker_command_query_event"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.factories.html#minos.networks.decorators.factories.EnrouteFactory.get_broker_command_query_event">[docs]</a>    <span class="k">def</span> <span class="nf">get_broker_command_query_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">BrokerEnrouteDecorator</span><span class="p">,</span> <span class="n">Handler</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the broker actions for commands, queries and events.</span>
+
+<span class="sd">        :return: A dictionary with decorator classes as keys and callable actions as values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="s2">&quot;get_broker_command_query_event&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EnrouteFactory.get_broker_command_query"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.factories.html#minos.networks.decorators.factories.EnrouteFactory.get_broker_command_query">[docs]</a>    <span class="k">def</span> <span class="nf">get_broker_command_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">BrokerEnrouteDecorator</span><span class="p">,</span> <span class="n">Handler</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the broker actions for commands and queries.</span>
+
+<span class="sd">        :return: A dictionary with decorator classes as keys and callable actions as values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="s2">&quot;get_broker_command_query&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EnrouteFactory.get_broker_event"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.factories.html#minos.networks.decorators.factories.EnrouteFactory.get_broker_event">[docs]</a>    <span class="k">def</span> <span class="nf">get_broker_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">BrokerEnrouteDecorator</span><span class="p">,</span> <span class="n">Handler</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the broker actions for events.</span>
+
+<span class="sd">        :return: A dictionary with decorator classes as keys and callable actions as values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="s2">&quot;get_broker_event&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EnrouteFactory.get_periodic_event"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.factories.html#minos.networks.decorators.factories.EnrouteFactory.get_periodic_event">[docs]</a>    <span class="k">def</span> <span class="nf">get_periodic_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">PeriodicEnrouteDecorator</span><span class="p">,</span> <span class="n">Handler</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the periodic actions for events.</span>
+
+<span class="sd">        :return: A dictionary with decorator classes as keys and callable actions as values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="s2">&quot;get_periodic_event&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EnrouteFactory.get_all"><a class="viewcode-back" href="../../../../api/minos.networks.decorators.factories.html#minos.networks.decorators.factories.EnrouteFactory.get_all">[docs]</a>    <span class="k">def</span> <span class="nf">get_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">EnrouteDecorator</span><span class="p">,</span> <span class="n">Handler</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the rest actions for commands and queries.</span>
+
+<span class="sd">        :return: A dictionary with decorator classes as keys and callable actions as values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="s2">&quot;get_all&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">EnrouteDecorator</span><span class="p">,</span> <span class="n">Handler</span><span class="p">]:</span>
+        <span class="k">def</span> <span class="nf">_flatten</span><span class="p">(</span><span class="n">decorator</span><span class="p">:</span> <span class="n">EnrouteDecorator</span><span class="p">,</span> <span class="n">fns</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Handler</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Handler</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">fns</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">decorator</span><span class="o">.</span><span class="n">KIND</span> <span class="o">!=</span> <span class="n">EnrouteDecoratorKind</span><span class="o">.</span><span class="n">Event</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">MinosRedefinedEnrouteDecoratorException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">decorator</span><span class="si">!r}</span><span class="s2"> can be used only once.&quot;</span><span class="p">)</span>
+
+            <span class="k">async</span> <span class="k">def</span> <span class="nf">_wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">ag</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+                <span class="k">return</span> <span class="k">await</span> <span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="o">*</span><span class="n">ag</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">fns</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="n">_wrapper</span>
+
+        <span class="n">decorators</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">decorator</span><span class="p">:</span> <span class="n">_flatten</span><span class="p">(</span><span class="n">decorator</span><span class="p">,</span> <span class="n">fns</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">decorator</span><span class="p">,</span> <span class="n">fns</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_all_classes</span><span class="p">(</span><span class="n">method_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_not_redefined</span><span class="p">(</span><span class="n">decorators</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">decorators</span>
+
+    <span class="c1"># noinspection PyMethodMayBeStatic</span>
+    <span class="k">def</span> <span class="nf">_validate_not_redefined</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decorators</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="n">EnrouteDecorator</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mapper</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">decorator</span> <span class="ow">in</span> <span class="n">decorators</span><span class="p">:</span>
+            <span class="n">mapper</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">decorator</span><span class="p">)]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">decorator</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">cases</span> <span class="ow">in</span> <span class="n">mapper</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cases</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">MinosRedefinedEnrouteDecoratorException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Only one of </span><span class="si">{</span><span class="n">cases</span><span class="si">!r}</span><span class="s2"> can be used simultaneously.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_build_all_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">EnrouteDecorator</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="n">Handler</span><span class="p">]]:</span>
+        <span class="n">decomposed_handlers</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">class_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_build_one_class</span><span class="p">(</span><span class="n">class_</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">decomposed_handlers</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">decomposed_handlers</span>
+
+    <span class="k">def</span> <span class="nf">_build_one_class</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">class_</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ans</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">EnrouteDecorator</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="n">Handler</span><span class="p">]],</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">analyzer</span> <span class="o">=</span> <span class="n">EnrouteCollector</span><span class="p">(</span><span class="n">class_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">analyzer</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)()</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">decorators</span> <span class="ow">in</span> <span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">decorator</span> <span class="ow">in</span> <span class="n">decorators</span><span class="p">:</span>
+                <span class="n">ans</span><span class="p">[</span><span class="n">decorator</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_one_method</span><span class="p">(</span><span class="n">class_</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">decorator</span><span class="o">.</span><span class="n">pre_fn_name</span><span class="p">,</span> <span class="n">decorator</span><span class="o">.</span><span class="n">post_fn_name</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_build_one_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">class_</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pref_fn_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">post_fn_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Handler</span><span class="p">:</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="n">class_</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">pre_fn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">pref_fn_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">post_fn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">post_fn_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">_wrapper</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Response</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">pre_fn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">request</span> <span class="o">=</span> <span class="n">pre_fn</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">isawaitable</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+                    <span class="n">request</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span>
+
+            <span class="n">response</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">isawaitable</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">response</span>
+
+            <span class="k">if</span> <span class="n">post_fn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">post_fn</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">isawaitable</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">response</span>
+
+            <span class="k">return</span> <span class="n">response</span>
+
+        <span class="k">for</span> <span class="n">middleware_fn</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">middleware</span><span class="p">):</span>
+            <span class="n">_wrapper</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">middleware_fn</span><span class="p">,</span> <span class="n">inner</span><span class="o">=</span><span class="n">_wrapper</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_wrapper</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

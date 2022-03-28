@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>History &mdash; Minos Microservice Common 0.5.3 documentation</title>
+  <title>History &mdash; Minos Microservice Common 0.6.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <a href="index.html" class="icon icon-home"> Minos Microservice Common
           </a>
               <div class="version">
-                0.5.3
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -101,6 +101,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#id48">0.5.0 (2022-02-03)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id49">0.5.2 (2022-02-08)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id50">0.5.3 (2022-03-04)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id51">0.6.0 (2022-03-28)</a></li>
 </ul>
 </li>
 </ul>
@@ -468,6 +469,24 @@
 <li><p>Big performance improvement related with a caching layer over type hint comparisons at <code class="docutils literal notranslate"><span class="pre">TypeHintComparator</span></code>.</p></li>
 <li><p>Improve attribute and item accessors of <code class="docutils literal notranslate"><span class="pre">Model</span></code>.</p></li>
 <li><p>Fix bug related with casting from <code class="docutils literal notranslate"><span class="pre">dict</span></code> to <code class="docutils literal notranslate"><span class="pre">Model</span></code> instances on field setters.</p></li>
+</ul>
+</section>
+<section id="id51">
+<h2>0.6.0 (2022-03-28)<a class="headerlink" href="#id51" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">Config</span></code> with support for config versioning.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">ConfigV1</span></code> as the class that supports the V1 config file.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">ConfigV2</span></code> as the class that supports the V1 config file.</p></li>
+<li><p>Deprecate <code class="docutils literal notranslate"><span class="pre">MinosConfig</span></code> in favor of <code class="docutils literal notranslate"><span class="pre">Config</span></code>.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">get_internal_modules</span></code> function.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">Injectable</span></code> decorator to provide a way to set a class as injectable.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">InjectableMixin</span></code> class that provides the necessary methods to be injectable.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">Inject</span></code> decorator to provide a way to inject variables on functions based on types.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">LockPool</span></code> base class as the base class for lock pools.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">Object</span></code> base class with the purpose to avoid issues related with multi-inheritance and mixins.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">Port</span></code> base class as the base class for ports.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">CircuitBreakerMixin</span></code> class to provide circuit breaker functionalities.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">SetupMixin</span></code> class as a replacement of the <code class="docutils literal notranslate"><span class="pre">MinosSetup</span></code> class.</p></li>
 </ul>
 </section>
 </section>

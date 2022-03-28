@@ -1,7 +1,0 @@
-minos.networks.decorators.analyzers module
-==========================================
-
-.. automodule:: minos.networks.decorators.analyzers
-   :members:
-   :undoc-members:
-   :show-inheritance:

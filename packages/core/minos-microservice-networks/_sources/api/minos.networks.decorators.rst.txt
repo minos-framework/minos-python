@@ -21,6 +21,6 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   minos.networks.decorators.analyzers
    minos.networks.decorators.api
-   minos.networks.decorators.builders
+   minos.networks.decorators.collectors
+   minos.networks.decorators.factories

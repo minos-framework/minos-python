@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.networks.brokers.collections.queues.pg &mdash; Minos Microservice Network 0.5.3 documentation</title>
+  <title>minos.networks.brokers.collections.queues.pg &mdash; Minos Microservice Network 0.6.0 documentation</title>
       <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../../../index.html" class="icon icon-home"> Minos Microservice Network
           </a>
               <div class="version">
-                0.5.3
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
@@ -110,11 +110,12 @@
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">MinosConfig</span><span class="p">,</span>
+    <span class="n">Config</span><span class="p">,</span>
     <span class="n">PostgreSqlMinosDatabase</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">....utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Builder</span><span class="p">,</span>
     <span class="n">consume_queue</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">...messages</span> <span class="kn">import</span> <span class="p">(</span>
@@ -132,8 +133,20 @@
 
     <span class="n">_queue</span><span class="p">:</span> <span class="n">PriorityQueue</span><span class="p">[</span><span class="n">_Entry</span><span class="p">]</span>
 
-<div class="viewcode-block" id="PostgreSqlBrokerQueue.__init__"><a class="viewcode-back" href="../../../../../../api/minos.networks.brokers.collections.queues.pg.html#minos.networks.brokers.collections.queues.pg.PostgreSqlBrokerQueue.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">query_factory</span><span class="p">:</span> <span class="n">PostgreSqlBrokerQueueQueryFactory</span><span class="p">,</span> <span class="n">retry</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">records</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="PostgreSqlBrokerQueue.__init__"><a class="viewcode-back" href="../../../../../../api/minos.networks.brokers.collections.queues.pg.html#minos.networks.brokers.collections.queues.pg.PostgreSqlBrokerQueue.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">query_factory</span><span class="p">:</span> <span class="n">PostgreSqlBrokerQueueQueryFactory</span><span class="p">,</span>
+        <span class="n">retry</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">records</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">retry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">retry</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="n">records</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">records</span> <span class="o">=</span> <span class="mi">1000</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_query_factory</span> <span class="o">=</span> <span class="n">query_factory</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_retry</span> <span class="o">=</span> <span class="n">retry</span>
@@ -144,6 +157,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_task</span> <span class="o">=</span> <span class="kc">None</span></div>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">retry</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the retry value.</span>
+
+<span class="sd">        :return: A ``int`` value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retry</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">records</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the records value.</span>
+
+<span class="sd">        :return: A ``int`` value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_records</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">query_factory</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PostgreSqlBrokerQueueQueryFactory</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Get the query factory.</span>
 
@@ -152,9 +181,12 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_factory</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">MinosConfig</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PostgreSqlBrokerQueue</span><span class="p">:</span>
-        <span class="c1"># noinspection PyProtectedMember</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">_asdict</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PostgreSqlBrokerQueue</span><span class="p">:</span>
+        <span class="n">broker_interface</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_interface_by_name</span><span class="p">(</span><span class="s2">&quot;broker&quot;</span><span class="p">)</span>
+        <span class="n">queue_config</span> <span class="o">=</span> <span class="n">broker_interface</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;common&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;queue&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span>
+        <span class="n">database_config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_database_by_name</span><span class="p">(</span><span class="s2">&quot;broker&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="p">(</span><span class="n">kwargs</span> <span class="o">|</span> <span class="n">database_config</span> <span class="o">|</span> <span class="n">queue_config</span><span class="p">))</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_setup</span><span class="p">()</span>
@@ -395,6 +427,23 @@
             <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">data</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="PostgreSqlBrokerQueueBuilder"><a class="viewcode-back" href="../../../../../../api/minos.networks.brokers.collections.queues.pg.html#minos.networks.brokers.collections.queues.pg.PostgreSqlBrokerQueueBuilder">[docs]</a><span class="k">class</span> <span class="nc">PostgreSqlBrokerQueueBuilder</span><span class="p">(</span><span class="n">Builder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;PostgreSql Broker Queue Builder class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PostgreSqlBrokerQueueBuilder.with_config"><a class="viewcode-back" href="../../../../../../api/minos.networks.brokers.collections.queues.pg.html#minos.networks.brokers.collections.queues.pg.PostgreSqlBrokerQueueBuilder.with_config">[docs]</a>    <span class="k">def</span> <span class="nf">with_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set config.</span>
+
+<span class="sd">        :param config: The config to be set.</span>
+<span class="sd">        :return: This method return the builder instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">|=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_database_by_name</span><span class="p">(</span><span class="s2">&quot;broker&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">|=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_interface_by_name</span><span class="p">(</span><span class="s2">&quot;broker&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;common&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;queue&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">with_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div></div>
+
+
+<span class="n">PostgreSqlBrokerQueue</span><span class="o">.</span><span class="n">set_builder</span><span class="p">(</span><span class="n">PostgreSqlBrokerQueueBuilder</span><span class="p">)</span>
 </pre></div>
 
            </div>
