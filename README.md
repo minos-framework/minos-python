@@ -70,7 +70,7 @@ For more information, visit the [`minos-cli`](https://github.com/minos-framework
 
 ## Documentation
 
-The best place to start learning how to use the Minos Framework is at [Minos Learn](http://www.minos.run/learn/). The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).
+The best place to start learning how to use the Minos Framework is at [Minos Learn](https://www.minos.run/learn/). The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).
 
 ## QuickStart
 
