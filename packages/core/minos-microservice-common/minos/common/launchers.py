@@ -124,15 +124,19 @@ class EntrypointLauncher(SetupMixin):
 
         logger.info("Starting microservice...")
 
+        exception = None
         try:
             self.loop.run_until_complete(self.setup())
             self.loop.run_until_complete(self.entrypoint.__aenter__())
             logger.info("Microservice is up and running!")
             self.loop.run_forever()
-        except KeyboardInterrupt:  # pragma: no cover
+        except KeyboardInterrupt as exc:  # pragma: no cover
             logger.info("Stopping microservice...")
+            exception = exc
+        except Exception as exc:  # pragma: no cover
+            exception = exc
         finally:
-            self.graceful_shutdown()
+            self.graceful_shutdown(exception)
 
     def graceful_shutdown(self, err: Exception = None) -> None:
         """Shutdown the execution gracefully.
