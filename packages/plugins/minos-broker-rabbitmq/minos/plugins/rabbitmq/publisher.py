@@ -43,6 +43,10 @@ class RabbitMQBrokerPublisher(BrokerPublisher):
             host = "localhost"
         if port is None:
             port = 5672
+        if user is None:
+            user = "guest"
+        if password is None:
+            password = "guest"
 
         self.host = host
         self.port = port

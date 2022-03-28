@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
+  <a href="https://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
 </p>
 
 # minos-python: The framework which helps you create reactive microservices in Python
@@ -16,18 +16,9 @@
 
 Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python. Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an asynchronous environment.
 
-### Roadmap
+## Roadmap
 
-#### 0.6.x
-
-* [#78](https://github.com/minos-framework/minos-python/issues/78) Implement a circuit breaker for `minos-broker-kafka`.
-* [#87](https://github.com/minos-framework/minos-python/issues/87) Implement idempotency for `BrokerSubscriber` message processing.
-* [#100](https://github.com/minos-framework/minos-python/issues/100) Create the `minos-serializers-avro` plugin.
-* [#148](https://github.com/minos-framework/minos-python/issues/148) Create the `minos-http-aiohttp`.
-* [#149](https://github.com/minos-framework/minos-python/issues/149) Add `minos-graphql-aiohttp` plugin.
-* [#150](https://github.com/minos-framework/minos-python/issues/150) Refactor configuration file and `MinosConfig` accessor.
-* [#151](https://github.com/minos-framework/minos-python/issues/151) Expose `OpenAPI` and `AsyncAPI` specifications.
-* [#152](https://github.com/minos-framework/minos-python/issues/152) Provide a testing suite to test the microservice.
+The roadmap of this project is publicly accessible at this [GitHub Repository](https://github.com/minos-framework/roadmap).
 
 ## Foundational Patterns
 
@@ -70,7 +61,7 @@ For more information, visit the [`minos-cli`](https://github.com/minos-framework
 
 ## Documentation
 
-The best place to start learning how to use the Minos Framework is at [Minos Learn](http://www.minos.run/learn/). The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).
+The best place to start learning how to use the Minos Framework is at [Minos Learn](https://www.minos.run/learn/). The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).
 
 ## QuickStart
 
@@ -143,7 +134,8 @@ pip install \
   minos-microservice-cqrs \
   minos-microservice-networks \
   minos-microservice-saga \ 
-  minos-broker-kafka
+  minos-broker-kafka \
+  minos-http-aiohttp
 ```
 
 ### Configure a Microservice
@@ -166,65 +158,58 @@ Create a `foo/config.yml` file and add the following lines:
 ```yaml
 # foo/config.yml
 
-service:
-  name: foo
-  aggregate: main.Foo
-  injections:
-    lock_pool: minos.common.PostgreSqlLockPool
-    postgresql_pool: minos.common.PostgreSqlPool
-    broker_publisher: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerPublisher
-    broker_subscriber_builder: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
-    broker_pool: minos.networks.BrokerClientPool
-    transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
-    event_repository: minos.aggregate.PostgreSqlEventRepository
-    snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
-    saga_manager: minos.saga.SagaManager
-    discovery: minos.networks.DiscoveryConnector
-  services:
-    - minos.networks.BrokerHandlerService
-    - minos.networks.RestService
-    - minos.networks.PeriodicTaskSchedulerService
+version: 2
+name: foo
+aggregate:
+  entities:
+    - main.Foo
+  repositories:
+    transaction: minos.aggregate.PostgreSqlTransactionRepository
+    event: minos.aggregate.PostgreSqlEventRepository
+    snapshot: minos.aggregate.PostgreSqlSnapshotRepository
+databases:
+  default:
+    database: foo_db
+    user: minos
+    password: min0s
+  saga:
+    path: "./foo.lmdb"
+interfaces:
+  broker:
+    port: minos.networks.BrokerPort
+    publisher:
+      client: minos.plugins.kafka.KafkaBrokerPublisher
+      queue: minos.networks.PostgreSqlBrokerPublisherQueue
+    subscriber:
+      client: minos.plugins.kafka.KafkaBrokerSubscriber
+      queue: minos.networks.PostgreSqlBrokerSubscriberQueue
+      validator: minos.networks.PostgreSqlBrokerSubscriberDuplicateValidator
+  http:
+    port: minos.networks.HttpPort
+    connector:
+      client: minos.plugins.aiohttp.AioHttpConnector
+      port: 4545
+  periodic:
+    port: minos.networks.PeriodicPort
+pools:
+  lock: minos.common.PostgreSqlLockPool
+  databasse: minos.common.PostgreSqlPool
+  broker: minos.networks.BrokerClientPool
+saga:
+  manager: minos.saga.SagaManager
+routers:
+  - minos.networks.BrokerRouter
+  - minos.networks.PeriodicRouter
+  - minos.networks.RestHttpRouter
 middleware:
   - minos.saga.transactional_command
 services:
+  - minos.networks.SystemService
   - minos.aggregate.TransactionService
   - minos.aggregate.SnapshotService
   - minos.saga.SagaService
   - main.FooCommandService
   - main.FooQueryService
-rest:
-  host: 0.0.0.0
-  port: 4545
-broker:
-  host: localhost
-  port: 9092
-  queue:
-    database: foo_db
-    user: user
-    password: pass
-    host: localhost
-    port: 5432
-    records: 1000
-    retry: 2
-repository:
-  database: foo_db
-  user: user
-  password: pass
-  host: localhost
-  port: 5432
-snapshot:
-  database: foo_db
-  user: user
-  password: pass
-  host: localhost
-  port: 5432
-saga:
-  storage:
-    path: "./foo.lmdb"
-discovery:
-  client: minos.networks.InMemoryDiscoveryClient
-  host: localhost
-  port: 5567
 ```
 
 </details>
@@ -989,64 +974,57 @@ Here is the `foobar/config.yml` config file:
 ```yaml
 # foobar/config.yml
 
-service:
-  name: foobar
-  aggregate: main.FooBar
-  injections:
-    lock_pool: minos.common.PostgreSqlLockPool
-    postgresql_pool: minos.common.PostgreSqlPool
-    broker_publisher: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerPublisher
-    broker_subscriber_builder: minos.plugins.kafka.PostgreSqlQueuedKafkaBrokerSubscriberBuilder
-    broker_pool: minos.networks.BrokerClientPool
-    transaction_repository: minos.aggregate.PostgreSqlTransactionRepository
-    event_repository: minos.aggregate.PostgreSqlEventRepository
-    snapshot_repository: minos.aggregate.PostgreSqlSnapshotRepository
-    saga_manager: minos.saga.SagaManager
-    discovery: minos.networks.DiscoveryConnector
-  services:
-    - minos.networks.BrokerHandlerService
-    - minos.networks.RestService
-    - minos.networks.PeriodicTaskSchedulerService
+version: 2
+name: foobar
+aggregate:
+  entities:
+    - main.FooBar
+  repositories:
+    transaction: minos.aggregate.PostgreSqlTransactionRepository
+    event: minos.aggregate.PostgreSqlEventRepository
+    snapshot: minos.aggregate.PostgreSqlSnapshotRepository
+databases:
+  default:
+    database: foobar_db
+    user: minos
+    password: min0s
+  saga:
+    path: "./foobar.lmdb"
+interfaces:
+  broker:
+    port: minos.networks.BrokerPort
+    publisher:
+      client: minos.plugins.kafka.KafkaBrokerPublisher
+      queue: minos.networks.PostgreSqlBrokerPublisherQueue
+    subscriber:
+      client: minos.plugins.kafka.KafkaBrokerSubscriber
+      queue: minos.networks.PostgreSqlBrokerSubscriberQueue
+      validator: minos.networks.PostgreSqlBrokerSubscriberDuplicateValidator
+  http:
+    port: minos.networks.HttpPort
+    connector:
+      client: minos.plugins.aiohttp.AioHttpConnector
+      port: 4546
+  periodic:
+    port: minos.networks.PeriodicPort
+pools:
+  lock: minos.common.PostgreSqlLockPool
+  databasse: minos.common.PostgreSqlPool
+  broker: minos.networks.BrokerClientPool
+saga:
+  manager: minos.saga.SagaManager
+routers:
+  - minos.networks.BrokerRouter
+  - minos.networks.PeriodicRouter
+  - minos.networks.RestHttpRouter
 middleware:
   - minos.saga.transactional_command
 services:
+  - minos.networks.SystemService
   - minos.aggregate.TransactionService
   - minos.aggregate.SnapshotService
   - minos.saga.SagaService
   - main.FooBarCommandService
-rest:
-  host: 0.0.0.0
-  port: 4546
-broker:
-  host: localhost
-  port: 9092
-  queue:
-    database: foobar_db
-    user: user
-    password: pass
-    host: localhost
-    port: 5432
-    records: 1000
-    retry: 2
-repository:
-  database: foobar_db
-  user: user
-  password: pass
-  host: localhost
-  port: 5432
-snapshot:
-  database: foobar_db
-  user: user
-  password: pass
-  host: localhost
-  port: 5432
-saga:
-  storage:
-    path: "./foobar.lmdb"
-discovery:
-  client: minos.networks.InMemoryDiscoveryClient
-  host: localhost
-  port: 5567
 ```
 
 </details>
@@ -1155,13 +1133,14 @@ The core packages provide the base implementation of the framework.
 The plugin packages provide connectors to external technologies like brokers, discovery services, databases, serializers and so on.
 
 * [minos-broker-kafka](https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-kafka): The `kafka` plugin package.
+* [minos-broker-rabbitmq](https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-rabbitmq): The `rabbitmq` plugin package.
 * [minos-discovery-minos](https://minos-framework.github.io/minos-python/packages/plugins/minos-discovery-minos): The `minos-discovery` plugin package.
 * [minos-http-aiohttp](https://minos-framework.github.io/minos-python/packages/plugins/minos-http-aiohttp): The `aiohttp` plugin package.
 * [minos-router-graphql](https://minos-framework.github.io/minos-python/packages/plugins/minos-router-graphql): The `grapqhl` plugin package.
 
 ## Source Code
 
-The source code of this project is hosted at the [GitHub Repository](https://github.com/minos-framework/minos-python).
+The source code of this project is hosted at this [GitHub Repository](https://github.com/minos-framework/minos-python).
 
 ## Getting Help
 
@@ -1169,7 +1148,7 @@ For usage questions, the best place to go to is [StackOverflow](https://stackove
 
 ## Discussion and Development
 
-Most development discussions take place over the [GitHub Issues](https://github.com/minos-framework/minos-python/issues). In addition, a [Gitter channel](https://gitter.im/minos-framework/community) is available for development-related questions.
+Most development discussions take place over this [GitHub Issues](https://github.com/minos-framework/minos-python/issues). In addition, a [Gitter channel](https://gitter.im/minos-framework/community) is available for development-related questions.
 
 ## How to contribute
 

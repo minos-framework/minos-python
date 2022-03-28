@@ -43,7 +43,7 @@ class StocksCommandService(CommandService):
                 await StocksAggregate.add_ticker_to_stock(ticker["ticker"], now.to_datetime_string())
 
     def call_remote(self, ticker, from_: str, to_: str):
-        with RESTClient("X0Mb2GLCf84iE3intKsKV5f9EDWvenNR") as client:
+        with RESTClient("") as client:
             resp = client.stocks_equities_aggregates(
                 ticker, 1, "hour", from_, to_, adjusted=True, sort="asc", limit=50000
             )
@@ -75,3 +75,4 @@ class StocksCommandService(CommandService):
                         )
                         await self.broker_publisher.send(message)
                         logger.warning("Added new quote")
+

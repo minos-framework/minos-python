@@ -93,3 +93,9 @@
 * Add `RefResolver.build_topic_name` static method.
 * Remove `SnapshotService.__get_one__` method.
 * Minor changes.
+
+0.6.0 (2022-03-28)
+------------------
+
+* Replace `dependency-injector`'s injection classes by the ones provided by the `minos.common.injections` module.
+* Be compatible with latest `minos.common.Config` API.

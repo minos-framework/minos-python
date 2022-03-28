@@ -2,5 +2,6 @@ from .impl import (
     BrokerHandler,
 )
 from .ports import (
-    BrokerHandlerPort,
+    BrokerHandlerService,
+    BrokerPort,
 )

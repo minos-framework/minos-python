@@ -69,7 +69,12 @@
 
 * Fix bug related with dependency specification.
 
-# 0.5.3 (2022-03-04)
+## 0.5.3 (2022-03-04)
 
 * Update the `resolve_references: bool` default value to `False` defined at `PreEventHandler.handle`.
 * Improve error messages of  `PreEventHandler`.
+
+## 0.6.0 (2022-03-28)
+
+* Replace `dependency-injector`'s injection classes by the ones provided by the `minos.common.injections` module.
+* Be compatible with latest `minos.common.Config` API.

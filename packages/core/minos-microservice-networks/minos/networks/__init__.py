@@ -1,6 +1,6 @@
 __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
-__version__ = "0.5.3"
+__version__ = "0.6.0"
 
 from .brokers import (
     REQUEST_HEADERS_CONTEXT_VAR,
@@ -9,12 +9,13 @@ from .brokers import (
     BrokerClientPool,
     BrokerDispatcher,
     BrokerHandler,
-    BrokerHandlerPort,
+    BrokerHandlerService,
     BrokerMessage,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
     BrokerMessageV1Strategy,
+    BrokerPort,
     BrokerPublisher,
     BrokerPublisherBuilder,
     BrokerPublisherQueue,
@@ -101,6 +102,7 @@ from .http import (
     HttpRequest,
     HttpResponse,
     HttpResponseException,
+    RestService,
 )
 from .requests import (
     REQUEST_USER_CONTEXT_VAR,
@@ -119,9 +121,10 @@ from .routers import (
 )
 from .scheduling import (
     CronTab,
+    PeriodicPort,
     PeriodicTask,
     PeriodicTaskScheduler,
-    PeriodicTaskSchedulerPort,
+    PeriodicTaskSchedulerService,
     ScheduledRequest,
     ScheduledRequestContent,
     ScheduledResponseException,

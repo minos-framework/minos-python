@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from unittest.mock import (
     AsyncMock,
 )
@@ -10,27 +11,28 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    PeriodicPort,
     PeriodicTaskScheduler,
-    PeriodicTaskSchedulerPort,
+    PeriodicTaskSchedulerService,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
 )
 
 
-class TestPeriodicTaskSchedulerPort(PostgresAsyncTestCase):
+class TestPeriodicPort(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def test_is_instance(self):
-        service = PeriodicTaskSchedulerPort(config=self.config)
+        service = PeriodicPort(config=self.config)
         self.assertIsInstance(service, Port)
 
     def test_dispatcher(self):
-        service = PeriodicTaskSchedulerPort(config=self.config)
+        service = PeriodicPort(config=self.config)
         self.assertIsInstance(service.scheduler, PeriodicTaskScheduler)
 
     async def test_start_stop(self):
-        service = PeriodicTaskSchedulerPort(config=self.config)
+        service = PeriodicPort(config=self.config)
 
         setup_mock = AsyncMock()
         destroy_mock = AsyncMock()
@@ -60,6 +62,17 @@ class TestPeriodicTaskSchedulerPort(PostgresAsyncTestCase):
         self.assertEqual(0, start_mock.call_count)
         self.assertEqual(1, stop_mock.call_count)
         self.assertEqual(1, destroy_mock.call_count)
+
+
+class TestPeriodicTaskSchedulerService(unittest.TestCase):
+    def test_is_subclass(self):
+        self.assertTrue(issubclass(PeriodicTaskSchedulerService, PeriodicPort))
+
+    def test_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            port = PeriodicTaskSchedulerService(config=CONFIG_FILE_PATH)
+            self.assertIsInstance(port, PeriodicPort)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 import logging
+import warnings
 from typing import (
     Optional,
 )
@@ -59,3 +60,11 @@ class HttpPort(Port):
         if connector is None:
             raise NotProvidedException(f"A {HttpConnector!r} must be provided.")
         return connector
+
+
+class RestService(HttpPort):
+    """Rest Service class."""
+
+    def __init__(self, **kwargs):
+        warnings.warn(f"{RestService!r} has been deprecated. Use {HttpPort} instead.", DeprecationWarning)
+        super().__init__(**kwargs)

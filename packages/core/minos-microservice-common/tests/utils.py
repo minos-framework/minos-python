@@ -24,7 +24,7 @@ class FakeEntrypoint:
     async def __aenter__(self):
         """For testing purposes."""
 
-    async def graceful_shutdown(*args, **kwargs):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
         """For testing purposes."""
 
 

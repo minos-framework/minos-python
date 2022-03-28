@@ -90,7 +90,7 @@ class AioHttpConnector(HttpConnector[web.Request, web.Response]):
         return web.Response(text=message, status=status)
 
     async def _start(self) -> None:
-        self._runner = web_runner.AppRunner(self.application)
+        self._runner = web_runner.AppRunner(self.application, access_log=None)
         await self._runner.setup()
 
         self._site = web_runner.TCPSite(

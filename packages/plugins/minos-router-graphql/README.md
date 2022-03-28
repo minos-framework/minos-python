@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
+  <a href="https://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
 </p>
 
 ## minos-router-graphql
@@ -14,9 +14,16 @@
 
 This is graphQL plugin for Minos framework. This plugin integrates the official [graphql-core](https://github.com/graphql-python/graphql-core) library. It is oriented to facilitate the development and better organize the graphql code.
 
-## How to
-### Installation
-Modify `config.yaml` file and add:
+## Installation
+
+Install the dependency:
+
+```shell
+pip install minos-router-graphql
+```
+
+Modify `config.yml` file:
+
 ```yaml
 ...
 routers:
@@ -24,8 +31,11 @@ routers:
 ...
 ```
 
-### Define your bussines operation
-We will use simple query for this demostration:
+## How to use
+
+### Define your business operation
+
+We will use simple query for this demonstration:
 ```python
 from graphql import (
     GraphQLString,

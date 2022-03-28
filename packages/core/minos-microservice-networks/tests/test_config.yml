@@ -3,8 +3,8 @@ service:
     aggregate: tests.utils.Order
     services:
       - minos.networks.HttpPort
-      - minos.networks.BrokerHandlerPort
-      - minos.networks.PeriodicTaskSchedulerPort
+      - minos.networks.BrokerPort
+      - minos.networks.PeriodicPort
 routers:
     - minos.networks.BrokerRouter
     - minos.networks.PeriodicRouter

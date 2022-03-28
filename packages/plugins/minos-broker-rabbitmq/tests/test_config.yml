@@ -2,7 +2,7 @@ service:
     name: Order
     aggregate: tests.utils.Order
     services:
-      - minos.networks.BrokerHandlerPort
+      - minos.networks.BrokerPort
 services:
     - tests.services.commands.CommandService
     - tests.services.queries.QueryService

@@ -77,6 +77,9 @@ class ConfigV2(Config):
 
         ans = list()
         for type_ in partial_ans:
+            if type_ is None:
+                continue
+
             if isinstance(type_, dict):
                 type_ = type_["client"]
 
@@ -112,14 +115,16 @@ class ConfigV2(Config):
 
     @staticmethod
     def _parse_http_interface(data: dict[str, Any]) -> dict[str, Any]:
-        data["port"] = import_module(data["port"])
+        if "port" in data:
+            data["port"] = import_module(data["port"])
         if "connector" in data:
             data["connector"]["client"] = import_module(data["connector"]["client"])
         return data
 
     @staticmethod
     def _parse_broker_interface(data: dict[str, Any]) -> dict[str, Any]:
-        data["port"] = import_module(data["port"])
+        if "port" in data:
+            data["port"] = import_module(data["port"])
 
         if "publisher" in data:
             data["publisher"]["client"] = import_module(data["publisher"]["client"])
@@ -137,7 +142,8 @@ class ConfigV2(Config):
 
     @staticmethod
     def _parse_periodic_interface(data: dict[str, Any]) -> dict[str, Any]:
-        data["port"] = import_module(data["port"])
+        if "port" in data:
+            data["port"] = import_module(data["port"])
 
         return data
 

@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="http://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
+  <a href="https://minos.run" target="_blank"><img src="https://raw.githubusercontent.com/minos-framework/.github/main/images/logo.png" alt="Minos logo"></a>
 </p>
 
 ## minos-http-aiohttp
@@ -15,6 +15,28 @@
 Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python.
 Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
 asynchronous environment.
+
+## Installation
+
+Install the dependency:
+
+```shell
+pip install minos-http-aiohttp
+```
+
+Modify `config.yml` file:
+
+```yaml
+...
+interfaces:
+  http:
+    port: minos.networks.HttpPort
+    connector:
+      client: minos.plugins.aiohttp.AioHttpConnector
+      host: 0.0.0.0
+      port: 8082
+...
+```
 
 ## Documentation
 

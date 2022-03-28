@@ -6,6 +6,7 @@ import logging
 import warnings
 from asyncio import (
     AbstractEventLoop,
+    gather,
 )
 from enum import (
     Enum,
@@ -107,7 +108,9 @@ class EntrypointLauncher(SetupMixin):
         if "injections" not in kwargs:
             kwargs["injections"] = config.get_injections()
         if "ports" not in kwargs:
-            kwargs["ports"] = [interface["port"] for interface in config.get_interfaces().values()]
+            kwargs["ports"] = [
+                interface["port"] for interface in config.get_interfaces().values() if "port" in interface
+            ]
         return cls(config, *args, **kwargs)
 
     def launch(self) -> NoReturn:
@@ -122,23 +125,32 @@ class EntrypointLauncher(SetupMixin):
 
         logger.info("Starting microservice...")
 
+        exception = None
         try:
-            self.loop.run_until_complete(self.setup())
-            self.loop.run_until_complete(self.entrypoint.__aenter__())
+            self.graceful_launch()
             logger.info("Microservice is up and running!")
             self.loop.run_forever()
-        except KeyboardInterrupt:  # pragma: no cover
+        except KeyboardInterrupt as exc:  # pragma: no cover
             logger.info("Stopping microservice...")
+            exception = exc
+        except Exception as exc:  # pragma: no cover
+            exception = exc
         finally:
-            self.graceful_shutdown()
+            self.graceful_shutdown(exception)
+
+    def graceful_launch(self) -> None:
+        """Launch the execution gracefully.
+
+        :return: This method does not return anything.
+        """
+        self.loop.run_until_complete(gather(self.setup(), self.entrypoint.__aenter__()))
 
     def graceful_shutdown(self, err: Exception = None) -> None:
         """Shutdown the execution gracefully.
 
         :return: This method does not return anything.
         """
-        self.loop.run_until_complete(self.entrypoint.graceful_shutdown(err))
-        self.loop.run_until_complete(self.destroy())
+        self.loop.run_until_complete(gather(self.entrypoint.__aexit__(None, err, None), self.destroy()))
 
     @cached_property
     def entrypoint(self) -> Entrypoint:

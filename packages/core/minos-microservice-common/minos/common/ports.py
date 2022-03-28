@@ -23,6 +23,7 @@ class Port(Service, ABC):
             return await self._start()
         except Exception as exc:
             logger.exception(f"Raised an exception on {self!r} start: {exc!r}")
+            raise exc
 
     @abstractmethod
     def _start(self):
@@ -38,6 +39,7 @@ class Port(Service, ABC):
             return await self._stop(err)
         except Exception as exc:
             logger.exception(f"Raised an exception on {self!r} stop: {exc!r}")
+            raise exc
 
     @abstractmethod
     async def _stop(self, err: Exception = None) -> None:

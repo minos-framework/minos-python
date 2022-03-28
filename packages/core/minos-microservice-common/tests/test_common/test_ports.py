@@ -47,7 +47,8 @@ class TestPort(unittest.IsolatedAsyncioTestCase):
         mock = AsyncMock(side_effect=ValueError)
         port._start = mock
 
-        await port.start()
+        with self.assertRaises(ValueError):
+            await port.start()
 
         self.assertEqual([call()], mock.call_args_list)
 
@@ -67,7 +68,8 @@ class TestPort(unittest.IsolatedAsyncioTestCase):
         mock = AsyncMock(side_effect=ValueError)
         port._stop = mock
 
-        await port.stop()
+        with self.assertRaises(ValueError):
+            await port.stop()
 
         self.assertEqual([call(None)], mock.call_args_list)
 

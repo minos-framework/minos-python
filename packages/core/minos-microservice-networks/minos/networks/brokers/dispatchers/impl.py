@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 import logging
+import traceback
 from collections.abc import (
     Awaitable,
     Callable,
@@ -152,10 +153,12 @@ class BrokerDispatcher(SetupMixin):
                 else:
                     content, status = None, BrokerMessageV1Status.SUCCESS
             except ResponseException as exc:
-                logger.error(f"Raised an application exception: {exc!s}")
+                tb = traceback.format_exc()
+                logger.error(f"Raised an application exception:\n {tb}")
                 content, status = repr(exc), exc.status
             except Exception as exc:
-                logger.exception(f"Raised a system exception: {exc!r}")
+                tb = traceback.format_exc()
+                logger.exception(f"Raised a system exception:\n {tb}")
                 content, status = repr(exc), BrokerMessageV1Status.SYSTEM_ERROR
             finally:
                 headers = REQUEST_HEADERS_CONTEXT_VAR.get()

@@ -37,8 +37,6 @@ class Pool(SetupMixin, PoolBase, Generic[P], ABC):
 
     # noinspection PyUnresolvedReferences
     async def __acquire(self) -> Any:  # pragma: no cover
-        # FIXME: This method inheritance should be improved.
-
         if self._instances.empty() and not self._semaphore.locked():
             await self._PoolBase__create_new_instance()
 
@@ -56,7 +54,13 @@ class Pool(SetupMixin, PoolBase, Generic[P], ABC):
                 return await self._PoolBase__acquire()
 
         self._used.add(instance)
+        logger.debug(f"Acquired instance: {instance!r}")
         return instance
+
+    # noinspection PyUnresolvedReferences
+    async def __release(self, instance: Any) -> Any:  # pragma: no cover
+        await self._PoolBase__release(instance)
+        logger.debug(f"Released instance: {instance!r}")
 
     def acquire(self, *args, **kwargs) -> P:
         """Acquire a new instance wrapped on an asynchronous context manager.
@@ -66,7 +70,7 @@ class Pool(SetupMixin, PoolBase, Generic[P], ABC):
         :return: An asynchronous context manager.
         """
         # noinspection PyUnresolvedReferences
-        return ContextManager(self.__acquire, self._PoolBase__release)
+        return ContextManager(self.__acquire, self.__release)
 
     async def _destroy(self) -> None:
         if len(self._used):
