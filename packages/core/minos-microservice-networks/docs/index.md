@@ -1,11 +1,11 @@
-# Welcome to Minos Discovery Minos's documentation!
+# Welcome to Minos Microservice Network's documentation!
 
 .. toctree::
    :maxdepth: 2
 
    readme
    runthetests
-   api/minos.plugins
+   api/minos
    authors
    history
 
