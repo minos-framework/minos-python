@@ -2,6 +2,7 @@ import unittest
 import warnings
 from unittest.mock import (
     AsyncMock,
+    MagicMock,
     call,
     patch,
 )
@@ -106,37 +107,67 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
             self.assertEqual(call(), mock_loop.call_args)
 
     async def test_setup(self):
-        mock = AsyncMock()
-        self.launcher.injector.wire_and_setup_injections = mock
-        await self.launcher.setup()
+        wire_mock = MagicMock()
+        setup_mock = AsyncMock()
+        mock_entrypoint_aenter = AsyncMock()
 
-        self.assertEqual(1, mock.call_count)
+        self.launcher.injector.wire_injections = wire_mock
+        self.launcher.injector.setup_injections = setup_mock
+
+        with patch("minos.common.launchers._create_loop") as mock_loop:
+            loop = FakeLoop()
+            mock_loop.return_value = loop
+            with patch("minos.common.launchers._create_entrypoint") as mock_entrypoint:
+                entrypoint = FakeEntrypoint()
+                mock_entrypoint.return_value = entrypoint
+
+                entrypoint.__aenter__ = mock_entrypoint_aenter
+
+                await self.launcher.setup()
+
+        self.assertEqual(1, wire_mock.call_count)
         import tests
         from minos import (
             common,
         )
 
-        self.assertEqual(0, len(mock.call_args.args))
-        self.assertEqual(2, len(mock.call_args.kwargs))
-        observed = mock.call_args.kwargs["modules"]
+        self.assertEqual(0, len(wire_mock.call_args.args))
+        self.assertEqual(2, len(wire_mock.call_args.kwargs))
+        observed = wire_mock.call_args.kwargs["modules"]
 
         self.assertIn(tests, observed)
         self.assertIn(common, observed)
 
-        self.assertEqual(["tests"], mock.call_args.kwargs["packages"])
+        self.assertEqual(["tests"], wire_mock.call_args.kwargs["packages"])
 
-        await self.launcher.destroy()
+        self.assertEqual(1, setup_mock.call_count)
+        self.assertEqual(1, mock_entrypoint_aenter.call_count)
 
     async def test_destroy(self):
-        self.launcher.injector.wire_and_setup_injections = AsyncMock()
+        self.launcher._setup = AsyncMock()
         await self.launcher.setup()
 
-        mock = AsyncMock()
-        self.launcher.injector.unwire_and_destroy_injections = mock
-        await self.launcher.destroy()
+        destroy_mock = AsyncMock()
+        unwire_mock = MagicMock()
+        mock_entrypoint_aexit = AsyncMock()
 
-        self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(), mock.call_args)
+        self.launcher.injector.destroy_injections = destroy_mock
+        self.launcher.injector.unwire_injections = unwire_mock
+
+        with patch("minos.common.launchers._create_loop") as mock_loop:
+            loop = FakeLoop()
+            mock_loop.return_value = loop
+            with patch("minos.common.launchers._create_entrypoint") as mock_entrypoint:
+                entrypoint = FakeEntrypoint()
+                mock_entrypoint.return_value = entrypoint
+
+                entrypoint.__aexit__ = mock_entrypoint_aexit
+
+                await self.launcher.destroy()
+
+        self.assertEqual(1, unwire_mock.call_count)
+        self.assertEqual(1, destroy_mock.call_count)
+        self.assertEqual(1, mock_entrypoint_aexit.call_count)
 
     def test_launch(self):
         mock_setup = AsyncMock()
@@ -157,8 +188,8 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
                     self.launcher.launch()
 
-        self.assertEqual(1, mock_entrypoint.call_count)
-        self.assertEqual(1, mock_loop.call_count)
+        self.assertEqual(1, mock_setup.call_count)
+        self.assertEqual(1, mock_destroy.call_count)
 
 
 class TestEntryPointLauncherLoop(unittest.TestCase):
