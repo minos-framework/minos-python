@@ -1,0 +1,17 @@
+minos.plugins.rabbitmq package
+==============================
+
+.. automodule:: minos.plugins.rabbitmq
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.plugins.rabbitmq.common
+   minos.plugins.rabbitmq.publisher
+   minos.plugins.rabbitmq.subscriber

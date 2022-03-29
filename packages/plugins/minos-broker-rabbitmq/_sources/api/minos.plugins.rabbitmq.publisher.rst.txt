@@ -1,0 +1,7 @@
+minos.plugins.rabbitmq.publisher module
+=======================================
+
+.. automodule:: minos.plugins.rabbitmq.publisher
+   :members:
+   :undoc-members:
+   :show-inheritance:

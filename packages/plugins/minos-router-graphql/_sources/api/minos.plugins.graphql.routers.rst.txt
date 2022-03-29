@@ -1,0 +1,7 @@
+minos.plugins.graphql.routers module
+====================================
+
+.. automodule:: minos.plugins.graphql.routers
+   :members:
+   :undoc-members:
+   :show-inheritance:

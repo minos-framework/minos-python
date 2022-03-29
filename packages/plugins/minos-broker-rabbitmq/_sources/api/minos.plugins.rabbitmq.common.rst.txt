@@ -1,0 +1,7 @@
+minos.plugins.rabbitmq.common module
+====================================
+
+.. automodule:: minos.plugins.rabbitmq.common
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.plugins.graphql.builders.schema &mdash; Minos Router GraphQl 0.6.0 documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link href="../../../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> Minos Router GraphQl
+          </a>
+              <div class="version">
+                0.6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../runthetests.html">Run the tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/minos.plugins.html">minos.plugins namespace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../history.html">History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Minos Router GraphQl</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.plugins.graphql.builders.schema</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.plugins.graphql.builders.schema</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Callable</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">wraps</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">isawaitable</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Awaitable</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">graphql</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GraphQLArgument</span><span class="p">,</span>
+    <span class="n">GraphQLField</span><span class="p">,</span>
+    <span class="n">GraphQLObjectType</span><span class="p">,</span>
+    <span class="n">GraphQLSchema</span><span class="p">,</span>
+    <span class="n">GraphQLString</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EnrouteDecoratorKind</span><span class="p">,</span>
+    <span class="n">InMemoryRequest</span><span class="p">,</span>
+    <span class="n">Request</span><span class="p">,</span>
+    <span class="n">Response</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">..decorators</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GraphQlEnrouteDecorator</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="GraphQLSchemaBuilder"><a class="viewcode-back" href="../../../../../api/minos.plugins.graphql.builders.schema.html#minos.plugins.graphql.builders.schema.GraphQLSchemaBuilder">[docs]</a><span class="k">class</span> <span class="nc">GraphQLSchemaBuilder</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;GraphQL Schema Builder class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GraphQLSchemaBuilder.__init__"><a class="viewcode-back" href="../../../../../api/minos.plugins.graphql.builders.schema.html#minos.plugins.graphql.builders.schema.GraphQLSchemaBuilder.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">GraphQLSchema</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GraphQLSchemaBuilder.build"><a class="viewcode-back" href="../../../../../api/minos.plugins.graphql.builders.schema.html#minos.plugins.graphql.builders.schema.GraphQLSchemaBuilder.build">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">routes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">GraphQlEnrouteDecorator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">GraphQLSchema</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build a new schema from routes.</span>
+
+<span class="sd">        :param routes: The routes to build the schema.</span>
+<span class="sd">        :return: A ``GraphQLSchema`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">schema_args</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="n">routes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">schema_args</span><span class="p">)</span><span class="o">.</span><span class="n">schema</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_build</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">routes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">GraphQlEnrouteDecorator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GraphQLObjectType</span><span class="p">]]:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_build_queries</span><span class="p">(</span><span class="n">routes</span><span class="p">)</span>
+        <span class="n">mutation</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_build_mutations</span><span class="p">(</span><span class="n">routes</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span> <span class="s2">&quot;mutation&quot;</span><span class="p">:</span> <span class="n">mutation</span><span class="p">}</span>
+
+<div class="viewcode-block" id="GraphQLSchemaBuilder.adapt_callback"><a class="viewcode-back" href="../../../../../api/minos.plugins.graphql.builders.schema.html#minos.plugins.graphql.builders.schema.GraphQLSchemaBuilder.adapt_callback">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">adapt_callback</span><span class="p">(</span>
+        <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Request</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Response</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Response</span><span class="p">]]]]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Adapt a callback from framework&#39;s Request-Response to GraphQl structure.</span>
+
+<span class="sd">        :param callback: The callback to be adapted.</span>
+<span class="sd">        :return: The adapted callback.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">_wrapper</span><span class="p">(</span><span class="n">_source</span><span class="p">,</span> <span class="n">_info</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="n">InMemoryRequest</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+            <span class="n">response</span> <span class="o">=</span> <span class="n">callback</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">isawaitable</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">response</span>
+
+            <span class="k">return</span> <span class="k">await</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">_wrapper</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_build_queries</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">routes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">GraphQlEnrouteDecorator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">GraphQLObjectType</span><span class="p">:</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">route</span><span class="p">,</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">routes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">callback</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">adapt_callback</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">route</span><span class="o">.</span><span class="n">KIND</span> <span class="o">==</span> <span class="n">EnrouteDecoratorKind</span><span class="o">.</span><span class="n">Query</span><span class="p">:</span>
+                <span class="n">fields</span><span class="p">[</span><span class="n">route</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_build_field</span><span class="p">(</span><span class="n">route</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">):</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s2">&quot;dummy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">GraphQLField</span><span class="p">(</span>
+                <span class="n">type_</span><span class="o">=</span><span class="n">GraphQLString</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Dummy query added to surpass the &#39;Type Query must define at least one field&#39; constraint.&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">GraphQLObjectType</span><span class="p">(</span><span class="s2">&quot;Query&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">fields</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_build_mutations</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">routes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">GraphQlEnrouteDecorator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GraphQLObjectType</span><span class="p">]:</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">route</span><span class="p">,</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">routes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">callback</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">adapt_callback</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">route</span><span class="o">.</span><span class="n">KIND</span> <span class="o">==</span> <span class="n">EnrouteDecoratorKind</span><span class="o">.</span><span class="n">Command</span><span class="p">:</span>
+                <span class="n">fields</span><span class="p">[</span><span class="n">route</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_build_field</span><span class="p">(</span><span class="n">route</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">GraphQLObjectType</span><span class="p">(</span><span class="s2">&quot;Mutation&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">fields</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_build_field</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">GraphQlEnrouteDecorator</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GraphQLField</span><span class="p">:</span>
+        <span class="n">argument</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">argument</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">output</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">argument</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">GraphQLArgument</span><span class="p">(</span><span class="n">argument</span><span class="p">)}</span>
+
+        <span class="k">return</span> <span class="n">GraphQLField</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">resolve</span><span class="o">=</span><span class="n">callback</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

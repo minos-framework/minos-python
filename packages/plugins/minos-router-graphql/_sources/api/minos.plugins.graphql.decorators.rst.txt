@@ -1,0 +1,7 @@
+minos.plugins.graphql.decorators module
+=======================================
+
+.. automodule:: minos.plugins.graphql.decorators
+   :members:
+   :undoc-members:
+   :show-inheritance:

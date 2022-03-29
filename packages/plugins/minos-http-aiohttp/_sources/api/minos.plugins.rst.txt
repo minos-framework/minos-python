@@ -1,0 +1,12 @@
+minos.plugins namespace
+=======================
+
+.. py:module:: minos.plugins
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.plugins.aiohttp

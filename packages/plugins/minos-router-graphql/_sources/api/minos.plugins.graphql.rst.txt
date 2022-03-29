@@ -1,0 +1,25 @@
+minos.plugins.graphql package
+=============================
+
+.. automodule:: minos.plugins.graphql
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.plugins.graphql.builders
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   minos.plugins.graphql.decorators
+   minos.plugins.graphql.handlers
+   minos.plugins.graphql.routers

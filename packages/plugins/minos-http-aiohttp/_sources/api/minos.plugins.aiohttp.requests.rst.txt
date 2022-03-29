@@ -1,0 +1,7 @@
+minos.plugins.aiohttp.requests module
+=====================================
+
+.. automodule:: minos.plugins.aiohttp.requests
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+minos.plugins.graphql.handlers module
+=====================================
+
+.. automodule:: minos.plugins.graphql.handlers
+   :members:
+   :undoc-members:
+   :show-inheritance:

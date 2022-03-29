@@ -1,0 +1,7 @@
+minos.plugins.rabbitmq.subscriber module
+========================================
+
+.. automodule:: minos.plugins.rabbitmq.subscriber
+   :members:
+   :undoc-members:
+   :show-inheritance:
