@@ -12,9 +12,7 @@
 
 ## Summary
 
-Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python.
-Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
-asynchronous environment.
+Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python. Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an asynchronous environment.
 
 ## Installation
 
@@ -51,6 +49,7 @@ The source code of this project is hosted at the [GitHub Repository](https://git
 For usage questions, the best place to go to is [StackOverflow](https://stackoverflow.com/questions/tagged/minos).
 
 ## Discussion and Development
+
 Most development discussions take place over the [GitHub Issues](https://github.com/minos-framework/minos-python/issues). In addition, a [Gitter channel](https://gitter.im/minos-framework/community) is available for development-related questions.
 
 ## License
