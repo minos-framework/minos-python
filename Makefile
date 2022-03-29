@@ -27,7 +27,17 @@ docs:
 	$(MAKE) --directory=packages/plugins/minos-broker-kafka install docs
 	cp -R packages/plugins/minos-broker-kafka/docs/_build/html $(DOCS_TARGET)/plugins/minos-broker-kafka
 
+	$(MAKE) --directory=packages/plugins/minos-broker-rabbitmq install docs
+	cp -R packages/plugins/minos-broker-rabbitmq/docs/_build/html $(DOCS_TARGET)/plugins/minos-broker-rabbitmq
+
 	$(MAKE) --directory=packages/plugins/minos-discovery-minos install docs
 	cp -R packages/plugins/minos-discovery-minos/docs/_build/html $(DOCS_TARGET)/plugins/minos-discovery-minos
+
+	$(MAKE) --directory=packages/plugins/minos-http-aiohttp install docs
+	cp -R packages/plugins/minos-http-aiohttp/docs/_build/html $(DOCS_TARGET)/plugins/minos-http-aiohttp
+
+	$(MAKE) --directory=packages/plugins/minos-router-graphql install docs
+	cp -R packages/plugins/minos-router-graphql/docs/_build/html $(DOCS_TARGET)/plugins/minos-router-graphql
+
 
 	poetry run $(MAKE) --directory=docs html
