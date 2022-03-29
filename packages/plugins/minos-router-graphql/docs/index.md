@@ -6,12 +6,12 @@ This plugin integrates the official graphql-core library.
 
    readme
    runthetests
-   usage
    api/minos.plugins
    authors
    history
 
-# Indices and tables
+## Indices and tables
+
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

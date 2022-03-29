@@ -1,18 +1,15 @@
-Welcome to Minos Microservice CQRS's documentation!
-======================================
+# Welcome to Minos Microservice Aggregate's documentation!
 
 .. toctree::
    :maxdepth: 2
 
    readme
    runthetests
-   usage
    api/minos
    authors
    history
 
-Indices and tables
-====================
+## Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
