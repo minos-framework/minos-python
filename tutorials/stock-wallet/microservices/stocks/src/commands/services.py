@@ -1,10 +1,6 @@
 import logging
 
 import pendulum
-from polygon import (
-    RESTClient,
-)
-
 from minos.aggregate import (
     Event,
 )
@@ -19,6 +15,9 @@ from minos.networks import (
     BrokerMessageV1Payload,
     Request,
     enroute,
+)
+from polygon import (
+    RESTClient,
 )
 
 from ..aggregates import (

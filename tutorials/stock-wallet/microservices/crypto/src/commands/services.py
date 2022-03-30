@@ -1,13 +1,20 @@
 import logging
 import time
-from asyncio import get_event_loop
+from asyncio import (
+    get_event_loop,
+)
 
 import ccxt
 import pendulum
-
-from minos.aggregate import Event
-from minos.common import ModelType
-from minos.cqrs import CommandService
+from minos.aggregate import (
+    Event,
+)
+from minos.common import (
+    ModelType,
+)
+from minos.cqrs import (
+    CommandService,
+)
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
@@ -15,7 +22,9 @@ from minos.networks import (
     enroute,
 )
 
-from ..aggregates import CryptoAggregate
+from ..aggregates import (
+    CryptoAggregate,
+)
 
 logger = logging.getLogger(__name__)
 QuoteContent = ModelType.build("QuoteContent", {"ticker": str, "close": float, "volume": float, "when": str})
