@@ -1,18 +1,13 @@
 import logging
 import time
+from asyncio import get_event_loop
 
 import ccxt
 import pendulum
 
-from minos.aggregate import (
-    Event,
-)
-from minos.common import (
-    ModelType,
-)
-from minos.cqrs import (
-    CommandService,
-)
+from minos.aggregate import Event
+from minos.common import ModelType
+from minos.cqrs import CommandService
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
@@ -20,9 +15,7 @@ from minos.networks import (
     enroute,
 )
 
-from ..aggregates import (
-    CryptoAggregate,
-)
+from ..aggregates import CryptoAggregate
 
 logger = logging.getLogger(__name__)
 QuoteContent = ModelType.build("QuoteContent", {"ticker": str, "close": float, "volume": float, "when": str})
@@ -35,10 +28,10 @@ class CryptoCommandService(CommandService):
     async def set_crypto_coin(self, request: Request):
         event: Event = await request.content()
         for ticker in event["tickers"]:
-            logger.warning(ticker)
+            logger.info(ticker)
             if ticker["flag"] == "crypto":
                 now = pendulum.parse("1975-08-27T05:00:00")
-                logger.warning("Added crypto to stock")
+                logger.info("Added crypto to stock")
                 await CryptoAggregate.add_crypto_to_stock(ticker["ticker"], now.to_datetime_string())
 
     def call_remote(self, ticker, _from: float):
@@ -61,9 +54,9 @@ class CryptoCommandService(CommandService):
         data = []
         fetch_since = since
         while fetch_since < now:
-            logger.info("crawling kraken")
+            logger.info(f"crawling {ticker!r} from kraken")
             try:
-                values = kraken.fetch_ohlcv(ticker, timeframe, since, limit)
+                values = kraken.fetch_ohlcv(ticker, timeframe, fetch_since, limit)
                 fetch_since = (values[-1][0] + 3600000) if len(values) else (fetch_since + timedelta)
                 data = data + values
                 if len(values):
@@ -81,20 +74,24 @@ class CryptoCommandService(CommandService):
                 ccxt.RequestTimeout,
             ) as error:
                 logger.error(error)
-                time.sleep(30)
-        return kraken.filter_by_since_limit(data, since, None, key=0)
+                break
+        result = kraken.filter_by_since_limit(data, since, None, key=0)
+        logger.info(f"Obtained {len(ticker)} ticker.")
+        return result
 
     @enroute.periodic.event("* * * * *")
     async def get_crypto_values(self, request: Request):
         tickers = await CryptoAggregate.get_all_tickers()
-        logger.warning("Periodic call Crypto----------")
+        logger.info("Periodic call Crypto----------")
         now = pendulum.now()
         now_minus_one_month = now.subtract(months=1)
         if len(tickers) > 0:
             for ticker in tickers:
-                logger.warning("Num tickers {}".format(len(tickers)))
+                logger.info("Num tickers {}".format(len(tickers)))
                 ticker_updated = pendulum.parse(ticker["updated"])
-                results = self.call_remote(ticker["ticker"], now_minus_one_month.to_datetime_string())
+                results = await get_event_loop().run_in_executor(
+                    None, self.call_remote, ticker["ticker"], now_minus_one_month.to_datetime_string()
+                )
                 for result in results:
                     result_date = pendulum.from_timestamp(result[0] / 1000)
                     if ticker_updated < result_date:

@@ -21,7 +21,7 @@ class WalletQueryServiceRepository(MinosSetup):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.engine = create_engine("postgresql+psycopg2://minos:min0s@postgres:5432/wallet_query_db".format(**kwargs))
-        Session = sessionmaker(bind=self.engine)
+        Session = sessionmaker(bind=self.engine, autocommit=True)
         self._session = Session()
 
     async def _setup(self) -> None:
@@ -40,7 +40,6 @@ class WalletQueryServiceRepository(MinosSetup):
         wallet.name = name
         wallet.uuid = uuid
         self.session.add(wallet)
-        self.session.commit()
         return wallet.id
 
     def get_wallets(self):
@@ -58,7 +57,6 @@ class WalletQueryServiceRepository(MinosSetup):
         wallet = self.session.query(Wallet).filter(Wallet.uuid == wallet_uuid).first()
         ticker = Ticker(uuid=ticker["uuid"], ticker=ticker["ticker"], flag=ticker["flag"], wallet=wallet)
         self.session.add(ticker)
-        self.session.commit()
 
     def get_tickers(self, wallet_uuid):
         wallet = self.session.query(Wallet).filter(Wallet.uuid == wallet_uuid).first()
@@ -91,4 +89,3 @@ class WalletQueryServiceRepository(MinosSetup):
         quote.volume = volume
         quote.close_value = close
         self.session.add(quote)
-        self.session.commit()
