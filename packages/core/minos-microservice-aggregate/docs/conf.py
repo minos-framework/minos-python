@@ -12,7 +12,6 @@ extensions = [
     "sphinxcontrib.apidoc",
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
-    "sphinx_rtd_theme",
     "m2r2",
 ]
 templates_path = ["_templates"]
@@ -27,8 +26,6 @@ version = module.__version__
 release = module.__version__
 
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
-
-pygments_style = "sphinx"
 
 todo_include_todos = False
 html_theme = "sphinx_rtd_theme"
@@ -55,3 +52,4 @@ autoclass_content = "both"
 autodoc_member_order = "bysource"
 autodoc_typehints_format = "short"
 autodoc_typehints = "description"
+add_module_names = False
