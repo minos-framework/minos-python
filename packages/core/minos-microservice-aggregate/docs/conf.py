@@ -11,7 +11,6 @@ from minos import (
 extensions = [
     "sphinxcontrib.apidoc",
     "sphinx.ext.autodoc",
-    "sphinx_autodoc_typehints",
     "sphinx.ext.viewcode",
     "sphinx_rtd_theme",
     "m2r2",
@@ -49,5 +48,6 @@ autodoc_default_options = {
     "inherited-members": True,
     "undoc-members": True,
 }
+autoclass_content = "both"
 autodoc_member_order = "bysource"
-
+autodoc_typehints_format = "short"
