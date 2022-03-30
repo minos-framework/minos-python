@@ -1,3 +1,3 @@
-# Introduction
+# Readme
 
 .. mdinclude:: ../README.md

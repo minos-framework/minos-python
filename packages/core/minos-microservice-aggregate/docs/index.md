@@ -1,7 +1,7 @@
-# Welcome to Minos Microservice Aggregate's documentation!
+# Welcome to `minos-microservice-aggregate`'s documentation!
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    readme
    runthetests

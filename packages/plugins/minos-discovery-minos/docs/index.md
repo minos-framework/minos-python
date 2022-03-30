@@ -1,7 +1,7 @@
 # Welcome to Minos Discovery Minos's documentation!
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    readme
    runthetests

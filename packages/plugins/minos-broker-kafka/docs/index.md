@@ -1,7 +1,7 @@
 # Welcome to Minos Broker Kafka's documentation!
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    readme
    runthetests

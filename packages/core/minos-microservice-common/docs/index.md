@@ -1,7 +1,7 @@
 # Welcome to Minos Microservice Common's documentation!
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    readme
    runthetests

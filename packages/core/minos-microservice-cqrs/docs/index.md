@@ -1,7 +1,7 @@
 # Welcome to Minos Microservice CQRS's documentation!
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    readme
    runthetests

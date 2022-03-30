@@ -2,7 +2,7 @@
 This plugin integrates the official graphql-core library.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    readme
    runthetests
