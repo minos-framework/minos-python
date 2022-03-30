@@ -1,4 +1,5 @@
 import unittest
+import httpx
 from minos.plugins.minos_kong import (
     MinosKongClient,
 )
@@ -30,6 +31,20 @@ class TestMinosKongClient(unittest.IsolatedAsyncioTestCase):
 
         response_delete = await self.client.unsubscribe("test")
         self.assertTrue(204 == response_delete.status_code)
+
+    async def test_route_params(self):
+        response = await self.client.subscribe(
+            "172.160.16.24", 5660, "test", [{"url": "/foo/{:user}", "method": "POST"},
+                                            {"url": "/bar/{:domain}/{:username}", "method": "GET"}]
+        )
+
+        async with httpx.AsyncClient() as client:
+            url = f"http://{self.client.host}:{self.client.port}/services/test/routes"
+            response = await client.get(url)
+            response_data = response.json()
+            self.assertGreater(len(response_data['data']), 0)
+        self.assertTrue(201 == response.status_code)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -10,4 +10,9 @@ class Endpoint:
 
     @property
     def path_as_str(self) -> str:
-        return "/".join([str(part.name) for part in self.path])
+        list_parts = []
+        for part in self.path:
+            if part.is_generic:
+                part.name = ".*"
+            list_parts.append(str(part.name))
+        return "/".join(list_parts)
