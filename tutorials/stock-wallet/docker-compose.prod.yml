@@ -1,7 +1,6 @@
 version: '3.9'
 services:
   microservice-wallet:
-    restart: always
     build:
       target: production
   microservice-stocks:
