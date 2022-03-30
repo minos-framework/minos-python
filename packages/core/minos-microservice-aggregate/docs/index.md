@@ -4,8 +4,8 @@
    :maxdepth: 1
 
    readme
+   reference
    runthetests
-   api/minos
    authors
    history
 
