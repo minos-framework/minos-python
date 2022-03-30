@@ -6,8 +6,8 @@
    readme
    reference
    runthetests
+   changelog
    authors
-   history
 
 ## Indices and tables
 * :ref:`genindex`

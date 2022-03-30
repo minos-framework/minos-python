@@ -5,7 +5,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.abspath(".."))
 
 from minos import (
-    aggregate,
+    aggregate as module,
 )
 
 extensions = [
@@ -23,8 +23,8 @@ project = "minos-microservice-aggregate"
 copyright = f"2021-{datetime.now().year}, Clariteia"
 author = "Minos Framework Devs"
 
-version = aggregate.__version__
-release = aggregate.__version__
+version = module.__version__
+release = module.__version__
 
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
@@ -38,16 +38,20 @@ htmlhelp_basename = "minosdoc"
 
 apidoc_module_dir = "../minos"
 apidoc_output_dir = "api"
+apidoc_toc_file = False
 apidoc_separate_modules = True
-apidoc_module_first = True
 apidoc_extra_args = [
     "--force",
     "--implicit-namespaces",
+    "--templatedir=_templates",
 ]
 autodoc_default_options = {
+    "members": True,
     "inherited-members": True,
     "undoc-members": True,
+    'member-order': 'bysource',
 }
 autoclass_content = "both"
 autodoc_member_order = "bysource"
 autodoc_typehints_format = "short"
+autodoc_typehints = "description"
