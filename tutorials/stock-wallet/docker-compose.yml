@@ -67,7 +67,7 @@ services:
     restart: always
     build:
       context: microservices/wallet
-      target: production
+      target: development
     environment: &id001
       MINOS_BROKER_QUEUE_HOST: postgres
       MINOS_BROKER_HOST: kafka
@@ -82,14 +82,14 @@ services:
     restart: always
     build:
       context: microservices/stocks
-      target: production
+      target: development
     environment: *id001
     depends_on: *id002
   microservice-crypto:
     restart: always
     build:
       context: microservices/crypto
-      target: production
+      target: development
     environment: *id001
     depends_on: *id002
 x-microservice-environment: *id001

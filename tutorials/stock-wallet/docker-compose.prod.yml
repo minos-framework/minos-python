@@ -1,0 +1,11 @@
+version: '3.9'
+services:
+  microservice-wallet:
+    build:
+      target: production
+  microservice-stocks:
+    build:
+      target: production
+  microservice-crypto:
+    build:
+      target: production
