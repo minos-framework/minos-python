@@ -29,6 +29,8 @@ class TestMinosKongClient(unittest.IsolatedAsyncioTestCase):
             "172.160.16.24", 5660, "test", [{"url": "/foo", "method": "POST"}, {"url": "/bar", "method": "GET"}]
         )
 
+        self.assertTrue(201 == response.status_code)
+
         response_delete = await self.client.unsubscribe("test")
         self.assertTrue(204 == response_delete.status_code)
 
@@ -38,12 +40,15 @@ class TestMinosKongClient(unittest.IsolatedAsyncioTestCase):
                                             {"url": "/bar/{:domain}/{:username}", "method": "GET"}]
         )
 
+        self.assertTrue(201 == response.status_code)
+
         async with httpx.AsyncClient() as client:
             url = f"http://{self.client.host}:{self.client.port}/services/test/routes"
             response = await client.get(url)
             response_data = response.json()
             self.assertGreater(len(response_data['data']), 0)
-        self.assertTrue(201 == response.status_code)
+
+        self.assertTrue(200 == response.status_code)
 
 
 if __name__ == "__main__":
