@@ -1,7 +1,7 @@
 # Welcome to `minos-microservice-aggregate`'s documentation!
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    readme
    reference
