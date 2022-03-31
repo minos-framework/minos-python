@@ -36,8 +36,10 @@ class TestMinosKongClient(unittest.IsolatedAsyncioTestCase):
 
     async def test_route_params(self):
         response = await self.client.subscribe(
-            "172.160.16.24", 5660, "test", [{"url": "/foo/{:user}", "method": "POST"},
-                                            {"url": "/bar/{:domain}/{:username}", "method": "GET"}]
+            "172.160.16.24",
+            5660,
+            "test",
+            [{"url": "/foo/{:user}", "method": "POST"}, {"url": "/bar/{:domain}/{:username}", "method": "GET"}],
         )
 
         self.assertTrue(201 == response.status_code)
@@ -46,7 +48,7 @@ class TestMinosKongClient(unittest.IsolatedAsyncioTestCase):
             url = f"http://{self.client.host}:{self.client.port}/services/test/routes"
             response = await client.get(url)
             response_data = response.json()
-            self.assertGreater(len(response_data['data']), 0)
+            self.assertGreater(len(response_data["data"]), 0)
 
         self.assertTrue(200 == response.status_code)
 
