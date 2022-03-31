@@ -1,12 +1,12 @@
 import os
 import sys
-from datetime import datetime
+from datetime import (
+    datetime,
+)
 
 sys.path.insert(0, os.path.abspath(".."))
 
-from minos import (
-    aggregate as package,
-)
+from minos import aggregate as package
 
 extensions = [
     "sphinxcontrib.apidoc",
