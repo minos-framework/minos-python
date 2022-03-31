@@ -18,7 +18,9 @@ from minos.networks import (
     DiscoveryClient,
 )
 
-from .utils import Endpoint
+from .utils import (
+    Endpoint,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +39,9 @@ class MinosKongClient(DiscoveryClient, CircuitBreakerMixin):
             host = "localhost"
         if port is None:
             port = 5567
-        super().__init__(host, port, circuit_breaker_exceptions=(httpx.HTTPStatusError, *circuit_breaker_exceptions), **kwargs)
+        super().__init__(
+            host, port, circuit_breaker_exceptions=(httpx.HTTPStatusError, *circuit_breaker_exceptions), **kwargs
+        )
 
     async def subscribe(
         self, host: str, port: int, name: str, endpoints: list[dict[str, str]], *args, **kwargs
@@ -54,15 +58,15 @@ class MinosKongClient(DiscoveryClient, CircuitBreakerMixin):
         """
 
         fnsr = partial(self._register_service, self.route, name, host, port)
-        response_service = await self.with_circuit_breaker(fnsr) # register a service
-        if response_service.status_code == 409: # service already exist
+        response_service = await self.with_circuit_breaker(fnsr)  # register a service
+        if response_service.status_code == 409:  # service already exist
             # if service already exist, delete and add again
             fn_delete = partial(self._delete_service, self.route, name)
-            response_delete = await self.with_circuit_breaker(fn_delete) # delete the service
+            await self.with_circuit_breaker(fn_delete)  # delete the service
             fnsr = partial(self._register_service, self.route, name, host, port)
-            response_service = await self.with_circuit_breaker(fnsr) # send the servie subscription again
+            response_service = await self.with_circuit_breaker(fnsr)  # send the servie subscription again
 
-        content_service = response_service.json() # get the servie information like the id
+        content_service = response_service.json()  # get the servie information like the id
 
         for endpoint in endpoints:
             endpointClass = Endpoint(endpoint["url"])
@@ -70,25 +74,19 @@ class MinosKongClient(DiscoveryClient, CircuitBreakerMixin):
                 "protocols": ["http"],
                 "methods": [endpoint["method"]],
                 "paths": [endpointClass.path_as_str],
-                "service": {
-                    "id": content_service["id"]
-                }
+                "service": {"id": content_service["id"]},
             }
             fn = partial(self._subscribe_routes, self.route, data)
-            response = await self.with_circuit_breaker(fn) # send the route request
+            response = await self.with_circuit_breaker(fn)  # send the route request
 
         return response
 
     @staticmethod
-    async def _register_service(discovery_route: str, service_name: str,
-                                microservice_host: str, microservice_port: str) -> httpx.Response:
-        url = f"{discovery_route}/services" # kong url for service POST or add
-        data = {
-            "name": service_name,
-            "protocol": "http",
-            "host": microservice_host,
-            "port": microservice_port
-        }
+    async def _register_service(
+        discovery_route: str, service_name: str, microservice_host: str, microservice_port: str
+    ) -> httpx.Response:
+        url = f"{discovery_route}/services"  # kong url for service POST or add
+        data = {"name": service_name, "protocol": "http", "host": microservice_host, "port": microservice_port}
         async with httpx.AsyncClient() as client:
             response = await client.post(url, json=data)
             return response
@@ -123,13 +121,13 @@ class MinosKongClient(DiscoveryClient, CircuitBreakerMixin):
         :return:
         """
         async with httpx.AsyncClient() as client:
-            url_get_route = f"{discovery_route}/services/{service_name}/routes" # url to get the routes
+            url_get_route = f"{discovery_route}/services/{service_name}/routes"  # url to get the routes
             response_routes = await client.get(url_get_route)
             json_routes_response = response_routes.json()
-            if len(json_routes_response["data"]) > 0: # service already have route, routes must be deleted
+            if len(json_routes_response["data"]) > 0:  # service already have route, routes must be deleted
                 for route in json_routes_response["data"]:
-                    url_delete_route = f"{discovery_route}/routes/{route['id']}" # url for routes delete
+                    url_delete_route = f"{discovery_route}/routes/{route['id']}"  # url for routes delete
                     await client.delete(url_delete_route)
-            url_delete_service = f"{discovery_route}/services/{service_name}" # url for service delete
+            url_delete_service = f"{discovery_route}/services/{service_name}"  # url for service delete
             response_delete_service = await client.delete(url_delete_service)
             return response_delete_service
