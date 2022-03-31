@@ -5,7 +5,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.abspath(".."))
 
 from minos import (
-    aggregate as module,
+    aggregate as package,
 )
 
 extensions = [
@@ -22,16 +22,14 @@ project = "minos-microservice-aggregate"
 copyright = f"2021-{datetime.now().year}, Clariteia"
 author = "Minos Framework Devs"
 
-version = module.__version__
-release = module.__version__
+version = package.__version__
+release = package.__version__
 
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
-todo_include_todos = False
 html_theme = "sphinx_rtd_theme"
 html_sidebars = {"**": ["about.html", "navigation.html", "searchbox.html"]}
 html_static_path = ["_static"]
-htmlhelp_basename = "minosdoc"
 
 apidoc_module_dir = "../minos"
 apidoc_output_dir = "api"
