@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 import logging
 import warnings
 from abc import (
@@ -20,6 +24,12 @@ from aiomisc.pool import (
     ContextManager,
 )
 
+from .config import (
+    Config,
+)
+from .injections import (
+    Injectable,
+)
 from .setup import (
     SetupMixin,
 )
@@ -27,6 +37,51 @@ from .setup import (
 logger = logging.getLogger(__name__)
 
 P = TypeVar("P")
+
+
+@Injectable("pool_factory")
+class PoolFactory(SetupMixin):
+    """TODO"""
+
+    _pools: dict[str, Pool]
+
+    def __init__(self, config: Config, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._config = config
+        self._pools = dict()
+
+    @classmethod
+    def _from_config(cls, config: Config, **kwargs) -> PoolFactory:
+        return cls(config, **kwargs)
+
+    async def _destroy(self) -> None:
+        for pool in self._pools.values():
+            await pool.destroy()
+        await super()._destroy()
+
+    async def get_pool(self, type_: str, key: Optional[str] = None, **kwargs) -> Pool:
+        """TODO
+
+        :param type_: TODO
+        :param key: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+        if key is None:
+            key = type_
+        if key not in self._pools:
+            self._pools[key] = await self._create_pool(type_, key=key, **kwargs)
+        return self._pools[key]
+
+    async def _create_pool(self, type_: str, **kwargs) -> Pool:
+        # noinspection PyTypeChecker
+        pool_cls: type[Pool] = self._config.get_pools().get(type_)
+        if pool_cls is None:
+            raise ValueError
+
+        pool = pool_cls.from_config(self._config, **kwargs)
+        await pool.setup()
+        return pool
 
 
 class Pool(SetupMixin, PoolBase, Generic[P], ABC):

@@ -6,6 +6,7 @@ from unittest import (
 
 from minos.common import (
     ConfigV2,
+    PoolFactory,
 )
 from tests.utils import (
     BASE_PATH,
@@ -37,6 +38,7 @@ class TestConfigV2Parameterized(unittest.TestCase):
         config = ConfigV2(self.file_path, interfaces_http={"port": "tests.utils.FakeHttpPort"})
 
         expected = [
+            PoolFactory,
             FakeLockPool,
             FakeDatabasePool,
             FakeBrokerClientPool,

@@ -11,6 +11,7 @@ from minos.common import (
     Config,
     ConfigV2,
     MinosConfigException,
+    PoolFactory,
 )
 from tests.utils import (
     BASE_PATH,
@@ -60,6 +61,7 @@ class TestConfigV2(unittest.TestCase):
 
     def test_injections(self):
         expected = [
+            PoolFactory,
             FakeLockPool,
             FakeDatabasePool,
             FakeBrokerClientPool,
@@ -75,9 +77,9 @@ class TestConfigV2(unittest.TestCase):
         ]
         self.assertEqual(expected, self.config.get_injections())
 
-    def test_injections_not_defined(self):
+    def test_injections_not_defined(self):  # FIXME
         with patch.object(ConfigV2, "get_by_key", side_effect=MinosConfigException("")):
-            self.assertEqual(list(), self.config.get_injections())
+            self.assertEqual([PoolFactory], self.config.get_injections())
 
     def test_injections_not_injectable(self):
         side_effect = chain([{"client": "builtins.int"}], cycle([MinosConfigException("")]))

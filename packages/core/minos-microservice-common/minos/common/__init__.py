@@ -100,6 +100,7 @@ from .object import (
 from .pools import (
     MinosPool,
     Pool,
+    PoolFactory,
 )
 from .ports import (
     Port,

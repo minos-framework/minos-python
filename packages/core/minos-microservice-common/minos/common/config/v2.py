@@ -50,6 +50,12 @@ class ConfigV2(Config):
 
         partial_ans = list()
 
+        from ..pools import (
+            PoolFactory,
+        )
+
+        partial_ans.append(PoolFactory)  # FIXME
+
         with suppress(MinosConfigException):
             partial_ans.extend(self._get_pools().values())
 
