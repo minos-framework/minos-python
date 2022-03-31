@@ -1,12 +1,12 @@
 import os
 import sys
-from datetime import datetime
+from datetime import (
+    datetime,
+)
 
 sys.path.insert(0, os.path.abspath(".."))
 
-from minos import (
-    aggregate as package,
-)
+from minos import aggregate as package
 
 extensions = [
     "sphinxcontrib.apidoc",
@@ -44,7 +44,7 @@ autodoc_default_options = {
     "members": True,
     "inherited-members": True,
     "undoc-members": True,
-    'member-order': 'bysource',
+    "member-order": "bysource",
 }
 autoclass_content = "both"
 autodoc_member_order = "bysource"
