@@ -52,16 +52,17 @@ class MinosKongClient(DiscoveryClient, CircuitBreakerMixin):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
+
         fnsr = partial(self._register_service, self.route, name, host, port)
-        response_service = await self.with_circuit_breaker(fnsr)
-        if response_service.status_code == 409:
+        response_service = await self.with_circuit_breaker(fnsr) # register a service
+        if response_service.status_code == 409: # service already exist
             # if service already exist, delete and add again
             fn_delete = partial(self._delete_service, self.route, name)
-            response_delete = await self.with_circuit_breaker(fn_delete)
+            response_delete = await self.with_circuit_breaker(fn_delete) # delete the service
             fnsr = partial(self._register_service, self.route, name, host, port)
-            response_service = await self.with_circuit_breaker(fnsr)
+            response_service = await self.with_circuit_breaker(fnsr) # send the servie subscription again
 
-        content_service = response_service.json()
+        content_service = response_service.json() # get the servie information like the id
 
         for endpoint in endpoints:
             endpointClass = Endpoint(endpoint["url"])
@@ -74,14 +75,14 @@ class MinosKongClient(DiscoveryClient, CircuitBreakerMixin):
                 }
             }
             fn = partial(self._subscribe_routes, self.route, data)
-            response = await self.with_circuit_breaker(fn)
+            response = await self.with_circuit_breaker(fn) # send the route request
 
         return response
 
     @staticmethod
     async def _register_service(discovery_route: str, service_name: str,
                                 microservice_host: str, microservice_port: str) -> httpx.Response:
-        url = f"{discovery_route}/services"
+        url = f"{discovery_route}/services" # kong url for service POST or add
         data = {
             "name": service_name,
             "protocol": "http",
@@ -114,14 +115,21 @@ class MinosKongClient(DiscoveryClient, CircuitBreakerMixin):
 
     @staticmethod
     async def _delete_service(discovery_route: str, service_name) -> httpx.Response:
+        """
+        the delete of a service must be checking before if the service already have the routes
+        if yes the DELETE routes must be called
+        :param discovery_route:
+        :param service_name:
+        :return:
+        """
         async with httpx.AsyncClient() as client:
-            url_get_route = f"{discovery_route}/services/{service_name}/routes"
+            url_get_route = f"{discovery_route}/services/{service_name}/routes" # url to get the routes
             response_routes = await client.get(url_get_route)
             json_routes_response = response_routes.json()
-            if len(json_routes_response["data"]) > 0:
+            if len(json_routes_response["data"]) > 0: # service already have route, routes must be deleted
                 for route in json_routes_response["data"]:
-                    url_delete_route = f"{discovery_route}/routes/{route['id']}"
+                    url_delete_route = f"{discovery_route}/routes/{route['id']}" # url for routes delete
                     await client.delete(url_delete_route)
-            url_delete_service = f"{discovery_route}/services/{service_name}"
+            url_delete_service = f"{discovery_route}/services/{service_name}" # url for service delete
             response_delete_service = await client.delete(url_delete_service)
             return response_delete_service
