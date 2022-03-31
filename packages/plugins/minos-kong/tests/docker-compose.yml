@@ -97,3 +97,15 @@ services:
     tty: true
     volumes:
       - kong_data:/var/lib/postgresql/data
+
+  konga:
+      image: pantsel/konga
+      ports:
+          - 1337:1337
+      links:
+          - kong:kong
+      container_name: konga
+      #networks:
+      #    - kong-net
+      environment:
+          - NODE_ENV=production
