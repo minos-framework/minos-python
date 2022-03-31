@@ -2,6 +2,10 @@
     max-width: 1200px !important;
 }
 
-dl, .py + dd + dl, .py {
+dl[class*="py"] {
+    display: block !important;
+}
+
+dl[class*="py"] > dt {
     display: block !important;
 }
