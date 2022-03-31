@@ -12,6 +12,8 @@ extensions = [
     "sphinxcontrib.apidoc",
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.autosummary",
     "m2r2",
 ]
 templates_path = ["_templates"]
@@ -43,10 +45,26 @@ apidoc_extra_args = [
 autodoc_default_options = {
     "members": True,
     "undoc-members": True,
+    "inherited-members": True,
+    #"special-members": "__init__",
     "member-order": "bysource",
 }
-autoclass_content = "both"
+autoclass_content = "class"
+autodoc_class_signature = "separated"
 autodoc_member_order = "bysource"
 autodoc_typehints_format = "short"
 autodoc_typehints = "description"
+autodoc_preserve_defaults = True
 add_module_names = False
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "minos-microservice-common": (
+        "https://minos-framework.github.io/minos-python/packages/core/minos-microservice-common",
+        ("../../minos-microservice-common/docs/_build/html/objects.inv", None),
+    ),
+    "minos-microservice-networks": (
+        "https://minos-framework.github.io/minos-python/packages/core/minos-microservice-networks",
+        ("../../minos-microservice-networks/docs/_build/html/objects.inv", None),
+    ),
+
+}
