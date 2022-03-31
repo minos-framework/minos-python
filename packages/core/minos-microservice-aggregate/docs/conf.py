@@ -44,7 +44,7 @@ autodoc_default_options = {
     "members": True,
     "inherited-members": True,
     "undoc-members": True,
-    'member-order': 'bysource',
+    "member-order": "bysource",
 }
 autoclass_content = "both"
 autodoc_member_order = "bysource"
