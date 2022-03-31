@@ -42,7 +42,6 @@ apidoc_extra_args = [
 ]
 autodoc_default_options = {
     "members": True,
-    "inherited-members": True,
     "undoc-members": True,
     "member-order": "bysource",
 }

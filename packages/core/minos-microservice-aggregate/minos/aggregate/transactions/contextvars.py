@@ -17,6 +17,4 @@ if TYPE_CHECKING:
     )
 
 TRANSACTION_CONTEXT_VAR: Final[ContextVar[Optional[TransactionEntry]]] = ContextVar("transaction", default=None)
-"""
-Context Variable that contains the transaction's identifier of the currently active transaction, or ``None`` otherwise.
-"""
+"""Context Variable that contains the identifier of the currently active transaction, or ``None`` otherwise."""
