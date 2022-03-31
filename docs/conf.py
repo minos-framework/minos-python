@@ -15,7 +15,6 @@ exclude_patterns = [
 ]
 
 extensions = [
-    # "sphinxcontrib.apidoc",
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
