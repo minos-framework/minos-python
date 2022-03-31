@@ -18,7 +18,9 @@ from minos.networks import (
     DiscoveryClient,
 )
 
-from .utils import Endpoint
+from .utils import (
+    Endpoint,
+)
 
 logger = logging.getLogger(__name__)
 

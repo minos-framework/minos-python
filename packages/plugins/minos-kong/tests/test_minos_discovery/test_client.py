@@ -1,5 +1,7 @@
 import unittest
+
 import httpx
+
 from minos.plugins.minos_kong import (
     MinosKongClient,
 )
