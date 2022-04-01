@@ -19,3 +19,7 @@
 
 * Add `KafkaCircuitBreakerMixin` to integrate `minos.common.CircuitBreakerMixin` into the `KafkaBrokerPublisher` and `KafkaBrokerSubscriber` classes to be tolerant to connection failures to `kafka`.
 * Add `KafkaBrokerPublisherBuilder` and `KafkaBrokerBuilderMixin` classes to ease the building process.
+
+## 0.6.1 (2022-04-01)
+
+* Improve `KafkaBrokerSubscriber`'s destroying process.

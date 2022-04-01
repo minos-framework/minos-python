@@ -134,6 +134,7 @@ class EntrypointLauncher(SetupMixin):
             logger.info("Stopping microservice...")
             exception = exc
         except Exception as exc:  # pragma: no cover
+            logger.exception("Stopping microservice due to an unhandled exception...")
             exception = exc
         finally:
             self.graceful_shutdown(exception)
@@ -143,14 +144,14 @@ class EntrypointLauncher(SetupMixin):
 
         :return: This method does not return anything.
         """
-        self.loop.run_until_complete(gather(self.setup(), self.entrypoint.__aenter__()))
+        self.loop.run_until_complete(self.setup())
 
     def graceful_shutdown(self, err: Exception = None) -> None:
         """Shutdown the execution gracefully.
 
         :return: This method does not return anything.
         """
-        self.loop.run_until_complete(gather(self.entrypoint.__aexit__(None, err, None), self.destroy()))
+        self.loop.run_until_complete(self.destroy())
 
     @cached_property
     def entrypoint(self) -> Entrypoint:
@@ -199,9 +200,10 @@ class EntrypointLauncher(SetupMixin):
 
         :return: This method does not return anything.
         """
-        await self.injector.wire_and_setup_injections(
-            modules=self._external_modules + self._internal_modules, packages=self._external_packages
-        )
+        modules = self._external_modules + self._internal_modules
+        packages = self._external_packages
+        self.injector.wire_injections(modules=modules, packages=packages)
+        await gather(self.injector.setup_injections(), self.entrypoint.__aenter__())
 
     @property
     def _internal_modules(self) -> list[ModuleType]:
@@ -212,7 +214,8 @@ class EntrypointLauncher(SetupMixin):
 
         :return: This method does not return anything.
         """
-        await self.injector.unwire_and_destroy_injections()
+        await gather(self.entrypoint.__aexit__(None, None, None), self.injector.destroy_injections())
+        self.injector.unwire_injections()
 
     @property
     def injections(self) -> dict[str, InjectableMixin]:
