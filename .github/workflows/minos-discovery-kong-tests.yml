@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Fire up Docker Compose setup with Kong & do some checks
-        run: docker-compose -f "tests/docker-compose.yml" up -d --build
+        run: docker-compose -f "./tests/docker-compose.yml" up -d --build
 
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -53,4 +53,4 @@ jobs:
 
       - name: Stop containers
         if: always()
-        run: docker-compose -f "tests/docker-compose.yml" down
+        run: docker-compose -f "./tests/docker-compose.yml" down
