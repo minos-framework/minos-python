@@ -37,7 +37,8 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
     async def test_subscribe(self):
         name = self.generate_underscore_uuid()
         response = await self.client.subscribe(
-            "172.160.16.24", 5660, name, [{"url": "/foo", "method": "POST"}, {"url": "/bar", "method": "GET"}]
+            "172.160.16.24", 5660, name, [{"url": "/", "method": "GET"}, {"url": "/foo", "method": "POST"},
+                                          {"url": "/bar", "method": "GET"}]
         )
         self.assertTrue(201 == response.status_code)
 
