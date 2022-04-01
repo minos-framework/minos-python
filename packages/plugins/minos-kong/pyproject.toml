@@ -31,13 +31,13 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.5.0"
-minos-microservice-networks = "^0.5.0"
+minos-microservice-common = "^0.6.0"
+minos-microservice-networks = "^0.6.0"
 httpx = "^0.22.0"
 
 [tool.poetry.dev-dependencies]
-minos-microservice-common = "^0.5.0"
-minos-microservice-networks = "^0.5.0"
+minos-microservice-common = "^0.6.0"
+minos-microservice-networks = "^0.6.0"
 black = "^22.1"
 isort = "^5.8.0"
 pytest = "^6.2.4"
