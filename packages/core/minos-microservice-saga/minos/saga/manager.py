@@ -24,6 +24,7 @@ from minos.common import (
     Injectable,
     NotProvidedException,
     SetupMixin,
+    PoolFactory,
 )
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
@@ -63,12 +64,22 @@ class SagaManager(SetupMixin):
     """
 
     @Inject()
-    def __init__(self, storage: SagaExecutionStorage, broker_pool: BrokerClientPool, *args, **kwargs):
+    def __init__(
+        self,
+        storage: SagaExecutionStorage,
+        broker_pool: Optional[BrokerClientPool] = None,
+        pool_factory: Optional[PoolFactory] = None,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.storage = storage
 
+        if broker_pool is None and pool_factory is not None:
+            broker_pool = pool_factory.get_pool("broker")
+
         if broker_pool is None:
-            raise NotProvidedException("A handler pool instance is required.")
+            raise NotProvidedException(f"A {BrokerClientPool!r} instance is required.")
 
         self.broker_pool = broker_pool
 

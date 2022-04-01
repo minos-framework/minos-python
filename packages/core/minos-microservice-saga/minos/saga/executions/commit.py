@@ -2,6 +2,7 @@ import logging
 from asyncio import (
     gather,
 )
+from typing import Optional
 from uuid import (
     UUID,
 )
@@ -11,7 +12,7 @@ from cached_property import (
 )
 
 from minos.common import (
-    Inject,
+    Inject, PoolFactory, NotProvidedException,
 )
 from minos.networks import (
     BrokerClient,
@@ -38,10 +39,18 @@ class TransactionCommitter:
         self,
         execution_uuid: UUID,
         executed_steps: list[SagaStepExecution],
-        broker_pool: BrokerClientPool,
         broker_publisher: BrokerPublisher,
+        broker_pool: Optional[BrokerClientPool] = None,
+        pool_factory: Optional[PoolFactory] = None,
         **kwargs,
     ):
+
+        if broker_pool is None and pool_factory is not None:
+            broker_pool = pool_factory.get_pool("broker")
+
+        if broker_pool is None:
+            raise NotProvidedException(f"A {BrokerClientPool!r} instance is required.")
+
         self.executed_steps = executed_steps
         self.execution_uuid = execution_uuid
 

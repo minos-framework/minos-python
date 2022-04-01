@@ -29,7 +29,7 @@ from minos.common import (
     Lock,
     LockPool,
     NotProvidedException,
-    SetupMixin, Config, PoolFactory,
+    SetupMixin, PoolFactory,
 )
 from minos.networks import (
     BrokerMessageV1,
