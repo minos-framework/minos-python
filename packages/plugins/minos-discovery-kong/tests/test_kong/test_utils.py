@@ -1,6 +1,9 @@
 import unittest
 
-from minos.plugins.kong.utils import Endpoint, PathPart
+from minos.plugins.kong.utils import (
+    Endpoint,
+    PathPart,
+)
 
 
 class TestKongDiscoveryUtils(unittest.IsolatedAsyncioTestCase):
