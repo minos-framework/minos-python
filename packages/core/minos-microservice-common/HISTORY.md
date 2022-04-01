@@ -309,3 +309,37 @@ History
 * Add `Port` base class as the base class for ports.
 * Add `CircuitBreakerMixin` class to provide circuit breaker functionalities.
 * Add `SetupMixin` class as a replacement of the `MinosSetup` class.
+
+### Update Guide (from 0.5.x to 0.6.0)
+* Add `@Injectable` decorator to classes that injections:
+```python
+@Injectable("THE_INJECTION_NAME")
+class MyInjectableClass:
+    ...
+```
+* Add `minos-http-aiohttp` package:
+```shell
+poetry add minos-http-aiohttp@^0.6
+```
+* Update `config.yml` file:
+  * Add ``:
+```yaml
+...
+service:
+  injections:
+    http_connector: minos.plugins.aiohttp.AioHttpConnector
+    ...
+  ...
+...
+```
+  * Add `routers` section:
+```yaml
+...
+routers:
+  - minos.networks.BrokerRouter
+  - minos.networks.PeriodicRouter
+  - minos.networks.RestHttpRouter
+...
+```
+* Update `Config` usages according to the new provided API:
+  * Most common issues come from calls like `config.query_repository._asdict()`, that must be transformed to `config.get_database_by_name("query")`
