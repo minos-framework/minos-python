@@ -9,6 +9,7 @@ x-kong-config: &kong-env
 
 volumes:
   kong_data: {}
+  konga_data:
   kong_prefix_vol:
     driver_opts:
      type: tmpfs
@@ -61,6 +62,7 @@ services:
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
       KONG_PREFIX: /var/run/kong
+      KONG_LOG_LEVEL: debug
       KONG_DECLARATIVE_CONFIG: "/opt/kong/kong.yaml"
     ports:
       - "0.0.0.0:8000:8000/tcp"
