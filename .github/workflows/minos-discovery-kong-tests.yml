@@ -14,7 +14,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ubuntu-latest
+    container: ubuntu:latest
     services:
       postgres:
         image: postgres:9.5
