@@ -96,7 +96,7 @@ python-versions = "*"
 
 [[package]]
 name = "click"
-version = "8.1.1"
+version = "8.1.2"
 description = "Composable command line interface toolkit"
 category = "dev"
 optional = false
@@ -249,7 +249,7 @@ url = "../minos-microservice-aggregate"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.6.0"
+version = "0.6.1"
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
@@ -461,7 +461,7 @@ test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "37a602a98cbdba4c07f6773160e53a2f76588e4698b878dda92a069133ae4591"
+content-hash = "97d564c578f53fa2980ec36b48dcda0ba291afed526be417d2a08c8432b7e61e"
 
 [metadata.files]
 aiomisc = [
@@ -514,8 +514,8 @@ cached-property = [
     {file = "cached_property-1.5.2-py2.py3-none-any.whl", hash = "sha256:df4f613cf7ad9a588cc381aaf4a512d26265ecebd5eb9e1ba12f1319eb85a6a0"},
 ]
 click = [
-    {file = "click-8.1.1-py3-none-any.whl", hash = "sha256:5e0d195c2067da3136efb897449ec1e9e6c98282fbf30d7f9e164af9be901a6b"},
-    {file = "click-8.1.1.tar.gz", hash = "sha256:7ab900e38149c9872376e8f9b5986ddcaf68c0f413cf73678a0bca5547e6f976"},
+    {file = "click-8.1.2-py3-none-any.whl", hash = "sha256:24e1a4a9ec5bf6299411369b208c1df2188d9eb8d916302fe6bf03faed227f1e"},
+    {file = "click-8.1.2.tar.gz", hash = "sha256:479707fe14d9ec9a0757618b7a100a0ae4c4e236fac5b7f80ca68028141a1a72"},
 ]
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
