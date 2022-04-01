@@ -173,11 +173,11 @@ class Condition:
     * `LOWER_EQUAL`: Evaluates as `True` only if the field of the given model is lower or equal (<=) to the parameter.
     * `GREATER`: Evaluates as `True` only if the field of the given model is greater (>) than the parameter.
     * `GREATER_EQUAL`: Evaluates as `True` only if the field of the given model is greater or equal (>=) to the
-    parameter.
+        parameter.
     * `EQUAL`: Evaluates as `True` only if the field of the given model is equal (==) to the parameter.
     * `NOT_EQUAL`: Evaluates as `True` only if the field of the given model is not equal (!=) to the parameter.
     * `IN`: Evaluates as `True` only if the field of the given model belongs (in) to the parameter (which must be a
-    collection).
+        collection).
     * `LIKE`: Evaluates as `True` only if the field of the given model matches to the parameter _pattern.
 
 

@@ -116,7 +116,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             transaction is extracted from the context var. If not any transaction is being scoped then the query is
             performed to the global snapshot.
         :param exclude_deleted: If ``True``, deleted ``RootEntity`` entries are included, otherwise deleted
-        ``RootEntity`` entries are filtered.
+            ``RootEntity`` entries are filtered.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``RootEntity`` instances.
         """
