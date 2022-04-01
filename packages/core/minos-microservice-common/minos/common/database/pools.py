@@ -1,4 +1,5 @@
 import logging
+import warnings
 from asyncio import (
     sleep,
 )
@@ -33,8 +34,8 @@ from .locks import (
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlPool(Pool[ContextManager]):
-    """Postgres Pool class."""
+class DatabaseClientPool(Pool[ContextManager]):
+    """Database Client Pool class."""
 
     def __init__(
         self,
@@ -98,8 +99,16 @@ class PostgreSqlPool(Pool[ContextManager]):
         return not instance.closed
 
 
-class PostgreSqlLockPool(LockPool, PostgreSqlPool):
-    """Postgres Locking Pool class."""
+class PostgreSqlPool(DatabaseClientPool):
+    """TODO"""
+
+    def __new__(cls, *args, **kwargs):
+        warnings.warn(f"{PostgreSqlPool!r} has been deprecated. Use {DatabaseClientPool} instead.", DeprecationWarning)
+        return super().__new__(cls, *args, **kwargs)
+
+
+class DatabaseLockPool(LockPool, DatabaseClientPool):
+    """Database Lock Pool class."""
 
     def acquire(self, key: Hashable, *args, **kwargs) -> PostgreSqlLock:
         """Acquire a new lock.
@@ -108,3 +117,13 @@ class PostgreSqlLockPool(LockPool, PostgreSqlPool):
         :return: A ``PostgreSqlLock`` instance.
         """
         return PostgreSqlLock(super().acquire(), key, *args, **kwargs)
+
+
+class PostgreSqlLockPool(DatabaseLockPool):
+    """TODO"""
+
+    def __new__(cls, *args, **kwargs):
+        warnings.warn(
+            f"{PostgreSqlLockPool!r} has been deprecated. Use {DatabaseLockPool} instead.", DeprecationWarning
+        )
+        return super().__new__(cls, *args, **kwargs)

@@ -4,9 +4,9 @@ import unittest
 import aiopg
 
 from minos.common import (
+    DatabaseClientPool,
     DatabaseMixin,
     DependencyInjector,
-    PostgreSqlPool,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -37,10 +37,10 @@ class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
 
     async def test_pool(self):
         async with DatabaseMixin(**self.repository_db) as database:
-            self.assertIsInstance(database.pool, PostgreSqlPool)
+            self.assertIsInstance(database.pool, DatabaseClientPool)
 
     async def test_pool_with_dependency_injections(self):
-        injector = DependencyInjector(self.config, [PostgreSqlPool])
+        injector = DependencyInjector(self.config, [DatabaseClientPool])
         await injector.wire_and_setup_injections(modules=[sys.modules[__name__]])
 
         async with DatabaseMixin(**self.repository_db) as database:

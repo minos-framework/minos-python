@@ -7,8 +7,8 @@ from unittest.mock import (
 )
 
 from minos.common import (
+    DatabaseLockPool,
     DependencyInjector,
-    PostgreSqlLockPool,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -38,7 +38,7 @@ class TestService(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.lock_pool = PostgreSqlLockPool.from_config(self.config)
+        self.lock_pool = DatabaseLockPool.from_config(self.config)
 
         self.injector = DependencyInjector(self.config, [BrokerClientPool])
         self.injector.wire_injections(modules=[sys.modules[__name__]])

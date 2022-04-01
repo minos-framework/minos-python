@@ -32,7 +32,7 @@ from .locks import (
     PostgreSqlLock,
 )
 from .pools import (
-    PostgreSqlPool,
+    DatabaseClientPool,
 )
 
 
@@ -42,7 +42,7 @@ class DatabaseMixin(SetupMixin):
     @Inject()
     def __init__(
         self,
-        pool: Optional[PostgreSqlPool] = None,
+        pool: Optional[DatabaseClientPool] = None,
         pool_factory: Optional[PoolFactory] = None,
         *args,
         **kwargs,
@@ -52,7 +52,7 @@ class DatabaseMixin(SetupMixin):
             pool = pool_factory.get_pool("database")
 
         if pool is None:
-            raise NotProvidedException(f"A {PostgreSqlPool!r} instance is required.")
+            raise NotProvidedException(f"A {DatabaseClientPool!r} instance is required.")
 
         self._pool = pool
 
@@ -170,7 +170,7 @@ class DatabaseMixin(SetupMixin):
         return ContextManager(_fn_enter, _fn_exit)
 
     @property
-    def pool(self) -> PostgreSqlPool:
+    def pool(self) -> DatabaseClientPool:
         """Get the connections pool.
 
         :return: A ``Pool`` object.
