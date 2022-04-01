@@ -33,7 +33,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
 
     def test_route(self):
         # noinspection HttpUrlsUsage
-        self.assertEqual(f"{PROTOCOL}://localhost:8001", self.client.route)
+        self.assertEqual(f"{PROTOCOL}://{self.client.host}:{self.client.port}", self.client.route)
 
     async def test_subscribe(self):
         name = self.generate_underscore_uuid()
