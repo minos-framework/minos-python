@@ -14,7 +14,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: python:3.9-buster
+    container: ubuntu-latest
     services:
       postgres:
         image: postgres:9.5
@@ -30,11 +30,14 @@ jobs:
         working-directory: packages/plugins/minos-discovery-kong
 
     steps:
-      - name: Download Kong dependencies pre-install
-        run: curl -Lo kong-enterprise-edition-2.8.0.0.all.deb "https://download.konghq.com/gateway-2.x-ubuntu-$(lsb_release -cs)/pool/all/k/kong-enterprise-edition/kong_2.8.0.0_all.deb"
+      - name: Install Python 3.9
+        run: sudo apt install software-properties-common && sudo add-apt-repository ppa:deadsnakes/ppa && sudo apt install python3.9
 
-      - name: Install Kong package
-        run: sudo dpkg -i kong-enterprise-edition-2.8.0.0.all.deb
+      - name: Prepare APT for kong installation
+        run: echo "deb [trusted=yes] https://download.konghq.com/gateway-2.x-ubuntu-$(lsb_release -sc)/ default all" | sudo tee /etc/apt/sources.list.d/kong.list
+
+      - name: Install kong
+        run: sudo apt-get update && apt install -y kong-enterprise-edition=2.8.0.0
 
       - name: Set env variables
         run: |
@@ -84,7 +87,3 @@ jobs:
 
       - name: Generate build
         run: make dist
-
-      - name: Stop containers
-        if: always()
-        run: docker-compose -f "./tests/docker-compose.yml" down
