@@ -14,7 +14,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ubuntu:latest
+    container: python:3.9-buster
     services:
       postgres:
         image: postgres:9.5
@@ -30,11 +30,8 @@ jobs:
         working-directory: packages/plugins/minos-discovery-kong
 
     steps:
-      - name: Install Python 3.9
-        run: sudo apt install software-properties-common && sudo add-apt-repository ppa:deadsnakes/ppa && sudo apt install python3.9
-
       - name: Prepare APT for kong installation
-        run: echo "deb [trusted=yes] https://download.konghq.com/gateway-2.x-ubuntu-$(lsb_release -sc)/ default all" | sudo tee /etc/apt/sources.list.d/kong.list
+        run: echo "deb [trusted=yes] https://download.konghq.com/gateway-2.x-ubuntu-$(lsb_release -sc)/ default all" | tee /etc/apt/sources.list.d/kong.list
 
       - name: Install kong
         run: sudo apt-get update && apt install -y kong-enterprise-edition=2.8.0.0
