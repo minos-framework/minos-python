@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Install dependencies
-        run: sudo apt install -y curl lsb-release apt-transport-https
+        run: sudo apt install curl lsb-release apt-transport-https
 
       - name: Update apt list
         run: echo "deb [trusted=yes] https://download.konghq.com/gateway-2.x-debian-$(lsb_release -sc)/ default all" | sudo tee /etc/apt/sources.list.d/kong.list
