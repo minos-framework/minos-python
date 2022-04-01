@@ -1,4 +1,4 @@
-.PHONY: docs dist
+.PHONY: dist
 
 lint:
 	poetry run flake8
@@ -14,10 +14,6 @@ coverage:
 reformat:
 	poetry run black --line-length 120 minos tests
 	poetry run isort minos tests
-
-docs:
-	rm -rf docs/api
-	poetry run $(MAKE) --directory=docs html
 
 release:
 	$(MAKE) dist
@@ -38,5 +34,4 @@ check:
 	$(MAKE) reformat
 	$(MAKE) lint
 	$(MAKE) test
-	$(MAKE) docs
 	$(MAKE) dist

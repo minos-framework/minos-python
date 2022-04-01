@@ -25,8 +25,8 @@ from .utils import (
 logger = logging.getLogger(__name__)
 
 
-class MinosKongClient(DiscoveryClient, CircuitBreakerMixin):
-    """Minos Discovery Client class."""
+class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
+    """Kong Discovery Client class."""
 
     def __init__(
         self,

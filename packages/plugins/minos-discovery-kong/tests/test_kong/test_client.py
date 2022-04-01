@@ -5,14 +5,14 @@ from uuid import (
 
 import httpx
 
-from minos.plugins.minos_kong import (
-    MinosKongClient,
+from minos.plugins.kong import (
+    KongDiscoveryClient,
 )
 
 
-class TestMinosKongClient(unittest.IsolatedAsyncioTestCase):
+class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.client = MinosKongClient("localhost", 8001, circuit_breaker_time=0.1)
+        self.client = KongDiscoveryClient("localhost", 8001, circuit_breaker_time=0.1)
 
     @staticmethod
     def generate_underscore_uuid():
@@ -20,7 +20,7 @@ class TestMinosKongClient(unittest.IsolatedAsyncioTestCase):
         return name.replace("-", "_")
 
     def test_constructor(self):
-        client = MinosKongClient()
+        client = KongDiscoveryClient()
         self.assertEqual("localhost", client.host)
         self.assertEqual(5567, client.port)
 
