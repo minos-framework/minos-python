@@ -9,11 +9,11 @@ from typing import (
 
 from minos.common import (
     Config,
-    PostgreSqlMinosDatabase,
+    DatabaseMixin,
 )
 
 
-class PostgreSqlSnapshotSetup(PostgreSqlMinosDatabase):
+class PostgreSqlSnapshotSetup(DatabaseMixin):
     """Minos Snapshot Setup Class"""
 
     @classmethod

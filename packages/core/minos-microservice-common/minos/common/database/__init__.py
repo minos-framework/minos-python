@@ -1,4 +1,5 @@
 from .abc import (
+    DatabaseMixin,
     PostgreSqlMinosDatabase,
 )
 from .locks import (

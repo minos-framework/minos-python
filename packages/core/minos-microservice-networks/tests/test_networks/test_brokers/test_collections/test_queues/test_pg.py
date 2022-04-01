@@ -8,7 +8,7 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    PostgreSqlMinosDatabase,
+    DatabaseMixin,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -41,7 +41,7 @@ class TestPostgreSqlBrokerQueue(PostgresAsyncTestCase):
         self.query_factory = _PostgreSqlBrokerQueueQueryFactory()
 
     def test_is_subclass(self):
-        self.assertTrue(issubclass(PostgreSqlBrokerQueue, (BrokerQueue, PostgreSqlMinosDatabase)))
+        self.assertTrue(issubclass(PostgreSqlBrokerQueue, (BrokerQueue, DatabaseMixin)))
 
     def test_constructor(self):
         queue = PostgreSqlBrokerQueue("foo_db", query_factory=self.query_factory)

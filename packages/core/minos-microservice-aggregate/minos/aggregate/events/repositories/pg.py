@@ -23,7 +23,7 @@ from psycopg2.sql import (
 from minos.common import (
     NULL_UUID,
     Config,
-    PostgreSqlMinosDatabase,
+    DatabaseMixin,
 )
 
 from ...exceptions import (
@@ -37,7 +37,7 @@ from .abc import (
 )
 
 
-class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
+class PostgreSqlEventRepository(DatabaseMixin, EventRepository):
     """PostgreSQL-based implementation of the event repository class in ``Minos``."""
 
     @classmethod

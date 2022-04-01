@@ -1,3 +1,4 @@
+import warnings
 from collections.abc import (
     Hashable,
 )
@@ -35,7 +36,7 @@ from .pools import (
 )
 
 
-class PostgreSqlMinosDatabase(SetupMixin):
+class DatabaseMixin(SetupMixin):
     """PostgreSql Minos Database base class."""
 
     @Inject()
@@ -175,3 +176,13 @@ class PostgreSqlMinosDatabase(SetupMixin):
         :return: A ``Pool`` object.
         """
         return self._pool
+
+
+class PostgreSqlMinosDatabase(DatabaseMixin):
+    """TODO"""
+
+    def __new__(cls, *args, **kwargs):
+        warnings.warn(
+            f"{PostgreSqlMinosDatabase!r} has been deprecated. Use {DatabaseMixin} instead.", DeprecationWarning
+        )
+        return super().__new__(cls, *args, **kwargs)

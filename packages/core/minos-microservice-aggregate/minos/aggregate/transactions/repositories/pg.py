@@ -15,7 +15,7 @@ from uuid import (
 
 from minos.common import (
     Config,
-    PostgreSqlMinosDatabase,
+    DatabaseMixin,
 )
 
 from ...exceptions import (
@@ -29,7 +29,7 @@ from .abc import (
 )
 
 
-class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionRepository):
+class PostgreSqlTransactionRepository(DatabaseMixin, TransactionRepository):
     """PostgreSql Transaction Repository class."""
 
     @classmethod
