@@ -31,7 +31,7 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         :param schema: The schema relative to the data.
         :param args: Additional positional arguments.
         :param batch_mode: If ``True`` the data is processed as a list of models, otherwise the data is processed as a
-        single model.
+            single model.
         :param kwargs: Additional named arguments.
         :return: A bytes object.
         """
@@ -69,7 +69,7 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         :param data: A bytes object.
         :param args: Additional positional arguments.
         :param batch_mode: If ``True`` the data is processed as a list of models, otherwise the data is processed as a
-        single model.
+            single model.
         :param kwargs: Additional named arguments.
         :return: A dictionary or a list of dictionaries.
         """
