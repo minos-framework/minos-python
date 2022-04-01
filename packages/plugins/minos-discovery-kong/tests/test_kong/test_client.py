@@ -8,6 +8,7 @@ import httpx
 from minos.plugins.kong import (
     KongDiscoveryClient,
 )
+PROTOCOL = "http"
 
 
 class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
@@ -26,7 +27,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
 
     def test_route(self):
         # noinspection HttpUrlsUsage
-        self.assertEqual("http://localhost:8001", self.client.route)
+        self.assertEqual(f"{PROTOCOL}://localhost:8001", self.client.route)
 
     async def test_subscribe(self):
         name = self.generate_underscore_uuid()
@@ -36,13 +37,13 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(201 == response.status_code)
 
         async with httpx.AsyncClient() as client:
-            url = f"http://{self.client.host}:{self.client.port}/services/{name}"
+            url = f"{PROTOCOL}://{self.client.host}:{self.client.port}/services/{name}"
             response = await client.get(url)
             response_data = response.json()
             self.assertTrue(200 == response.status_code)
             self.assertEqual(5660, response_data["port"])
             self.assertEqual("172.160.16.24", response_data["host"])
-            self.assertEqual("http", response_data["protocol"])
+            self.assertEqual(PROTOCOL, response_data["protocol"])
 
     async def test_unsubscribe(self):
         name = self.generate_underscore_uuid()
@@ -56,7 +57,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(204 == response_delete.status_code)
 
         async with httpx.AsyncClient() as client:
-            url = f"http://{self.client.host}:{self.client.port}/services/{name}"
+            url = f"{PROTOCOL}://{self.client.host}:{self.client.port}/services/{name}"
             response = await client.get(url)
             self.assertTrue(404 == response.status_code)
 
@@ -72,7 +73,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(201 == response.status_code)
 
         async with httpx.AsyncClient() as client:
-            url = f"http://{self.client.host}:{self.client.port}/services/test/routes"
+            url = f"{PROTOCOL}://{self.client.host}:{self.client.port}/services/test/routes"
             response = await client.get(url)
             response_data = response.json()
             self.assertTrue(200 == response.status_code)
