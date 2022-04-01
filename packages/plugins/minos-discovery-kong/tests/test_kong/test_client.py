@@ -5,6 +5,8 @@ from uuid import (
 
 import httpx
 
+import os
+
 from minos.plugins.kong import (
     KongDiscoveryClient,
 )
@@ -13,8 +15,11 @@ PROTOCOL = "http"
 
 
 class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
+    KONG_HOST = os.getenv('KONG_HOST', "localhost")
+    KONG_PORT = os.getenv('KONG_PORT', 8001)
+
     def setUp(self) -> None:
-        self.client = KongDiscoveryClient("localhost", 8001, circuit_breaker_time=0.1)
+        self.client = KongDiscoveryClient(self.KONG_HOST, self.KONG_PORT, circuit_breaker_time=0.1)
 
     @staticmethod
     def generate_underscore_uuid():
