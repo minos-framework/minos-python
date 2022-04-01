@@ -1,5 +1,4 @@
 import unittest
-import warnings
 from asyncio import (
     sleep,
 )
@@ -91,9 +90,7 @@ class TestPostgreSqlBrokerSubscriberQueueBuilder(unittest.TestCase):
         self.config = Config(CONFIG_FILE_PATH)
 
     def test_build(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            builder = PostgreSqlBrokerSubscriberQueueBuilder().with_config(self.config).with_topics({"one", "two"})
+        builder = PostgreSqlBrokerSubscriberQueueBuilder().with_config(self.config).with_topics({"one", "two"})
         subscriber = builder.build()
 
         self.assertIsInstance(subscriber, PostgreSqlBrokerSubscriberQueue)

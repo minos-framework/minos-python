@@ -35,12 +35,12 @@ from psycopg2.sql import (
 )
 
 from minos.common import (
+    Builder,
     Config,
     PostgreSqlMinosDatabase,
 )
 
 from ....utils import (
-    Builder,
     consume_queue,
 )
 from ...messages import (
