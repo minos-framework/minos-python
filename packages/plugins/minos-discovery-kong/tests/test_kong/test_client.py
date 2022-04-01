@@ -34,6 +34,21 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         # noinspection HttpUrlsUsage
         self.assertEqual(f"{PROTOCOL}://{self.client.host}:{self.client.port}", self.client.route)
 
+    async def test_already_exist_subscribe(self):
+        name = self.generate_underscore_uuid()
+
+        response = await self.client.subscribe(
+            "172.160.16.24", 5660, name, [{"url": "/", "method": "GET"}, {"url": "/foo", "method": "POST"},
+                                          {"url": "/bar", "method": "GET"}]
+        )
+        self.assertTrue(201 == response.status_code)
+
+        response = await self.client.subscribe(
+            "172.160.16.24", 5660, name, [{"url": "/", "method": "GET"}, {"url": "/foo", "method": "POST"},
+                                          {"url": "/bar", "method": "GET"}]
+        )
+        self.assertTrue(201 == response.status_code)
+    
     async def test_subscribe(self):
         name = self.generate_underscore_uuid()
         response = await self.client.subscribe(
