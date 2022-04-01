@@ -8,6 +8,7 @@ import httpx
 from minos.plugins.kong import (
     KongDiscoveryClient,
 )
+
 PROTOCOL = "http"
 
 
