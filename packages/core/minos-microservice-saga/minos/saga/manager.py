@@ -23,8 +23,8 @@ from minos.common import (
     Inject,
     Injectable,
     NotProvidedException,
-    SetupMixin,
     PoolFactory,
+    SetupMixin,
 )
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,

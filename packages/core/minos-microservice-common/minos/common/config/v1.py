@@ -129,13 +129,13 @@ class ConfigV1(Config):
             injections = list()
 
         old = [import_module(classname) for classname in injections]
+        from ..injections import (
+            InjectableMixin,
+        )
         from ..pools import (
             PoolFactory,
         )
 
-        from ..injections import (
-            InjectableMixin,
-        )
         injections = list()
         injections.append(PoolFactory)  # FIXME
 
@@ -239,7 +239,9 @@ class ConfigV1(Config):
             raise MinosConfigException(f"The 'broker' interface is not available: {exc!r}")
         old = [import_module(classname) for classname in pools]
 
-        from ..pools import Pool
+        from ..pools import (
+            Pool,
+        )
 
         pools = dict()
 

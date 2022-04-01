@@ -1,4 +1,6 @@
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
 from abc import (
     ABC,
@@ -21,8 +23,8 @@ from minos.common import (
     Lock,
     LockPool,
     NotProvidedException,
-    SetupMixin,
     PoolFactory,
+    SetupMixin,
 )
 
 from ...exceptions import (

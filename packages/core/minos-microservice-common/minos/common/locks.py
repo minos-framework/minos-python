@@ -16,9 +16,6 @@ from cached_property import (
     cached_property,
 )
 
-from .injections import (
-    Injectable,
-)
 from .pools import (
     Pool,
 )

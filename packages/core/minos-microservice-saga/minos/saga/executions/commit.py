@@ -2,7 +2,9 @@ import logging
 from asyncio import (
     gather,
 )
-from typing import Optional
+from typing import (
+    Optional,
+)
 from uuid import (
     UUID,
 )
@@ -12,7 +14,9 @@ from cached_property import (
 )
 
 from minos.common import (
-    Inject, PoolFactory, NotProvidedException,
+    Inject,
+    NotProvidedException,
+    PoolFactory,
 )
 from minos.networks import (
     BrokerClient,
