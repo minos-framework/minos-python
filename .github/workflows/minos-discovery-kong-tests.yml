@@ -29,6 +29,9 @@ jobs:
         working-directory: packages/plugins/minos-discovery-kong
 
     steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
       - name: Install dependencies
         run: sudo apt install curl lsb-release apt-transport-https
 
@@ -58,9 +61,6 @@ jobs:
 
       - name: Kong Start
         run: kong start
-
-      - name: Check out repository code
-        uses: actions/checkout@v2
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
