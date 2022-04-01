@@ -20,9 +20,6 @@ from psycopg2 import (
     OperationalError,
 )
 
-from ..injections import (
-    Injectable,
-)
 from ..locks import (
     LockPool,
 )
@@ -36,7 +33,6 @@ from .locks import (
 logger = logging.getLogger(__name__)
 
 
-@Injectable("postgresql_pool")
 class PostgreSqlPool(Pool[ContextManager]):
     """Postgres Pool class."""
 

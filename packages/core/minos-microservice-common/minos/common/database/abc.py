@@ -15,8 +15,14 @@ from aiopg import (
     Cursor,
 )
 
+from ..exceptions import (
+    NotProvidedException,
+)
 from ..injections import (
     Inject,
+)
+from ..pools import (
+    PoolFactory,
 )
 from ..setup import (
     SetupMixin,
@@ -32,71 +38,22 @@ from .pools import (
 class PostgreSqlMinosDatabase(SetupMixin):
     """PostgreSql Minos Database base class."""
 
+    @Inject()
     def __init__(
         self,
-        database: str,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
-        user: Optional[str] = None,
-        password: Optional[str] = None,
+        pool: Optional[PostgreSqlPool] = None,
+        pool_factory: Optional[PoolFactory] = None,
         *args,
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
-        self._database = database
-        self._host = host
-        self._port = port
-        self._user = user
-        self._password = password
+        super().__init__(*args, **kwargs, pool_factory=pool_factory)
+        if pool is None and pool_factory is not None:
+            pool = pool_factory.get_pool("database")
 
-        self._pool = None
-        self._owned_pool = False
+        if pool is None:
+            raise NotProvidedException(f"A {PostgreSqlPool!r} instance is required.")
 
-    @property
-    def database(self) -> str:
-        """Get the database's database.
-
-        :return: A ``str`` value.
-        """
-        return self.pool.database
-
-    @property
-    def host(self) -> str:
-        """Get the database's host.
-
-        :return: A ``str`` value.
-        """
-        return self.pool.host
-
-    @property
-    def port(self) -> int:
-        """Get the database's port.
-
-        :return: An ``int`` value.
-        """
-        return self.pool.port
-
-    @property
-    def user(self) -> str:
-        """Get the database's user.
-
-        :return: A ``str`` value.
-        """
-        return self.pool.user
-
-    @property
-    def password(self) -> str:
-        """Get the database's password.
-
-        :return: A ``str`` value.
-        """
-        return self.pool.password
-
-    async def _destroy(self) -> None:
-        if self._owned_pool:
-            await self._pool.destroy()
-            self._pool = None
-            self._owned_pool = False
+        self._pool = pool
 
     async def submit_query_and_fetchone(self, *args, **kwargs) -> tuple:
         """Submit a SQL query and gets the first response.
@@ -217,16 +174,4 @@ class PostgreSqlMinosDatabase(SetupMixin):
 
         :return: A ``Pool`` object.
         """
-        if self._pool is None:
-            self._pool, self._owned_pool = self._build_pool()
         return self._pool
-
-    @Inject()
-    def _build_pool(self, pool: PostgreSqlPool = None) -> tuple[PostgreSqlPool, bool]:
-        if pool is not None:
-            return pool, False
-
-        pool = PostgreSqlPool(
-            host=self._host, port=self._port, database=self._database, user=self._user, password=self._password
-        )
-        return pool, True
