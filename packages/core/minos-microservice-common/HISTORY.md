@@ -311,18 +311,27 @@ History
 * Add `SetupMixin` class as a replacement of the `MinosSetup` class.
 
 ### Update Guide (from 0.5.x to 0.6.0)
+
 * Add `@Injectable` decorator to classes that injections:
+
 ```python
+from minos.common import Injectable
+
+
 @Injectable("THE_INJECTION_NAME")
 class MyInjectableClass:
-    ...
+  ...
 ```
+
 * Add `minos-http-aiohttp` package:
+
 ```shell
 poetry add minos-http-aiohttp@^0.6
 ```
+
 * Update `config.yml` file:
   * Add ``:
+
 ```yaml
 ...
 service:
@@ -332,7 +341,9 @@ service:
   ...
 ...
 ```
-  * Add `routers` section:
+
+* Add `routers` section:
+
 ```yaml
 ...
 routers:
@@ -341,5 +352,6 @@ routers:
   - minos.networks.RestHttpRouter
 ...
 ```
-* Update `Config` usages according to the new provided API:
+
+* Update `minos.common.Config` usages according to the new provided API:
   * Most common issues come from calls like `config.query_repository._asdict()`, that must be transformed to `config.get_database_by_name("query")`
