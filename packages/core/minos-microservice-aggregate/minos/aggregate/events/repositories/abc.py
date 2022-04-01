@@ -74,11 +74,15 @@ class EventRepository(ABC, SetupMixin):
         self,
         broker_publisher: BrokerPublisher,
         transaction_repository: TransactionRepository,
-        lock_pool: LockPool,
+        lock_pool: Optional[LockPool] = None,
+        pool_factory: Optional[PoolFactory] = None,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+
+        if lock_pool is None and pool_factory is not None:
+            lock_pool = pool_factory.get_pool("lock")
 
         if broker_publisher is None:
             raise NotProvidedException("A broker instance is required.")
@@ -92,12 +96,6 @@ class EventRepository(ABC, SetupMixin):
         self._broker_publisher = broker_publisher
         self._transaction_repository = transaction_repository
         self._lock_pool = lock_pool
-
-    @classmethod
-    def _from_config(cls, config: Config, pool_factory: PoolFactory = None, **kwargs) -> EventRepository:
-        if "lock_pool" not in kwargs and pool_factory is not None:
-            kwargs["lock_pool"] = pool_factory.get_pool("lock")
-        return super()._from_config(config, **kwargs)
 
     def transaction(self, **kwargs) -> TransactionEntry:
         """Build a transaction instance related to the repository.
