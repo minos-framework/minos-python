@@ -14,11 +14,12 @@ minos-microservice-saga = { path = "packages/core/minos-microservice-saga", deve
 minos-microservice-cqrs = { path = "packages/core/minos-microservice-cqrs", develop = true }
 minos-broker-kafka = { path = "packages/plugins/minos-broker-kafka", develop = true }
 minos-discovery-minos = { path = "packages/plugins/minos-discovery-minos", develop = true }
+minos-discovery-kong = { path = "packages/plugins/minos-discovery-kong", develop = true }
 minos-broker-rabbitmq = { path = "packages/plugins/minos-broker-rabbitmq", develop = true }
 minos-http-aiohttp = { path = "packages/plugins/minos-http-aiohttp", develop = true }
 
 [tool.poetry.dev-dependencies]
-black = "^22.1"
+black = "^22.3"
 isort = "^5.8.0"
 pytest = "^7.0.1"
 coverage = "^6.3"

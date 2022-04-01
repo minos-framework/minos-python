@@ -165,7 +165,7 @@ class SagaExecution:
         :param autocommit: If ``True`` the commit process is performed automatically, otherwise must be performed
             manually.
         :param kwargs: Additional named arguments.
-        :return: A ``SagaContext instance.
+        :return: A ``SagaContext`` instance.
         """
         if self.status == SagaStatus.Finished:
             raise SagaExecutionAlreadyExecutedException(

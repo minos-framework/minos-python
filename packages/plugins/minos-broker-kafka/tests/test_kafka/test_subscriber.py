@@ -10,6 +10,7 @@ from unittest.mock import (
 
 from aiokafka import (
     AIOKafkaConsumer,
+    ConsumerStoppedError,
 )
 from kafka import (
     KafkaAdminClient,
@@ -205,6 +206,22 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
 
             self.assertEqual(messages[0], await subscriber.receive())
             self.assertEqual(messages[1], await subscriber.receive())
+
+    async def test_receive_already_stopped_raises(self):
+        subscriber = KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"})
+        get_mock = AsyncMock(side_effect=ConsumerStoppedError)
+        subscriber.client.getone = get_mock
+
+        with self.assertRaises(StopAsyncIteration):
+            await subscriber.receive()
+
+    async def test_receive_stopped(self):
+        async with KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}) as subscriber:
+            get_mock = AsyncMock(side_effect=ConsumerStoppedError)
+            subscriber.client.getone = get_mock
+
+            with self.assertRaises(ConsumerStoppedError):
+                await subscriber.receive()
 
 
 class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
