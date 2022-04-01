@@ -28,7 +28,7 @@ from ..pools import (
     Pool,
 )
 from .locks import (
-    PostgreSqlLock,
+    DatabaseLock,
 )
 
 logger = logging.getLogger(__name__)
@@ -110,13 +110,13 @@ class PostgreSqlPool(DatabaseClientPool):
 class DatabaseLockPool(LockPool, DatabaseClientPool):
     """Database Lock Pool class."""
 
-    def acquire(self, key: Hashable, *args, **kwargs) -> PostgreSqlLock:
+    def acquire(self, key: Hashable, *args, **kwargs) -> DatabaseLock:
         """Acquire a new lock.
 
         :param key: The key to be used for locking.
         :return: A ``PostgreSqlLock`` instance.
         """
-        return PostgreSqlLock(super().acquire(), key, *args, **kwargs)
+        return DatabaseLock(super().acquire(), key, *args, **kwargs)
 
 
 class PostgreSqlLockPool(DatabaseLockPool):

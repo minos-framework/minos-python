@@ -29,7 +29,7 @@ from ..setup import (
     SetupMixin,
 )
 from .locks import (
-    PostgreSqlLock,
+    DatabaseLock,
 )
 from .pools import (
     DatabaseClientPool,
@@ -137,7 +137,7 @@ class DatabaseMixin(SetupMixin):
         :param kwargs: Additional named arguments.
         :return: A Cursor wrapped into an asynchronous context manager.
         """
-        lock = PostgreSqlLock(self.pool.acquire(), key, *args, **kwargs)
+        lock = DatabaseLock(self.pool.acquire(), key, *args, **kwargs)
 
         async def _fn_enter():
             await lock.__aenter__()

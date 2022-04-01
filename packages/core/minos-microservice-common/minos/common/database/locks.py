@@ -1,3 +1,4 @@
+import warnings
 from collections.abc import (
     Hashable,
 )
@@ -16,8 +17,8 @@ from ..locks import (
 )
 
 
-class PostgreSqlLock(Lock):
-    """ "PostgreSql Lock class."""
+class DatabaseLock(Lock):
+    """Database Lock class."""
 
     cursor: Optional[Cursor]
 
@@ -44,3 +45,11 @@ class PostgreSqlLock(Lock):
             self.cursor.close()
         self.cursor = None
         await self.wrapped_connection.__aexit__(exc_type, exc_val, exc_tb)
+
+
+class PostgreSqlLock(DatabaseLock):
+    """TODO"""
+
+    def __new__(cls, *args, **kwargs):
+        warnings.warn(f"{PostgreSqlLock!r} has been deprecated. Use {DatabaseLock} instead.", DeprecationWarning)
+        return super().__new__(cls, *args, **kwargs)

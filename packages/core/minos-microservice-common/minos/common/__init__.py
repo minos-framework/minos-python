@@ -15,6 +15,7 @@ from .config import (
 )
 from .database import (
     DatabaseClientPool,
+    DatabaseLock,
     DatabaseLockPool,
     DatabaseMixin,
     PostgreSqlLock,

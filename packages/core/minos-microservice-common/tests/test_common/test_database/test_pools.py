@@ -14,8 +14,8 @@ from psycopg2 import (
 
 from minos.common import (
     DatabaseClientPool,
+    DatabaseLock,
     DatabaseLockPool,
-    PostgreSqlLock,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -99,7 +99,7 @@ class TestPostgreSqlLockPool(PostgresAsyncTestCase):
 
     async def test_acquire(self):
         async with self.pool.acquire("foo") as lock:
-            self.assertIsInstance(lock, PostgreSqlLock)
+            self.assertIsInstance(lock, DatabaseLock)
             self.assertEqual("foo", lock.key)
 
 
