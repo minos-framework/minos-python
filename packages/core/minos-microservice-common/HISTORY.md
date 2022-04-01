@@ -329,8 +329,7 @@ class MyInjectableClass:
 poetry add minos-http-aiohttp@^0.6
 ```
 
-* Update `config.yml` file:
-  * Add ``:
+* Add `HttpConnector` instance to `service.injections` section of `config.yml` file:
 
 ```yaml
 ...
@@ -342,7 +341,7 @@ service:
 ...
 ```
 
-* Add `routers` section:
+* Add `routers` section to `config.yml` file:
 
 ```yaml
 ...
@@ -355,3 +354,8 @@ routers:
 
 * Update `minos.common.Config` usages according to the new provided API:
   * Most common issues come from calls like `config.query_repository._asdict()`, that must be transformed to `config.get_database_by_name("query")`
+
+0.6.1 (2022-04-01)
+------------------
+
+* Fix bug that didn't show the correct exception traceback when microservice failures occurred.
