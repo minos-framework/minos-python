@@ -75,7 +75,7 @@ class MinosKongClient(DiscoveryClient, CircuitBreakerMixin):
                 "methods": [endpoint["method"]],
                 "paths": [endpointClass.path_as_str],
                 "service": {"id": content_service["id"]},
-                "strip_path": False
+                "strip_path": False,
             }
             fn = partial(self._subscribe_routes, self.route, data)
             response = await self.with_circuit_breaker(fn)  # send the route request
