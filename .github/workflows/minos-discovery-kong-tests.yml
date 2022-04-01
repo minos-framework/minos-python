@@ -31,10 +31,10 @@ jobs:
 
     steps:
       - name: Download Kong dependencies pre-install
-        run: echo "deb [trusted=yes] https://download.konghq.com/gateway-2.x-ubuntu-$(lsb_release -sc)/ default all" | sudo tee /etc/apt/sources.list.d/kong.list
+        run: curl -Lo kong-enterprise-edition-2.8.0.0.all.deb "https://download.konghq.com/gateway-2.x-ubuntu-$(lsb_release -cs)/pool/all/k/kong-enterprise-edition/kong_2.8.0.0_all.deb"
 
-      - name: Install dependencies and install Kong
-        run: sudo apt-get update && apt install kong-enterprise-edition=2.8.0.0
+      - name: Install Kong package
+        run: sudo dpkg -i kong-enterprise-edition-2.8.0.0.all.deb
 
       - name: Set env variables
         run: |
