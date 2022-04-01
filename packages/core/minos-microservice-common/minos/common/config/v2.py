@@ -96,7 +96,7 @@ class ConfigV2(Config):
             ):
                 type_ = builder_type
             elif not issubclass(type_, InjectableMixin):
-                raise MinosConfigException(f"{type_!r} must be subclass of {InjectableMixin!r}.")
+                continue  # raise MinosConfigException(f"{type_!r} must be subclass of {InjectableMixin!r}.")
 
             ans.append(type_)
 

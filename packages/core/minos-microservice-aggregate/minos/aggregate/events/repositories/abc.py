@@ -29,7 +29,7 @@ from minos.common import (
     Lock,
     LockPool,
     NotProvidedException,
-    SetupMixin,
+    SetupMixin, Config, PoolFactory,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -92,6 +92,12 @@ class EventRepository(ABC, SetupMixin):
         self._broker_publisher = broker_publisher
         self._transaction_repository = transaction_repository
         self._lock_pool = lock_pool
+
+    @classmethod
+    def _from_config(cls, config: Config, pool_factory: PoolFactory = None, **kwargs) -> EventRepository:
+        if "lock_pool" not in kwargs and pool_factory is not None:
+            kwargs["lock_pool"] = pool_factory.get_pool("lock")
+        return super()._from_config(config, **kwargs)
 
     def transaction(self, **kwargs) -> TransactionEntry:
         """Build a transaction instance related to the repository.

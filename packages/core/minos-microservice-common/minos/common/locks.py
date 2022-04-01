@@ -46,6 +46,5 @@ class Lock(AbstractAsyncContextManager):
         return self.key
 
 
-@Injectable("lock_pool")
 class LockPool(Pool[Lock], ABC):
     """Postgres Locking Pool class."""

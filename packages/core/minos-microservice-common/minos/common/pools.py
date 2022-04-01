@@ -59,7 +59,7 @@ class PoolFactory(SetupMixin):
             await pool.destroy()
         await super()._destroy()
 
-    async def get_pool(self, type_: str, key: Optional[str] = None, **kwargs) -> Pool:
+    def get_pool(self, type_: str, key: Optional[str] = None, **kwargs) -> Pool:
         """TODO
 
         :param type_: TODO
@@ -70,17 +70,16 @@ class PoolFactory(SetupMixin):
         if key is None:
             key = type_
         if key not in self._pools:
-            self._pools[key] = await self._create_pool(type_, key=key, **kwargs)
+            self._pools[key] = self._create_pool(type_, key=key, **kwargs)
         return self._pools[key]
 
-    async def _create_pool(self, type_: str, **kwargs) -> Pool:
+    def _create_pool(self, type_: str, **kwargs) -> Pool:
         # noinspection PyTypeChecker
         pool_cls: type[Pool] = self._config.get_pools().get(type_)
         if pool_cls is None:
             raise ValueError
 
         pool = pool_cls.from_config(self._config, **kwargs)
-        await pool.setup()
         return pool
 
 

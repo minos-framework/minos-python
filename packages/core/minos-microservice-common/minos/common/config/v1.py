@@ -128,7 +128,21 @@ class ConfigV1(Config):
         except MinosConfigException:
             injections = list()
 
-        injections = [import_module(classname) for classname in injections]
+        old = [import_module(classname) for classname in injections]
+        from ..pools import (
+            PoolFactory,
+        )
+
+        from ..injections import (
+            InjectableMixin,
+        )
+        injections = list()
+        injections.append(PoolFactory)  # FIXME
+
+        for type_ in old:
+            if not issubclass(type_, InjectableMixin):
+                continue
+            injections.append(type_)
 
         # noinspection PyTypeChecker
         return injections
@@ -217,7 +231,32 @@ class ConfigV1(Config):
         return services
 
     def _get_pools(self) -> dict[str, type]:
-        return dict()
+        try:
+            pools = self.get_by_key("service.injections")
+            if isinstance(pools, dict):
+                pools = list(pools.values())
+        except Exception as exc:
+            raise MinosConfigException(f"The 'broker' interface is not available: {exc!r}")
+        old = [import_module(classname) for classname in pools]
+
+        from ..pools import Pool
+
+        pools = dict()
+
+        for type_ in old:
+            if not issubclass(type_, Pool):
+                continue
+            label = "unknown"
+            if "lock" in type_.__name__.lower():
+                label = "lock"
+            elif "postgres" in type_.__name__.lower():
+                label = "database"
+            elif "broker" in type_.__name__.lower():
+                label = "broker"
+
+            pools[label] = type_
+
+        return pools
 
     def _get_routers(self) -> list[type]:
         try:
