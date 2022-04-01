@@ -1,11 +1,10 @@
+import os
 import unittest
 from uuid import (
     uuid4,
 )
 
 import httpx
-
-import os
 
 from minos.plugins.kong import (
     KongDiscoveryClient,
