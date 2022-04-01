@@ -22,6 +22,7 @@ from typing import (
 
 from aiokafka import (
     AIOKafkaConsumer,
+    ConsumerStoppedError,
 )
 from cached_property import (
     cached_property,
@@ -166,7 +167,12 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
         return KafkaAdminClient(bootstrap_servers=f"{self.host}:{self.port}")
 
     async def _receive(self) -> BrokerMessage:
-        record = await self.client.getone()
+        try:
+            record = await self.client.getone()
+        except ConsumerStoppedError as exc:
+            if self.already_destroyed:
+                raise StopAsyncIteration
+            raise exc
         bytes_ = record.value
         message = BrokerMessage.from_avro_bytes(bytes_)
         return message
