@@ -15,13 +15,47 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: python:3.9-buster
+    services:
+      postgres:
+        image: postgres:9.5
+        env:
+            POSTGRES_DB: kong
+            POSTGRES_USER: kong
+            POSTGRES_PASSWORD: kong
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
     defaults:
       run:
         working-directory: packages/plugins/minos-discovery-kong
 
     steps:
-      - name: Fire up Docker Compose setup with Kong & do some checks
-        run: docker-compose -f "tests/docker-compose.yml" up -d --build
+      - name: Download Kong dependencies pre-install
+        run: echo "deb [trusted=yes] https://download.konghq.com/gateway-2.x-ubuntu-$(lsb_release -sc)/ default all" | sudo tee /etc/apt/sources.list.d/kong.list
+
+      - name: Install dependencies and install Kong
+        run: sudo apt-get update && apt install kong-enterprise-edition=2.8.0.0
+
+      - name: Set env variables
+        run: |
+          echo "KONG_DATABASE=postgres" >> $GITHUB_ENV
+          echo "KONG_PG_DATABASE=kong" >> $GITHUB_ENV
+          echo "KONG_PG_HOST=postgres" >> $GITHUB_ENV
+          echo "KONG_PG_USER=kong" >> $GITHUB_ENV
+          echo "KONG_PG_PASSWORD=kong" >> $GITHUB_ENV
+          echo "KONG_ADMIN_ACCESS_LOG=/dev/stdout" >> $GITHUB_ENV
+          echo "KONG_ADMIN_ERROR_LOG=/dev/stderr" >> $GITHUB_ENV
+          echo "KONG_PROXY_LISTEN=0.0.0.0:8000" >> $GITHUB_ENV
+          echo "KONG_ADMIN_LISTEN=0.0.0.0:8001" >> $GITHUB_ENV
+          echo "KONG_PROXY_ACCESS_LOG=/dev/stdout" >> $GITHUB_ENV
+          echo "KONG_PROXY_ERROR_LOG=/dev/stderr" >> $GITHUB_ENV
+          echo "KONG_LOG_LEVEL=debug" >> $GITHUB_ENV
+
+      - name: Kong Migration
+        run: kong migrations bootstrap && kong migrations up && kong migrations finish
+
+      - name: Kong Start
+        run: kong start
 
       - name: Check out repository code
         uses: actions/checkout@v2
