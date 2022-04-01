@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>minos.plugins.kafka.subscriber &mdash; Minos Broker Kafka 0.6.0 documentation</title>
+  <title>minos.plugins.kafka.subscriber &mdash; Minos Broker Kafka 0.6.1 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../../../index.html" class="icon icon-home"> Minos Broker Kafka
           </a>
               <div class="version">
-                0.6.0
+                0.6.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -97,6 +97,7 @@
 
 <span class="kn">from</span> <span class="nn">aiokafka</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AIOKafkaConsumer</span><span class="p">,</span>
+    <span class="n">ConsumerStoppedError</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">cached_property</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">cached_property</span><span class="p">,</span>
@@ -241,7 +242,12 @@
         <span class="k">return</span> <span class="n">KafkaAdminClient</span><span class="p">(</span><span class="n">bootstrap_servers</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_receive</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BrokerMessage</span><span class="p">:</span>
-        <span class="n">record</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">getone</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">record</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">getone</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">ConsumerStoppedError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">already_destroyed</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">StopAsyncIteration</span>
+            <span class="k">raise</span> <span class="n">exc</span>
         <span class="n">bytes_</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">value</span>
         <span class="n">message</span> <span class="o">=</span> <span class="n">BrokerMessage</span><span class="o">.</span><span class="n">from_avro_bytes</span><span class="p">(</span><span class="n">bytes_</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">message</span>

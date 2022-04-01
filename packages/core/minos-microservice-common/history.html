@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>History &mdash; Minos Microservice Common 0.6.0 documentation</title>
+  <title>History &mdash; Minos Microservice Common 0.6.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <a href="index.html" class="icon icon-home"> Minos Microservice Common
           </a>
               <div class="version">
-                0.6.0
+                0.6.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -101,7 +101,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#id48">0.5.0 (2022-02-03)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id49">0.5.2 (2022-02-08)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id50">0.5.3 (2022-03-04)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id51">0.6.0 (2022-03-28)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id51">0.6.0 (2022-03-28)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#update-guide-from-0-5-x-to-0-6-0">Update Guide (from 0.5.x to 0.6.0)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id52">0.6.1 (2022-04-01)</a></li>
 </ul>
 </li>
 </ul>
@@ -487,6 +491,62 @@
 <li><p>Add <code class="docutils literal notranslate"><span class="pre">Port</span></code> base class as the base class for ports.</p></li>
 <li><p>Add <code class="docutils literal notranslate"><span class="pre">CircuitBreakerMixin</span></code> class to provide circuit breaker functionalities.</p></li>
 <li><p>Add <code class="docutils literal notranslate"><span class="pre">SetupMixin</span></code> class as a replacement of the <code class="docutils literal notranslate"><span class="pre">MinosSetup</span></code> class.</p></li>
+</ul>
+<section id="update-guide-from-0-5-x-to-0-6-0">
+<h3>Update Guide (from 0.5.x to 0.6.0)<a class="headerlink" href="#update-guide-from-0-5-x-to-0-6-0" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">&#64;Injectable</span></code> decorator to classes that injections:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="n">Injectable</span>
+
+
+<span class="nd">@Injectable</span><span class="p">(</span><span class="s2">&quot;THE_INJECTION_NAME&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyInjectableClass</span><span class="p">:</span>
+  <span class="o">...</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">minos-http-aiohttp</span></code> package:</p></li>
+</ul>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>poetry add minos-http-aiohttp@^0.6
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">HttpConnector</span></code> instance to <code class="docutils literal notranslate"><span class="pre">service.injections</span></code> section of <code class="docutils literal notranslate"><span class="pre">config.yml</span></code> file:</p></li>
+</ul>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">...</span><span class="w"></span>
+<span class="nt">service</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">injections</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">http_connector</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">minos.plugins.aiohttp.AioHttpConnector</span><span class="w"></span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
+<span class="nn">...</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">routers</span></code> section to <code class="docutils literal notranslate"><span class="pre">config.yml</span></code> file:</p></li>
+</ul>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">...</span><span class="w"></span>
+<span class="nt">routers</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">minos.networks.BrokerRouter</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">minos.networks.PeriodicRouter</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">minos.networks.RestHttpRouter</span><span class="w"></span>
+<span class="nn">...</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Update <code class="docutils literal notranslate"><span class="pre">minos.common.Config</span></code> usages according to the new provided API:</p>
+<ul>
+<li><p>Most common issues come from calls like <code class="docutils literal notranslate"><span class="pre">config.query_repository._asdict()</span></code>, that must be transformed to <code class="docutils literal notranslate"><span class="pre">config.get_database_by_name(&quot;query&quot;)</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id52">
+<h2>0.6.1 (2022-04-01)<a class="headerlink" href="#id52" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Fix bug that didn’t show the correct exception traceback when microservice failures occurred.</p></li>
 </ul>
 </section>
 </section>
