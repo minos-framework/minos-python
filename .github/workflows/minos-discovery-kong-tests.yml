@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install dependencies
-        run: apt install -y curl lsb-release apt-transport-https
+        run: apt install -y curl apt-transport-https
 
       - name: Update apt list
         run: echo "deb [trusted=yes] https://download.konghq.com/gateway-2.x-debian-$(lsb_release -sc)/ default all" | tee /etc/apt/sources.list.d/kong.list
