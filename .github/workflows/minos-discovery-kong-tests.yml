@@ -21,10 +21,8 @@ jobs:
 
     steps:
       - name: Fire up Docker Compose setup with Kong & do some checks
-        run: |
-            docker-compose -f packages/plugins/minos-discovery-kong/tests/docker-compose.yml up -d
-            echo "Let's wait until Kong is available (we need to improve this)"
-            sleep 10
+        run: docker-compose -f "tests/docker-compose.yml" up -d --build
+
       - name: Check out repository code
         uses: actions/checkout@v2
 
@@ -52,3 +50,7 @@ jobs:
 
       - name: Generate build
         run: make dist
+
+      - name: Stop containers
+        if: always()
+        run: docker-compose -f "tests/docker-compose.yml" down
