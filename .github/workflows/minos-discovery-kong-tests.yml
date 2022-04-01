@@ -87,4 +87,4 @@ jobs:
 
       - name: Stop containers
         if: always()
-        run: docker-compose -f "tests/docker-compose.yml" down
+        run: docker-compose -f "./tests/docker-compose.yml" down
