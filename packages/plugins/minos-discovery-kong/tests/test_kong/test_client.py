@@ -1,11 +1,10 @@
+import os
 import unittest
 from uuid import (
     uuid4,
 )
 
 import httpx
-
-import os
 
 from minos.plugins.kong import (
     KongDiscoveryClient,
@@ -15,8 +14,8 @@ PROTOCOL = "http"
 
 
 class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
-    KONG_HOST = os.getenv('KONG_HOST', "localhost")
-    KONG_PORT = os.getenv('KONG_PORT', 8001)
+    KONG_HOST = os.getenv("KONG_HOST", "localhost")
+    KONG_PORT = os.getenv("KONG_PORT", 8001)
 
     def setUp(self) -> None:
         self.client = KongDiscoveryClient(self.KONG_HOST, self.KONG_PORT, circuit_breaker_time=0.1)
