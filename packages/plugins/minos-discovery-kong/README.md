@@ -11,7 +11,7 @@
 [![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-Ask%20a%20question-green)](https://stackoverflow.com/questions/tagged/minos)
 
 ## Summary
-
+Pre-Alpha release, use at your own risk
 Minos Kong is a plugin that integrate minos micorservices with Kong API Gateway
 
 ## Installation
