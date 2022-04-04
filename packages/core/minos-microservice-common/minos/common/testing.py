@@ -28,7 +28,7 @@ from .pools import (
 )
 
 
-class MinosTestCase(unittest.IsolatedAsyncioTestCase):
+class CommonTestCase(unittest.IsolatedAsyncioTestCase):
     CONFIG_FILE_PATH: Path
 
     def setUp(self) -> None:
@@ -63,7 +63,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         raise AttributeError
 
 
-class PostgresAsyncTestCase(MinosTestCase):
+class PostgresAsyncTestCase(CommonTestCase):
     def setUp(self):
 
         self._uuid = uuid4()

@@ -35,7 +35,7 @@ from minos.common import (
     PoolFactory,
 )
 from minos.common.testing import (
-    MinosTestCase,
+    CommonTestCase,
 )
 from minos.networks import (
     BrokerClientPool,
@@ -47,7 +47,7 @@ BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
 
-class AggregateTestCase(MinosTestCase, ABC):
+class AggregateTestCase(CommonTestCase, ABC):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def get_injections(self):
