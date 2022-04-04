@@ -6,7 +6,7 @@ import aiopg
 from minos.common import (
     DatabaseClientPool,
     DatabaseMixin,
-    DependencyInjector,
+    DependencyInjector, PoolFactory,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -16,40 +16,53 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
+# noinspection SqlNoDataSourceInspection
+class TestDatabaseMixin(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def test_constructor(self):
-        pool = DatabaseMixin("foo")
-        self.assertEqual("foo", pool.database)
-        self.assertEqual("postgres", pool.user)
-        self.assertEqual("", pool.password)
-        self.assertEqual("localhost", pool.host)
-        self.assertEqual(5432, pool.port)
+        pool = DatabaseClientPool.from_config(self.config)
+        database = DatabaseMixin(pool)
+        self.assertEqual(pool, database.pool)
 
-    def test_constructor_extended(self):
-        database = DatabaseMixin(**self.repository_db)
-        self.assertEqual(self.repository_db["host"], database.host)
-        self.assertEqual(self.repository_db["port"], database.port)
-        self.assertEqual(self.repository_db["database"], database.database)
-        self.assertEqual(self.repository_db["user"], database.user)
-        self.assertEqual(self.repository_db["password"], database.password)
+    async def test_constructor_with_pool_factory(self):
+        pool_factory = PoolFactory(self.config, {"database": DatabaseClientPool})
+        # noinspection PyTypeChecker
+        database = DatabaseMixin(pool_factory=pool_factory)
+        # noinspection PyUnresolvedReferences
+        self.assertEqual(pool_factory.get_pool("database"), database.pool)
+
+    def test_database(self):
+        pool = DatabaseClientPool.from_config(self.config)
+        database = DatabaseMixin(pool)
+        self.assertEqual(pool.database, database.database)
+
+    def test_user(self):
+        pool = DatabaseClientPool.from_config(self.config)
+        database = DatabaseMixin(pool)
+        self.assertEqual(pool.user, database.user)
+
+    def test_password(self):
+        pool = DatabaseClientPool.from_config(self.config)
+        database = DatabaseMixin(pool)
+        self.assertEqual(pool.password, database.password)
+
+    def test_host(self):
+        pool = DatabaseClientPool.from_config(self.config)
+        database = DatabaseMixin(pool)
+        self.assertEqual(pool.host, database.host)
+
+    def test_port(self):
+        pool = DatabaseClientPool.from_config(self.config)
+        database = DatabaseMixin(pool)
+        self.assertEqual(pool.port, database.port)
 
     async def test_pool(self):
-        async with DatabaseMixin(**self.repository_db) as database:
+        async with DatabaseMixin() as database:
             self.assertIsInstance(database.pool, DatabaseClientPool)
 
-    async def test_pool_with_dependency_injections(self):
-        injector = DependencyInjector(self.config, [DatabaseClientPool])
-        await injector.wire_and_setup_injections(modules=[sys.modules[__name__]])
-
-        async with DatabaseMixin(**self.repository_db) as database:
-            self.assertEqual(injector.postgresql_pool, database.pool)
-
-        await injector.unwire_and_destroy_injections()
-
     async def test_submit_query(self):
-        async with DatabaseMixin(**self.repository_db) as database:
+        async with DatabaseMixin() as database:
             await database.submit_query("CREATE TABLE foo (id INT NOT NULL);")
 
         async with aiopg.connect(**self.repository_db) as connection:
@@ -58,7 +71,7 @@ class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
                 self.assertTrue((await cursor.fetchone())[0])
 
     async def test_submit_query_locked(self):
-        async with DatabaseMixin(**self.repository_db) as database:
+        async with DatabaseMixin() as database:
             await database.submit_query("CREATE TABLE foo (id INT NOT NULL);", lock=1234)
 
         async with aiopg.connect(**self.repository_db) as connection:
@@ -67,7 +80,7 @@ class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
                 self.assertTrue((await cursor.fetchone())[0])
 
     async def test_submit_query_and_fetchone(self):
-        async with DatabaseMixin(**self.repository_db) as database:
+        async with DatabaseMixin() as database:
             await database.submit_query("CREATE TABLE foo (id INT NOT NULL);")
             await database.submit_query("INSERT INTO foo (id) VALUES (3), (4), (5);")
 
@@ -76,7 +89,7 @@ class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
         self.assertEqual((3,), observed)
 
     async def test_submit_query_and_iter(self):
-        async with DatabaseMixin(**self.repository_db) as database:
+        async with DatabaseMixin() as database:
             await database.submit_query("CREATE TABLE foo (id INT NOT NULL);")
             await database.submit_query("INSERT INTO foo (id) VALUES (3), (4), (5);")
 
@@ -85,7 +98,7 @@ class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
         self.assertEqual([(3,), (4,), (5,)], observed)
 
     async def test_submit_query_and_iter_streaming_mode_true(self):
-        async with DatabaseMixin(**self.repository_db) as database:
+        async with DatabaseMixin() as database:
             await database.submit_query("CREATE TABLE foo (id INT NOT NULL);")
             await database.submit_query("INSERT INTO foo (id) VALUES (3), (4), (5);")
 
@@ -94,7 +107,7 @@ class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
         self.assertEqual([(3,), (4,), (5,)], observed)
 
     async def test_submit_query_and_iter_locked(self):
-        async with DatabaseMixin(**self.repository_db) as database:
+        async with DatabaseMixin() as database:
             await database.submit_query("CREATE TABLE foo (id INT NOT NULL);")
             await database.submit_query("INSERT INTO foo (id) VALUES (3), (4), (5);")
 
