@@ -21,6 +21,7 @@ from kafka.errors import (
 
 from minos.common import (
     Config,
+    DatabaseClientPool,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -250,15 +251,28 @@ class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
         self.assertEqual(common_config["port"], subscriber.port)
 
 
-class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
+class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.config = Config(CONFIG_FILE_PATH)
+        self.database_pool = DatabaseClientPool.from_config(CONFIG_FILE_PATH)
+
+    async def asyncSetUp(self) -> None:
+        await super().asyncSetUp()
+        await self.database_pool.setup()
+
+    async def asyncTearDown(self) -> None:
+        await self.database_pool.destroy()
+        await super().asyncTearDown()
 
     def test_build(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
             builder = (
-                PostgreSqlQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
+                PostgreSqlQueuedKafkaBrokerSubscriberBuilder()
+                .with_config(self.config)
+                .with_topics({"one", "two"})
+                .with_kwargs({"pool": self.database_pool})
             )
 
         subscriber = builder.build()

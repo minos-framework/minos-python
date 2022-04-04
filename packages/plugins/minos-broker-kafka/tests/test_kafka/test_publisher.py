@@ -13,6 +13,7 @@ from kafka.errors import (
 
 from minos.common import (
     Config,
+    DatabaseClientPool,
 )
 from minos.networks import (
     BrokerMessage,
@@ -152,10 +153,22 @@ class TestKafkaBrokerPublisherBuilder(unittest.TestCase):
 
 
 class TestPostgreSqlQueuedKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.database_pool = DatabaseClientPool.from_config(CONFIG_FILE_PATH)
+
+    async def asyncSetUp(self) -> None:
+        await super().asyncSetUp()
+        await self.database_pool.setup()
+
+    async def asyncTearDown(self) -> None:
+        await self.database_pool.destroy()
+        await super().asyncTearDown()
+
     def test_from_config(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
-            publisher = PostgreSqlQueuedKafkaBrokerPublisher.from_config(CONFIG_FILE_PATH)
+            publisher = PostgreSqlQueuedKafkaBrokerPublisher.from_config(CONFIG_FILE_PATH, pool=self.database_pool)
         self.assertIsInstance(publisher, PostgreSqlQueuedKafkaBrokerPublisher)
         self.assertIsInstance(publisher.impl, KafkaBrokerPublisher)
         self.assertIsInstance(publisher.queue, PostgreSqlBrokerPublisherQueue)
