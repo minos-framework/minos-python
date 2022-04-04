@@ -27,7 +27,7 @@ class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCa
     def setUp(self) -> None:
         super().setUp()
 
-        self.transaction_repository = PostgreSqlTransactionRepository(**self.repository_db)
+        self.transaction_repository = PostgreSqlTransactionRepository()
 
         self.uuid = uuid4()
 
@@ -58,7 +58,7 @@ class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCa
         self.assertEqual(repository_config["password"], repository.password)
 
     async def test_setup(self):
-        async with aiopg.connect(**self.repository_db) as connection:
+        async with aiopg.connect(**self.config.get_default_database()) as connection:
             async with connection.cursor() as cursor:
                 await cursor.execute(
                     "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_transaction');"
@@ -159,7 +159,7 @@ class TestPostgreSqlTransactionRepositorySelect(AggregateTestCase, PostgresAsync
         self.uuid_4 = uuid4()
         self.uuid_5 = uuid4()
 
-        self.transaction_repository = PostgreSqlTransactionRepository(**self.repository_db)
+        self.transaction_repository = PostgreSqlTransactionRepository()
 
         self.entries = [
             TransactionEntry(self.uuid_1, TransactionStatus.PENDING, 12),

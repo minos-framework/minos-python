@@ -74,50 +74,47 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase, ABC):
         raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
 
 
+# noinspection SqlNoDataSourceInspection
 class PostgresAsyncTestCase(MinosTestCase, ABC):
     def setUp(self):
-
-        self._uuid = uuid4()
         self._config = Config(self.get_config_file_path())
-
-        self._meta_repository_db = self._config.get_database_by_name("aggregate")
-
-        self._meta_broker_queue_db = self._config.get_database_by_name("broker")
-
-        self._meta_snapshot_db = self._config.get_database_by_name("aggregate")
-
+        self._uuid = uuid4()
         self._test_db = {"database": f"test_db_{self._uuid.hex}", "user": f"test_user_{self._uuid.hex}"}
-
-        self.repository_db = self._meta_repository_db | self._test_db
-        self.broker_queue_db = self._meta_broker_queue_db | self._test_db
-        self.snapshot_db = self._meta_snapshot_db | self._test_db
-
         super().setUp()
 
+    @property
+    def repository_db(self) -> dict[str, Any]:
+        return self.config.get_database_by_name("aggregate") | self._test_db
+
+    @property
+    def broker_queue_db(self) -> dict[str, Any]:
+        return self.config.get_database_by_name("broker") | self._test_db
+
+    @property
+    def snapshot_db(self) -> dict[str, Any]:
+        return self.config.get_database_by_name("aggregate") | self._test_db
+
     def get_config(self) -> Config:
-        return Config(
-            self.get_config_file_path(),
-            repository_database=self.repository_db["database"],
-            repository_user=self.repository_db["user"],
-            broker_queue_database=self.broker_queue_db["database"],
-            broker_queue_user=self.broker_queue_db["user"],
-            snapshot_database=self.snapshot_db["database"],
-            snapshot_user=self.snapshot_db["user"],
-        )
+        config = Config(self.get_config_file_path())
+
+        base_fn = config.get_databases
+
+        def _fn():
+            return {k: (v | self._test_db) for k, v in base_fn().items()}
+
+        config.get_databases = _fn
+        return config
 
     def get_injections(self) -> list[Union[InjectableMixin, type[InjectableMixin], str]]:
         return [PoolFactory.from_config(self.config, default_classes={"database": DatabaseClientPool})]
 
     async def asyncSetUp(self):
         pairs = self._drop_duplicates(
-            [
-                (self._meta_repository_db, self.repository_db),
-                (self._meta_broker_queue_db, self.broker_queue_db),
-                (self._meta_snapshot_db, self.snapshot_db),
-            ]
+            [(db, self._test_db) for db in self._config.get_databases().values() if "database" in db]
         )
+
         for meta, test in pairs:
-            await self._setup_database(dict(meta), dict(test))
+            await self._setup_database(meta, test)
 
     async def _setup_database(self, meta: dict[str, Any], test: dict[str, Any]) -> None:
         await self._teardown_database(meta, test)
@@ -125,10 +122,10 @@ class PostgresAsyncTestCase(MinosTestCase, ABC):
         async with aiopg.connect(**meta) as connection:
             async with connection.cursor() as cursor:
                 template = "CREATE ROLE {user} WITH SUPERUSER CREATEDB LOGIN ENCRYPTED PASSWORD {password!r};"
-                await cursor.execute(template.format(**test))
+                await cursor.execute(template.format(**(meta | test)))
 
                 template = "CREATE DATABASE {database} WITH OWNER = {user};"
-                await cursor.execute(template.format(**test))
+                await cursor.execute(template.format(**(meta | test)))
 
         await super().asyncSetUp()
 
@@ -136,11 +133,7 @@ class PostgresAsyncTestCase(MinosTestCase, ABC):
         await super().asyncTearDown()
 
         pairs = self._drop_duplicates(
-            [
-                (self._meta_repository_db, self.repository_db),
-                (self._meta_broker_queue_db, self.broker_queue_db),
-                (self._meta_snapshot_db, self.snapshot_db),
-            ]
+            [(db, self._test_db) for db in self._config.get_databases().values() if "database" in db]
         )
 
         for meta, test in pairs:
@@ -159,7 +152,7 @@ class PostgresAsyncTestCase(MinosTestCase, ABC):
         async with aiopg.connect(**meta) as connection:
             async with connection.cursor() as cursor:
                 template = "DROP DATABASE IF EXISTS {database}"
-                await cursor.execute(template.format(**test))
+                await cursor.execute(template.format(**(meta | test)))
 
                 template = "DROP ROLE IF EXISTS {user};"
-                await cursor.execute(template.format(**test))
+                await cursor.execute(template.format(**(meta | test)))

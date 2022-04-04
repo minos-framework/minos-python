@@ -426,7 +426,7 @@ class TestPostgreSqlSnapshotQueryBuilder(AggregateTestCase, PostgresAsyncTestCas
         self.assertEqual(self._flatten_parameters(expected_parameters), self._flatten_parameters(observed[1]))
 
     async def _flatten_query(self, query) -> str:
-        async with aiopg.connect(**self.snapshot_db) as connection:
+        async with aiopg.connect(**self.config.get_default_database()) as connection:
             return query.as_string(connection.raw)
 
     @staticmethod

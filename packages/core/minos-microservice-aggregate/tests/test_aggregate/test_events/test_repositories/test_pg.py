@@ -21,9 +21,10 @@ from tests.testcases import (
 class TestPostgreSqlEventRepositorySubmit(EventRepositorySubmitTestCase, PostgresAsyncTestCase):
     __test__ = True
 
-    def build_event_repository(self) -> EventRepository:
+    @staticmethod
+    def build_event_repository() -> EventRepository:
         """Fort testing purposes."""
-        return PostgreSqlEventRepository(**self.repository_db)
+        return PostgreSqlEventRepository()
 
     def test_constructor(self):
         pool = DatabaseClientPool.from_config(self.config)
@@ -41,7 +42,7 @@ class TestPostgreSqlEventRepositorySubmit(EventRepositorySubmitTestCase, Postgre
         self.assertEqual(repository_config["port"], repository.port)
 
     async def test_setup(self):
-        async with aiopg.connect(**self.repository_db) as connection:
+        async with aiopg.connect(**self.config.get_default_database()) as connection:
             async with connection.cursor() as cursor:
                 await cursor.execute(
                     "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_event');"
@@ -53,9 +54,10 @@ class TestPostgreSqlEventRepositorySubmit(EventRepositorySubmitTestCase, Postgre
 class TestPostgreSqlRepositorySelect(EventRepositorySelectTestCase, PostgresAsyncTestCase):
     __test__ = True
 
-    def build_event_repository(self) -> EventRepository:
+    @staticmethod
+    def build_event_repository() -> EventRepository:
         """Fort testing purposes."""
-        return PostgreSqlEventRepository(**self.repository_db)
+        return PostgreSqlEventRepository()
 
 
 if __name__ == "__main__":

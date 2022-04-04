@@ -15,7 +15,7 @@ from minos.common.testing import (
 )
 
 BASE_PATH = Path(__file__).parent
-CONFIG_FILE_PATH = BASE_PATH / "config" / "v1.yml"
+CONFIG_FILE_PATH = BASE_PATH / "config" / "v2.yml"
 
 
 class CommonTestCase(MinosTestCase):

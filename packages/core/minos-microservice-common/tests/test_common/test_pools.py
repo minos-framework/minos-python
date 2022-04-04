@@ -19,22 +19,18 @@ from aiomisc import (
 from minos.common import (
     MinosPool,
     Pool,
+    PoolFactory,
     SetupMixin,
+)
+from tests.utils import (
+    CommonTestCase,
 )
 
 
-class _Pool(Pool):
-    def __init__(self):
-        super().__init__()
-        self.create_instance_call_count = 0
-        self.destroy_instance_call_count = 0
-
-    async def _create_instance(self):
-        self.create_instance_call_count += 1
-        return "foo"
-
-    async def _destroy_instance(self, instance: t.Any) -> None:
-        self.destroy_instance_call_count += 1
+class TestPoolFactory(CommonTestCase):
+    def test_constructor(self):
+        factory = PoolFactory.from_config(self.config)
+        self.assertIsInstance(factory, PoolFactory)
 
 
 class TestPool(unittest.IsolatedAsyncioTestCase):
@@ -68,6 +64,20 @@ class TestPool(unittest.IsolatedAsyncioTestCase):
             await gather(_fn1(pool), _fn2(pool))
 
         self.assertEqual(1, pool_mock.call_count)
+
+
+class _Pool(Pool):
+    def __init__(self):
+        super().__init__()
+        self.create_instance_call_count = 0
+        self.destroy_instance_call_count = 0
+
+    async def _create_instance(self):
+        self.create_instance_call_count += 1
+        return "foo"
+
+    async def _destroy_instance(self, instance: t.Any) -> None:
+        self.destroy_instance_call_count += 1
 
 
 class TestMinosPool(unittest.IsolatedAsyncioTestCase):

@@ -62,7 +62,7 @@ class TestDatabaseMixin(CommonTestCase, PostgresAsyncTestCase):
         async with DatabaseMixin() as database:
             await database.submit_query("CREATE TABLE foo (id INT NOT NULL);")
 
-        async with aiopg.connect(**self.repository_db) as connection:
+        async with aiopg.connect(**self.config.get_default_database()) as connection:
             async with connection.cursor() as cursor:
                 await cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
                 self.assertTrue((await cursor.fetchone())[0])
@@ -71,7 +71,7 @@ class TestDatabaseMixin(CommonTestCase, PostgresAsyncTestCase):
         async with DatabaseMixin() as database:
             await database.submit_query("CREATE TABLE foo (id INT NOT NULL);", lock=1234)
 
-        async with aiopg.connect(**self.repository_db) as connection:
+        async with aiopg.connect(**self.config.get_default_database()) as connection:
             async with connection.cursor() as cursor:
                 await cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
                 self.assertTrue((await cursor.fetchone())[0])
