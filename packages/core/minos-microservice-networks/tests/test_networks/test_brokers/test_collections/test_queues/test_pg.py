@@ -23,7 +23,7 @@ from minos.networks.brokers.collections import (
     PostgreSqlBrokerQueueQueryFactory,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    NetworksTestCase,
 )
 
 
@@ -33,9 +33,7 @@ class _PostgreSqlBrokerQueueQueryFactory(PostgreSqlBrokerQueueQueryFactory):
         return "test_table"
 
 
-class TestPostgreSqlBrokerQueue(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestPostgreSqlBrokerQueue(NetworksTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.query_factory = _PostgreSqlBrokerQueueQueryFactory()

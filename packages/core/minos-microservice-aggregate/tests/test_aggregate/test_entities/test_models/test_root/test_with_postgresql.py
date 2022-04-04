@@ -12,7 +12,6 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
     AggregateTestCase,
     Car,
     Order,
@@ -22,8 +21,6 @@ from tests.utils import (
 
 
 class TestExternalEntityWithPostgreSql(AggregateTestCase, PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
     def setUp(self):
         super().setUp()
 

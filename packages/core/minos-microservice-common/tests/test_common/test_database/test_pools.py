@@ -21,13 +21,11 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    CommonTestCase,
 )
 
 
-class TestPostgreSqlPool(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestPostgreSqlPool(CommonTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.pool = DatabaseClientPool.from_config(self.config)
@@ -82,9 +80,7 @@ class TestPostgreSqlPool(PostgresAsyncTestCase):
                 self.assertIsInstance(connection, Connection)
 
 
-class TestPostgreSqlLockPool(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestPostgreSqlLockPool(CommonTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.pool = DatabaseLockPool.from_config(self.config)

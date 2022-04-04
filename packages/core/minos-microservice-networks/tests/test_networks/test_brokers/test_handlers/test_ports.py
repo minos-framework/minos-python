@@ -18,13 +18,11 @@ from minos.networks import (
     InMemoryBrokerSubscriberBuilder,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    NetworksTestCase,
 )
 
 
-class TestBrokerPort(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestBrokerPort(NetworksTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.publisher = InMemoryBrokerPublisher.from_config(self.config)
@@ -66,14 +64,14 @@ class TestBrokerPort(PostgresAsyncTestCase):
         self.assertEqual(1, destroy_mock.call_count)
 
 
-class TestBrokerHandlerService(unittest.TestCase):
+class TestBrokerHandlerService(NetworksTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(BrokerHandlerService, BrokerPort))
 
     def test_warnings(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
-            port = BrokerHandlerService(config=CONFIG_FILE_PATH)
+            port = BrokerHandlerService(config=self.config)
             self.assertIsInstance(port, BrokerPort)
 
 

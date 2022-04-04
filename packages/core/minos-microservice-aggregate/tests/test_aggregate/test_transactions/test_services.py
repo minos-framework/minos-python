@@ -31,15 +31,12 @@ from minos.networks import (
     ResponseException,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
     AggregateTestCase,
     FakeAsyncIterator,
 )
 
 
 class TestSnapshotService(AggregateTestCase, PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
     def setUp(self) -> None:
         super().setUp()
 

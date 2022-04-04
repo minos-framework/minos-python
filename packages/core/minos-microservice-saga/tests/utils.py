@@ -22,7 +22,7 @@ from minos.common import (
     SetupMixin,
 )
 from minos.common.testing import (
-    CommonTestCase,
+    MinosTestCase,
 )
 from minos.networks import (
     BrokerClientPool,
@@ -41,8 +41,9 @@ CONFIG_FILE_PATH = BASE_PATH / "config.yml"
 DB_PATH = BASE_PATH / "test_db.lmdb"
 
 
-class SagaTestCase(CommonTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
+class SagaTestCase(MinosTestCase):
+    def get_config_file_path(self):
+        return CONFIG_FILE_PATH
 
     def get_injections(self):
         pool_factory = PoolFactory.from_config(

@@ -20,13 +20,11 @@ from minos.networks import (
     PostgreSqlBrokerSubscriberQueueQueryFactory,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    NetworksTestCase,
 )
 
 
-class TestPostgreSqlBrokerSubscriberQueue(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestPostgreSqlBrokerSubscriberQueue(NetworksTestCase, PostgresAsyncTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(PostgreSqlBrokerSubscriberQueue, (PostgreSqlBrokerQueue, BrokerSubscriberQueue)))
 
@@ -82,9 +80,7 @@ class TestPostgreSqlBrokerSubscriberQueueQueryFactory(unittest.TestCase):
         self.assertEqual("broker_subscriber_queue", self.factory.build_table_name())
 
 
-class TestPostgreSqlBrokerSubscriberQueueBuilder(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestPostgreSqlBrokerSubscriberQueueBuilder(NetworksTestCase, PostgresAsyncTestCase):
     def test_build(self):
         builder = PostgreSqlBrokerSubscriberQueueBuilder().with_config(self.config).with_topics({"one", "two"})
         subscriber = builder.build()

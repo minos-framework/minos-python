@@ -26,7 +26,6 @@ from minos.networks import (
     ResponseException,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
     AggregateTestCase,
     Order,
 )
@@ -35,8 +34,6 @@ Agg = ModelType.build("Agg", {"uuid": UUID})
 
 
 class TestSnapshotService(AggregateTestCase, PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
     def setUp(self) -> None:
         super().setUp()
 

@@ -34,13 +34,11 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    AggregateTestCase,
 )
 
 
-class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestPostgreSqlSnapshotQueryBuilder(AggregateTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.classname = "path.to.Product"

@@ -10,15 +10,12 @@ from minos.common import (
 )
 from tests.utils import (
     BASE_PATH,
-    FakeBrokerClientPool,
     FakeBrokerPublisher,
     FakeBrokerSubscriber,
     FakeBrokerSubscriberBuilder,
     FakeCustomInjection,
-    FakeDatabasePool,
     FakeDiscoveryConnector,
     FakeEventRepository,
-    FakeLockPool,
     FakeSagaManager,
     FakeSnapshotRepository,
     FakeTransactionRepository,

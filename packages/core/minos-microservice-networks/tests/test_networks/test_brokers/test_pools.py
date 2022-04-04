@@ -11,13 +11,11 @@ from minos.networks import (
     InMemoryBrokerSubscriberBuilder,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    NetworksTestCase,
 )
 
 
-class TestBrokerClientPool(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestBrokerClientPool(NetworksTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.publisher = InMemoryBrokerPublisher.from_config(self.config)

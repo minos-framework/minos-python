@@ -7,7 +7,6 @@ from minos.common import (
     Config,
     ConfigV1,
     MinosConfigException,
-    PoolFactory,
 )
 from tests.utils import (
     BASE_PATH,

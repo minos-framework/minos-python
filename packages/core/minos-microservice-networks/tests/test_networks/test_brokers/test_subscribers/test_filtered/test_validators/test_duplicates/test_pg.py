@@ -11,13 +11,11 @@ from minos.networks import (
     PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    NetworksTestCase,
 )
 
 
-class TestPostgreSqlBrokerSubscriberDuplicateValidator(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestPostgreSqlBrokerSubscriberDuplicateValidator(NetworksTestCase, PostgresAsyncTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(PostgreSqlBrokerSubscriberDuplicateValidator, BrokerSubscriberValidator))
 

@@ -16,13 +16,11 @@ from minos.networks import (
     PeriodicTaskSchedulerService,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    NetworksTestCase,
 )
 
 
-class TestPeriodicPort(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestPeriodicPort(NetworksTestCase, PostgresAsyncTestCase):
     def test_is_instance(self):
         service = PeriodicPort(config=self.config)
         self.assertIsInstance(service, Port)
@@ -64,14 +62,14 @@ class TestPeriodicPort(PostgresAsyncTestCase):
         self.assertEqual(1, destroy_mock.call_count)
 
 
-class TestPeriodicTaskSchedulerService(unittest.TestCase):
+class TestPeriodicTaskSchedulerService(NetworksTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(PeriodicTaskSchedulerService, PeriodicPort))
 
     def test_warnings(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
-            port = PeriodicTaskSchedulerService(config=CONFIG_FILE_PATH)
+            port = PeriodicTaskSchedulerService(config=self.config)
             self.assertIsInstance(port, PeriodicPort)
 
 

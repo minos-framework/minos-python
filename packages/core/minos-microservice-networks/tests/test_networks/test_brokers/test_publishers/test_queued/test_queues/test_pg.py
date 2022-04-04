@@ -10,13 +10,11 @@ from minos.networks import (
     PostgreSqlBrokerQueue,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    NetworksTestCase,
 )
 
 
-class TestPostgreSqlBrokerPublisherQueue(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestPostgreSqlBrokerPublisherQueue(NetworksTestCase, PostgresAsyncTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(PostgreSqlBrokerPublisherQueue, (PostgreSqlBrokerQueue, BrokerPublisherQueue)))
 

@@ -9,14 +9,11 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
     AggregateTestCase,
 )
 
 
 class TestPostgreSqlSnapshotSetup(AggregateTestCase, PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
     async def test_setup_snapshot_table(self):
         async with PostgreSqlSnapshotSetup.from_config(self.config):
             async with aiopg.connect(**self.snapshot_db) as connection:

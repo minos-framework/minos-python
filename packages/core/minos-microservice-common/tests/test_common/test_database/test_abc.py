@@ -1,4 +1,3 @@
-import sys
 import unittest
 
 import aiopg
@@ -6,21 +5,18 @@ import aiopg
 from minos.common import (
     DatabaseClientPool,
     DatabaseMixin,
-    DependencyInjector,
     PoolFactory,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    CommonTestCase,
 )
 
 
 # noinspection SqlNoDataSourceInspection
-class TestDatabaseMixin(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestDatabaseMixin(CommonTestCase, PostgresAsyncTestCase):
     def test_constructor(self):
         pool = DatabaseClientPool.from_config(self.config)
         database = DatabaseMixin(pool)

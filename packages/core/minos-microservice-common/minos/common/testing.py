@@ -1,4 +1,8 @@
 import unittest
+import warnings
+from abc import (
+    ABC,
+)
 from itertools import (
     starmap,
 )
@@ -28,7 +32,7 @@ from .pools import (
 )
 
 
-class CommonTestCase(unittest.IsolatedAsyncioTestCase):
+class MinosTestCase(unittest.IsolatedAsyncioTestCase, ABC):
     CONFIG_FILE_PATH: Path
 
     def setUp(self) -> None:
@@ -40,7 +44,15 @@ class CommonTestCase(unittest.IsolatedAsyncioTestCase):
 
     def get_config(self):
         """ "TODO"""
-        return Config(self.CONFIG_FILE_PATH)
+        return Config(self.get_config_file_path())
+
+    def get_config_file_path(self) -> Path:
+        """TODO"""
+        warnings.warn(
+            "`CONFIG_FILE_PATH` variable has been deprecated by `get_config_file_path` method",
+            DeprecationWarning,
+        )
+        return self.CONFIG_FILE_PATH
 
     def get_injections(self):
         return []
@@ -63,11 +75,11 @@ class CommonTestCase(unittest.IsolatedAsyncioTestCase):
         raise AttributeError
 
 
-class PostgresAsyncTestCase(CommonTestCase):
+class PostgresAsyncTestCase(MinosTestCase, ABC):
     def setUp(self):
 
         self._uuid = uuid4()
-        self._config = Config(self.CONFIG_FILE_PATH)
+        self._config = Config(self.get_config_file_path())
 
         self._meta_repository_db = self._config.get_database_by_name("aggregate")
 
@@ -85,7 +97,7 @@ class PostgresAsyncTestCase(CommonTestCase):
 
     def get_config(self):
         return Config(
-            self.CONFIG_FILE_PATH,
+            self.get_config_file_path(),
             repository_database=self.repository_db["database"],
             repository_user=self.repository_db["user"],
             broker_queue_database=self.broker_queue_db["database"],

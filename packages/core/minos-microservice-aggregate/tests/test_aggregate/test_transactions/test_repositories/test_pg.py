@@ -19,14 +19,11 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
     AggregateTestCase,
 )
 
 
 class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
     def setUp(self) -> None:
         super().setUp()
 
@@ -154,8 +151,6 @@ class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCa
 
 
 class TestPostgreSqlTransactionRepositorySelect(AggregateTestCase, PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
     def setUp(self) -> None:
         super().setUp()
         self.uuid_1 = uuid4()
