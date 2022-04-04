@@ -43,7 +43,7 @@ from minos.networks import (
 from tests.utils import (
     FakeAsyncIterator,
     FakeLock,
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
@@ -62,7 +62,7 @@ class _EventRepository(EventRepository):
         return 0
 
 
-class TestEventRepository(MinosTestCase):
+class TestEventRepository(AggregateTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.event_repository = _EventRepository()

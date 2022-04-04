@@ -22,11 +22,11 @@ from minos.common.testing import (
 from tests.utils import (
     CONFIG_FILE_PATH,
     FakeAsyncIterator,
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
-class TestPostgreSqlSnapshotRepository(MinosTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlSnapshotRepository(AggregateTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:

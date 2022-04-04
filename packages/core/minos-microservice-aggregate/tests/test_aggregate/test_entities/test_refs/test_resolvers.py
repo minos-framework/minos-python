@@ -19,14 +19,14 @@ from minos.networks import (
     BrokerMessageV1Status,
 )
 from tests.utils import (
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
 Foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": Ref[Bar]})
 
 
-class TestRefResolver(MinosTestCase):
+class TestRefResolver(AggregateTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.resolver = RefResolver()

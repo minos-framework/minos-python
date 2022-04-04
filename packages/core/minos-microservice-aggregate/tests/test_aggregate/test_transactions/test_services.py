@@ -33,11 +33,11 @@ from minos.networks import (
 from tests.utils import (
     CONFIG_FILE_PATH,
     FakeAsyncIterator,
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
-class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
+class TestSnapshotService(AggregateTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:

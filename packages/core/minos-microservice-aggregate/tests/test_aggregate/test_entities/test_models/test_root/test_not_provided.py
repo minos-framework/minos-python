@@ -11,11 +11,11 @@ from minos.common import (
 )
 from tests.utils import (
     Car,
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
-class TestRootEntityNotProvided(MinosTestCase):
+class TestRootEntityNotProvided(AggregateTestCase):
     async def test_create_raises(self):
         with self.assertRaises(NotProvidedException):
             await Car.create(doors=3, color="blue", _event_repository=None)

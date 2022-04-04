@@ -14,11 +14,11 @@ from minos.common import (
 )
 from tests.utils import (
     Car,
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
-class TestRootEntityDifferences(MinosTestCase):
+class TestRootEntityDifferences(AggregateTestCase):
     async def asyncSetUp(self) -> None:
         self.uuid = uuid4()
         self.uuid_another = uuid4()

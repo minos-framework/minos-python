@@ -19,11 +19,11 @@ from minos.common import (
 )
 from tests.utils import (
     Car,
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
-class TestRootEntity(MinosTestCase):
+class TestRootEntity(AggregateTestCase):
     async def test_create(self):
         observed = await Car.create(doors=3, color="blue")
         expected = Car(

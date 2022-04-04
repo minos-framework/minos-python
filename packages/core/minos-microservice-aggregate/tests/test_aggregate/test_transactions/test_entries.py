@@ -24,11 +24,11 @@ from minos.common import (
 )
 from tests.utils import (
     FakeAsyncIterator,
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
-class TestTransactionEntry(MinosTestCase):
+class TestTransactionEntry(AggregateTestCase):
     def test_constructor(self):
         transaction = TransactionEntry()
 

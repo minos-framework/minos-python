@@ -26,12 +26,12 @@ from minos.common import (
 )
 from tests.utils import (
     Car,
-    MinosTestCase,
+    AggregateTestCase,
     Owner,
 )
 
 
-class TestFieldDiffContainer(MinosTestCase):
+class TestFieldDiffContainer(AggregateTestCase):
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
         self.car_one = Car(3, "blue", id=1, version=1)

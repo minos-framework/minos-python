@@ -25,11 +25,11 @@ from minos.common import (
 )
 from tests.utils import (
     Car,
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
-class TestInMemorySnapshotRepository(MinosTestCase):
+class TestInMemorySnapshotRepository(AggregateTestCase):
     def setUp(self) -> None:
         super().setUp()
 

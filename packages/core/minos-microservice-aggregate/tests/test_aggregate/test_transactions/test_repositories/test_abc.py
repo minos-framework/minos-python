@@ -27,7 +27,7 @@ from minos.common import (
 from tests.utils import (
     FakeAsyncIterator,
     FakeLock,
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
@@ -41,7 +41,7 @@ class _TransactionRepository(TransactionRepository):
         """For testing purposes."""
 
 
-class TestTransactionRepository(MinosTestCase):
+class TestTransactionRepository(AggregateTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.transaction_repository = _TransactionRepository()

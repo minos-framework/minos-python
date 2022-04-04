@@ -27,11 +27,11 @@ from minos.common.testing import (
 from tests.utils import (
     CONFIG_FILE_PATH,
     Car,
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
-class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlSnapshotReader(AggregateTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:

@@ -14,11 +14,11 @@ from minos.aggregate import (
 )
 from tests.utils import (
     Car,
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
-class TestSnapshotEntry(MinosTestCase):
+class TestSnapshotEntry(AggregateTestCase):
     def setUp(self) -> None:
         super().setUp()
 

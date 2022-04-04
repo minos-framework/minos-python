@@ -11,11 +11,11 @@ from minos.aggregate import (
     TransactionStatus,
 )
 from tests.utils import (
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
-class TestInMemoryTransactionRepository(MinosTestCase):
+class TestInMemoryTransactionRepository(AggregateTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.uuid = uuid4()
@@ -116,7 +116,7 @@ class TestInMemoryTransactionRepository(MinosTestCase):
         self.assertEqual(expected, observed)
 
 
-class TestInMemoryTransactionRepositorySelect(MinosTestCase):
+class TestInMemoryTransactionRepositorySelect(AggregateTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.uuid_1 = uuid4()

@@ -20,11 +20,11 @@ from minos.common.testing import (
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
-class TestPostgreSqlTransactionRepository(MinosTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:
@@ -153,7 +153,7 @@ class TestPostgreSqlTransactionRepository(MinosTestCase, PostgresAsyncTestCase):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
 
 
-class TestPostgreSqlTransactionRepositorySelect(MinosTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlTransactionRepositorySelect(AggregateTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def setUp(self) -> None:

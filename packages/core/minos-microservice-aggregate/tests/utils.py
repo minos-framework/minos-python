@@ -2,7 +2,6 @@ from __future__ import (
     annotations,
 )
 
-import unittest
 from abc import (
     ABC,
 )
@@ -35,7 +34,9 @@ from minos.common import (
     LockPool,
     PoolFactory,
 )
-from minos.common.testing import MinosTestCase as MinosTestCaseBase
+from minos.common.testing import (
+    MinosTestCase,
+)
 from minos.networks import (
     BrokerClientPool,
     InMemoryBrokerPublisher,
@@ -46,7 +47,7 @@ BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
 
-class MinosTestCase(MinosTestCaseBase, ABC):
+class AggregateTestCase(MinosTestCase, ABC):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def get_injections(self):

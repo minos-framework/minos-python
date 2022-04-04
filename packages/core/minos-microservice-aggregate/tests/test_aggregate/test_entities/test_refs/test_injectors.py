@@ -13,11 +13,11 @@ from minos.common import (
 )
 from tests.utils import (
     Car,
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
-class TestRefInjector(MinosTestCase):
+class TestRefInjector(AggregateTestCase):
     async def test_simple(self):
         model = await Car.create(3, "test")
         mapper = {model.uuid: model}

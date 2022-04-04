@@ -20,12 +20,12 @@ from minos.common import (
 )
 from tests.utils import (
     Car,
-    MinosTestCase,
+    AggregateTestCase,
     Owner,
 )
 
 
-class TestEvent(MinosTestCase):
+class TestEvent(AggregateTestCase):
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
 
