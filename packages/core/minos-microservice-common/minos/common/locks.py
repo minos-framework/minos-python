@@ -16,6 +16,9 @@ from cached_property import (
     cached_property,
 )
 
+from .injections import (
+    Injectable,
+)
 from .pools import (
     Pool,
 )
@@ -43,5 +46,6 @@ class Lock(AbstractAsyncContextManager):
         return self.key
 
 
+@Injectable("lock_pool")
 class LockPool(Pool[Lock], ABC):
     """Postgres Locking Pool class."""

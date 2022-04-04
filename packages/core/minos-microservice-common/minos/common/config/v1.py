@@ -128,21 +128,7 @@ class ConfigV1(Config):
         except MinosConfigException:
             injections = list()
 
-        old = [import_module(classname) for classname in injections]
-        from ..injections import (
-            InjectableMixin,
-        )
-        from ..pools import (
-            PoolFactory,
-        )
-
-        injections = list()
-        injections.append(PoolFactory)  # FIXME
-
-        for type_ in old:
-            if not issubclass(type_, InjectableMixin):
-                continue
-            injections.append(type_)
+        injections = [import_module(classname) for classname in injections]
 
         # noinspection PyTypeChecker
         return injections
@@ -231,36 +217,7 @@ class ConfigV1(Config):
         return services
 
     def _get_pools(self) -> dict[str, type]:
-        try:
-            pools = self.get_by_key("service.injections")
-        except Exception:
-            pools = list()
-
-        if isinstance(pools, dict):
-            pools = list(pools.values())
-
-        old = [import_module(classname) for classname in pools]
-
-        from ..pools import (
-            Pool,
-        )
-
-        pools = dict()
-
-        for type_ in old:
-            if not issubclass(type_, Pool):
-                continue
-            label = "unknown"
-            if "lock" in type_.__name__.lower():
-                label = "lock"
-            elif "postgres" in type_.__name__.lower():
-                label = "database"
-            elif "broker" in type_.__name__.lower():
-                label = "broker"
-
-            pools[label] = type_
-
-        return pools
+        return dict()
 
     def _get_routers(self) -> list[type]:
         try:

@@ -39,9 +39,6 @@ class TestConfigV2Parameterized(unittest.TestCase):
 
         expected = [
             PoolFactory,
-            FakeLockPool,
-            FakeDatabasePool,
-            FakeBrokerClientPool,
             FakeBrokerPublisher,
             FakeBrokerSubscriberBuilder(FakeBrokerSubscriber),
             FakeEventRepository,

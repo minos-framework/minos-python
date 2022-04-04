@@ -50,14 +50,8 @@ class ConfigV2(Config):
 
         partial_ans = list()
 
-        from ..pools import (
-            PoolFactory,
-        )
-
-        partial_ans.append(PoolFactory)  # FIXME
-
         with suppress(MinosConfigException):
-            partial_ans.extend(self._get_pools().values())
+            partial_ans.append(self._get_pools().get("factory"))
 
         with suppress(MinosConfigException):
             partial_ans.append(self._get_interfaces().get("http").get("connector"))
@@ -96,7 +90,7 @@ class ConfigV2(Config):
             ):
                 type_ = builder_type
             elif not issubclass(type_, InjectableMixin):
-                continue  # raise MinosConfigException(f"{type_!r} must be subclass of {InjectableMixin!r}.")
+                raise MinosConfigException(f"{type_!r} must be subclass of {InjectableMixin!r}.")
 
             ans.append(type_)
 
@@ -154,14 +148,22 @@ class ConfigV2(Config):
         return data
 
     def _get_pools(self) -> dict[str, type]:
+        from ..pools import (
+            PoolFactory,
+        )
+        factory = PoolFactory
+
         try:
-            data = self.get_by_key("pools")
+            types = self.get_by_key("pools")
         except MinosConfigException:
-            data = dict()
+            types = dict()
 
-        data = {name: import_module(classname) for name, classname in data.items()}
+        types = {name: import_module(classname) for name, classname in types.items()}
 
-        return data
+        return {
+            "factory": factory,
+            "types": types,
+        }
 
     def _get_routers(self) -> list[type]:
         try:

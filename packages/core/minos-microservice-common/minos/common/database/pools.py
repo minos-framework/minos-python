@@ -21,6 +21,7 @@ from psycopg2 import (
     OperationalError,
 )
 
+from ..injections import Injectable
 from ..locks import (
     LockPool,
 )
@@ -119,6 +120,7 @@ class DatabaseLockPool(LockPool, DatabaseClientPool):
         return DatabaseLock(super().acquire(), key, *args, **kwargs)
 
 
+@Injectable("postgresql_pool")
 class PostgreSqlLockPool(DatabaseLockPool):
     """TODO"""
 
