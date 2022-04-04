@@ -10,10 +10,11 @@ from minos.common.testing import (
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
+    MinosTestCase,
 )
 
 
-class TestPostgreSqlSnapshotSetup(PostgresAsyncTestCase):
+class TestPostgreSqlSnapshotSetup(MinosTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     async def test_setup_snapshot_table(self):

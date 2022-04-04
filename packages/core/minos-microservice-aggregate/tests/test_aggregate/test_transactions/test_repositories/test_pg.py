@@ -12,6 +12,9 @@ from minos.aggregate import (
     TransactionRepositoryConflictException,
     TransactionStatus,
 )
+from minos.common import (
+    DatabaseClientPool,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -43,13 +46,10 @@ class TestPostgreSqlTransactionRepository(MinosTestCase, PostgresAsyncTestCase):
         self.assertTrue(issubclass(PostgreSqlTransactionRepository, TransactionRepository))
 
     def test_constructor(self):
-        repository = PostgreSqlTransactionRepository("database", "host", 1234, "user", "password")
+        pool = DatabaseClientPool.from_config(self.config)
+        repository = PostgreSqlTransactionRepository(pool)
         self.assertIsInstance(repository, PostgreSqlTransactionRepository)
-        self.assertEqual("host", repository.host)
-        self.assertEqual(1234, repository.port)
-        self.assertEqual("database", repository.database)
-        self.assertEqual("user", repository.user)
-        self.assertEqual("password", repository.password)
+        self.assertEqual(pool, repository.pool)
 
     def test_from_config(self):
         repository = PostgreSqlTransactionRepository.from_config(self.config)

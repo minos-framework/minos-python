@@ -233,10 +233,12 @@ class ConfigV1(Config):
     def _get_pools(self) -> dict[str, type]:
         try:
             pools = self.get_by_key("service.injections")
-            if isinstance(pools, dict):
-                pools = list(pools.values())
-        except Exception as exc:
-            raise MinosConfigException(f"The 'broker' interface is not available: {exc!r}")
+        except Exception:
+            pools = list()
+
+        if isinstance(pools, dict):
+            pools = list(pools.values())
+
         old = [import_module(classname) for classname in pools]
 
         from ..pools import (

@@ -30,9 +30,12 @@ from minos.aggregate import (
     ValueObjectSet,
 )
 from minos.common import (
+    Config,
+    DatabaseClientPool,
     DependencyInjector,
     Lock,
     LockPool,
+    PoolFactory,
 )
 from minos.networks import (
     BrokerClientPool,
@@ -47,33 +50,42 @@ CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 class MinosTestCase(unittest.IsolatedAsyncioTestCase, ABC):
     def setUp(self) -> None:
         super().setUp()
-        self.broker_pool = BrokerClientPool.from_config(CONFIG_FILE_PATH)
+
+        if not hasattr(self, "config"):
+            self.config = self.get_config()
+
+        self.pool_factory = PoolFactory.from_config(
+            self.config,
+            default_classes={"broker": BrokerClientPool, "lock": FakeLockPool, "database": DatabaseClientPool},
+        )
         self.broker_publisher = InMemoryBrokerPublisher()
         self.broker_subscriber_builder = InMemoryBrokerSubscriberBuilder()
-        self.lock_pool = FakeLockPool()
-        self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
+        self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.pool_factory.get_pool("lock"))
         self.event_repository = InMemoryEventRepository(
             broker_publisher=self.broker_publisher,
             transaction_repository=self.transaction_repository,
-            lock_pool=self.lock_pool,
+            lock_pool=self.pool_factory.get_pool("lock"),
         )
         self.snapshot_repository = InMemorySnapshotRepository(
             event_repository=self.event_repository, transaction_repository=self.transaction_repository
         )
 
         self.injector = DependencyInjector(
-            None,
+            self.config,
             [
-                self.broker_pool,
+                self.pool_factory,
                 self.broker_publisher,
                 self.broker_subscriber_builder,
-                self.lock_pool,
                 self.transaction_repository,
                 self.event_repository,
                 self.snapshot_repository,
             ],
         )
         self.injector.wire_injections()
+
+    def get_config(self):
+        """ "TODO"""
+        return Config(CONFIG_FILE_PATH)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()

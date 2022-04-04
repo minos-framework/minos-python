@@ -11,6 +11,7 @@ from minos.aggregate import (
 )
 from minos.common import (
     ModelType,
+    NotProvidedException,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -33,6 +34,11 @@ class TestRefResolver(MinosTestCase):
         self.uuid = uuid4()
         self.another_uuid = uuid4()
         self.value = Foo(self.uuid, 1, another=Ref(self.another_uuid))
+
+    def test_broker_pool_not_provided(self):
+        with self.assertRaises(NotProvidedException):
+            # noinspection PyArgumentEqualDefault
+            RefResolver(broker_pool=None, pool_factory=None)
 
     async def test_resolve(self):
         self.broker_subscriber_builder.with_messages(

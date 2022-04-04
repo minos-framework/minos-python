@@ -6,6 +6,9 @@ from minos.aggregate import (
     EventRepository,
     PostgreSqlEventRepository,
 )
+from minos.common import (
+    DatabaseClientPool,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -44,13 +47,10 @@ class TestPostgreSqlEventRepositorySubmit(PostgresAsyncTestCase, EventRepository
         return PostgreSqlEventRepository(**self.repository_db)
 
     def test_constructor(self):
-        repository = PostgreSqlEventRepository("database", "host", 1234, "user", "password")
-        self.assertIsInstance(repository, EventRepository)
-        self.assertEqual("host", repository.host)
-        self.assertEqual(1234, repository.port)
-        self.assertEqual("database", repository.database)
-        self.assertEqual("user", repository.user)
-        self.assertEqual("password", repository.password)
+        pool = DatabaseClientPool.from_config(self.config)
+        repository = PostgreSqlEventRepository(pool)
+        self.assertIsInstance(repository, PostgreSqlEventRepository)
+        self.assertEqual(pool, repository.pool)
 
     def test_from_config(self):
         repository = PostgreSqlEventRepository.from_config(self.config)

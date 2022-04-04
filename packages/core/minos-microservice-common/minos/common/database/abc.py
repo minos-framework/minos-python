@@ -51,8 +51,8 @@ class DatabaseMixin(SetupMixin):
         if pool is None and pool_factory is not None:
             pool = pool_factory.get_pool("database")
 
-        if pool is None:
-            raise NotProvidedException(f"A {DatabaseClientPool!r} instance is required.")
+        if not isinstance(pool, DatabaseClientPool):
+            raise NotProvidedException(f"A {DatabaseClientPool!r} instance is required. Obtained: {pool}")
 
         self._pool = pool
 

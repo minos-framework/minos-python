@@ -57,8 +57,8 @@ class RefResolver:
         if broker_pool is None and pool_factory is not None:
             broker_pool = pool_factory.get_pool("broker")
 
-        if broker_pool is None:
-            raise NotProvidedException(f"A {BrokerClientPool!r} instance is required.")
+        if not isinstance(broker_pool, BrokerClientPool):
+            raise NotProvidedException(f"A {BrokerClientPool!r} instance is required. Obtained: {broker_pool}")
 
         self.broker_pool = broker_pool
 
