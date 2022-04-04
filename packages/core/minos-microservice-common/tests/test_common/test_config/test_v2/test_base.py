@@ -144,7 +144,7 @@ class TestConfigV2(unittest.TestCase):
                 "broker": FakeBrokerClientPool,
                 "database": FakeDatabasePool,
                 "lock": FakeLockPool,
-            }
+            },
         }
         self.assertEqual(expected, self.config.get_pools())
 

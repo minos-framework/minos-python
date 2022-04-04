@@ -6,7 +6,8 @@ import aiopg
 from minos.common import (
     DatabaseClientPool,
     DatabaseMixin,
-    DependencyInjector, PoolFactory,
+    DependencyInjector,
+    PoolFactory,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,

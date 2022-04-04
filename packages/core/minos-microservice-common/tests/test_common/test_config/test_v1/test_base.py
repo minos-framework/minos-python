@@ -6,7 +6,8 @@ from unittest.mock import (
 from minos.common import (
     Config,
     ConfigV1,
-    MinosConfigException, PoolFactory,
+    MinosConfigException,
+    PoolFactory,
 )
 from tests.utils import (
     BASE_PATH,
