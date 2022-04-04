@@ -64,7 +64,6 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
 
 
 class PostgresAsyncTestCase(MinosTestCase):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -95,11 +94,7 @@ class PostgresAsyncTestCase(MinosTestCase):
         )
 
     def get_injections(self):
-        return [
-            PoolFactory.from_config(
-                self.config, default_classes={"database": DatabaseClientPool},
-            )
-        ]
+        return [PoolFactory.from_config(self.config, default_classes={"database": DatabaseClientPool})]
 
     async def asyncSetUp(self):
         pairs = self._drop_duplicates(
