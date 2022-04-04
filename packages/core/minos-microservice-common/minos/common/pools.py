@@ -79,11 +79,11 @@ class PoolFactory(SetupMixin):
 
     def _create_pool(self, type_: str, **kwargs) -> Pool:
         # noinspection PyTypeChecker
-        pool_cls = self._get_pool_class(type_)
+        pool_cls = self._get_pool_cls(type_)
         pool = pool_cls.from_config(self._config, **kwargs)
         return pool
 
-    def _get_pool_class(self, type_: str) -> type[Pool]:
+    def _get_pool_cls(self, type_: str) -> type[Pool]:
         pool_cls = self._default_classes.get(type_)
 
         if pool_cls is None:

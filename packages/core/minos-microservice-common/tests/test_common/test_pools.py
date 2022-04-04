@@ -24,13 +24,41 @@ from minos.common import (
 )
 from tests.utils import (
     CommonTestCase,
+    FakeLockPool,
 )
 
 
 class TestPoolFactory(CommonTestCase):
-    def test_constructor(self):
-        factory = PoolFactory.from_config(self.config)
-        self.assertIsInstance(factory, PoolFactory)
+
+    def setUp(self):
+        super().setUp()
+        self.factory = PoolFactory(self.config, {"lock": FakeLockPool})
+
+    def test_from_config(self):
+        self.assertIsInstance(PoolFactory.from_config(self.config), PoolFactory)
+
+    async def asyncTearDown(self):
+        await self.factory.destroy()
+        await super().asyncTearDown()
+
+    def test_get_pool(self):
+        lock = self.factory.get_pool("lock")
+        self.assertIsInstance(lock, FakeLockPool)
+        self.assertEqual(lock, self.factory.get_pool("lock"))
+
+    def test_get_pool_with_key(self):
+        lock_a = self.factory.get_pool("lock", "a")
+        lock_b = self.factory.get_pool("lock", "b")
+        self.assertIsInstance(lock_a, FakeLockPool)
+        self.assertIsInstance(lock_b, FakeLockPool)
+
+        self.assertNotEqual(lock_a, lock_b)
+        self.assertEqual(lock_a, self.factory.get_pool("lock", "a"))
+        self.assertEqual(lock_b, self.factory.get_pool("lock", "b"))
+
+    def test_get_pool_raises(self):
+        with self.assertRaises(ValueError):
+            self.factory.get_pool("something")
 
 
 class TestPool(unittest.IsolatedAsyncioTestCase):
