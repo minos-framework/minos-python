@@ -21,7 +21,9 @@ from psycopg2 import (
     OperationalError,
 )
 
-from ..injections import Injectable
+from ..injections import (
+    Injectable,
+)
 from ..locks import (
     LockPool,
 )
