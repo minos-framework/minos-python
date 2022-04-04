@@ -1,11 +1,14 @@
 import unittest
+import warnings
 
 import aiopg
 
 from minos.common import (
     DatabaseClientPool,
     DatabaseMixin,
+    NotProvidedException,
     PoolFactory,
+    PostgreSqlMinosDatabase,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -28,6 +31,11 @@ class TestDatabaseMixin(CommonTestCase, PostgresAsyncTestCase):
         database = DatabaseMixin(pool_factory=pool_factory)
         # noinspection PyUnresolvedReferences
         self.assertEqual(pool_factory.get_pool("database"), database.pool)
+
+    async def test_constructor_raises(self):
+        with self.assertRaises(NotProvidedException):
+            # noinspection PyArgumentEqualDefault
+            DatabaseMixin(pool=None, pool_factory=None)
 
     def test_database(self):
         pool = DatabaseClientPool.from_config(self.config)
@@ -111,6 +119,19 @@ class TestDatabaseMixin(CommonTestCase, PostgresAsyncTestCase):
             observed = [v async for v in database.submit_query_and_iter("SELECT * FROM foo;", lock=1234)]
 
         self.assertEqual([(3,), (4,), (5,)], observed)
+
+
+class TestPostgreSqlMinosDatabase(CommonTestCase, PostgresAsyncTestCase):
+    def test_is_subclass(self):
+        self.assertTrue(issubclass(PostgreSqlMinosDatabase, DatabaseMixin))
+
+    def test_warnings(self):
+        pool = DatabaseClientPool.from_config(self.config)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            database = PostgreSqlMinosDatabase(pool)
+            self.assertIsInstance(database, DatabaseMixin)
 
 
 if __name__ == "__main__":

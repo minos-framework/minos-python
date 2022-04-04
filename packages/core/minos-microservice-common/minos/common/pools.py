@@ -90,7 +90,9 @@ class PoolFactory(SetupMixin):
             pool_cls = self._config.get_pools().get(type_)
 
         if pool_cls is None:
-            raise ValueError
+            raise ValueError(
+                f"There is not any provided {type!r} to build pools that matches the given type: {type_!r}"
+            )
 
         return pool_cls
 
