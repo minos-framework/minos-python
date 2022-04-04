@@ -37,13 +37,12 @@ from minos.common import (
     LockPool,
     PoolFactory,
 )
+from minos.common.testing import MinosTestCase as MinosTestCaseBase
 from minos.networks import (
     BrokerClientPool,
     InMemoryBrokerPublisher,
     InMemoryBrokerSubscriberBuilder,
 )
-
-from minos.common.testing import MinosTestCase as MinosTestCaseBase
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
