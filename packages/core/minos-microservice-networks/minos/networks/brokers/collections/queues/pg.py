@@ -175,14 +175,15 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
                 self._queue.task_done()
 
     async def _run(self, max_wait: Optional[float] = 60.0) -> NoReturn:
-        async with self.cursor() as cursor:
-            await self._listen_entries(cursor)
-            try:
-                while self._run_task is not None:
-                    await self._wait_for_entries(cursor, max_wait)
-                    await self._dequeue_batch(cursor)
-            finally:
-                await self._unlisten_entries(cursor)
+        async with self.pool.acquire() as client:
+            async with client.cursor() as cursor:
+                await self._listen_entries(cursor)
+                try:
+                    while self._run_task is not None:
+                        await self._wait_for_entries(cursor, max_wait)
+                        await self._dequeue_batch(cursor)
+                finally:
+                    await self._unlisten_entries(cursor)
 
     async def _listen_entries(self, cursor: Cursor) -> None:
         # noinspection PyTypeChecker
