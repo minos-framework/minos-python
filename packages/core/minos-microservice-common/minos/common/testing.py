@@ -1,7 +1,9 @@
 import unittest
-import warnings
 from abc import (
     ABC,
+)
+from contextlib import (
+    suppress,
 )
 from itertools import (
     starmap,
@@ -11,6 +13,7 @@ from pathlib import (
 )
 from typing import (
     Any,
+    Union,
 )
 from uuid import (
     uuid4,
@@ -26,6 +29,7 @@ from .database import (
 )
 from .injections import (
     DependencyInjector,
+    InjectableMixin,
 )
 from .pools import (
     PoolFactory,
@@ -42,26 +46,20 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase, ABC):
         self.injector = DependencyInjector(self.config, self.get_injections())
         self.injector.wire_injections()
 
-    def get_config(self):
-        """ "TODO"""
+    def get_config(self) -> Config:
         return Config(self.get_config_file_path())
 
     def get_config_file_path(self) -> Path:
-        """TODO"""
-        warnings.warn(
-            "`CONFIG_FILE_PATH` variable has been deprecated by `get_config_file_path` method",
-            DeprecationWarning,
-        )
         return self.CONFIG_FILE_PATH
 
-    def get_injections(self):
+    def get_injections(self) -> list[Union[InjectableMixin, type[InjectableMixin], str]]:
         return []
 
-    async def asyncSetUp(self):
+    async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
         await self.injector.setup_injections()
 
-    async def asyncTearDown(self):
+    async def asyncTearDown(self) -> None:
         await self.injector.destroy_injections()
         await super().asyncTearDown()
 
@@ -69,10 +67,11 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase, ABC):
         self.injector.unwire_injections()
         super().tearDown()
 
-    def __getattr__(self, item):
+    def __getattr__(self, item: str) -> Any:
         if item != "injector":
-            return getattr(self.injector, item)
-        raise AttributeError
+            with suppress(Exception):
+                return getattr(self.injector, item)
+        raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
 
 
 class PostgresAsyncTestCase(MinosTestCase, ABC):
@@ -95,7 +94,7 @@ class PostgresAsyncTestCase(MinosTestCase, ABC):
 
         super().setUp()
 
-    def get_config(self):
+    def get_config(self) -> Config:
         return Config(
             self.get_config_file_path(),
             repository_database=self.repository_db["database"],
@@ -106,7 +105,7 @@ class PostgresAsyncTestCase(MinosTestCase, ABC):
             snapshot_user=self.snapshot_db["user"],
         )
 
-    def get_injections(self):
+    def get_injections(self) -> list[Union[InjectableMixin, type[InjectableMixin], str]]:
         return [PoolFactory.from_config(self.config, default_classes={"database": DatabaseClientPool})]
 
     async def asyncSetUp(self):
