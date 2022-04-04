@@ -17,11 +17,11 @@ from minos.saga import (
 from tests.utils import (
     ADD_ORDER,
     Foo,
-    MinosTestCase,
+    MinosSagaTestCase,
 )
 
 
-class TestSagaExecution(MinosTestCase):
+class TestSagaExecution(MinosSagaTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user = uuid4()

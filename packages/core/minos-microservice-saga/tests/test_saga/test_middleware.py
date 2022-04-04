@@ -19,7 +19,7 @@ from minos.saga import (
     transactional_command,
 )
 from tests.utils import (
-    MinosTestCase,
+    MinosSagaTestCase,
 )
 
 
@@ -30,7 +30,7 @@ async def _fn(request: Request) -> Response:
 Raw = namedtuple("Raw", ["headers", "content"])
 
 
-class TestMiddleware(MinosTestCase):
+class TestMiddleware(MinosSagaTestCase):
     async def test_transactional_command_unused(self):
         # noinspection PyTypeChecker
         request = BrokerRequest(Raw({"transactions": None}, "foo"))

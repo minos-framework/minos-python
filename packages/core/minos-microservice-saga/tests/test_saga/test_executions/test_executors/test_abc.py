@@ -12,11 +12,11 @@ from minos.saga import (
     SagaOperation,
 )
 from tests.utils import (
-    MinosTestCase,
+    MinosSagaTestCase,
 )
 
 
-class TestExecutor(MinosTestCase):
+class TestExecutor(MinosSagaTestCase):
     def setUp(self) -> None:
         super().setUp()
 

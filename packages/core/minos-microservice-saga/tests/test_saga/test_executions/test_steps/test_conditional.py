@@ -25,7 +25,7 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
-    MinosTestCase,
+    MinosSagaTestCase,
     handle_order_success,
     handle_ticket_success_raises,
     send_create_order,
@@ -41,7 +41,7 @@ def _is_two(context):
     return context["option"] == 2
 
 
-class TestConditionalSageStepExecution(MinosTestCase):
+class TestConditionalSageStepExecution(MinosSagaTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.execute_kwargs = {

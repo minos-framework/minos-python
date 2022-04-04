@@ -17,12 +17,12 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
-    MinosTestCase,
+    MinosSagaTestCase,
     handle_ticket_success,
 )
 
 
-class TestResponseExecutor(MinosTestCase):
+class TestResponseExecutor(MinosSagaTestCase):
     def setUp(self) -> None:
         super().setUp()
 

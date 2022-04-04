@@ -27,7 +27,7 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
-    MinosTestCase,
+    MinosSagaTestCase,
     handle_order_success,
     handle_ticket_success,
     handle_ticket_success_raises,
@@ -38,7 +38,7 @@ from tests.utils import (
 )
 
 
-class TestSagaExecution(MinosTestCase):
+class TestSagaExecution(MinosSagaTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.saga = (

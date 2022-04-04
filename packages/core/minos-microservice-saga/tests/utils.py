@@ -2,7 +2,6 @@ from __future__ import (
     annotations,
 )
 
-import unittest
 from pathlib import (
     Path,
 )
@@ -16,15 +15,15 @@ from minos.aggregate import (
     InMemoryTransactionRepository,
 )
 from minos.common import (
-    Config,
     DeclarativeModel,
-    DependencyInjector,
     Lock,
     LockPool,
     PoolFactory,
     SetupMixin,
 )
-from minos.common.testing import MinosTestCase as MinosTestCaseBase
+from minos.common.testing import (
+    MinosTestCase,
+)
 from minos.networks import (
     BrokerClientPool,
     InMemoryBrokerPublisher,
@@ -42,7 +41,7 @@ CONFIG_FILE_PATH = BASE_PATH / "config.yml"
 DB_PATH = BASE_PATH / "test_db.lmdb"
 
 
-class MinosTestCase(MinosTestCaseBase):
+class MinosSagaTestCase(MinosTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def get_injections(self):

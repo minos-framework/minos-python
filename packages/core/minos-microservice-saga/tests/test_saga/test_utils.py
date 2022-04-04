@@ -7,11 +7,11 @@ from minos.saga import (
     get_service_name,
 )
 from tests.utils import (
-    MinosTestCase,
+    MinosSagaTestCase,
 )
 
 
-class TestUtils(MinosTestCase):
+class TestUtils(MinosSagaTestCase):
     def test_get_service_name(self):
         self.assertEqual("order", get_service_name())
 

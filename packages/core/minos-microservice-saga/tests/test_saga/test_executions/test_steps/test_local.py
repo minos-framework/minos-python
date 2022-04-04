@@ -15,14 +15,14 @@ from minos.saga import (
     SagaStepStatus,
 )
 from tests.utils import (
-    MinosTestCase,
+    MinosSagaTestCase,
     create_payment,
     create_payment_raises,
     delete_payment,
 )
 
 
-class TestLocalSagaStepExecution(MinosTestCase):
+class TestLocalSagaStepExecution(MinosSagaTestCase):
     def setUp(self) -> None:
         super().setUp()
 

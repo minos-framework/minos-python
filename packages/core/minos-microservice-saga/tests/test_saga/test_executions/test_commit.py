@@ -23,11 +23,11 @@ from minos.saga import (
     TransactionCommitter,
 )
 from tests.utils import (
-    MinosTestCase,
+    MinosSagaTestCase,
 )
 
 
-class TestTransactionCommitter(MinosTestCase):
+class TestTransactionCommitter(MinosSagaTestCase):
     def setUp(self) -> None:
         super().setUp()
 
