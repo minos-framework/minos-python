@@ -24,8 +24,8 @@ from minos.common import (
     NotProvidedException,
 )
 from tests.utils import (
-    Car,
     AggregateTestCase,
+    Car,
 )
 
 

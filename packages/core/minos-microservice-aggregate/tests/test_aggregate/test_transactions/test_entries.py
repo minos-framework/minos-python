@@ -23,8 +23,8 @@ from minos.common import (
     NULL_UUID,
 )
 from tests.utils import (
-    FakeAsyncIterator,
     AggregateTestCase,
+    FakeAsyncIterator,
 )
 
 

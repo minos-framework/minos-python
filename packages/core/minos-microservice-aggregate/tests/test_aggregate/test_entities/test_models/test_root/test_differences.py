@@ -13,8 +13,8 @@ from minos.common import (
     current_datetime,
 )
 from tests.utils import (
-    Car,
     AggregateTestCase,
+    Car,
 )
 
 

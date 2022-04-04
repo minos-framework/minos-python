@@ -14,8 +14,8 @@ from minos.networks import (
     BrokerMessageV1,
 )
 from tests.utils import (
-    Car,
     AggregateTestCase,
+    Car,
     Owner,
 )
 

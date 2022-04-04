@@ -13,8 +13,8 @@ from minos.aggregate import (
     SnapshotEntry,
 )
 from tests.utils import (
-    Car,
     AggregateTestCase,
+    Car,
 )
 
 

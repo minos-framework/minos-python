@@ -21,8 +21,8 @@ from minos.common.testing import (
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
-    FakeAsyncIterator,
     AggregateTestCase,
+    FakeAsyncIterator,
 )
 
 

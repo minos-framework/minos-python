@@ -41,9 +41,9 @@ from minos.networks import (
     BrokerMessageV1,
 )
 from tests.utils import (
+    AggregateTestCase,
     FakeAsyncIterator,
     FakeLock,
-    AggregateTestCase,
 )
 
 

@@ -12,8 +12,8 @@ from minos.common import (
     ModelType,
 )
 from tests.utils import (
-    Car,
     AggregateTestCase,
+    Car,
 )
 
 

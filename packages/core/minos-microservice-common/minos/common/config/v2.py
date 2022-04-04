@@ -151,6 +151,7 @@ class ConfigV2(Config):
         from ..pools import (
             PoolFactory,
         )
+
         factory = PoolFactory
 
         try:

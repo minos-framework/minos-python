@@ -25,9 +25,9 @@ from minos.common import (
     SetupMixin,
 )
 from tests.utils import (
+    AggregateTestCase,
     FakeAsyncIterator,
     FakeLock,
-    AggregateTestCase,
 )
 
 

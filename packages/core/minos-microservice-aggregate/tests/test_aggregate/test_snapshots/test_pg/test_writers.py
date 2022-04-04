@@ -34,8 +34,8 @@ from minos.common.testing import (
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
-    Car,
     AggregateTestCase,
+    Car,
 )
 
 
