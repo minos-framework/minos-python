@@ -148,21 +148,19 @@ class ConfigV2(Config):
         return data
 
     def _get_pools(self) -> dict[str, type]:
+        try:
+            types = self.get_by_key("pools")
+        except MinosConfigException:
+            return dict()
+
+        types = {name: import_module(classname) for name, classname in types.items()}
+
         from ..pools import (
             PoolFactory,
         )
 
-        factory = PoolFactory
-
-        try:
-            types = self.get_by_key("pools")
-        except MinosConfigException:
-            types = dict()
-
-        types = {name: import_module(classname) for name, classname in types.items()}
-
         return {
-            "factory": factory,
+            "factory": PoolFactory,
             "types": types,
         }
 

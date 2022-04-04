@@ -70,9 +70,9 @@ class TestConfigV2(unittest.TestCase):
         ]
         self.assertEqual(expected, self.config.get_injections())
 
-    def test_injections_not_defined(self):  # FIXME
+    def test_injections_not_defined(self):
         with patch.object(ConfigV2, "get_by_key", side_effect=MinosConfigException("")):
-            self.assertEqual([PoolFactory], self.config.get_injections())
+            self.assertEqual(list(), self.config.get_injections())
 
     def test_injections_not_injectable(self):
         with patch.object(ConfigV2, "_get_pools", return_value={"factory": int}):
@@ -149,9 +149,8 @@ class TestConfigV2(unittest.TestCase):
         self.assertEqual(expected, self.config.get_pools())
 
     def test_pools_not_defined(self):
-        expected = {"factory": PoolFactory, "types": {}}
         with patch.object(ConfigV2, "get_by_key", side_effect=MinosConfigException("")):
-            self.assertEqual(expected, self.config.get_pools())
+            self.assertEqual(dict(), self.config.get_pools())
 
     def test_services(self):
         self.assertEqual([float, int], self.config.get_services())
