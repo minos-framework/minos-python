@@ -123,6 +123,7 @@ class PostgreSqlLockPool(DatabaseLockPool):
     """TODO"""
 
     def __init__(self, *args, **kwargs):
-        warnings.warn(f"{PostgreSqlLockPool!r} has been deprecated. Use {PostgreSqlLockPool} instead.",
-                      DeprecationWarning)
+        warnings.warn(
+            f"{PostgreSqlLockPool!r} has been deprecated. Use {PostgreSqlLockPool} instead.", DeprecationWarning
+        )
         super().__init__(*args, **kwargs)
