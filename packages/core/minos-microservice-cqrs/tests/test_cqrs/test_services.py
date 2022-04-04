@@ -9,6 +9,7 @@ from unittest.mock import (
 from minos.common import (
     DatabaseLockPool,
     DependencyInjector,
+    PoolFactory,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -18,7 +19,6 @@ from minos.cqrs import (
     Service,
 )
 from minos.networks import (
-    BrokerClientPool,
     BrokerCommandEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
     InMemoryRequest,
@@ -40,7 +40,7 @@ class TestService(PostgresAsyncTestCase):
 
         self.lock_pool = DatabaseLockPool.from_config(self.config)
 
-        self.injector = DependencyInjector(self.config, [BrokerClientPool])
+        self.injector = DependencyInjector(self.config, [PoolFactory])
         self.injector.wire_injections(modules=[sys.modules[__name__]])
 
         self.service = FakeService(config=self.config, lock_pool=self.lock_pool)
@@ -51,7 +51,7 @@ class TestService(PostgresAsyncTestCase):
     async def test_constructor(self):
         self.assertEqual(self.config, self.service.config)
         self.assertEqual(self.lock_pool, self.service.lock_pool)
-        self.assertEqual(self.injector.broker_pool, self.service.broker_pool)
+        self.assertEqual(self.injector.pool_factory, self.service.pool_factory)
 
         with self.assertRaises(AttributeError):
             self.service.event_repository
