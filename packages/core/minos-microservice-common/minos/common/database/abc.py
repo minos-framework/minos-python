@@ -56,6 +56,46 @@ class DatabaseMixin(SetupMixin):
 
         self._pool = pool
 
+    @property
+    def database(self) -> str:
+        """Get the database's database.
+
+        :return: A ``str`` value.
+        """
+        return self.pool.database
+
+    @property
+    def host(self) -> str:
+        """Get the database's host.
+
+        :return: A ``str`` value.
+        """
+        return self.pool.host
+
+    @property
+    def port(self) -> int:
+        """Get the database's port.
+
+        :return: An ``int`` value.
+        """
+        return self.pool.port
+
+    @property
+    def user(self) -> str:
+        """Get the database's user.
+
+        :return: A ``str`` value.
+        """
+        return self.pool.user
+
+    @property
+    def password(self) -> str:
+        """Get the database's password.
+
+        :return: A ``str`` value.
+        """
+        return self.pool.password
+
     async def submit_query_and_fetchone(self, *args, **kwargs) -> tuple:
         """Submit a SQL query and gets the first response.
 
@@ -181,8 +221,8 @@ class DatabaseMixin(SetupMixin):
 class PostgreSqlMinosDatabase(DatabaseMixin):
     """TODO"""
 
-    def __new__(cls, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         warnings.warn(
             f"{PostgreSqlMinosDatabase!r} has been deprecated. Use {DatabaseMixin} instead.", DeprecationWarning
         )
-        return super().__new__(cls, *args, **kwargs)
+        super().__init__(*args, **kwargs)

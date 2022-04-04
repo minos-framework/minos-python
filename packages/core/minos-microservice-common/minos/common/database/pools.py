@@ -102,9 +102,9 @@ class DatabaseClientPool(Pool[ContextManager]):
 class PostgreSqlPool(DatabaseClientPool):
     """TODO"""
 
-    def __new__(cls, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         warnings.warn(f"{PostgreSqlPool!r} has been deprecated. Use {DatabaseClientPool} instead.", DeprecationWarning)
-        return super().__new__(cls, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class DatabaseLockPool(LockPool, DatabaseClientPool):
@@ -122,8 +122,7 @@ class DatabaseLockPool(LockPool, DatabaseClientPool):
 class PostgreSqlLockPool(DatabaseLockPool):
     """TODO"""
 
-    def __new__(cls, *args, **kwargs):
-        warnings.warn(
-            f"{PostgreSqlLockPool!r} has been deprecated. Use {DatabaseLockPool} instead.", DeprecationWarning
-        )
-        return super().__new__(cls, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{PostgreSqlLockPool!r} has been deprecated. Use {PostgreSqlLockPool} instead.",
+                      DeprecationWarning)
+        super().__init__(*args, **kwargs)
