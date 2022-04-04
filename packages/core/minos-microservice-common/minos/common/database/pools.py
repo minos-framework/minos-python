@@ -10,15 +10,8 @@ from typing import (
     Optional,
 )
 
-import aiopg
 from aiomisc.pool import (
     ContextManager,
-)
-from aiopg import (
-    Connection,
-)
-from psycopg2 import (
-    OperationalError,
 )
 
 from ..injections import (
@@ -30,6 +23,11 @@ from ..locks import (
 from ..pools import (
     Pool,
 )
+from .clients import (
+    AiopgDatabaseClient,
+    DatabaseClient,
+    UnableToConnectException,
+)
 from .locks import (
     DatabaseLock,
 )
@@ -37,7 +35,7 @@ from .locks import (
 logger = logging.getLogger(__name__)
 
 
-class DatabaseClientPool(Pool[ContextManager]):
+class DatabaseClientPool(Pool[DatabaseClient]):
     """Database Client Pool class."""
 
     def __init__(
@@ -71,35 +69,28 @@ class DatabaseClientPool(Pool[ContextManager]):
     def _from_config(cls, *args, config, **kwargs):
         return cls(*args, **config.get_default_database(), **kwargs)
 
-    async def _create_instance(self) -> Optional[Connection]:
+    async def _create_instance(self) -> Optional[DatabaseClient]:
+        instance = AiopgDatabaseClient(
+            host=self.host, port=self.port, database=self.database, user=self.user, password=self.password
+        )
+
         try:
-            connection = await aiopg.connect(
-                host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password
-            )
-        except OperationalError as exc:
-            logger.warning(f"There was an {exc!r} while trying to get a database connection.")
+            await instance.setup()
+        except UnableToConnectException:
             await sleep(1)
             return None
 
-        logger.info(f"Created {self.database!r} database connection identified by {id(connection)}!")
-        return connection
+        logger.info(f"Created {instance!r}!")
+        return instance
 
-    async def _destroy_instance(self, instance: Connection):
-        if not instance.closed:
-            await instance.close()
-        logger.info(f"Destroyed {self.database!r} database connection identified by {id(instance)}!")
+    async def _destroy_instance(self, instance: DatabaseClient):
+        logger.info(f"Destroyed {instance!r}!")
+        await instance.destroy()
 
-    async def _check_instance(self, instance: Optional[Connection]) -> bool:
+    async def _check_instance(self, instance: Optional[DatabaseClient]) -> bool:
         if instance is None:
             return False
-
-        try:
-            # This operation connects to the database and raises an exception if something goes wrong.
-            instance.isolation_level
-        except OperationalError:
-            return False
-
-        return not instance.closed
+        return await instance.is_valid()
 
 
 @Injectable("postgresql_pool")
@@ -111,7 +102,7 @@ class PostgreSqlPool(DatabaseClientPool):
         super().__init__(*args, **kwargs)
 
 
-class DatabaseLockPool(LockPool, DatabaseClientPool):
+class DatabaseLockPool(DatabaseClientPool, LockPool):
     """Database Lock Pool class."""
 
     def acquire(self, key: Hashable, *args, **kwargs) -> DatabaseLock:
@@ -120,7 +111,18 @@ class DatabaseLockPool(LockPool, DatabaseClientPool):
         :param key: The key to be used for locking.
         :return: A ``PostgreSqlLock`` instance.
         """
-        return DatabaseLock(super().acquire(), key, *args, **kwargs)
+        acquired = super().acquire()
+
+        async def _fn_enter():
+            client = await acquired.__aenter__()
+            return await DatabaseLock(client, key, *args, **kwargs).__aenter__()
+
+        async def _fn_exit(lock: DatabaseLock):
+            await lock.__aexit__(None, None, None)
+            await acquired.__aexit__(None, None, None)
+
+        # noinspection PyTypeChecker
+        return ContextManager(_fn_enter, _fn_exit)
 
 
 class PostgreSqlLockPool(DatabaseLockPool):

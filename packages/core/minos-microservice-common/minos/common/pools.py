@@ -12,6 +12,7 @@ from asyncio import (
 )
 from typing import (
     Any,
+    AsyncContextManager,
     Generic,
     Optional,
     TypeVar,
@@ -130,7 +131,7 @@ class Pool(SetupMixin, PoolBase, Generic[P], ABC):
         await self._PoolBase__release(instance)
         logger.debug(f"Released instance: {instance!r}")
 
-    def acquire(self, *args, **kwargs) -> P:
+    def acquire(self, *args, **kwargs) -> AsyncContextManager[P]:
         """Acquire a new instance wrapped on an asynchronous context manager.
 
         :param args: Additional positional arguments.

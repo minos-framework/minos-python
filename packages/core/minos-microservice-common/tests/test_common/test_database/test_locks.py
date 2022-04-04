@@ -1,12 +1,8 @@
 import unittest
 import warnings
 
-import aiopg
-from aiopg import (
-    Cursor,
-)
-
 from minos.common import (
+    AiopgDatabaseClient,
     DatabaseLock,
     Lock,
     PostgreSqlLock,
@@ -23,30 +19,25 @@ class TestDatabaseLock(CommonTestCase, PostgresAsyncTestCase):
     def test_base(self):
         self.assertTrue(issubclass(DatabaseLock, Lock))
 
-    async def test_wrapped_connection(self):
-        wrapped_connection = aiopg.connect(**self.config.get_default_database())
-        lock = DatabaseLock(wrapped_connection, "foo")
-        self.assertEqual(wrapped_connection, lock.wrapped_connection)
+    async def test_client(self):
+        client = AiopgDatabaseClient(**self.config.get_default_database())
+        lock = DatabaseLock(client, "foo")
+        self.assertEqual(client, lock.client)
 
     async def test_key(self):
-        wrapped_connection = aiopg.connect(**self.config.get_default_database())
-        lock = DatabaseLock(wrapped_connection, "foo")
+        client = AiopgDatabaseClient(**self.config.get_default_database())
+        lock = DatabaseLock(client, "foo")
         self.assertEqual("foo", lock.key)
 
     async def test_key_raises(self):
-        wrapped_connection = aiopg.connect(**self.config.get_default_database())
+        client = AiopgDatabaseClient(**self.config.get_default_database())
         with self.assertRaises(ValueError):
-            DatabaseLock(wrapped_connection, [])
+            DatabaseLock(client, [])
 
     async def test_hashed_key(self):
-        wrapped_connection = aiopg.connect(**self.config.get_default_database())
-        lock = DatabaseLock(wrapped_connection, "foo")
+        client = AiopgDatabaseClient(**self.config.get_default_database())
+        lock = DatabaseLock(client, "foo")
         self.assertEqual(hash("foo"), lock.hashed_key)
-
-    async def test_cursor(self):
-        wrapped_connection = aiopg.connect(**self.config.get_default_database())
-        async with DatabaseLock(wrapped_connection, "foo") as lock:
-            self.assertIsInstance(lock.cursor, Cursor)
 
 
 class TestPostgreSqlLock(CommonTestCase, PostgresAsyncTestCase):
@@ -54,11 +45,11 @@ class TestPostgreSqlLock(CommonTestCase, PostgresAsyncTestCase):
         self.assertTrue(issubclass(PostgreSqlLock, DatabaseLock))
 
     async def test_warnings(self):
-        wrapped_connection = aiopg.connect(**self.config.get_default_database())
+        client = AiopgDatabaseClient(**self.config.get_default_database())
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
-            lock = PostgreSqlLock(wrapped_connection, "foo")
+            lock = PostgreSqlLock(client, "foo")
             self.assertIsInstance(lock, DatabaseLock)
 
 

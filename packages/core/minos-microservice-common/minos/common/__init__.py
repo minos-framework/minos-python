@@ -14,6 +14,8 @@ from .config import (
     MinosConfig,
 )
 from .database import (
+    AiopgDatabaseClient,
+    DatabaseClient,
     DatabaseClientPool,
     DatabaseLock,
     DatabaseLockPool,
