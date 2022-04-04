@@ -9,6 +9,7 @@ from minos.common import (
     NotProvidedException,
     PoolFactory,
     PostgreSqlMinosDatabase,
+    PostgreSqlPool,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -35,32 +36,56 @@ class TestDatabaseMixin(CommonTestCase, PostgresAsyncTestCase):
     async def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):
             # noinspection PyArgumentEqualDefault
-            DatabaseMixin(pool=None, pool_factory=None)
+            DatabaseMixin(database_pool=None, pool_factory=None)
+
+    async def test_constructor_with_postgresql_pool(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            pool = PostgreSqlPool.from_config(self.config)
+            # noinspection PyTypeChecker,PyArgumentEqualDefault
+            database = DatabaseMixin(database_pool=None, pool_factory=None, postgresql_pool=pool)
+
+        self.assertEqual(pool, database.pool)
 
     def test_database(self):
         pool = DatabaseClientPool.from_config(self.config)
         database = DatabaseMixin(pool)
-        self.assertEqual(pool.database, database.database)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            self.assertEqual(pool.database, database.database)
 
     def test_user(self):
         pool = DatabaseClientPool.from_config(self.config)
         database = DatabaseMixin(pool)
-        self.assertEqual(pool.user, database.user)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            self.assertEqual(pool.user, database.user)
 
     def test_password(self):
         pool = DatabaseClientPool.from_config(self.config)
         database = DatabaseMixin(pool)
-        self.assertEqual(pool.password, database.password)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            self.assertEqual(pool.password, database.password)
 
     def test_host(self):
         pool = DatabaseClientPool.from_config(self.config)
         database = DatabaseMixin(pool)
-        self.assertEqual(pool.host, database.host)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            self.assertEqual(pool.host, database.host)
 
     def test_port(self):
         pool = DatabaseClientPool.from_config(self.config)
         database = DatabaseMixin(pool)
-        self.assertEqual(pool.port, database.port)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            self.assertEqual(pool.port, database.port)
 
     async def test_pool(self):
         async with DatabaseMixin() as database:

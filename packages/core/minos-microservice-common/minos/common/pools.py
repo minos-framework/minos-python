@@ -87,7 +87,7 @@ class PoolFactory(SetupMixin):
         pool_cls = self._default_classes.get(type_)
 
         if pool_cls is None:
-            pool_cls = self._config.get_pools().get(type_)
+            pool_cls = self._config.get_pools().get("types", dict()).get(type_)
 
         if pool_cls is None:
             raise ValueError(

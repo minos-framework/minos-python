@@ -33,6 +33,7 @@ from .locks import (
 )
 from .pools import (
     DatabaseClientPool,
+    PostgreSqlPool,
 )
 
 
@@ -42,19 +43,24 @@ class DatabaseMixin(SetupMixin):
     @Inject()
     def __init__(
         self,
-        pool: Optional[DatabaseClientPool] = None,
+        database_pool: Optional[DatabaseClientPool] = None,
         pool_factory: Optional[PoolFactory] = None,
+        postgresql_pool: Optional[PostgreSqlPool] = None,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs, pool_factory=pool_factory)
-        if pool is None and pool_factory is not None:
-            pool = pool_factory.get_pool("database")
+        if database_pool is None and pool_factory is not None:
+            database_pool = pool_factory.get_pool("database")
 
-        if not isinstance(pool, DatabaseClientPool):
-            raise NotProvidedException(f"A {DatabaseClientPool!r} instance is required. Obtained: {pool}")
+        if database_pool is None and postgresql_pool is not None:
+            warnings.warn("'postgresql_pool' argument has been deprecated", DeprecationWarning)
+            database_pool = postgresql_pool
 
-        self._pool = pool
+        if not isinstance(database_pool, DatabaseClientPool):
+            raise NotProvidedException(f"A {DatabaseClientPool!r} instance is required. Obtained: {database_pool}")
+
+        self._pool = database_pool
 
     @property
     def database(self) -> str:
@@ -62,6 +68,7 @@ class DatabaseMixin(SetupMixin):
 
         :return: A ``str`` value.
         """
+        warnings.warn("'database' has been deprecated. Use 'pool.database' instead.", DeprecationWarning)
         return self.pool.database
 
     @property
@@ -70,6 +77,7 @@ class DatabaseMixin(SetupMixin):
 
         :return: A ``str`` value.
         """
+        warnings.warn("'host' has been deprecated. Use 'pool.host' instead.", DeprecationWarning)
         return self.pool.host
 
     @property
@@ -78,6 +86,7 @@ class DatabaseMixin(SetupMixin):
 
         :return: An ``int`` value.
         """
+        warnings.warn("'port' has been deprecated. Use 'pool.port' instead.", DeprecationWarning)
         return self.pool.port
 
     @property
@@ -86,6 +95,7 @@ class DatabaseMixin(SetupMixin):
 
         :return: A ``str`` value.
         """
+        warnings.warn("'user' has been deprecated. Use 'pool.user' instead.", DeprecationWarning)
         return self.pool.user
 
     @property
@@ -94,6 +104,7 @@ class DatabaseMixin(SetupMixin):
 
         :return: A ``str`` value.
         """
+        warnings.warn("'password' has been deprecated. Use 'pool.password' instead.", DeprecationWarning)
         return self.pool.password
 
     async def submit_query_and_fetchone(self, *args, **kwargs) -> tuple:
