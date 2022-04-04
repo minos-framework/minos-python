@@ -48,7 +48,7 @@ class DatabaseLock(Lock):
 
 
 class PostgreSqlLock(DatabaseLock):
-    """TODO"""
+    """PostgreSql Lock class."""
 
     def __init__(self, *args, **kwargs):
         warnings.warn(f"{PostgreSqlLock!r} has been deprecated. Use {DatabaseLock} instead.", DeprecationWarning)

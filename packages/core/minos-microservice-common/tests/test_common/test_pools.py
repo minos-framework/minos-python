@@ -29,7 +29,6 @@ from tests.utils import (
 
 
 class TestPoolFactory(CommonTestCase):
-
     def setUp(self):
         super().setUp()
         self.factory = PoolFactory(self.config, {"lock": FakeLockPool})

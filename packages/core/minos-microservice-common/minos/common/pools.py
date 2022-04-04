@@ -41,7 +41,7 @@ P = TypeVar("P")
 
 @Injectable("pool_factory")
 class PoolFactory(SetupMixin):
-    """TODO"""
+    """Pool Factory class."""
 
     _pools: dict[str, Pool]
 
@@ -64,12 +64,12 @@ class PoolFactory(SetupMixin):
         await super()._destroy()
 
     def get_pool(self, type_: str, key: Optional[str] = None, **kwargs) -> Pool:
-        """TODO
+        """Get a pool from the factory.
 
-        :param type_: TODO
-        :param key: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param type_: The type of the pool.
+        :param key:  An optional key that identifies the pool.
+        :param kwargs: Additional named arguments.
+        :return: A ``Pool`` instance.
         """
         if key is None:
             key = type_

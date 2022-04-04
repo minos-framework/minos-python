@@ -102,8 +102,9 @@ class DatabaseClientPool(Pool[ContextManager]):
         return not instance.closed
 
 
+@Injectable("postgresql_pool")
 class PostgreSqlPool(DatabaseClientPool):
-    """TODO"""
+    """PostgreSql Pool class."""
 
     def __init__(self, *args, **kwargs):
         warnings.warn(f"{PostgreSqlPool!r} has been deprecated. Use {DatabaseClientPool} instead.", DeprecationWarning)
@@ -122,9 +123,8 @@ class DatabaseLockPool(LockPool, DatabaseClientPool):
         return DatabaseLock(super().acquire(), key, *args, **kwargs)
 
 
-@Injectable("postgresql_pool")
 class PostgreSqlLockPool(DatabaseLockPool):
-    """TODO"""
+    """PostgreSql Lock Pool class"""
 
     def __init__(self, *args, **kwargs):
         warnings.warn(

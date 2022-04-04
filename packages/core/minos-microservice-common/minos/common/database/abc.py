@@ -219,7 +219,7 @@ class DatabaseMixin(SetupMixin):
 
 
 class PostgreSqlMinosDatabase(DatabaseMixin):
-    """TODO"""
+    """PostgreSql Minos Database class."""
 
     def __init__(self, *args, **kwargs):
         warnings.warn(
