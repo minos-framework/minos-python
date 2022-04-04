@@ -41,7 +41,7 @@ CONFIG_FILE_PATH = BASE_PATH / "config.yml"
 DB_PATH = BASE_PATH / "test_db.lmdb"
 
 
-class MinosSagaTestCase(MinosTestCase):
+class SagaTestCase(MinosTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def get_injections(self):

@@ -38,11 +38,11 @@ from tests.utils import (
     DB_PATH,
     DELETE_ORDER,
     Foo,
-    MinosSagaTestCase,
+    SagaTestCase,
 )
 
 
-class TestSagaManager(MinosSagaTestCase):
+class TestSagaManager(SagaTestCase):
     DB_PATH = DB_PATH
 
     async def asyncSetUp(self) -> None:

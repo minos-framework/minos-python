@@ -15,13 +15,13 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
-    MinosSagaTestCase,
+    SagaTestCase,
     create_payment,
     create_payment_raises,
 )
 
 
-class TestLocalExecutor(MinosSagaTestCase):
+class TestLocalExecutor(SagaTestCase):
     def setUp(self) -> None:
         super().setUp()
 

@@ -19,7 +19,7 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
-    MinosSagaTestCase,
+    SagaTestCase,
     handle_ticket_error,
     handle_ticket_error_raises,
     handle_ticket_success,
@@ -30,7 +30,7 @@ from tests.utils import (
 )
 
 
-class TestRemoteSagaStepExecution(MinosSagaTestCase):
+class TestRemoteSagaStepExecution(SagaTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.execute_kwargs = {
