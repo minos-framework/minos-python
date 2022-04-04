@@ -64,8 +64,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
 
 
 class PostgresAsyncTestCase(MinosTestCase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def setUp(self):
 
         self._uuid = uuid4()
         self._config = Config(self.CONFIG_FILE_PATH)
@@ -81,6 +80,8 @@ class PostgresAsyncTestCase(MinosTestCase):
         self.repository_db = self._meta_repository_db | self._test_db
         self.broker_queue_db = self._meta_broker_queue_db | self._test_db
         self.snapshot_db = self._meta_snapshot_db | self._test_db
+
+        super().setUp()
 
     def get_config(self):
         return Config(
