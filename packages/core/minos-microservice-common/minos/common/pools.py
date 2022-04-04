@@ -45,9 +45,13 @@ class PoolFactory(SetupMixin):
 
     _pools: dict[str, Pool]
 
-    def __init__(self, config: Config, *args, **kwargs):
+    def __init__(self, config: Config, default_classes: dict[str, type[Pool]] = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if default_classes is None:
+            default_classes = dict()
+
         self._config = config
+        self._default_classes = default_classes
         self._pools = dict()
 
     @classmethod
@@ -75,12 +79,20 @@ class PoolFactory(SetupMixin):
 
     def _create_pool(self, type_: str, **kwargs) -> Pool:
         # noinspection PyTypeChecker
-        pool_cls: type[Pool] = self._config.get_pools().get(type_)
+        pool_cls = self._get_pool_class(type_)
+        pool = pool_cls.from_config(self._config, **kwargs)
+        return pool
+
+    def _get_pool_class(self, type_: str) -> type[Pool]:
+        pool_cls = self._default_classes.get(type_)
+
+        if pool_cls is None:
+            pool_cls = self._config.get_pools().get(type_)
+
         if pool_cls is None:
             raise ValueError
 
-        pool = pool_cls.from_config(self._config, **kwargs)
-        return pool
+        return pool_cls
 
 
 class Pool(SetupMixin, PoolBase, Generic[P], ABC):

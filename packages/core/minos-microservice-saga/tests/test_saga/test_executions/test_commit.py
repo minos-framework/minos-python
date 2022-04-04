@@ -3,6 +3,9 @@ from uuid import (
     uuid4,
 )
 
+from minos.common import (
+    NotProvidedException,
+)
 from minos.networks import (
     BrokerMessage,
     BrokerMessageV1,
@@ -52,6 +55,10 @@ class TestTransactionCommitter(MinosTestCase):
         ]
 
         self.committer = TransactionCommitter(self.execution_uuid, self.executed_steps)
+
+    def test_constructor_without_broker(self):
+        with self.assertRaises(NotProvidedException):
+            TransactionCommitter(self.execution_uuid, self.executed_steps, broker_pool=None, pool_factory=None)
 
     def test_transactions(self):
         expected = [

@@ -21,6 +21,7 @@ from minos.common import (
     DependencyInjector,
     Lock,
     LockPool,
+    PoolFactory,
     SetupMixin,
 )
 from minos.networks import (
@@ -46,15 +47,16 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
 
         self.config = Config(CONFIG_FILE_PATH)
 
-        self.broker_pool = BrokerClientPool.from_config(CONFIG_FILE_PATH)
+        self.pool_factory = PoolFactory.from_config(
+            CONFIG_FILE_PATH, default_classes={"broker": BrokerClientPool, "lock": FakeLockPool}
+        )
         self.broker_publisher = InMemoryBrokerPublisher()
         self.broker_subscriber_builder = InMemoryBrokerSubscriberBuilder()
-        self.lock_pool = FakeLockPool()
-        self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
+        self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.pool_factory.get_pool("lock"))
         self.event_repository = InMemoryEventRepository(
             broker_publisher=self.broker_publisher,
             transaction_repository=self.transaction_repository,
-            lock_pool=self.lock_pool,
+            lock_pool=self.pool_factory.get_pool("lock"),
         )
         self.snapshot_repository = InMemorySnapshotRepository(
             event_repository=self.event_repository, transaction_repository=self.transaction_repository
@@ -63,10 +65,9 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         self.injector = DependencyInjector(
             self.config,
             [
-                self.broker_pool,
+                self.pool_factory,
                 self.broker_publisher,
                 self.broker_subscriber_builder,
-                self.lock_pool,
                 self.transaction_repository,
                 self.event_repository,
                 self.snapshot_repository,
