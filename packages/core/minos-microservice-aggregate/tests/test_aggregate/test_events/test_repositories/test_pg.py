@@ -16,31 +16,10 @@ from tests.testcases import (
     EventRepositorySelectTestCase,
     EventRepositorySubmitTestCase,
 )
-from tests.utils import (
-    CONFIG_FILE_PATH,
-)
 
 
-class TestPostgreSqlEventRepositorySubmit(PostgresAsyncTestCase, EventRepositorySubmitTestCase):
+class TestPostgreSqlEventRepositorySubmit(EventRepositorySubmitTestCase, PostgresAsyncTestCase):
     __test__ = True
-
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
-    def setUp(self) -> None:
-        PostgresAsyncTestCase.setUp(self)
-        EventRepositorySubmitTestCase.setUp(self)
-
-    async def asyncSetUp(self):
-        await PostgresAsyncTestCase.asyncSetUp(self)
-        await EventRepositorySubmitTestCase.asyncSetUp(self)
-
-    def tearDown(self):
-        EventRepositorySubmitTestCase.tearDown(self)
-        PostgresAsyncTestCase.tearDown(self)
-
-    async def asyncTearDown(self):
-        await EventRepositorySelectTestCase.asyncTearDown(self)
-        await PostgresAsyncTestCase.asyncTearDown(self)
 
     def build_event_repository(self) -> EventRepository:
         """Fort testing purposes."""
@@ -71,26 +50,8 @@ class TestPostgreSqlEventRepositorySubmit(PostgresAsyncTestCase, EventRepository
         self.assertTrue(response)
 
 
-class TestPostgreSqlRepositorySelect(PostgresAsyncTestCase, EventRepositorySelectTestCase):
+class TestPostgreSqlRepositorySelect(EventRepositorySelectTestCase, PostgresAsyncTestCase):
     __test__ = True
-
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
-    def setUp(self) -> None:
-        PostgresAsyncTestCase.setUp(self)
-        EventRepositorySelectTestCase.setUp(self)
-
-    async def asyncSetUp(self):
-        await PostgresAsyncTestCase.asyncSetUp(self)
-        await EventRepositorySelectTestCase.asyncSetUp(self)
-
-    def tearDown(self):
-        EventRepositorySelectTestCase.tearDown(self)
-        PostgresAsyncTestCase.tearDown(self)
-
-    async def asyncTearDown(self):
-        await EventRepositorySelectTestCase.asyncTearDown(self)
-        await PostgresAsyncTestCase.asyncTearDown(self)
 
     def build_event_repository(self) -> EventRepository:
         """Fort testing purposes."""

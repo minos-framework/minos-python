@@ -17,12 +17,57 @@ import aiopg
 from .config import (
     Config,
 )
+from .database import (
+    DatabaseClientPool,
+)
+from .injections import (
+    DependencyInjector,
+)
+from .pools import (
+    PoolFactory,
+)
 
 
-class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
+class MinosTestCase(unittest.IsolatedAsyncioTestCase):
     CONFIG_FILE_PATH: Path
 
     def setUp(self) -> None:
+        super().setUp()
+
+        self.config = self.get_config()
+        self.injector = DependencyInjector(self.config, self.get_injections())
+        self.injector.wire_injections()
+
+    def get_config(self):
+        """ "TODO"""
+        return Config(self.CONFIG_FILE_PATH)
+
+    def get_injections(self):
+        return []
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.injector.setup_injections()
+
+    async def asyncTearDown(self):
+        await self.injector.destroy_injections()
+        await super().asyncTearDown()
+
+    def tearDown(self) -> None:
+        self.injector.unwire_injections()
+        super().tearDown()
+
+    def __getattr__(self, item):
+        if item != "injector":
+            return getattr(self.injector, item)
+        raise AttributeError
+
+
+class PostgresAsyncTestCase(MinosTestCase):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self._uuid = uuid4()
         self._config = Config(self.CONFIG_FILE_PATH)
 
@@ -38,7 +83,8 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         self.broker_queue_db = self._meta_broker_queue_db | self._test_db
         self.snapshot_db = self._meta_snapshot_db | self._test_db
 
-        self.config = Config(
+    def get_config(self):
+        return Config(
             self.CONFIG_FILE_PATH,
             repository_database=self.repository_db["database"],
             repository_user=self.repository_db["user"],
@@ -47,6 +93,13 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
             snapshot_database=self.snapshot_db["database"],
             snapshot_user=self.snapshot_db["user"],
         )
+
+    def get_injections(self):
+        return [
+            PoolFactory.from_config(
+                self.config, default_classes={"database": DatabaseClientPool},
+            )
+        ]
 
     async def asyncSetUp(self):
         pairs = self._drop_duplicates(
@@ -70,7 +123,11 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
                 template = "CREATE DATABASE {database} WITH OWNER = {user};"
                 await cursor.execute(template.format(**test))
 
+        await super().asyncSetUp()
+
     async def asyncTearDown(self):
+        await super().asyncTearDown()
+
         pairs = self._drop_duplicates(
             [
                 (self._meta_repository_db, self.repository_db),

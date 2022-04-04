@@ -7,9 +7,6 @@ from unittest.mock import (
     patch,
 )
 
-from minos.common import (
-    Config,
-)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -85,9 +82,8 @@ class TestPostgreSqlBrokerSubscriberQueueQueryFactory(unittest.TestCase):
         self.assertEqual("broker_subscriber_queue", self.factory.build_table_name())
 
 
-class TestPostgreSqlBrokerSubscriberQueueBuilder(unittest.TestCase):
-    def setUp(self) -> None:
-        self.config = Config(CONFIG_FILE_PATH)
+class TestPostgreSqlBrokerSubscriberQueueBuilder(PostgresAsyncTestCase):
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def test_build(self):
         builder = PostgreSqlBrokerSubscriberQueueBuilder().with_config(self.config).with_topics({"one", "two"})
