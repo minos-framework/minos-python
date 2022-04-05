@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 class AiopgDatabaseClient(DatabaseClient):
-    """TODO"""
+    """Aiopg Database Client class."""
 
     _connection: Optional[Connection]
     _cursor: Optional[Cursor]
@@ -106,8 +106,11 @@ class AiopgDatabaseClient(DatabaseClient):
         self._connection = None
         logger.debug(f"Destroyed {self.database!r} database connection identified by {id(self._connection)}!")
 
-    async def is_valid(self):
-        """TODO"""
+    async def is_valid(self) -> bool:
+        """Check if the instance is valid.
+
+        :return: ``True`` if it is valid or ``False`` otherwise.
+        """
         if self._connection is None:
             return False
 
@@ -120,12 +123,12 @@ class AiopgDatabaseClient(DatabaseClient):
         return not self._connection.closed
 
     async def reset(self, **kwargs) -> None:
-        """TODO"""
-        await self._destroy_cursor(**kwargs)
+        """Reset the current instance status.
 
-    @property
-    def notifications(self) -> ClosableQueue:
-        return self._connection.notifies
+        :param kwargs: Additional named parameters.
+        :return: This method does not return anything.
+        """
+        await self._destroy_cursor(**kwargs)
 
     # noinspection PyUnusedLocal
     async def fetch_all(
@@ -133,7 +136,6 @@ class AiopgDatabaseClient(DatabaseClient):
         *args,
         timeout: Optional[float] = None,
         lock: Optional[int] = None,
-        streaming_mode: bool = False,
         **kwargs,
     ) -> AsyncIterator[tuple]:
         """Submit a SQL query and return an asynchronous iterator.
@@ -141,22 +143,12 @@ class AiopgDatabaseClient(DatabaseClient):
         :param timeout: An optional timeout.
         :param lock: Optional key to perform the query with locking. If not set, the query is performed without any
             lock.
-        :param streaming_mode: If ``True`` the data fetching is performed in streaming mode, that is iterating over the
-            cursor and yielding once a time (requires an opening connection to do that). Otherwise, all the data is
-            fetched and keep in memory before yielding it.
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
         await self._create_cursor()
 
-        if streaming_mode:
-            async for row in self._cursor:
-                yield row
-            return
-
-        rows = await self._cursor.fetchall()
-
-        for row in rows:
+        async for row in self._cursor:
             yield row
 
     # noinspection PyUnusedLocal
@@ -183,7 +175,11 @@ class AiopgDatabaseClient(DatabaseClient):
         if self._cursor is None:
             self._cursor = await self._connection.cursor(*args, **kwargs)
 
-        if lock is not None and self._lock is None:
+        if lock is not None:
+            if self._lock is not None:
+                if self._lock.key != lock:
+                    raise ValueError(f"Only one lock per instance is supported. Currently locked with {self._lock!r}")
+                return
             from ..locks import (
                 DatabaseLock,
             )
@@ -197,9 +193,17 @@ class AiopgDatabaseClient(DatabaseClient):
             self._lock = None
 
         if self._cursor is not None:
-            if self._cursor.closed:
+            if not self._cursor.closed:
                 self._cursor.close()
             self._cursor = None
+
+    @property
+    def lock(self) -> Optional[DatabaseLock]:
+        """Get the lock.
+
+        :return: A ``DatabaseLock`` instance.
+        """
+        return self._lock
 
     @property
     def cursor(self) -> Optional[Cursor]:
@@ -208,6 +212,14 @@ class AiopgDatabaseClient(DatabaseClient):
         :return: A ``Cursor`` instance.
         """
         return self._cursor
+
+    @property
+    def notifications(self) -> ClosableQueue:
+        """Get the notifications queue.
+
+        :return: A ``ClosableQueue`` instance.
+        """
+        return self._connection.notifies
 
     @property
     def connection(self) -> Optional[Connection]:
