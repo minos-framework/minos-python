@@ -24,13 +24,10 @@ from ...builders import (
 from ...config import (
     Config,
 )
-from ...exceptions import (
-    MinosException,
-)
 
 
 class DatabaseClient(ABC, BuildableMixin):
-    """TODO"""
+    """Database Client base class."""
 
     @classmethod
     def _from_config(cls, config: Config, name: Optional[str] = None, **kwargs) -> DatabaseClient:
@@ -38,54 +35,75 @@ class DatabaseClient(ABC, BuildableMixin):
 
     @abstractmethod
     async def is_valid(self, **kwargs) -> bool:
-        """TODO"""
+        """Check if the instance is valid.
+
+        :return: ``True`` if it is valid or ``False`` otherwise.
+        """
 
     async def reset(self, **kwargs) -> None:
-        """TODO"""
+        """Reset the current instance status.
 
-    @property
-    @abstractmethod
-    def notifications(self) -> Queue:
-        """TODO"""
+        :param kwargs: Additional named parameters.
+        :return: This method does not return anything.
+        """
 
     @abstractmethod
     async def execute(self, *args, **kwargs) -> None:
-        """TODO"""
+        """Execute an operation.
+
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
+        """
 
     async def fetch_one(self, *args, **kwargs) -> Any:
-        """TODO"""
+        """Fetch one value.
+
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
+        """
         return await self.fetch_all(*args, **kwargs).__anext__()
 
     @abstractmethod
     def fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
-        """TODO"""
+        """Fetch all values with an asynchronous iterator.
+
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
+        """
+
+    @property
+    @abstractmethod
+    def notifications(self) -> Queue:
+        """Get the notifications queue.
+
+        :return: A ``Queue`` instance.
+        """
 
 
 class DatabaseClientBuilder(Builder[DatabaseClient]):
-    """TODO"""
+    """Database Client Builder class."""
 
     def with_name(self, name: str) -> DatabaseClientBuilder:
-        """TODO"""
+        """Set name.
+
+        :param name: The name to be added.
+        :return: This method return the builder instance.
+        """
         self.kwargs["name"] = name
         return self
 
     def with_config(self, config: Config) -> DatabaseClientBuilder:
-        """TODO"""
+        """Set config.
+
+        :param config: The config to be set.
+        :return: This method return the builder instance.
+        """
         database_config = config.get_database_by_name(self.kwargs.get("name"))
         self.kwargs |= database_config
         return self
 
 
 DatabaseClient.set_builder(DatabaseClientBuilder)
-
-
-class DatabaseClientException(MinosException):
-    """TODO"""
-
-
-class UnableToConnectException(DatabaseClientException):
-    """TODO"""
-
-
-class IntegrityException(DatabaseClientException):
-    """TODO"""

@@ -62,7 +62,7 @@ class DatabaseClientPool(Pool[DatabaseClient]):
         try:
             await instance.setup()
         except UnableToConnectException:
-            await sleep(1)
+            await sleep(0.1)
             return None
 
         logger.info(f"Created {instance!r}!")

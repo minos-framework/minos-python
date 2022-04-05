@@ -54,7 +54,7 @@ class TestAiopgDatabaseClient(CommonTestCase, PostgresAsyncTestCase):
 
     async def test_is_valid_true(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
-            self.assertTrue(client.is_valid())
+            self.assertTrue(await client.is_valid())
 
     async def test_is_valid_false_not_setup(self):
         client = AiopgDatabaseClient.from_config(self.config)
@@ -132,8 +132,8 @@ class TestAiopgDatabaseClient(CommonTestCase, PostgresAsyncTestCase):
         )
 
     async def test_execute_with_lock(self):
-        with patch.object(DatabaseLock, "__aenter__") as enter_lock_mock:
-            with patch.object(DatabaseLock, "__aexit__") as exit_lock_mock:
+        with patch.object(DatabaseLock, "acquire") as enter_lock_mock:
+            with patch.object(DatabaseLock, "release") as exit_lock_mock:
                 async with AiopgDatabaseClient.from_config(self.config) as client:
                     await client.execute(self.sql, lock="foo")
                     self.assertEqual(1, enter_lock_mock.call_count)

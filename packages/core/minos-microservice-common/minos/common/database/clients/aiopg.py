@@ -28,6 +28,8 @@ from psycopg2 import (
 
 from .abc import (
     DatabaseClient,
+)
+from .exceptions import (
     IntegrityException,
     UnableToConnectException,
 )
@@ -138,7 +140,7 @@ class AiopgDatabaseClient(DatabaseClient):
         lock: Optional[int] = None,
         **kwargs,
     ) -> AsyncIterator[tuple]:
-        """Submit a SQL query and return an asynchronous iterator.
+        """Fetch all values with an asynchronous iterator.
 
         :param timeout: An optional timeout.
         :param lock: Optional key to perform the query with locking. If not set, the query is performed without any
@@ -155,7 +157,7 @@ class AiopgDatabaseClient(DatabaseClient):
     async def execute(
         self, operation: Any, parameters: Any = None, *, timeout: Optional[float] = None, lock: Any = None, **kwargs
     ) -> None:
-        """Submit a SQL query.
+        """Execute an operation.
 
         :param operation: Query to be executed.
         :param parameters: Parameters to be projected into the query.
@@ -185,11 +187,11 @@ class AiopgDatabaseClient(DatabaseClient):
             )
 
             self._lock = DatabaseLock(self, lock, *args, **kwargs)
-            await self._lock.__aenter__()
+            await self._lock.acquire()
 
     async def _destroy_cursor(self, **kwargs):
         if self._lock is not None:
-            await self._lock.__aexit__(None, None, None)
+            await self._lock.release()
             self._lock = None
 
         if self._cursor is not None:

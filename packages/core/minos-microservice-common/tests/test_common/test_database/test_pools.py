@@ -1,13 +1,7 @@
 import unittest
 import warnings
 from unittest.mock import (
-    PropertyMock,
     patch,
-)
-
-import aiopg
-from psycopg2 import (
-    OperationalError,
 )
 
 from minos.common import (
@@ -19,6 +13,7 @@ from minos.common import (
     DatabaseLockPool,
     PostgreSqlLockPool,
     PostgreSqlPool,
+    UnableToConnectException,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -51,30 +46,32 @@ class TestDatabaseClientPool(CommonTestCase, PostgresAsyncTestCase):
         self.assertIsInstance(pool.client_builder, DatabaseClientBuilder)
         self.assertEqual(AiopgDatabaseClient, pool.client_builder.instance_cls)
 
-    async def test_acquire(self):
+    async def test_acquire_once(self):
         async with self.pool.acquire() as c1:
             self.assertIsInstance(c1, DatabaseClient)
+
+    async def test_acquire_multiple_recycle(self):
+        async with self.pool.acquire() as c1:
+            pass
         async with self.pool.acquire() as c2:
             self.assertEqual(c1, c2)
 
-    async def test_acquire_with_error(self):
-        with patch("aiopg.Connection.isolation_level", new_callable=PropertyMock, side_effect=(OperationalError, None)):
-            async with self.pool.acquire() as client:
-                self.assertIsInstance(client, DatabaseClient)
+    async def test_acquire_multiple_same_time(self):
+        async with self.pool.acquire() as c1:
+            async with self.pool.acquire() as c2:
+                self.assertNotEqual(c1, c2)
+
+    async def test_acquire_with_reset(self):
+        with patch.object(AiopgDatabaseClient, "reset") as reset_mock:
+            async with self.pool.acquire():
+                self.assertEqual(0, reset_mock.call_count)
+        self.assertEqual(1, reset_mock.call_count)
 
     async def test_acquire_with_connection_error(self):
-        executed = [False]
-        original = aiopg.connect
-
-        def _side_effect(*args, **kwargs):
-            if not executed[0]:
-                executed[0] = True
-                raise OperationalError
-            return original(*args, **kwargs)
-
-        with patch("aiopg.connect", side_effect=_side_effect):
-            async with self.pool.acquire() as client:
-                self.assertIsInstance(client, DatabaseClient)
+        with patch.object(AiopgDatabaseClient, "_create_connection", side_effect=(UnableToConnectException(""), None)):
+            with patch.object(AiopgDatabaseClient, "is_valid", return_value=True):
+                async with self.pool.acquire() as client:
+                    self.assertIsInstance(client, AiopgDatabaseClient)
 
 
 class TestPostgreSqlPool(CommonTestCase, PostgresAsyncTestCase):

@@ -19,11 +19,18 @@ class DatabaseLock(Lock):
 
         self.client = client
 
-    async def __aenter__(self):
-        await self.client.execute("select pg_advisory_lock(%(hashed_key)s)", {"hashed_key": self.hashed_key})
-        return self
+    async def acquire(self) -> None:
+        """Acquire the lock.
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        :return: This method does not return anything.
+        """
+        await self.client.execute("select pg_advisory_lock(%(hashed_key)s)", {"hashed_key": self.hashed_key})
+
+    async def release(self) -> None:
+        """Release the lock.
+
+        :return: This method does not return anything.
+        """
         await self.client.execute("select pg_advisory_unlock(%(hashed_key)s)", {"hashed_key": self.hashed_key})
 
 

@@ -1,10 +1,12 @@
 from .abc import (
     DatabaseClient,
     DatabaseClientBuilder,
-    DatabaseClientException,
-    IntegrityException,
-    UnableToConnectException,
 )
 from .aiopg import (
     AiopgDatabaseClient,
+)
+from .exceptions import (
+    DatabaseClientException,
+    IntegrityException,
+    UnableToConnectException,
 )
