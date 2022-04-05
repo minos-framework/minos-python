@@ -21,7 +21,9 @@ from aiopg import (
     Connection,
     Cursor,
 )
-from aiopg.utils import ClosableQueue
+from aiopg.utils import (
+    ClosableQueue,
+)
 from psycopg2 import (
     OperationalError,
 )
