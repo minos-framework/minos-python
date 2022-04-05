@@ -99,6 +99,9 @@ class ConfigV2(Config):
 
     def _get_databases(self) -> dict[str, dict[str, Any]]:
         data = deepcopy(self.get_by_key("databases"))
+        for database in data.values():
+            if "client" in database:
+                database["client"] = import_module(database["client"])
         return data
 
     def _get_interfaces(self) -> dict[str, dict[str, Any]]:
