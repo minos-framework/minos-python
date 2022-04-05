@@ -2,12 +2,14 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from asyncio import (
+    Queue,
+)
 from collections.abc import (
     AsyncIterator,
 )
 from typing import (
     Any,
-    Optional,
 )
 
 from ...setup import (
@@ -22,36 +24,23 @@ class DatabaseClient(ABC, SetupMixin):
     async def is_valid(self, **kwargs) -> bool:
         """TODO"""
 
+    async def reset(self, **kwargs) -> None:
+        """TODO"""
+
+    @property
     @abstractmethod
-    async def submit_query(
-        self, operation: Any, parameters: Any = None, *, timeout: Optional[float] = None, lock: Any = None, **kwargs
-    ) -> None:
+    def notifications(self) -> Queue:
         """TODO"""
 
     @abstractmethod
-    async def submit_query_and_fetchone(
-        self,
-        operation: Any,
-        parameters: Any = None,
-        *,
-        timeout: Optional[float] = None,
-        lock: Optional[int] = None,
-        streaming_mode: bool = False,
-        **kwargs,
-    ) -> Any:
+    async def execute(self, *args, **kwargs) -> None:
         """TODO"""
 
+    async def fetch_one(self, *args, **kwargs) -> Any:
+        return await self.fetch_all(*args, **kwargs).__anext__()
+
     @abstractmethod
-    def submit_query_and_iter(
-        self,
-        operation: Any,
-        parameters: Any = None,
-        *,
-        timeout: Optional[float] = None,
-        lock: Optional[int] = None,
-        streaming_mode: bool = False,
-        **kwargs,
-    ) -> AsyncIterator[Any]:
+    def fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
         """TODO"""
 
 

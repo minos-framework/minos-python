@@ -134,6 +134,7 @@ class Pool(SetupMixin, PoolBase, Generic[P], ABC):
 
     # noinspection PyUnresolvedReferences
     async def __release(self, instance: Any) -> Any:  # pragma: no cover
+        await self._release_instance(instance)
         await self._PoolBase__release(instance)
         logger.debug(f"Released instance: {instance!r}")
 
@@ -158,6 +159,9 @@ class Pool(SetupMixin, PoolBase, Generic[P], ABC):
 
     async def _check_instance(self, instance: P) -> bool:
         return True
+
+    async def _release_instance(self, instance: P) -> None:
+        pass
 
 
 class MinosPool(Pool, Generic[P], ABC):

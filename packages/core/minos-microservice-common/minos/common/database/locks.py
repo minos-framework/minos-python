@@ -20,11 +20,11 @@ class DatabaseLock(Lock):
         self.client = client
 
     async def __aenter__(self):
-        await self.client.submit_query("select pg_advisory_lock(%(hashed_key)s)", {"hashed_key": self.hashed_key})
+        await self.client.execute("select pg_advisory_lock(%(hashed_key)s)", {"hashed_key": self.hashed_key})
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.client.submit_query("select pg_advisory_unlock(%(hashed_key)s)", {"hashed_key": self.hashed_key})
+        await self.client.execute("select pg_advisory_unlock(%(hashed_key)s)", {"hashed_key": self.hashed_key})
 
 
 class PostgreSqlLock(DatabaseLock):

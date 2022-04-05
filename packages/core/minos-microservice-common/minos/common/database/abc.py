@@ -55,7 +55,8 @@ class DatabaseMixin(SetupMixin):
         :return: This method does not return anything.
         """
         async with self.pool.acquire() as client:
-            return await client.submit_query_and_fetchone(*args, **kwargs)
+            await client.execute(*args, **kwargs)
+            return await client.fetch_one(*args, **kwargs)
 
     # noinspection PyUnusedLocal
     async def submit_query_and_iter(self, *args, **kwargs) -> AsyncIterator[tuple]:
@@ -66,7 +67,8 @@ class DatabaseMixin(SetupMixin):
         :return: This method does not return anything.
         """
         async with self.pool.acquire() as client:
-            async for value in client.submit_query_and_iter(*args, **kwargs):
+            await client.execute(*args, **kwargs)
+            async for value in client.fetch_all(*args, **kwargs):
                 yield value
 
     # noinspection PyUnusedLocal
@@ -78,7 +80,7 @@ class DatabaseMixin(SetupMixin):
         :return: This method does not return anything.
         """
         async with self.pool.acquire() as client:
-            return await client.submit_query(*args, **kwargs)
+            return await client.execute(*args, **kwargs)
 
     @property
     def pool(self) -> DatabaseClientPool:

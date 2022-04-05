@@ -121,10 +121,10 @@ class PostgresAsyncTestCase(MinosTestCase, ABC):
 
         async with AiopgDatabaseClient(**meta) as client:
             template = "CREATE DATABASE {database} WITH OWNER = {user};"
-            await client.submit_query(template.format(**(meta | test)))
+            await client.execute(template.format(**(meta | test)))
 
     @staticmethod
     async def _drop_database(meta: dict[str, Any], test: dict[str, Any]) -> None:
         async with AiopgDatabaseClient(**meta) as client:
             template = "DROP DATABASE IF EXISTS {database}"
-            await client.submit_query(template.format(**(meta | test)))
+            await client.execute(template.format(**(meta | test)))

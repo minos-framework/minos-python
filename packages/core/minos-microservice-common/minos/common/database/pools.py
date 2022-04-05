@@ -95,6 +95,9 @@ class DatabaseClientPool(Pool[DatabaseClient]):
             return False
         return await instance.is_valid()
 
+    async def _release_instance(self, instance: DatabaseClient) -> None:
+        await instance.reset()
+
 
 @Injectable("postgresql_pool")
 class PostgreSqlPool(DatabaseClientPool):
