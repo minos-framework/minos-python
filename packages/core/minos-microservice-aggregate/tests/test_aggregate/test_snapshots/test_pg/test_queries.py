@@ -7,7 +7,6 @@ from uuid import (
     uuid4,
 )
 
-import aiopg
 from psycopg2.extras import (
     Json,
 )
@@ -29,6 +28,7 @@ from minos.aggregate.snapshots.pg.queries import (
 )
 from minos.common import (
     NULL_UUID,
+    AiopgDatabaseClient,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -426,8 +426,8 @@ class TestPostgreSqlSnapshotQueryBuilder(AggregateTestCase, PostgresAsyncTestCas
         self.assertEqual(self._flatten_parameters(expected_parameters), self._flatten_parameters(observed[1]))
 
     async def _flatten_query(self, query) -> str:
-        async with aiopg.connect(**self.config.get_default_database()) as connection:
-            return query.as_string(connection.raw)
+        async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
+            return query.as_string(client.connection.raw)
 
     @staticmethod
     def _flatten_parameters(parameters) -> dict:

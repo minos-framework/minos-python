@@ -14,9 +14,6 @@ from typing import (
 )
 
 import aiopg
-from aiomisc.pool import (
-    AsyncContextManager,
-)
 from aiopg import (
     Connection,
     Cursor,
@@ -198,14 +195,21 @@ class AiopgDatabaseClient(DatabaseClient):
                 self._cursor.close()
             self._cursor = None
 
-    def cursor(self, *args, **kwargs) -> AsyncContextManager[Cursor]:
-        """Get a new cursor.
+    @property
+    def cursor(self) -> Optional[Cursor]:
+        """Get the cursor.
 
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
-        :return: A Cursor wrapped into an asynchronous context manager.
+        :return: A ``Cursor`` instance.
         """
         return self._cursor
+
+    @property
+    def connection(self) -> Optional[Connection]:
+        """Get the connection.
+
+        :return: A ``Connection`` instance.
+        """
+        return self._connection
 
     @property
     def database(self) -> str:

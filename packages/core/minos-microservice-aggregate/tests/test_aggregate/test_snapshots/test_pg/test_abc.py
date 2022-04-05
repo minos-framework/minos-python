@@ -1,9 +1,10 @@
 import unittest
 
-import aiopg
-
 from minos.aggregate import (
     PostgreSqlSnapshotSetup,
+)
+from minos.common import (
+    AiopgDatabaseClient,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -13,27 +14,25 @@ from tests.utils import (
 )
 
 
+# noinspection SqlNoDataSourceInspection
 class TestPostgreSqlSnapshotSetup(AggregateTestCase, PostgresAsyncTestCase):
     async def test_setup_snapshot_table(self):
         async with PostgreSqlSnapshotSetup.from_config(self.config):
-            async with aiopg.connect(**self.config.get_default_database()) as connection:
-                async with connection.cursor() as cursor:
-                    await cursor.execute(
-                        "SELECT EXISTS (SELECT FROM pg_tables "
-                        "WHERE schemaname = 'public' AND tablename = 'snapshot');"
-                    )
-                    observed = (await cursor.fetchone())[0]
+            async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
+                await client.execute(
+                    "SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'snapshot');"
+                )
+                observed = (await client.fetch_one())[0]
         self.assertEqual(True, observed)
 
     async def test_setup_snapshot_aux_offset_table(self):
         async with PostgreSqlSnapshotSetup.from_config(self.config):
-            async with aiopg.connect(**self.config.get_default_database()) as connection:
-                async with connection.cursor() as cursor:
-                    await cursor.execute(
-                        "SELECT EXISTS (SELECT FROM pg_tables WHERE "
-                        "schemaname = 'public' AND tablename = 'snapshot_aux_offset');"
-                    )
-                    observed = (await cursor.fetchone())[0]
+            async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
+                await client.execute(
+                    "SELECT EXISTS (SELECT FROM pg_tables WHERE "
+                    "schemaname = 'public' AND tablename = 'snapshot_aux_offset');"
+                )
+                observed = (await client.fetch_one())[0]
         self.assertEqual(True, observed)
 
 
