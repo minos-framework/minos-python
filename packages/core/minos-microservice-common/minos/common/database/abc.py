@@ -47,51 +47,6 @@ class DatabaseMixin(SetupMixin):
 
         self._pool = database_pool
 
-    @property
-    def database(self) -> str:
-        """Get the database's database.
-
-        :return: A ``str`` value.
-        """
-        warnings.warn("'database' has been deprecated. Use 'pool.database' instead.", DeprecationWarning)
-        return self.pool.database
-
-    @property
-    def host(self) -> str:
-        """Get the database's host.
-
-        :return: A ``str`` value.
-        """
-        warnings.warn("'host' has been deprecated. Use 'pool.host' instead.", DeprecationWarning)
-        return self.pool.host
-
-    @property
-    def port(self) -> int:
-        """Get the database's port.
-
-        :return: An ``int`` value.
-        """
-        warnings.warn("'port' has been deprecated. Use 'pool.port' instead.", DeprecationWarning)
-        return self.pool.port
-
-    @property
-    def user(self) -> str:
-        """Get the database's user.
-
-        :return: A ``str`` value.
-        """
-        warnings.warn("'user' has been deprecated. Use 'pool.user' instead.", DeprecationWarning)
-        return self.pool.user
-
-    @property
-    def password(self) -> str:
-        """Get the database's password.
-
-        :return: A ``str`` value.
-        """
-        warnings.warn("'password' has been deprecated. Use 'pool.password' instead.", DeprecationWarning)
-        return self.pool.password
-
     async def submit_query_and_fetchone(self, *args, **kwargs) -> tuple:
         """Submit a SQL query and gets the first response.
 

@@ -102,11 +102,7 @@ class TestPostgreSqlSnapshotWriter(AggregateTestCase, PostgresAsyncTestCase):
 
     def test_from_config(self):
         snapshot_config = self.config.get_database_by_name("snapshot")
-        self.assertEqual(snapshot_config["host"], self.writer.host)
-        self.assertEqual(snapshot_config["port"], self.writer.port)
-        self.assertEqual(snapshot_config["database"], self.writer.database)
-        self.assertEqual(snapshot_config["user"], self.writer.user)
-        self.assertEqual(snapshot_config["password"], self.writer.password)
+        self.assertEqual(snapshot_config["database"], self.writer.pool.database)
 
     def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):
