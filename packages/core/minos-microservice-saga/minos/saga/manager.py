@@ -181,7 +181,7 @@ class SagaManager(SetupMixin):
             self.storage.store(execution)
             if raise_on_error:
                 raise exc
-            logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
+            logger.exception(f"The execution identified by {execution.uuid!s} failed")
         finally:
             if (headers := REQUEST_HEADERS_CONTEXT_VAR.get()) is not None:
                 related_services = reduce(or_, (s.related_services for s in execution.executed_steps), set())
