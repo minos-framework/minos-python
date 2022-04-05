@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import logging
-from asyncio import (
-    Queue,
-)
 from collections.abc import (
     AsyncIterator,
     Hashable,
@@ -24,6 +21,7 @@ from aiopg import (
     Connection,
     Cursor,
 )
+from aiopg.utils import ClosableQueue
 from psycopg2 import (
     OperationalError,
 )
@@ -124,7 +122,7 @@ class AiopgDatabaseClient(DatabaseClient):
         await self._destroy_cursor(**kwargs)
 
     @property
-    def notifications(self) -> Queue:
+    def notifications(self) -> ClosableQueue:
         return self._connection.notifies
 
     # noinspection PyUnusedLocal
@@ -173,7 +171,7 @@ class AiopgDatabaseClient(DatabaseClient):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        await self._create_cursor()
+        await self._create_cursor(lock=lock)
         await self._cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
 
     async def _create_cursor(self, *args, lock: Optional[Hashable] = None, **kwargs):
