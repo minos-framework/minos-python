@@ -30,13 +30,14 @@ class DatabaseMixin(SetupMixin):
         self,
         database_pool: Optional[DatabaseClientPool] = None,
         pool_factory: Optional[PoolFactory] = None,
+        database_key: Optional[str] = None,
         postgresql_pool: Optional[PostgreSqlPool] = None,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs, pool_factory=pool_factory)
         if database_pool is None and pool_factory is not None:
-            database_pool = pool_factory.get_pool("database")
+            database_pool = pool_factory.get_pool(type_="database", identifier=database_key)
 
         if database_pool is None and postgresql_pool is not None:
             warnings.warn("'postgresql_pool' argument has been deprecated", DeprecationWarning)

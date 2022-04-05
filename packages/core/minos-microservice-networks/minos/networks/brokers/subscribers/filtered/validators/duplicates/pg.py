@@ -77,7 +77,7 @@ class PostgreSqlBrokerSubscriberDuplicateValidatorBuilder(Builder[PostgreSqlBrok
         :param config: The config to be set.
         :return: This method return the builder instance.
         """
-        self.kwargs |= config.get_database_by_name("broker")
+        self.kwargs |= {"database_key": None}
         return super().with_config(config)
 
 

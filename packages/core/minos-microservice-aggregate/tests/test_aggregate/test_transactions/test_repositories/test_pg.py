@@ -50,8 +50,7 @@ class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCa
 
     def test_from_config(self):
         repository = PostgreSqlTransactionRepository.from_config(self.config)
-        repository_config = self.config.get_database_by_name("event")
-        self.assertEqual(repository_config["database"], repository.pool.database)
+        self.assertIsInstance(repository.pool, DatabaseClientPool)
 
     async def test_setup(self):
         async with aiopg.connect(**self.config.get_default_database()) as connection:

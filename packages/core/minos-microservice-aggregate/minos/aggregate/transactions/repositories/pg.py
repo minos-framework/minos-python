@@ -34,7 +34,7 @@ class PostgreSqlTransactionRepository(DatabaseMixin, TransactionRepository):
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> Optional[PostgreSqlTransactionRepository]:
-        return super()._from_config(config, **config.get_database_by_name("transaction"), **kwargs)
+        return super()._from_config(config, database_key=None, **kwargs)
 
     async def _setup(self):
         await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";', lock="uuid-ossp")

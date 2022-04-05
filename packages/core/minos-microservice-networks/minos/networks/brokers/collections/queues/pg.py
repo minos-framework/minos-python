@@ -107,7 +107,7 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
     def _from_config(cls, config: Config, **kwargs) -> PostgreSqlBrokerQueue:
         broker_interface = config.get_interface_by_name("broker")
         queue_config = broker_interface.get("common", dict()).get("queue", dict())
-        database_config = config.get_database_by_name("broker")
+        database_config = {"database_key": None}
 
         return cls(**(kwargs | database_config | queue_config))
 
@@ -361,7 +361,7 @@ class PostgreSqlBrokerQueueBuilder(Builder):
         :param config: The config to be set.
         :return: This method return the builder instance.
         """
-        self.kwargs |= config.get_database_by_name("broker")
+        self.kwargs |= {"database_key": None}
         self.kwargs |= config.get_interface_by_name("broker").get("common", dict()).get("queue", dict())
         return super().with_config(config)
 

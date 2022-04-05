@@ -48,11 +48,11 @@ class DatabaseClientPool(Pool[DatabaseClient]):
         self._client_builder = client_builder
 
     @classmethod
-    def _from_config(cls, config: Config, key: Optional[str] = None, **kwargs):
-        client_cls = config.get_database_by_name(key).get("client", AiopgDatabaseClient)
+    def _from_config(cls, config: Config, identifier: Optional[str] = None, **kwargs):
+        client_cls = config.get_database_by_name(identifier).get("client", AiopgDatabaseClient)
         # noinspection PyTypeChecker
         base_builder: DatabaseClientBuilder = client_cls.get_builder()
-        client_builder = base_builder.with_key(key).with_config(config)
+        client_builder = base_builder.with_name(identifier).with_config(config)
 
         return cls(client_builder=client_builder, **kwargs)
 
@@ -69,6 +69,8 @@ class DatabaseClientPool(Pool[DatabaseClient]):
         return instance
 
     async def _destroy_instance(self, instance: DatabaseClient):
+        if instance is None:
+            return
         logger.info(f"Destroyed {instance!r}!")
         await instance.destroy()
 

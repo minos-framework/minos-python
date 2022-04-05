@@ -42,7 +42,7 @@ class PostgreSqlEventRepository(DatabaseMixin, EventRepository):
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> Optional[EventRepository]:
-        return super()._from_config(config, **config.get_database_by_name("event"), **kwargs)
+        return super()._from_config(config, database_key=None, **kwargs)
 
     async def _setup(self):
         """Setup miscellaneous repository thing.
