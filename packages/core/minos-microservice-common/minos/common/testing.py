@@ -17,13 +17,12 @@ from uuid import (
     uuid4,
 )
 
-import aiopg
-
 from .config import (
     Config,
 )
 from .database import (
     DatabaseClientPool,
+    AiopgDatabaseClient,
 )
 from .injections import (
     DependencyInjector,
@@ -77,7 +76,7 @@ class PostgresAsyncTestCase(MinosTestCase, ABC):
     def setUp(self):
         self.base_config = Config(self.get_config_file_path())
         self._uuid = uuid4()
-        self._test_db = {"database": f"test_db_{self._uuid.hex}", "user": f"test_user_{self._uuid.hex}"}
+        self._test_db = {"database": f"test_db_{self._uuid.hex}"}
         super().setUp()
 
     @property
@@ -120,20 +119,12 @@ class PostgresAsyncTestCase(MinosTestCase, ABC):
     async def _create_database(self, meta: dict[str, Any], test: dict[str, Any]) -> None:
         await self._drop_database(meta, test)
 
-        async with aiopg.connect(**meta) as connection:
-            async with connection.cursor() as cursor:
-                template = "CREATE ROLE {user} WITH SUPERUSER CREATEDB LOGIN ENCRYPTED PASSWORD {password!r};"
-                await cursor.execute(template.format(**(meta | test)))
-
-                template = "CREATE DATABASE {database} WITH OWNER = {user};"
-                await cursor.execute(template.format(**(meta | test)))
+        async with AiopgDatabaseClient(**meta) as client:
+            template = "CREATE DATABASE {database} WITH OWNER = {user};"
+            await client.submit_query(template.format(**(meta | test)))
 
     @staticmethod
     async def _drop_database(meta: dict[str, Any], test: dict[str, Any]) -> None:
-        async with aiopg.connect(**meta) as connection:
-            async with connection.cursor() as cursor:
-                template = "DROP DATABASE IF EXISTS {database}"
-                await cursor.execute(template.format(**(meta | test)))
-
-                template = "DROP ROLE IF EXISTS {user};"
-                await cursor.execute(template.format(**(meta | test)))
+        async with AiopgDatabaseClient(**meta) as client:
+            template = "DROP DATABASE IF EXISTS {database}"
+            await client.submit_query(template.format(**(meta | test)))
