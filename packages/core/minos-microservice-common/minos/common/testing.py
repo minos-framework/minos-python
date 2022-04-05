@@ -21,8 +21,8 @@ from .config import (
     Config,
 )
 from .database import (
-    DatabaseClientPool,
     AiopgDatabaseClient,
+    DatabaseClientPool,
 )
 from .injections import (
     DependencyInjector,
