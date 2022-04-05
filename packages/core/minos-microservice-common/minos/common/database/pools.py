@@ -14,6 +14,9 @@ from aiomisc.pool import (
     ContextManager,
 )
 
+from ..config import (
+    Config,
+)
 from ..injections import (
     Injectable,
 )
@@ -66,8 +69,8 @@ class DatabaseClientPool(Pool[DatabaseClient]):
         self.password = password
 
     @classmethod
-    def _from_config(cls, *args, config, **kwargs):
-        return cls(*args, **config.get_default_database(), **kwargs)
+    def _from_config(cls, config: Config, key: Optional[str] = None, **kwargs):
+        return cls(**config.get_default_database(), **kwargs)
 
     async def _create_instance(self) -> Optional[DatabaseClient]:
         instance = AiopgDatabaseClient(
