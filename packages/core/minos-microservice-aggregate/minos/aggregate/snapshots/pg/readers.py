@@ -128,5 +128,10 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         qb = PostgreSqlSnapshotQueryBuilder(name, condition, ordering, limit, transaction_uuids, exclude_deleted)
         query, parameters = qb.build()
 
-        async for row in self.submit_query_and_iter(query, parameters, streaming_mode=streaming_mode):
-            yield SnapshotEntry(*row)
+        async_iterable = self.submit_query_and_iter(query, parameters)
+        if streaming_mode:
+            async for row in async_iterable:
+                yield SnapshotEntry(*row)
+        else:
+            for row in [row async for row in async_iterable]:
+                yield SnapshotEntry(*row)
