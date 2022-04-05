@@ -6,6 +6,8 @@ from .clients import (
     AiopgDatabaseClient,
     DatabaseClient,
     DatabaseClientBuilder,
+    DatabaseClientException,
+    IntegrityException,
     UnableToConnectException,
 )
 from .locks import (

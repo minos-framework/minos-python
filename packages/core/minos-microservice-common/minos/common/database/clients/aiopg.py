@@ -22,11 +22,13 @@ from aiopg.utils import (
     ClosableQueue,
 )
 from psycopg2 import (
+    IntegrityError,
     OperationalError,
 )
 
 from .abc import (
     DatabaseClient,
+    IntegrityException,
     UnableToConnectException,
 )
 
@@ -92,8 +94,9 @@ class AiopgDatabaseClient(DatabaseClient):
                 host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password
             )
         except OperationalError as exc:
-            logger.warning(f"There was an {exc!r} while trying to get a database connection.")
-            raise UnableToConnectException
+            msg = f"There was an {exc!r} while trying to get a database connection."
+            logger.warning(msg)
+            raise UnableToConnectException(msg)
 
         logger.debug(f"Created {self.database!r} database connection identified by {id(self._connection)}!")
 
@@ -171,7 +174,10 @@ class AiopgDatabaseClient(DatabaseClient):
         :return: This method does not return anything.
         """
         await self._create_cursor(lock=lock)
-        await self._cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
+        try:
+            await self._cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
+        except IntegrityError as exc:
+            raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
 
     async def _create_cursor(self, *args, lock: Optional[Hashable] = None, **kwargs):
         if self._cursor is None:

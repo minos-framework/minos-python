@@ -9,9 +9,6 @@ from uuid import (
     UUID,
 )
 
-from psycopg2 import (
-    IntegrityError,
-)
 from psycopg2.sql import (
     SQL,
 )
@@ -20,6 +17,7 @@ from minos.common import (
     Builder,
     Config,
     DatabaseMixin,
+    IntegrityException,
 )
 
 from .abc import (
@@ -64,7 +62,7 @@ class PostgreSqlBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateVali
         try:
             await self.submit_query(self._query_factory.build_insert_row(), {"topic": topic, "uuid": uuid})
             return True
-        except IntegrityError:
+        except IntegrityException:
             return False
 
 
@@ -84,6 +82,7 @@ class PostgreSqlBrokerSubscriberDuplicateValidatorBuilder(Builder[PostgreSqlBrok
 PostgreSqlBrokerSubscriberDuplicateValidator.set_builder(PostgreSqlBrokerSubscriberDuplicateValidatorBuilder)
 
 
+# noinspection SqlNoDataSourceInspection
 class PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory:
     """PostgreSql Broker Subscriber Duplicate Detector Query Factory class."""
 

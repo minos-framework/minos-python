@@ -24,6 +24,9 @@ from ...builders import (
 from ...config import (
     Config,
 )
+from ...exceptions import (
+    MinosException,
+)
 
 
 class DatabaseClient(ABC, BuildableMixin):
@@ -50,6 +53,7 @@ class DatabaseClient(ABC, BuildableMixin):
         """TODO"""
 
     async def fetch_one(self, *args, **kwargs) -> Any:
+        """TODO"""
         return await self.fetch_all(*args, **kwargs).__anext__()
 
     @abstractmethod
@@ -75,5 +79,13 @@ class DatabaseClientBuilder(Builder[DatabaseClient]):
 DatabaseClient.set_builder(DatabaseClientBuilder)
 
 
-class UnableToConnectException(Exception):
+class DatabaseClientException(MinosException):
+    """TODO"""
+
+
+class UnableToConnectException(DatabaseClientException):
+    """TODO"""
+
+
+class IntegrityException(DatabaseClientException):
     """TODO"""
