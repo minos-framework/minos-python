@@ -8,6 +8,9 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from asyncio import (
+    Semaphore,
+)
 from collections.abc import (
     Callable,
 )
@@ -56,7 +59,14 @@ logger = logging.getLogger(__name__)
 class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
     """Http Application base class."""
 
-    def __init__(self, adapter: HttpAdapter, host: Optional[str] = None, port: Optional[int] = None, **kwargs):
+    def __init__(
+        self,
+        adapter: HttpAdapter,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
+        max_connections: int = 5,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         if host is None:
             host = "0.0.0.0"
@@ -66,6 +76,8 @@ class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
         self._adapter = adapter
         self._host = host
         self._port = port
+
+        self._semaphore = Semaphore(max_connections)
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> HttpConnector:
@@ -138,29 +150,30 @@ class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
 
         @wraps(callback)
         async def _wrapper(raw: RawRequest) -> RawResponse:
-            logger.info(f"Dispatching '{raw!s}'...")
+            async with self._semaphore:
+                logger.info(f"Dispatching '{raw!s}'...")
 
-            request = await self._build_request(raw)
-            token = REQUEST_USER_CONTEXT_VAR.set(request.user)
+                request = await self._build_request(raw)
+                token = REQUEST_USER_CONTEXT_VAR.set(request.user)
 
-            # noinspection PyBroadException
-            try:
-                response = callback(request)
-                if isawaitable(response):
-                    response = await response
+                # noinspection PyBroadException
+                try:
+                    response = callback(request)
+                    if isawaitable(response):
+                        response = await response
 
-                return await self._build_response(response)
+                    return await self._build_response(response)
 
-            except ResponseException as exc:
-                tb = traceback.format_exc()
-                logger.error(f"Raised an application exception:\n {tb}")
-                return await self._build_error_response(tb, exc.status)
-            except Exception:
-                tb = traceback.format_exc()
-                logger.exception(f"Raised a system exception:\n {tb}")
-                return await self._build_error_response(tb, 500)
-            finally:
-                REQUEST_USER_CONTEXT_VAR.reset(token)
+                except ResponseException as exc:
+                    tb = traceback.format_exc()
+                    logger.error(f"Raised an application exception:\n {tb}")
+                    return await self._build_error_response(tb, exc.status)
+                except Exception:
+                    tb = traceback.format_exc()
+                    logger.exception(f"Raised a system exception:\n {tb}")
+                    return await self._build_error_response(tb, 500)
+                finally:
+                    REQUEST_USER_CONTEXT_VAR.reset(token)
 
         return _wrapper
 
