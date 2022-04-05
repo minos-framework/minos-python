@@ -206,19 +206,18 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
         return count
 
     async def _dequeue_batch(self, client: DatabaseClient) -> None:
-        async with client._cursor.begin():  # FIXME
-            rows = await self._dequeue_rows(client)
+        rows = await self._dequeue_rows(client)
 
-            if not len(rows):
-                return
+        if not len(rows):
+            return
 
-            entries = [_Entry(*row) for row in rows]
+        entries = [_Entry(*row) for row in rows]
 
-            # noinspection PyTypeChecker
-            await client.execute(self._query_factory.build_mark_processing(), (tuple(entry.id_ for entry in entries),))
+        # noinspection PyTypeChecker
+        await client.execute(self._query_factory.build_mark_processing(), (tuple(entry.id_ for entry in entries),))
 
-            for entry in entries:
-                await self._queue.put(entry)
+        for entry in entries:
+            await self._queue.put(entry)
 
     async def _dequeue_rows(self, client: DatabaseClient) -> list[Any]:
         # noinspection PyTypeChecker
