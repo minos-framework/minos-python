@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 from abc import (
     ABC,
     abstractmethod,
@@ -10,15 +14,24 @@ from collections.abc import (
 )
 from typing import (
     Any,
+    Optional,
 )
 
-from ...setup import (
-    SetupMixin,
+from ...builders import (
+    BuildableMixin,
+    Builder,
+)
+from ...config import (
+    Config,
 )
 
 
-class DatabaseClient(ABC, SetupMixin):
+class DatabaseClient(ABC, BuildableMixin):
     """TODO"""
+
+    @classmethod
+    def _from_config(cls, config: Config, key: Optional[str] = None, **kwargs) -> DatabaseClient:
+        return super()._from_config(config, **config.get_database_by_name(key), **kwargs)
 
     @abstractmethod
     async def is_valid(self, **kwargs) -> bool:
@@ -42,6 +55,24 @@ class DatabaseClient(ABC, SetupMixin):
     @abstractmethod
     def fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
         """TODO"""
+
+
+class DatabaseClientBuilder(Builder[DatabaseClient]):
+    """TODO"""
+
+    def with_key(self, key) -> DatabaseClientBuilder:
+        """TODO"""
+        self.kwargs["key"] = key
+        return self
+
+    def with_config(self, config: Config) -> DatabaseClientBuilder:
+        """TODO"""
+        database_config = config.get_database_by_name(self.kwargs.get("key"))
+        self.kwargs |= database_config
+        return self
+
+
+DatabaseClient.set_builder(DatabaseClientBuilder)
 
 
 class UnableToConnectException(Exception):

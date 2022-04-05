@@ -11,7 +11,9 @@ from psycopg2 import (
 )
 
 from minos.common import (
+    AiopgDatabaseClient,
     DatabaseClient,
+    DatabaseClientBuilder,
     DatabaseClientPool,
     DatabaseLock,
     DatabaseLockPool,
@@ -32,12 +34,9 @@ class TestDatabaseClientPool(CommonTestCase, PostgresAsyncTestCase):
         self.pool = DatabaseClientPool.from_config(self.config)
 
     def test_constructor(self):
-        pool = DatabaseClientPool("foo")
-        self.assertEqual("foo", pool.database)
-        self.assertEqual("postgres", pool.user)
-        self.assertEqual("", pool.password)
-        self.assertEqual("localhost", pool.host)
-        self.assertEqual(5432, pool.port)
+        builder = DatabaseClientBuilder()
+        pool = DatabaseClientPool(builder)
+        self.assertEqual(builder, pool.client_builder)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -48,12 +47,9 @@ class TestDatabaseClientPool(CommonTestCase, PostgresAsyncTestCase):
         await super().asyncTearDown()
 
     def test_from_config(self):
-        repository_config = self.config.get_database_by_name("event")
-        self.assertEqual(repository_config["database"], self.pool.database)
-        self.assertEqual(repository_config["user"], self.pool.user)
-        self.assertEqual(repository_config["password"], self.pool.password)
-        self.assertEqual(repository_config["host"], self.pool.host)
-        self.assertEqual(repository_config["port"], self.pool.port)
+        pool = DatabaseClientPool.from_config(self.config, key="event")
+        self.assertIsInstance(pool.client_builder, DatabaseClientBuilder)
+        self.assertEqual(AiopgDatabaseClient, pool.client_builder.instance_cls)
 
     async def test_acquire(self):
         async with self.pool.acquire() as c1:

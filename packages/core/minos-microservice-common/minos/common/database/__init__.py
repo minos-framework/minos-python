@@ -5,6 +5,8 @@ from .abc import (
 from .clients import (
     AiopgDatabaseClient,
     DatabaseClient,
+    DatabaseClientBuilder,
+    UnableToConnectException,
 )
 from .locks import (
     DatabaseLock,

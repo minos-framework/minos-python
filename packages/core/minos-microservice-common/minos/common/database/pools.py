@@ -29,6 +29,7 @@ from ..pools import (
 from .clients import (
     AiopgDatabaseClient,
     DatabaseClient,
+    DatabaseClientBuilder,
     UnableToConnectException,
 )
 from .locks import (
@@ -41,41 +42,22 @@ logger = logging.getLogger(__name__)
 class DatabaseClientPool(Pool[DatabaseClient]):
     """Database Client Pool class."""
 
-    def __init__(
-        self,
-        database: str,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
-        user: Optional[str] = None,
-        password: Optional[str] = None,
-        *args,
-        **kwargs,
-    ):
+    def __init__(self, client_builder: DatabaseClientBuilder, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if host is None:
-            host = "localhost"
-        if port is None:
-            port = 5432
-        if user is None:
-            user = "postgres"
-        if password is None:
-            password = ""
-
-        self.database = database
-        self.host = host
-        self.port = port
-        self.user = user
-        self.password = password
+        self._client_builder = client_builder
 
     @classmethod
     def _from_config(cls, config: Config, key: Optional[str] = None, **kwargs):
-        return cls(**config.get_default_database(), **kwargs)
+        client_cls = config.get_database_by_name(key).get("client", AiopgDatabaseClient)
+        # noinspection PyTypeChecker
+        base_builder: DatabaseClientBuilder = client_cls.get_builder()
+        client_builder = base_builder.with_key(key).with_config(config)
+
+        return cls(client_builder=client_builder, **kwargs)
 
     async def _create_instance(self) -> Optional[DatabaseClient]:
-        instance = AiopgDatabaseClient(
-            host=self.host, port=self.port, database=self.database, user=self.user, password=self.password
-        )
+        instance = self._client_builder.build()
 
         try:
             await instance.setup()
@@ -97,6 +79,14 @@ class DatabaseClientPool(Pool[DatabaseClient]):
 
     async def _release_instance(self, instance: DatabaseClient) -> None:
         await instance.reset()
+
+    @property
+    def client_builder(self) -> DatabaseClientBuilder:
+        """Get the client builder class.
+
+        :return: A ``DatabaseClientBuilder`` instance.
+        """
+        return self._client_builder
 
 
 @Injectable("postgresql_pool")

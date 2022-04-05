@@ -16,6 +16,7 @@ from .config import (
 from .database import (
     AiopgDatabaseClient,
     DatabaseClient,
+    DatabaseClientBuilder,
     DatabaseClientPool,
     DatabaseLock,
     DatabaseLockPool,
@@ -24,6 +25,7 @@ from .database import (
     PostgreSqlLockPool,
     PostgreSqlMinosDatabase,
     PostgreSqlPool,
+    UnableToConnectException,
 )
 from .datetime import (
     NULL_DATETIME,

@@ -1,5 +1,4 @@
 import unittest
-import warnings
 
 from minos.common import (
     Config,
