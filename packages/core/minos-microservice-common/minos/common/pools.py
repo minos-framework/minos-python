@@ -8,6 +8,7 @@ from abc import (
     ABC,
 )
 from asyncio import (
+    gather,
     sleep,
 )
 from typing import (
@@ -60,9 +61,14 @@ class PoolFactory(SetupMixin):
         return cls(config, **kwargs)
 
     async def _destroy(self) -> None:
-        for pool in self._pools.values():
-            await pool.destroy()
+        await self._destroy_pools()
         await super()._destroy()
+
+    async def _destroy_pools(self):
+        logger.debug("Destroying pools...")
+        futures = (pool.destroy() for pool in self._pools.values())
+        await gather(*futures)
+        logger.debug("Destroyed pools!")
 
     def get_pool(self, type_: str, key: Optional[str] = None, **kwargs) -> Pool:
         """Get a pool from the factory.
@@ -146,6 +152,7 @@ class Pool(SetupMixin, PoolBase, Generic[P], ABC):
             logger.info("Waiting for instances releasing...")
             while len(self._used):
                 await sleep(0.1)
+            logger.info("Released instances!")
 
         await self.close()
 
