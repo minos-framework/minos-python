@@ -1,5 +1,4 @@
 import unittest
-import warnings
 from abc import (
     ABC,
 )
@@ -78,21 +77,6 @@ class PostgresAsyncTestCase(MinosTestCase, ABC):
         self._uuid = uuid4()
         self._test_db = {"database": f"test_db_{self._uuid.hex}"}
         super().setUp()
-
-    @property
-    def repository_db(self) -> dict[str, Any]:
-        warnings.warn("'repository_db' attribute has been deprecated.", DeprecationWarning)
-        return self.config.get_database_by_name("aggregate") | self._test_db
-
-    @property
-    def broker_queue_db(self) -> dict[str, Any]:
-        warnings.warn("'broker_queue_db' attribute has been deprecated.", DeprecationWarning)
-        return self.config.get_database_by_name("broker") | self._test_db
-
-    @property
-    def snapshot_db(self) -> dict[str, Any]:
-        warnings.warn("'snapshot_db' attribute has been deprecated.", DeprecationWarning)
-        return self.config.get_database_by_name("aggregate") | self._test_db
 
     def get_config(self) -> Config:
         config = Config(self.get_config_file_path())

@@ -31,65 +31,7 @@ class MyMinosTestCase(MinosTestCase):
 
 
 class TestPostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
-    def test_repository_db(self):
-        test_case = MyPostgresAsyncTestCase()
-        test_case.setUp()
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            # noinspection PyDeprecation
-            self.assertEqual(
-                {
-                    k: v
-                    for k, v in test_case.base_config.get_database_by_name("aggregate").items()
-                    if k not in {"database"}
-                },
-                {k: v for k, v in test_case.repository_db.items() if k not in {"database"}},
-            )
-            # noinspection PyDeprecation
-            self.assertNotEqual(
-                test_case.base_config.get_database_by_name("aggregate")["database"],
-                test_case.repository_db["database"],
-            )
-
-    def test_broker_queue_db(self):
-        test_case = MyPostgresAsyncTestCase()
-        test_case.setUp()
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            # noinspection PyDeprecation
-            self.assertEqual(
-                {
-                    k: v
-                    for k, v in test_case.base_config.get_database_by_name("broker").items()
-                    if k not in {"database"}
-                },
-                {k: v for k, v in test_case.broker_queue_db.items() if k not in {"database"}},
-            )
-            # noinspection PyDeprecation
-            self.assertNotEqual(
-                test_case.base_config.get_database_by_name("broker")["database"],
-                test_case.broker_queue_db["database"],
-            )
-
-    def test_snapshot_db(self):
-        test_case = MyPostgresAsyncTestCase()
-        test_case.setUp()
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            # noinspection PyDeprecation
-            self.assertEqual(
-                {
-                    k: v
-                    for k, v in test_case.base_config.get_database_by_name("aggregate").items()
-                    if k not in {"database"}
-                },
-                {k: v for k, v in test_case.snapshot_db.items() if k not in {"database"}},
-            )
-            # noinspection PyDeprecation
-            self.assertNotEqual(
-                test_case.base_config.get_database_by_name("aggregate")["database"],
-                test_case.broker_queue_db["database"],
-            )
+    pass
 
 
 class MyPostgresAsyncTestCase(PostgresAsyncTestCase):
