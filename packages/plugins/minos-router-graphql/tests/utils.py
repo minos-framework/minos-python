@@ -83,8 +83,16 @@ class FakeQueryService2:
     """For testng purposes."""
 
     # noinspection PyUnusedLocal
-    @enroute.graphql.query(name="order", argument=GraphQLField(GraphQLString), output=GraphQLString, authorized=True,
-                           allowed_groups=['supèr_admin', 'admin', ])
+    @enroute.graphql.query(
+        name="order",
+        argument=GraphQLField(GraphQLString),
+        output=GraphQLString,
+        authorized=True,
+        allowed_groups=[
+            "supèr_admin",
+            "admin",
+        ],
+    )
     def get_order(self, request: Request):
         """For testng purposes."""
 

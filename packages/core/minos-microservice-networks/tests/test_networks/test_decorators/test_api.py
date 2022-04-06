@@ -17,21 +17,54 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(RestCommandEnrouteDecorator("tickets/", "GET"), decorator)
 
     def test_rest_command_kwargs(self):
-        decorator = enroute.rest.command(path="tickets/", method="GET", authorized=True,
-                                         allowed_groups=['super_admin', 'admin', ])
+        decorator = enroute.rest.command(
+            path="tickets/",
+            method="GET",
+            authorized=True,
+            allowed_groups=[
+                "super_admin",
+                "admin",
+            ],
+        )
         self.assertEqual(
-            RestCommandEnrouteDecorator("tickets/", "GET", authorized=True, allowed_groups=['super_admin', 'admin', ]),
-            decorator)
+            RestCommandEnrouteDecorator(
+                "tickets/",
+                "GET",
+                authorized=True,
+                allowed_groups=[
+                    "super_admin",
+                    "admin",
+                ],
+            ),
+            decorator,
+        )
 
     def test_rest_query(self):
         decorator = enroute.rest.query(path="tickets/", method="GET")
         self.assertEqual(RestQueryEnrouteDecorator("tickets/", "GET"), decorator)
 
     def test_rest_query_kwargs(self):
-        decorator = enroute.rest.query(path="tickets/", method="GET", authorized=True,
-                                       allowed_groups=['super_admin', 'admin', ])
-        self.assertEqual(RestQueryEnrouteDecorator("tickets/", "GET", authorized=True,
-                                                   allowed_groups=['super_admin', 'admin', ]), decorator)
+        decorator = enroute.rest.query(
+            path="tickets/",
+            method="GET",
+            authorized=True,
+            allowed_groups=[
+                "super_admin",
+                "admin",
+            ],
+        )
+        self.assertEqual(
+            RestQueryEnrouteDecorator(
+                "tickets/",
+                "GET",
+                authorized=True,
+                allowed_groups=[
+                    "super_admin",
+                    "admin",
+                ],
+            ),
+            decorator,
+        )
 
     def test_rest_event_raises(self):
         with self.assertRaises(AttributeError):

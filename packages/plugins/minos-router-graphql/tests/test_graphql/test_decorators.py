@@ -43,9 +43,16 @@ class TestGraphQlEnrouteDecorator(unittest.TestCase):
 
         expected = {
             "get_order": {
-                GraphQlQueryEnrouteDecorator(name="order", argument=GraphQLField(GraphQLString), output=GraphQLString,
-                                             authorized=True,
-                                             allowed_groups=['super_admin', 'admin', ])
+                GraphQlQueryEnrouteDecorator(
+                    name="order",
+                    argument=GraphQLField(GraphQLString),
+                    output=GraphQLString,
+                    authorized=True,
+                    allowed_groups=[
+                        "super_admin",
+                        "admin",
+                    ],
+                )
             },
         }
 
