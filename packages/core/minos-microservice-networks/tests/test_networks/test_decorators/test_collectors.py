@@ -14,7 +14,8 @@ from minos.networks import (
 )
 from tests.utils import (
     FakeService,
-    FakeServiceWithGetEnroute, FakeServiceWithKwargs,
+    FakeServiceWithGetEnroute,
+    FakeServiceWithKwargs,
 )
 
 
@@ -62,8 +63,17 @@ class TestEnrouteCollector(unittest.IsolatedAsyncioTestCase):
 
         observed = analyzer.get_rest_command_query()
         expected = {
-            "get_tickets": {RestQueryEnrouteDecorator("tickets/", "GET", authorized=True,
-                                                      allowed_groups=['super_admin', 'admin', ])},
+            "get_tickets": {
+                RestQueryEnrouteDecorator(
+                    "tickets/",
+                    "GET",
+                    authorized=True,
+                    allowed_groups=[
+                        "super_admin",
+                        "admin",
+                    ],
+                )
+            },
         }
 
         self.assertEqual(expected, observed)

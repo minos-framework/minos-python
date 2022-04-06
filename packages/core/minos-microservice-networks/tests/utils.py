@@ -174,11 +174,20 @@ class FakeService:
 class FakeServiceWithKwargs:
     """For testing purposes."""
 
-    @enroute.rest.query(path="tickets/", method="GET", authorized=True, allowed_groups=['super_admin', 'admin', ])
+    @enroute.rest.query(
+        path="tickets/",
+        method="GET",
+        authorized=True,
+        allowed_groups=[
+            "super_admin",
+            "admin",
+        ],
+    )
     @enroute.broker.query(topic="GetTickets")
     async def get_tickets(self, request: Request) -> Response:
         """For testing purposes."""
         return Response(": ".join(("Get Tickets", await request.content())))
+
 
 class FakeServiceWithGetEnroute:
     """For testing purposes."""

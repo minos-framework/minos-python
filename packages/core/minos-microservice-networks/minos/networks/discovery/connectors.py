@@ -104,8 +104,8 @@ class DiscoveryConnector(SetupMixin):
         for name in config.get_services():
             decorators = EnrouteCollector(name, config).get_rest_command_query()
             endpoints += [
-                {"url": decorator.url, "method": decorator.method} | decorator.kwargs for decorator in
-                set(chain(*decorators.values()))
+                {"url": decorator.url, "method": decorator.method} | decorator.kwargs
+                for decorator in set(chain(*decorators.values()))
             ]
 
         endpoints.sort(key=itemgetter("url", "method"))
