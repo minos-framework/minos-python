@@ -2,11 +2,12 @@ from .abc import (
     SnapshotRepository,
 )
 from .database import (
-    AiopgSnapshotQueryBuilder,
+    AiopgSnapshotQueryDatabaseOperationBuilder,
     DatabaseSnapshotReader,
     DatabaseSnapshotRepository,
     DatabaseSnapshotSetup,
     DatabaseSnapshotWriter,
+    PostgreSqlSnapshotQueryBuilder,
     PostgreSqlSnapshotReader,
     PostgreSqlSnapshotRepository,
     PostgreSqlSnapshotSetup,

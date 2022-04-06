@@ -8,7 +8,8 @@ from .api import (
 )
 from .factories import (
     AiopgSnapshotDatabaseOperationFactory,
-    AiopgSnapshotQueryBuilder,
+    AiopgSnapshotQueryDatabaseOperationBuilder,
+    PostgreSqlSnapshotQueryBuilder,
     SnapshotDatabaseOperationFactory,
 )
 from .readers import (

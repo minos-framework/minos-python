@@ -60,12 +60,13 @@ from .queries import (
     Ordering,
 )
 from .snapshots import (
-    AiopgSnapshotQueryBuilder,
+    AiopgSnapshotQueryDatabaseOperationBuilder,
     DatabaseSnapshotReader,
     DatabaseSnapshotRepository,
     DatabaseSnapshotSetup,
     DatabaseSnapshotWriter,
     InMemorySnapshotRepository,
+    PostgreSqlSnapshotQueryBuilder,
     PostgreSqlSnapshotReader,
     PostgreSqlSnapshotRepository,
     PostgreSqlSnapshotSetup,

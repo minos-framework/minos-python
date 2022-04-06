@@ -26,7 +26,7 @@ from ..abc import (
     SnapshotDatabaseOperationFactory,
 )
 from .queries import (
-    AiopgSnapshotQueryBuilder,
+    AiopgSnapshotQueryDatabaseOperationBuilder,
 )
 
 
@@ -134,7 +134,9 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         exclude_deleted: bool,
     ) -> DatabaseOperation:
         """TODO"""
-        builder = AiopgSnapshotQueryBuilder(name, condition, ordering, limit, transaction_uuids, exclude_deleted)
+        builder = AiopgSnapshotQueryDatabaseOperationBuilder(
+            name, condition, ordering, limit, transaction_uuids, exclude_deleted
+        )
         query, parameters = builder.build()
 
         return AiopgDatabaseOperation(query, parameters)

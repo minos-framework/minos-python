@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import warnings
 from typing import (
     Any,
     Optional,
@@ -53,7 +54,7 @@ from .....queries import (
 
 
 # noinspection SqlResolve,SqlNoDataSourceInspection
-class AiopgSnapshotQueryBuilder:
+class AiopgSnapshotQueryDatabaseOperationBuilder:
     """PostgreSQL Snapshot Query Builder class.
 
     This class build postgres-compatible database queries over fields based on a condition, ordering, etc.
@@ -270,3 +271,15 @@ class AiopgSnapshotQueryBuilder:
     )
 
     _EXCLUDE_DELETED_CONDITION = SQL("(data IS NOT NULL)")
+
+
+class PostgreSqlSnapshotQueryBuilder(AiopgSnapshotQueryDatabaseOperationBuilder):
+    """TODO"""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            f"{PostgreSqlSnapshotQueryBuilder!r} has been deprecated. "
+            f"Use {AiopgSnapshotQueryDatabaseOperationBuilder} instead.",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)

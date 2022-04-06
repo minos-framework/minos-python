@@ -3,5 +3,6 @@ from .abc import (
 )
 from .aiopg import (
     AiopgSnapshotDatabaseOperationFactory,
-    AiopgSnapshotQueryBuilder,
+    AiopgSnapshotQueryDatabaseOperationBuilder,
+    PostgreSqlSnapshotQueryBuilder,
 )
