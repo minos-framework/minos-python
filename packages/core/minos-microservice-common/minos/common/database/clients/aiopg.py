@@ -19,9 +19,6 @@ from aiopg import (
     Connection,
     Cursor,
 )
-from aiopg.utils import (
-    ClosableQueue,
-)
 from psycopg2 import (
     IntegrityError,
     OperationalError,
@@ -211,10 +208,6 @@ class AiopgDatabaseClient(DatabaseClient):
         :return: A ``Cursor`` instance.
         """
         return self._cursor
-
-    @property
-    def _notifications(self) -> ClosableQueue:
-        return self._connection.notifies
 
     @property
     def connection(self) -> Optional[Connection]:

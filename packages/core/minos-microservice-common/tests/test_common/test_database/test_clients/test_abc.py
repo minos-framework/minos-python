@@ -2,9 +2,6 @@ import unittest
 from abc import (
     ABC,
 )
-from asyncio import (
-    Queue,
-)
 from typing import (
     Any,
     AsyncIterator,
@@ -12,9 +9,7 @@ from typing import (
 from unittest.mock import (
     AsyncMock,
     MagicMock,
-    PropertyMock,
     call,
-    patch,
 )
 
 from minos.common import (
@@ -44,16 +39,11 @@ class _DatabaseClient(DatabaseClient):
     def _fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
         """For testing purposes."""
 
-    # noinspection PyPropertyDefinition
-    @property
-    def _notifications(self) -> Queue:
-        """For testing purposes."""
-
 
 class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(DatabaseClient, (ABC, BuildableMixin)))
-        expected = {"_notifications", "_is_valid", "_execute", "_fetch_all", "_reset"}
+        expected = {"_is_valid", "_execute", "_fetch_all", "_reset"}
         # noinspection PyUnresolvedReferences
         self.assertEqual(expected, DatabaseClient.__abstractmethods__)
 
@@ -103,14 +93,6 @@ class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
         client._fetch_all = mock
 
         self.assertEqual("one", await client.fetch_one())
-
-        self.assertEqual([call()], mock.call_args_list)
-
-    async def test_notifications(self):
-        expected = Queue()
-        client = _DatabaseClient()
-        with patch.object(_DatabaseClient, "_notifications", new_callable=PropertyMock, return_value=expected) as mock:
-            self.assertEqual(expected, client.notifications)
 
         self.assertEqual([call()], mock.call_args_list)
 
