@@ -4,10 +4,10 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    AiopgBrokerPublisherQueueDatabaseOperationFactory,
     BrokerPublisherQueue,
-    PostgreSqlBrokerPublisherQueue,
-    PostgreSqlBrokerPublisherQueueQueryFactory,
-    PostgreSqlBrokerQueue,
+    DatabaseBrokerPublisherQueue,
+    DatabaseBrokerQueue,
 )
 from tests.utils import (
     NetworksTestCase,
@@ -16,17 +16,17 @@ from tests.utils import (
 
 class TestPostgreSqlBrokerPublisherQueue(NetworksTestCase, PostgresAsyncTestCase):
     def test_is_subclass(self):
-        self.assertTrue(issubclass(PostgreSqlBrokerPublisherQueue, (PostgreSqlBrokerQueue, BrokerPublisherQueue)))
+        self.assertTrue(issubclass(DatabaseBrokerPublisherQueue, (DatabaseBrokerQueue, BrokerPublisherQueue)))
 
     async def test_query_factory(self):
-        queue = PostgreSqlBrokerPublisherQueue.from_config(self.config)
+        queue = DatabaseBrokerPublisherQueue.from_config(self.config)
 
-        self.assertIsInstance(queue.query_factory, PostgreSqlBrokerPublisherQueueQueryFactory)
+        self.assertIsInstance(queue.query_factory, AiopgBrokerPublisherQueueDatabaseOperationFactory)
 
 
 class TestPostgreSqlBrokerPublisherQueueQueryFactory(unittest.TestCase):
     def setUp(self) -> None:
-        self.factory = PostgreSqlBrokerPublisherQueueQueryFactory()
+        self.factory = AiopgBrokerPublisherQueueDatabaseOperationFactory()
 
     def test_build_table_name(self):
         self.assertEqual("broker_publisher_queue", self.factory.build_table_name())

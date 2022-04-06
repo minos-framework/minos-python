@@ -13,32 +13,32 @@ from minos.common import (
 )
 
 from .....collections import (
-    PostgreSqlBrokerQueue,
-    PostgreSqlBrokerQueueBuilder,
+    DatabaseBrokerQueue,
+    DatabaseBrokerQueueBuilder,
 )
 from ..abc import (
     BrokerSubscriberQueue,
     BrokerSubscriberQueueBuilder,
 )
 from .factories import (
-    PostgreSqlBrokerSubscriberQueueQueryFactory,
+    AiopgBrokerSubscriberQueueDatabaseOperationFactory,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlBrokerSubscriberQueue(PostgreSqlBrokerQueue, BrokerSubscriberQueue):
+class DatabaseBrokerSubscriberQueue(DatabaseBrokerQueue, BrokerSubscriberQueue):
     """PostgreSql Broker Subscriber Queue class."""
 
     def __init__(
         self,
         topics: set[str],
         *args,
-        query_factory: Optional[PostgreSqlBrokerSubscriberQueueQueryFactory] = None,
+        query_factory: Optional[AiopgBrokerSubscriberQueueDatabaseOperationFactory] = None,
         **kwargs,
     ):
         if query_factory is None:
-            query_factory = PostgreSqlBrokerSubscriberQueueQueryFactory()
+            query_factory = AiopgBrokerSubscriberQueueDatabaseOperationFactory()
         super().__init__(topics, *args, query_factory=query_factory, **kwargs)
 
     async def _get_count(self) -> int:
@@ -54,10 +54,10 @@ class PostgreSqlBrokerSubscriberQueue(PostgreSqlBrokerQueue, BrokerSubscriberQue
         return [row async for row in client.fetch_all()]
 
 
-class PostgreSqlBrokerSubscriberQueueBuilder(
-    BrokerSubscriberQueueBuilder[PostgreSqlBrokerSubscriberQueue], PostgreSqlBrokerQueueBuilder
+class DatabaseBrokerSubscriberQueueBuilder(
+    BrokerSubscriberQueueBuilder[DatabaseBrokerSubscriberQueue], DatabaseBrokerQueueBuilder
 ):
     """PostgreSql Broker Subscriber Queue Builder class."""
 
 
-PostgreSqlBrokerSubscriberQueue.set_builder(PostgreSqlBrokerSubscriberQueueBuilder)
+DatabaseBrokerSubscriberQueue.set_builder(DatabaseBrokerSubscriberQueueBuilder)

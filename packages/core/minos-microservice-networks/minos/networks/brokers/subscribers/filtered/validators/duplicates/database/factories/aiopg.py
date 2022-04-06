@@ -12,9 +12,15 @@ from minos.common import (
     DatabaseOperation,
 )
 
+from .abc import (
+    BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
+)
+
 
 # noinspection SqlNoDataSourceInspection,SqlResolve
-class PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory:
+class AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory(
+    BrokerSubscriberDuplicateValidatorDatabaseOperationFactory
+):
     """PostgreSql Broker Subscriber Duplicate Detector Query Factory class."""
 
     @staticmethod
@@ -50,7 +56,7 @@ class PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory:
             ]
         )
 
-    def build_insert_row(self, topic: str, uuid: UUID) -> AiopgDatabaseOperation:
+    def build_insert_row(self, topic: str, uuid: UUID) -> DatabaseOperation:
         """Build the "insert row" query.
 
         :return: A ``SQL`` instance.

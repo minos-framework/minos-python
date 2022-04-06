@@ -3,9 +3,10 @@ from .abc import (
     BrokerSubscriberQueueBuilder,
 )
 from .database import (
-    PostgreSqlBrokerSubscriberQueue,
-    PostgreSqlBrokerSubscriberQueueBuilder,
-    PostgreSqlBrokerSubscriberQueueQueryFactory,
+    AiopgBrokerSubscriberQueueDatabaseOperationFactory,
+    BrokerSubscriberQueueDatabaseOperationFactory,
+    DatabaseBrokerSubscriberQueue,
+    DatabaseBrokerSubscriberQueueBuilder,
 )
 from .memory import (
     InMemoryBrokerSubscriberQueue,

@@ -29,8 +29,8 @@ from minos.networks import (
     BrokerMessage,
     BrokerPublisher,
     BrokerPublisherBuilder,
+    DatabaseBrokerPublisherQueue,
     InMemoryBrokerPublisherQueue,
-    PostgreSqlBrokerPublisherQueue,
     QueuedBrokerPublisher,
 )
 
@@ -52,7 +52,7 @@ class PostgreSqlQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> PostgreSqlQueuedKafkaBrokerPublisher:
         impl = KafkaBrokerPublisher.from_config(config, **kwargs)
-        queue = PostgreSqlBrokerPublisherQueue.from_config(config, **kwargs)
+        queue = DatabaseBrokerPublisherQueue.from_config(config, **kwargs)
         return cls(impl, queue, **kwargs)
 
 

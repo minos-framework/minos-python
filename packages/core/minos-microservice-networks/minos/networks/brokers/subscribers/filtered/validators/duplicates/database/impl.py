@@ -20,18 +20,21 @@ from ..abc import (
     BrokerSubscriberDuplicateValidator,
 )
 from .factories import (
-    PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
+    AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
 )
 
 
-class PostgreSqlBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateValidator, DatabaseMixin):
+class DatabaseBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateValidator, DatabaseMixin):
     """PostgreSql Broker Subscriber Duplicate Detector class."""
 
     def __init__(
-        self, query_factory: Optional[PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory] = None, *args, **kwargs
+        self,
+        query_factory: Optional[AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory] = None,
+        *args,
+        **kwargs,
     ):
         if query_factory is None:
-            query_factory = PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory()
+            query_factory = AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory()
         super().__init__(*args, **kwargs)
         self._query_factory = query_factory
 
@@ -44,7 +47,7 @@ class PostgreSqlBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateVali
         await self.submit_query(operation)
 
     @property
-    def query_factory(self) -> PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory:
+    def query_factory(self) -> AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory:
         """Get the query factory.
 
         :return: A ``PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory`` instance.
@@ -60,7 +63,7 @@ class PostgreSqlBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateVali
             return False
 
 
-class PostgreSqlBrokerSubscriberDuplicateValidatorBuilder(Builder[PostgreSqlBrokerSubscriberDuplicateValidator]):
+class DatabaseBrokerSubscriberDuplicateValidatorBuilder(Builder[DatabaseBrokerSubscriberDuplicateValidator]):
     """PostgreSql Broker Subscriber Duplicate Detector Builder class."""
 
     def with_config(self, config: Config):
@@ -73,4 +76,4 @@ class PostgreSqlBrokerSubscriberDuplicateValidatorBuilder(Builder[PostgreSqlBrok
         return super().with_config(config)
 
 
-PostgreSqlBrokerSubscriberDuplicateValidator.set_builder(PostgreSqlBrokerSubscriberDuplicateValidatorBuilder)
+DatabaseBrokerSubscriberDuplicateValidator.set_builder(DatabaseBrokerSubscriberDuplicateValidatorBuilder)

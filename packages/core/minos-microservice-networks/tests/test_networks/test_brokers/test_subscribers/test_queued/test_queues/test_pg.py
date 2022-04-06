@@ -14,13 +14,13 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    AiopgBrokerSubscriberQueueDatabaseOperationFactory,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerSubscriberQueue,
-    PostgreSqlBrokerQueue,
-    PostgreSqlBrokerSubscriberQueue,
-    PostgreSqlBrokerSubscriberQueueBuilder,
-    PostgreSqlBrokerSubscriberQueueQueryFactory,
+    DatabaseBrokerQueue,
+    DatabaseBrokerSubscriberQueue,
+    DatabaseBrokerSubscriberQueueBuilder,
 )
 from tests.utils import (
     FakeAsyncIterator,
@@ -30,17 +30,17 @@ from tests.utils import (
 
 class TestPostgreSqlBrokerSubscriberQueue(NetworksTestCase, PostgresAsyncTestCase):
     def test_is_subclass(self):
-        self.assertTrue(issubclass(PostgreSqlBrokerSubscriberQueue, (PostgreSqlBrokerQueue, BrokerSubscriberQueue)))
+        self.assertTrue(issubclass(DatabaseBrokerSubscriberQueue, (DatabaseBrokerQueue, BrokerSubscriberQueue)))
 
     async def test_query_factory(self):
-        queue = PostgreSqlBrokerSubscriberQueue.from_config(self.config, topics={"foo", "bar"})
+        queue = DatabaseBrokerSubscriberQueue.from_config(self.config, topics={"foo", "bar"})
 
-        self.assertIsInstance(queue.query_factory, PostgreSqlBrokerSubscriberQueueQueryFactory)
+        self.assertIsInstance(queue.query_factory, AiopgBrokerSubscriberQueueDatabaseOperationFactory)
 
     async def test_enqueue(self):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
 
-        async with PostgreSqlBrokerSubscriberQueue.from_config(self.config, topics={"foo", "bar"}) as queue:
+        async with DatabaseBrokerSubscriberQueue.from_config(self.config, topics={"foo", "bar"}) as queue:
             await queue.enqueue(message)
             await sleep(0.5)  # To give time to consume the message from db.
 
@@ -55,7 +55,7 @@ class TestPostgreSqlBrokerSubscriberQueue(NetworksTestCase, PostgresAsyncTestCas
             "fetch_all",
             return_value=FakeAsyncIterator([[1, messages[0].avro_bytes], [2, bytes()], [3, messages[1].avro_bytes]]),
         ):
-            async with PostgreSqlBrokerSubscriberQueue.from_config(self.config, topics={"foo", "bar"}) as queue:
+            async with DatabaseBrokerSubscriberQueue.from_config(self.config, topics={"foo", "bar"}) as queue:
                 queue._get_count = AsyncMock(side_effect=[3, 0])
 
                 async with queue:
@@ -68,7 +68,7 @@ class TestPostgreSqlBrokerSubscriberQueue(NetworksTestCase, PostgresAsyncTestCas
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
-        async with PostgreSqlBrokerSubscriberQueue.from_config(self.config, topics={"foo", "bar"}) as queue:
+        async with DatabaseBrokerSubscriberQueue.from_config(self.config, topics={"foo", "bar"}) as queue:
             await queue.enqueue(messages[0])
             await queue.enqueue(messages[1])
 
@@ -79,7 +79,7 @@ class TestPostgreSqlBrokerSubscriberQueue(NetworksTestCase, PostgresAsyncTestCas
 
 class TestPostgreSqlBrokerSubscriberQueueQueryFactory(unittest.TestCase):
     def setUp(self) -> None:
-        self.factory = PostgreSqlBrokerSubscriberQueueQueryFactory()
+        self.factory = AiopgBrokerSubscriberQueueDatabaseOperationFactory()
 
     def test_build_table_name(self):
         self.assertEqual("broker_subscriber_queue", self.factory.build_table_name())
@@ -87,10 +87,10 @@ class TestPostgreSqlBrokerSubscriberQueueQueryFactory(unittest.TestCase):
 
 class TestPostgreSqlBrokerSubscriberQueueBuilder(NetworksTestCase, PostgresAsyncTestCase):
     def test_build(self):
-        builder = PostgreSqlBrokerSubscriberQueueBuilder().with_config(self.config).with_topics({"one", "two"})
+        builder = DatabaseBrokerSubscriberQueueBuilder().with_config(self.config).with_topics({"one", "two"})
         subscriber = builder.build()
 
-        self.assertIsInstance(subscriber, PostgreSqlBrokerSubscriberQueue)
+        self.assertIsInstance(subscriber, DatabaseBrokerSubscriberQueue)
         self.assertEqual({"one", "two"}, subscriber.topics)
 
 

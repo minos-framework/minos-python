@@ -29,8 +29,8 @@ from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerSubscriber,
+    DatabaseBrokerSubscriberQueue,
     InMemoryBrokerSubscriberQueue,
-    PostgreSqlBrokerSubscriberQueue,
     QueuedBrokerSubscriber,
 )
 from minos.plugins.kafka import (
@@ -267,7 +267,7 @@ class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(PostgresAsyncTestCase):
 
         self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
         self.assertIsInstance(subscriber.impl, KafkaBrokerSubscriber)
-        self.assertIsInstance(subscriber.queue, PostgreSqlBrokerSubscriberQueue)
+        self.assertIsInstance(subscriber.queue, DatabaseBrokerSubscriberQueue)
 
 
 class TestInMemoryQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):

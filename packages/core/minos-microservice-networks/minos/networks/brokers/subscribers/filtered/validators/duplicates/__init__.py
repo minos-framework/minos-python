@@ -2,9 +2,10 @@ from .abc import (
     BrokerSubscriberDuplicateValidator,
 )
 from .database import (
-    PostgreSqlBrokerSubscriberDuplicateValidator,
-    PostgreSqlBrokerSubscriberDuplicateValidatorBuilder,
-    PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
+    AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
+    BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
+    DatabaseBrokerSubscriberDuplicateValidator,
+    DatabaseBrokerSubscriberDuplicateValidatorBuilder,
 )
 from .memory import (
     InMemoryBrokerSubscriberDuplicateValidator,

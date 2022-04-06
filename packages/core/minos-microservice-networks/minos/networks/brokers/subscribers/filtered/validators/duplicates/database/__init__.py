@@ -1,7 +1,8 @@
 from .factories import (
-    PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
+    AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
+    BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
 )
 from .impl import (
-    PostgreSqlBrokerSubscriberDuplicateValidator,
-    PostgreSqlBrokerSubscriberDuplicateValidatorBuilder,
+    DatabaseBrokerSubscriberDuplicateValidator,
+    DatabaseBrokerSubscriberDuplicateValidatorBuilder,
 )

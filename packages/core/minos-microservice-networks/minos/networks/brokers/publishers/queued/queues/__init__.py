@@ -5,6 +5,7 @@ from .memory import (
     InMemoryBrokerPublisherQueue,
 )
 from .pg import (
-    PostgreSqlBrokerPublisherQueue,
-    PostgreSqlBrokerPublisherQueueQueryFactory,
+    AiopgBrokerPublisherQueueDatabaseOperationFactory,
+    BrokerPublisherQueueDatabaseOperationFactory,
+    DatabaseBrokerPublisherQueue,
 )

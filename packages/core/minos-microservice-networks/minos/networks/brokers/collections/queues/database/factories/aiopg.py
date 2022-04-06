@@ -15,9 +15,13 @@ from minos.common import (
     DatabaseOperation,
 )
 
+from .abc import (
+    BrokerQueueDatabaseOperationFactory,
+)
+
 
 # noinspection SqlResolve,SqlNoDataSourceInspection,SqlNoDataSourceInspection,SqlResolve
-class PostgreSqlBrokerQueueQueryFactory(ABC):
+class AiopgBrokerQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory, ABC):
     """PostgreSql Broker Queue Query Factory class."""
 
     @abstractmethod

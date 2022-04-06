@@ -1,7 +1,8 @@
 from .factories import (
-    PostgreSqlBrokerSubscriberQueueQueryFactory,
+    AiopgBrokerSubscriberQueueDatabaseOperationFactory,
+    BrokerSubscriberQueueDatabaseOperationFactory,
 )
 from .impl import (
-    PostgreSqlBrokerSubscriberQueue,
-    PostgreSqlBrokerSubscriberQueueBuilder,
+    DatabaseBrokerSubscriberQueue,
+    DatabaseBrokerSubscriberQueueBuilder,
 )

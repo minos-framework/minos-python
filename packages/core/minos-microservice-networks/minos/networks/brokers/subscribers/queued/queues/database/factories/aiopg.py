@@ -12,12 +12,17 @@ from minos.common import (
 )
 
 from ......collections import (
-    PostgreSqlBrokerQueueQueryFactory,
+    AiopgBrokerQueueDatabaseOperationFactory,
+)
+from .abc import (
+    BrokerSubscriberQueueDatabaseOperationFactory,
 )
 
 
 # noinspection SqlNoDataSourceInspection,SqlResolve,PyTypeChecker,PyArgumentList
-class PostgreSqlBrokerSubscriberQueueQueryFactory(PostgreSqlBrokerQueueQueryFactory):
+class AiopgBrokerSubscriberQueueDatabaseOperationFactory(
+    BrokerSubscriberQueueDatabaseOperationFactory, AiopgBrokerQueueDatabaseOperationFactory
+):
     """PostgreSql Broker Subscriber Queue Query Factory class."""
 
     def build_table_name(self) -> str:

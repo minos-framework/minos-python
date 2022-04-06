@@ -3,13 +3,19 @@ from __future__ import (
 )
 
 import logging
+from abc import (
+    ABC,
+)
 from typing import (
     Optional,
 )
 
 from ....collections import (
-    PostgreSqlBrokerQueue,
-    PostgreSqlBrokerQueueQueryFactory,
+    AiopgBrokerQueueDatabaseOperationFactory,
+    DatabaseBrokerQueue,
+)
+from ....collections.queues.database.factories.abc import (
+    BrokerQueueDatabaseOperationFactory,
 )
 from .abc import (
     BrokerPublisherQueue,
@@ -18,16 +24,22 @@ from .abc import (
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlBrokerPublisherQueue(PostgreSqlBrokerQueue, BrokerPublisherQueue):
+class DatabaseBrokerPublisherQueue(DatabaseBrokerQueue, BrokerPublisherQueue):
     """PostgreSql Broker Publisher Queue class."""
 
-    def __init__(self, *args, query_factory: Optional[PostgreSqlBrokerQueueQueryFactory] = None, **kwargs):
+    def __init__(self, *args, query_factory: Optional[BrokerPublisherQueueDatabaseOperationFactory] = None, **kwargs):
         if query_factory is None:
-            query_factory = PostgreSqlBrokerPublisherQueueQueryFactory()
+            query_factory = AiopgBrokerPublisherQueueDatabaseOperationFactory()
         super().__init__(*args, query_factory=query_factory, **kwargs)
 
 
-class PostgreSqlBrokerPublisherQueueQueryFactory(PostgreSqlBrokerQueueQueryFactory):
+class BrokerPublisherQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory, ABC):
+    """TODO"""
+
+
+class AiopgBrokerPublisherQueueDatabaseOperationFactory(
+    BrokerPublisherQueueDatabaseOperationFactory, AiopgBrokerQueueDatabaseOperationFactory
+):
     """PostgreSql Broker Publisher Queue Query Factory class."""
 
     def build_table_name(self) -> str:

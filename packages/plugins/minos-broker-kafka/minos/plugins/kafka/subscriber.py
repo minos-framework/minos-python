@@ -41,8 +41,8 @@ from minos.networks import (
     BrokerMessage,
     BrokerSubscriber,
     BrokerSubscriberBuilder,
+    DatabaseBrokerSubscriberQueueBuilder,
     InMemoryBrokerSubscriberQueueBuilder,
-    PostgreSqlBrokerSubscriberQueueBuilder,
     QueuedBrokerSubscriberBuilder,
 )
 
@@ -205,7 +205,7 @@ class PostgreSqlQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder
         super().__init__(
             *args,
             impl_builder=KafkaBrokerSubscriberBuilder.new(),
-            queue_builder=PostgreSqlBrokerSubscriberQueueBuilder.new(),
+            queue_builder=DatabaseBrokerSubscriberQueueBuilder.new(),
             **kwargs,
         )
 

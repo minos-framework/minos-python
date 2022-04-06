@@ -2,9 +2,10 @@ from .abc import (
     BrokerQueue,
 )
 from .database import (
-    PostgreSqlBrokerQueue,
-    PostgreSqlBrokerQueueBuilder,
-    PostgreSqlBrokerQueueQueryFactory,
+    AiopgBrokerQueueDatabaseOperationFactory,
+    BrokerQueueDatabaseOperationFactory,
+    DatabaseBrokerQueue,
+    DatabaseBrokerQueueBuilder,
 )
 from .memory import (
     InMemoryBrokerQueue,

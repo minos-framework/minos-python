@@ -1,3 +1,6 @@
+from .abc import (
+    BrokerSubscriberQueueDatabaseOperationFactory,
+)
 from .aiopg import (
-    PostgreSqlBrokerSubscriberQueueQueryFactory,
+    AiopgBrokerSubscriberQueueDatabaseOperationFactory,
 )

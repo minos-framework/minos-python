@@ -39,13 +39,13 @@ from ..abc import (
     BrokerQueue,
 )
 from .factories import (
-    PostgreSqlBrokerQueueQueryFactory,
+    AiopgBrokerQueueDatabaseOperationFactory,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
+class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
     """PostgreSql Broker Queue class."""
 
     _queue: PriorityQueue[_Entry]
@@ -53,7 +53,7 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
     def __init__(
         self,
         *args,
-        query_factory: PostgreSqlBrokerQueueQueryFactory,
+        query_factory: AiopgBrokerQueueDatabaseOperationFactory,
         retry: Optional[int] = None,
         records: Optional[int] = None,
         **kwargs,
@@ -91,7 +91,7 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
         return self._records
 
     @property
-    def query_factory(self) -> PostgreSqlBrokerQueueQueryFactory:
+    def query_factory(self) -> AiopgBrokerQueueDatabaseOperationFactory:
         """Get the query factory.
 
         :return: A ``PostgreSqlBrokerQueueQueryFactory`` instance.
@@ -99,7 +99,7 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
         return self._query_factory
 
     @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> PostgreSqlBrokerQueue:
+    def _from_config(cls, config: Config, **kwargs) -> DatabaseBrokerQueue:
         broker_interface = config.get_interface_by_name("broker")
         queue_config = broker_interface.get("common", dict()).get("queue", dict())
         database_config = {"database_key": None}
@@ -240,7 +240,7 @@ class _Entry:
             return False
 
 
-class PostgreSqlBrokerQueueBuilder(Builder):
+class DatabaseBrokerQueueBuilder(Builder):
     """PostgreSql Broker Queue Builder class."""
 
     def with_config(self, config: Config):
@@ -254,4 +254,4 @@ class PostgreSqlBrokerQueueBuilder(Builder):
         return super().with_config(config)
 
 
-PostgreSqlBrokerQueue.set_builder(PostgreSqlBrokerQueueBuilder)
+DatabaseBrokerQueue.set_builder(DatabaseBrokerQueueBuilder)

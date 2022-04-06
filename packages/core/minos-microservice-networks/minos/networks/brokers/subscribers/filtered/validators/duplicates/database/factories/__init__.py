@@ -1,3 +1,6 @@
+from .abc import (
+    BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
+)
 from .aiopg import (
-    PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
+    AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
 )
