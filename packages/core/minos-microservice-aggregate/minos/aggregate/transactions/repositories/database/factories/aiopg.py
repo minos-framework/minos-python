@@ -18,7 +18,7 @@ from minos.common import (
 )
 
 from .abc import (
-    TransactionRepositoryOperationFactory,
+    TransactionDatatabaseOperationFactory,
 )
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 
 # noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic
-class AiopgTransactionRepositoryOperationFactory(TransactionRepositoryOperationFactory):
+class AiopgTransactionDatatabaseOperationFactory(TransactionDatatabaseOperationFactory):
     """TODO"""
 
     def build_create_table(self) -> DatabaseOperation:

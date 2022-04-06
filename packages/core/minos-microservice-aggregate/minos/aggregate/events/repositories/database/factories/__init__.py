@@ -1,6 +1,6 @@
 from .abc import (
-    EventRepositoryOperationFactory,
+    EventDatabaseOperationFactory,
 )
 from .aiopg import (
-    AiopgEventRepositoryOperationFactory,
+    AiopgEventDatabaseOperationFactory,
 )

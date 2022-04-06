@@ -1,6 +1,6 @@
 from .factories import (
-    AiopgEventRepositoryOperationFactory,
-    EventRepositoryOperationFactory,
+    AiopgEventDatabaseOperationFactory,
+    EventDatabaseOperationFactory,
 )
 from .impl import (
     DatabaseEventRepository,

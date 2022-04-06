@@ -27,12 +27,12 @@ from .....actions import (
     Action,
 )
 from .abc import (
-    EventRepositoryOperationFactory,
+    EventDatabaseOperationFactory,
 )
 
 
 # noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic
-class AiopgEventRepositoryOperationFactory(EventRepositoryOperationFactory):
+class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
     """TODO"""
 
     def build_create_table(self) -> DatabaseOperation:

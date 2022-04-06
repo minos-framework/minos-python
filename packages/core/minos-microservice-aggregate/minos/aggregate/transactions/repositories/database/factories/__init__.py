@@ -1,6 +1,6 @@
 from .abc import (
-    TransactionRepositoryOperationFactory,
+    TransactionDatatabaseOperationFactory,
 )
 from .aiopg import (
-    AiopgTransactionRepositoryOperationFactory,
+    AiopgTransactionDatatabaseOperationFactory,
 )

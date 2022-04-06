@@ -23,18 +23,18 @@ from ..abc import (
     TransactionRepository,
 )
 from .factories import (
-    AiopgTransactionRepositoryOperationFactory,
-    TransactionRepositoryOperationFactory,
+    AiopgTransactionDatatabaseOperationFactory,
+    TransactionDatatabaseOperationFactory,
 )
 
 
 class DatabaseTransactionRepository(DatabaseMixin, TransactionRepository):
     """PostgreSql Transaction Repository class."""
 
-    def __init__(self, *args, operation_factory: Optional[TransactionRepositoryOperationFactory] = None, **kwargs):
+    def __init__(self, *args, operation_factory: Optional[TransactionDatatabaseOperationFactory] = None, **kwargs):
         super().__init__(*args, **kwargs)
         if operation_factory is None:
-            operation_factory = AiopgTransactionRepositoryOperationFactory()
+            operation_factory = AiopgTransactionDatatabaseOperationFactory()
 
         self.operation_factory = operation_factory
 

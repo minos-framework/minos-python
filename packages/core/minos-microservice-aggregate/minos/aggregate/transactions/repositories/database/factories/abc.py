@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     )
 
 
-class TransactionRepositoryOperationFactory(ABC):
+class TransactionDatatabaseOperationFactory(ABC):
     """TODO"""
 
     @abstractmethod

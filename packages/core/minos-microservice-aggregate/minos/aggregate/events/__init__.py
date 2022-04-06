@@ -10,10 +10,10 @@ from .models import (
     Event,
 )
 from .repositories import (
-    AiopgEventRepositoryOperationFactory,
+    AiopgEventDatabaseOperationFactory,
     DatabaseEventRepository,
+    EventDatabaseOperationFactory,
     EventRepository,
-    EventRepositoryOperationFactory,
     InMemoryEventRepository,
     PostgreSqlEventRepository,
 )

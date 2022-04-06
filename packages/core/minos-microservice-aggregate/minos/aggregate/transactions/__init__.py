@@ -6,12 +6,12 @@ from .entries import (
     TransactionStatus,
 )
 from .repositories import (
-    AiopgTransactionRepositoryOperationFactory,
+    AiopgTransactionDatatabaseOperationFactory,
     DatabaseTransactionRepository,
     InMemoryTransactionRepository,
     PostgreSqlTransactionRepository,
+    TransactionDatatabaseOperationFactory,
     TransactionRepository,
-    TransactionRepositoryOperationFactory,
 )
 from .services import (
     TransactionService,

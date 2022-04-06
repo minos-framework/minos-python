@@ -2,9 +2,9 @@ from .abc import (
     EventRepository,
 )
 from .database import (
-    AiopgEventRepositoryOperationFactory,
+    AiopgEventDatabaseOperationFactory,
     DatabaseEventRepository,
-    EventRepositoryOperationFactory,
+    EventDatabaseOperationFactory,
     PostgreSqlEventRepository,
 )
 from .memory import (

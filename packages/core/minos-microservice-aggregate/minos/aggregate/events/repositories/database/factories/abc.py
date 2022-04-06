@@ -19,7 +19,7 @@ from .....actions import (
 )
 
 
-class EventRepositoryOperationFactory(ABC):
+class EventDatabaseOperationFactory(ABC):
     """TODO"""
 
     @abstractmethod

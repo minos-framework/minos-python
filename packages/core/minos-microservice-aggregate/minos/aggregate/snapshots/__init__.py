@@ -2,6 +2,7 @@ from .abc import (
     SnapshotRepository,
 )
 from .database import (
+    AiopgSnapshotDatabaseOperationFactory,
     AiopgSnapshotQueryDatabaseOperationBuilder,
     DatabaseSnapshotReader,
     DatabaseSnapshotRepository,
@@ -12,6 +13,7 @@ from .database import (
     PostgreSqlSnapshotRepository,
     PostgreSqlSnapshotSetup,
     PostgreSqlSnapshotWriter,
+    SnapshotDatabaseOperationFactory,
 )
 from .entries import (
     SnapshotEntry,
