@@ -108,11 +108,7 @@ class AiopgDatabaseClient(DatabaseClient):
         self._connection = None
         logger.debug(f"Destroyed {self.database!r} database connection identified by {id(self._connection)}!")
 
-    async def is_valid(self) -> bool:
-        """Check if the instance is valid.
-
-        :return: ``True`` if it is valid or ``False`` otherwise.
-        """
+    async def _is_valid(self) -> bool:
         if self._connection is None:
             return False
 
@@ -124,49 +120,26 @@ class AiopgDatabaseClient(DatabaseClient):
 
         return not self._connection.closed
 
-    async def reset(self, **kwargs) -> None:
-        """Reset the current instance status.
-
-        :param kwargs: Additional named parameters.
-        :return: This method does not return anything.
-        """
+    async def _reset(self, **kwargs) -> None:
         await self._destroy_cursor(**kwargs)
 
     # noinspection PyUnusedLocal
-    async def fetch_all(
+    async def _fetch_all(
         self,
         *args,
         timeout: Optional[float] = None,
         lock: Optional[int] = None,
         **kwargs,
     ) -> AsyncIterator[tuple]:
-        """Fetch all values with an asynchronous iterator.
-
-        :param timeout: An optional timeout.
-        :param lock: Optional key to perform the query with locking. If not set, the query is performed without any
-            lock.
-        :param kwargs: Additional named arguments.
-        :return: This method does not return anything.
-        """
         await self._create_cursor()
 
         async for row in self._cursor:
             yield row
 
     # noinspection PyUnusedLocal
-    async def execute(
+    async def _execute(
         self, operation: Any, parameters: Any = None, *, timeout: Optional[float] = None, lock: Any = None, **kwargs
     ) -> None:
-        """Execute an operation.
-
-        :param operation: Query to be executed.
-        :param parameters: Parameters to be projected into the query.
-        :param timeout: An optional timeout.
-        :param lock: Optional key to perform the query with locking. If not set, the query is performed without any
-            lock.
-        :param kwargs: Additional named arguments.
-        :return: This method does not return anything.
-        """
         await self._create_cursor(lock=lock)
         try:
             await self._cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
@@ -216,11 +189,7 @@ class AiopgDatabaseClient(DatabaseClient):
         return self._cursor
 
     @property
-    def notifications(self) -> ClosableQueue:
-        """Get the notifications queue.
-
-        :return: A ``ClosableQueue`` instance.
-        """
+    def _notifications(self) -> ClosableQueue:
         return self._connection.notifies
 
     @property

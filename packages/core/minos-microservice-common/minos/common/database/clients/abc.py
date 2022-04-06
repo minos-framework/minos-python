@@ -33,12 +33,16 @@ class DatabaseClient(ABC, BuildableMixin):
     def _from_config(cls, config: Config, name: Optional[str] = None, **kwargs) -> DatabaseClient:
         return super()._from_config(config, **config.get_database_by_name(name), **kwargs)
 
-    @abstractmethod
     async def is_valid(self, **kwargs) -> bool:
         """Check if the instance is valid.
 
         :return: ``True`` if it is valid or ``False`` otherwise.
         """
+        return await self._is_valid(**kwargs)
+
+    @abstractmethod
+    async def _is_valid(self, **kwargs) -> bool:
+        raise NotImplementedError
 
     async def reset(self, **kwargs) -> None:
         """Reset the current instance status.
@@ -46,8 +50,12 @@ class DatabaseClient(ABC, BuildableMixin):
         :param kwargs: Additional named parameters.
         :return: This method does not return anything.
         """
+        return await self._reset(**kwargs)
 
     @abstractmethod
+    async def _reset(self, **kwargs) -> None:
+        raise NotImplementedError
+
     async def execute(self, *args, **kwargs) -> None:
         """Execute an operation.
 
@@ -55,6 +63,11 @@ class DatabaseClient(ABC, BuildableMixin):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
+        await self._execute(*args, **kwargs)
+
+    @abstractmethod
+    async def _execute(self, *args, **kwargs) -> None:
+        raise NotImplementedError
 
     async def fetch_one(self, *args, **kwargs) -> Any:
         """Fetch one value.
@@ -65,22 +78,30 @@ class DatabaseClient(ABC, BuildableMixin):
         """
         return await self.fetch_all(*args, **kwargs).__anext__()
 
-    @abstractmethod
     def fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
         """Fetch all values with an asynchronous iterator.
 
-        :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
+        return self._fetch_all(*args, **kwargs)
+
+    @abstractmethod
+    def _fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
+        raise NotImplementedError
 
     @property
-    @abstractmethod
     def notifications(self) -> Queue:
         """Get the notifications queue.
 
         :return: A ``Queue`` instance.
         """
+        return self._notifications
+
+    @property
+    @abstractmethod
+    def _notifications(self) -> Queue:
+        raise NotImplementedError
 
 
 class DatabaseClientBuilder(Builder[DatabaseClient]):
