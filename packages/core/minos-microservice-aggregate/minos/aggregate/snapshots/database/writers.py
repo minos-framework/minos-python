@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import warnings
 from typing import (
     TYPE_CHECKING,
     Type,
@@ -34,10 +35,10 @@ from ..entries import (
     SnapshotEntry,
 )
 from .abc import (
-    PostgreSqlSnapshotSetup,
+    DatabaseSnapshotSetup,
 )
 from .readers import (
-    PostgreSqlSnapshotReader,
+    DatabaseSnapshotReader,
 )
 
 if TYPE_CHECKING:
@@ -46,14 +47,14 @@ if TYPE_CHECKING:
     )
 
 
-class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
+class DatabaseSnapshotWriter(DatabaseSnapshotSetup):
     """Minos Snapshot Dispatcher class."""
 
     @Inject()
     def __init__(
         self,
         *args,
-        reader: PostgreSqlSnapshotReader,
+        reader: DatabaseSnapshotReader,
         event_repository: EventRepository,
         transaction_repository: TransactionRepository,
         **kwargs,
@@ -182,3 +183,14 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         if len(transaction_uuids):
             operation = self.operation_factory.build_delete_by_transactions(transaction_uuids)
             await self.submit_query(operation)
+
+
+class PostgreSqlSnapshotWriter(DatabaseSnapshotWriter):
+    """TODO"""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            f"{PostgreSqlSnapshotWriter!r} has been deprecated. Use {DatabaseSnapshotWriter} instead.",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)

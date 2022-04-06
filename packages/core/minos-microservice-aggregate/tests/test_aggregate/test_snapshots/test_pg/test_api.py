@@ -10,10 +10,10 @@ from uuid import (
 
 from minos.aggregate import (
     Condition,
+    DatabaseSnapshotReader,
+    DatabaseSnapshotRepository,
+    DatabaseSnapshotWriter,
     Ordering,
-    PostgreSqlSnapshotReader,
-    PostgreSqlSnapshotRepository,
-    PostgreSqlSnapshotWriter,
     TransactionEntry,
 )
 from minos.common.testing import (
@@ -29,7 +29,7 @@ class TestPostgreSqlSnapshotRepository(AggregateTestCase, PostgresAsyncTestCase)
     def setUp(self) -> None:
         super().setUp()
 
-        self.snapshot_repository = PostgreSqlSnapshotRepository.from_config(self.config)
+        self.snapshot_repository = DatabaseSnapshotRepository.from_config(self.config)
 
         self.dispatch_mock = AsyncMock()
         self.get_mock = AsyncMock(return_value=1)
@@ -49,8 +49,8 @@ class TestPostgreSqlSnapshotRepository(AggregateTestCase, PostgresAsyncTestCase)
         await super().asyncTearDown()
 
     def test_from_config(self):
-        self.assertIsInstance(self.snapshot_repository.reader, PostgreSqlSnapshotReader)
-        self.assertIsInstance(self.snapshot_repository.writer, PostgreSqlSnapshotWriter)
+        self.assertIsInstance(self.snapshot_repository.reader, DatabaseSnapshotReader)
+        self.assertIsInstance(self.snapshot_repository.writer, DatabaseSnapshotWriter)
 
     async def test_get(self):
         transaction = TransactionEntry()

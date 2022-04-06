@@ -24,7 +24,7 @@ from ....queries import (
 )
 
 
-class SnapshotRepositoryOperationFactory(ABC):
+class SnapshotDatabaseOperationFactory(ABC):
     """TODO"""
 
     @abstractmethod

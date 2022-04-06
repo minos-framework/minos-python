@@ -14,13 +14,13 @@ from minos.aggregate import (
     Action,
     AlreadyDeletedException,
     Condition,
+    DatabaseSnapshotReader,
+    DatabaseSnapshotSetup,
+    DatabaseSnapshotWriter,
     EventEntry,
     FieldDiff,
     FieldDiffContainer,
     Ordering,
-    PostgreSqlSnapshotReader,
-    PostgreSqlSnapshotSetup,
-    PostgreSqlSnapshotWriter,
     SnapshotEntry,
     TransactionEntry,
     TransactionStatus,
@@ -50,8 +50,8 @@ class TestPostgreSqlSnapshotWriter(AggregateTestCase, PostgresAsyncTestCase):
         self.transaction_2 = uuid4()
         self.transaction_3 = uuid4()
 
-        self.reader = PostgreSqlSnapshotReader.from_config(self.config)
-        self.writer = PostgreSqlSnapshotWriter.from_config(self.config, reader=self.reader)
+        self.reader = DatabaseSnapshotReader.from_config(self.config)
+        self.writer = DatabaseSnapshotWriter.from_config(self.config, reader=self.reader)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -99,17 +99,17 @@ class TestPostgreSqlSnapshotWriter(AggregateTestCase, PostgresAsyncTestCase):
         )
 
     def test_type(self):
-        self.assertTrue(issubclass(PostgreSqlSnapshotWriter, PostgreSqlSnapshotSetup))
+        self.assertTrue(issubclass(DatabaseSnapshotWriter, DatabaseSnapshotSetup))
 
     def test_from_config(self):
         self.assertIsInstance(self.writer.pool, DatabaseClientPool)
 
     def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):
-            PostgreSqlSnapshotWriter.from_config(self.config, reader=self.reader, event_repository=None)
+            DatabaseSnapshotWriter.from_config(self.config, reader=self.reader, event_repository=None)
 
         with self.assertRaises(NotProvidedException):
-            PostgreSqlSnapshotWriter.from_config(self.config, reader=self.reader, transaction_repository=None)
+            DatabaseSnapshotWriter.from_config(self.config, reader=self.reader, transaction_repository=None)
 
     async def test_dispatch(self):
         await self.writer.dispatch()

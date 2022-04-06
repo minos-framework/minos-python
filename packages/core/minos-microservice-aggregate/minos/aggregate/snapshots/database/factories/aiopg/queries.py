@@ -53,7 +53,7 @@ from .....queries import (
 
 
 # noinspection SqlResolve,SqlNoDataSourceInspection
-class PostgreSqlSnapshotQueryBuilder:
+class AiopgSnapshotQueryBuilder:
     """PostgreSQL Snapshot Query Builder class.
 
     This class build postgres-compatible database queries over fields based on a condition, ordering, etc.

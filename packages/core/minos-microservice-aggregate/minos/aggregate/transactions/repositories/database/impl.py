@@ -77,5 +77,4 @@ class PostgreSqlTransactionRepository(DatabaseTransactionRepository):
             f"{PostgreSqlTransactionRepository!r} has been deprecated. Use {DatabaseTransactionRepository} instead.",
             DeprecationWarning,
         )
-        kwargs["operation_factory"] = AiopgTransactionRepositoryOperationFactory()
         super().__init__(*args, **kwargs)

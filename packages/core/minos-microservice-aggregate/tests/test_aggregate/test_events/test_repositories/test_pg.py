@@ -1,8 +1,8 @@
 import unittest
 
 from minos.aggregate import (
-    EventRepository,
     DatabaseEventRepository,
+    EventRepository,
 )
 from minos.common import (
     AiopgDatabaseClient,

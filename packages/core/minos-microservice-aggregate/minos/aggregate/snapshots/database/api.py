@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import warnings
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
@@ -16,10 +17,10 @@ from ..abc import (
     SnapshotRepository,
 )
 from .readers import (
-    PostgreSqlSnapshotReader,
+    DatabaseSnapshotReader,
 )
 from .writers import (
-    PostgreSqlSnapshotWriter,
+    DatabaseSnapshotWriter,
 )
 
 if TYPE_CHECKING:
@@ -28,28 +29,28 @@ if TYPE_CHECKING:
     )
 
 
-class PostgreSqlSnapshotRepository(SnapshotRepository):
+class DatabaseSnapshotRepository(SnapshotRepository):
     """PostgreSQL Snapshot class.
 
     The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
     class.
     """
 
-    reader: PostgreSqlSnapshotReader
-    writer: PostgreSqlSnapshotWriter
+    reader: DatabaseSnapshotReader
+    writer: DatabaseSnapshotWriter
 
-    def __init__(self, *args, reader: PostgreSqlSnapshotReader, writer: PostgreSqlSnapshotWriter, **kwargs):
+    def __init__(self, *args, reader: DatabaseSnapshotReader, writer: DatabaseSnapshotWriter, **kwargs):
         super().__init__(*args, **kwargs)
         self.reader = reader
         self.writer = writer
 
     @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> PostgreSqlSnapshotRepository:
+    def _from_config(cls, config: Config, **kwargs) -> DatabaseSnapshotRepository:
         if "reader" not in kwargs:
-            kwargs["reader"] = PostgreSqlSnapshotReader.from_config(config, **kwargs)
+            kwargs["reader"] = DatabaseSnapshotReader.from_config(config, **kwargs)
 
         if "writer" not in kwargs:
-            kwargs["writer"] = PostgreSqlSnapshotWriter.from_config(config, **kwargs)
+            kwargs["writer"] = DatabaseSnapshotWriter.from_config(config, **kwargs)
 
         return cls(database_key=None, **kwargs)
 
@@ -71,3 +72,14 @@ class PostgreSqlSnapshotRepository(SnapshotRepository):
 
     def _synchronize(self, *args, **kwargs) -> Awaitable[None]:
         return self.writer.dispatch(**kwargs)
+
+
+class PostgreSqlSnapshotRepository(DatabaseSnapshotRepository):
+    """TODO"""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            f"{PostgreSqlSnapshotRepository!r} has been deprecated. Use {DatabaseSnapshotRepository} instead.",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)

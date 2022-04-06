@@ -1,6 +1,6 @@
 from .impl import (
-    AiopgSnapshotRepositoryOperationFactory,
+    AiopgSnapshotDatabaseOperationFactory,
 )
 from .queries import (
-    PostgreSqlSnapshotQueryBuilder,
+    AiopgSnapshotQueryBuilder,
 )

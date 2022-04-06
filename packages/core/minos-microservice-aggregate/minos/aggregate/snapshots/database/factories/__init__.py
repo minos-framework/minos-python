@@ -1,7 +1,7 @@
 from .abc import (
-    SnapshotRepositoryOperationFactory,
+    SnapshotDatabaseOperationFactory,
 )
 from .aiopg import (
-    AiopgSnapshotRepositoryOperationFactory,
-    PostgreSqlSnapshotQueryBuilder,
+    AiopgSnapshotDatabaseOperationFactory,
+    AiopgSnapshotQueryBuilder,
 )

@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import warnings
 from typing import (
     Optional,
     Type,
@@ -14,18 +15,18 @@ from minos.common import (
 )
 
 from .factories import (
-    AiopgSnapshotRepositoryOperationFactory,
-    SnapshotRepositoryOperationFactory,
+    AiopgSnapshotDatabaseOperationFactory,
+    SnapshotDatabaseOperationFactory,
 )
 
 
-class PostgreSqlSnapshotSetup(DatabaseMixin):
+class DatabaseSnapshotSetup(DatabaseMixin):
     """Minos Snapshot Setup Class"""
 
-    def __init__(self, *args, operation_factory: Optional[SnapshotRepositoryOperationFactory] = None, **kwargs):
+    def __init__(self, *args, operation_factory: Optional[SnapshotDatabaseOperationFactory] = None, **kwargs):
         super().__init__(*args, **kwargs)
         if operation_factory is None:
-            operation_factory = AiopgSnapshotRepositoryOperationFactory()
+            operation_factory = AiopgSnapshotDatabaseOperationFactory()
 
         self.operation_factory = operation_factory
 
@@ -38,4 +39,15 @@ class PostgreSqlSnapshotSetup(DatabaseMixin):
         await self.submit_query(operation)
 
 
-T = TypeVar("T", bound=PostgreSqlSnapshotSetup)
+T = TypeVar("T", bound=DatabaseSnapshotSetup)
+
+
+class PostgreSqlSnapshotSetup(DatabaseSnapshotSetup):
+    """TODO"""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            f"{PostgreSqlSnapshotSetup!r} has been deprecated. Use {DatabaseSnapshotSetup} instead.",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)

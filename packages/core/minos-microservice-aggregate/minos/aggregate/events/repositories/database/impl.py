@@ -101,5 +101,4 @@ class PostgreSqlEventRepository(DatabaseEventRepository):
             f"{PostgreSqlEventRepository!r} has been deprecated. Use {DatabaseEventRepository} instead.",
             DeprecationWarning,
         )
-        kwargs["operation_factory"] = AiopgEventRepositoryOperationFactory()
         super().__init__(*args, **kwargs)

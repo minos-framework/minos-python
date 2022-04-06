@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 import logging
+import warnings
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
@@ -31,7 +32,7 @@ from ..entries import (
     SnapshotEntry,
 )
 from .abc import (
-    PostgreSqlSnapshotSetup,
+    DatabaseSnapshotSetup,
 )
 
 if TYPE_CHECKING:
@@ -42,7 +43,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
+class DatabaseSnapshotReader(DatabaseSnapshotSetup):
     """PostgreSQL Snapshot class.
 
     The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
@@ -133,3 +134,14 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         else:
             for row in [row async for row in async_iterable]:
                 yield SnapshotEntry(*row)
+
+
+class PostgreSqlSnapshotReader(DatabaseSnapshotReader):
+    """TODO"""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            f"{PostgreSqlSnapshotReader!r} has been deprecated. Use {DatabaseSnapshotReader} instead.",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)

@@ -23,15 +23,15 @@ from .....queries import (
     _Ordering,
 )
 from ..abc import (
-    SnapshotRepositoryOperationFactory,
+    SnapshotDatabaseOperationFactory,
 )
 from .queries import (
-    PostgreSqlSnapshotQueryBuilder,
+    AiopgSnapshotQueryBuilder,
 )
 
 
 # noinspection SqlNoDataSourceInspection,SqlResolve
-class AiopgSnapshotRepositoryOperationFactory(SnapshotRepositoryOperationFactory):
+class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
     """TODO"""
 
     def build_create_table(self) -> DatabaseOperation:
@@ -134,7 +134,7 @@ class AiopgSnapshotRepositoryOperationFactory(SnapshotRepositoryOperationFactory
         exclude_deleted: bool,
     ) -> DatabaseOperation:
         """TODO"""
-        builder = PostgreSqlSnapshotQueryBuilder(name, condition, ordering, limit, transaction_uuids, exclude_deleted)
+        builder = AiopgSnapshotQueryBuilder(name, condition, ordering, limit, transaction_uuids, exclude_deleted)
         query, parameters = builder.build()
 
         return AiopgDatabaseOperation(query, parameters)
