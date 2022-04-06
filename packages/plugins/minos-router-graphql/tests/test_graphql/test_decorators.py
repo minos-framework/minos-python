@@ -16,6 +16,7 @@ from minos.plugins.graphql import (
 )
 from tests.utils import (
     FakeQueryService,
+    FakeQueryService2,
 )
 
 
@@ -31,6 +32,20 @@ class TestGraphQlEnrouteDecorator(unittest.TestCase):
         expected = {
             "get_order": {
                 GraphQlQueryEnrouteDecorator(name="order", argument=GraphQLField(GraphQLString), output=GraphQLString)
+            },
+        }
+
+        self.assertEqual(expected, observed)
+
+    def test_get_all_queries_with_kwargs(self):
+        analyzer = EnrouteCollector(FakeQueryService2)
+        observed = analyzer.get_all()
+
+        expected = {
+            "get_order": {
+                GraphQlQueryEnrouteDecorator(name="order", argument=GraphQLField(GraphQLString), output=GraphQLString,
+                                             authorized=True,
+                                             allowed_groups=['super_admin', 'admin', ])
             },
         }
 
