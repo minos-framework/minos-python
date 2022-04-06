@@ -41,7 +41,7 @@ class AiopgEventRepositoryOperationFactory(EventRepositoryOperationFactory):
             [
                 AiopgDatabaseOperation(
                     'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";',
-                    lock="aggregate_event",
+                    lock="uuid-ossp",
                 ),
                 AiopgDatabaseOperation(
                     """

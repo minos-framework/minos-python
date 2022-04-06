@@ -4,7 +4,7 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    PostgreSqlTransactionRepository,
+    DatabaseTransactionRepository,
     TransactionEntry,
     TransactionRepository,
     TransactionRepositoryConflictException,
@@ -27,7 +27,7 @@ class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCa
     def setUp(self) -> None:
         super().setUp()
 
-        self.transaction_repository = PostgreSqlTransactionRepository()
+        self.transaction_repository = DatabaseTransactionRepository()
 
         self.uuid = uuid4()
 
@@ -40,16 +40,16 @@ class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCa
         await super().asyncTearDown()
 
     async def test_subclass(self) -> None:
-        self.assertTrue(issubclass(PostgreSqlTransactionRepository, TransactionRepository))
+        self.assertTrue(issubclass(DatabaseTransactionRepository, TransactionRepository))
 
     def test_constructor(self):
         pool = DatabaseClientPool.from_config(self.config)
-        repository = PostgreSqlTransactionRepository(pool)
-        self.assertIsInstance(repository, PostgreSqlTransactionRepository)
+        repository = DatabaseTransactionRepository(pool)
+        self.assertIsInstance(repository, DatabaseTransactionRepository)
         self.assertEqual(pool, repository.pool)
 
     def test_from_config(self):
-        repository = PostgreSqlTransactionRepository.from_config(self.config)
+        repository = DatabaseTransactionRepository.from_config(self.config)
         self.assertIsInstance(repository.pool, DatabaseClientPool)
 
     async def test_setup(self):
@@ -153,7 +153,7 @@ class TestPostgreSqlTransactionRepositorySelect(AggregateTestCase, PostgresAsync
         self.uuid_4 = uuid4()
         self.uuid_5 = uuid4()
 
-        self.transaction_repository = PostgreSqlTransactionRepository()
+        self.transaction_repository = DatabaseTransactionRepository()
 
         self.entries = [
             TransactionEntry(self.uuid_1, TransactionStatus.PENDING, 12),

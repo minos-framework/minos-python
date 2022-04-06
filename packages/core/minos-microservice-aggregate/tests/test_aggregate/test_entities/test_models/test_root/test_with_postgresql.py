@@ -2,10 +2,10 @@ import unittest
 
 from minos.aggregate import (
     AlreadyDeletedException,
+    DatabaseTransactionRepository,
     EntitySet,
     PostgreSqlEventRepository,
     PostgreSqlSnapshotRepository,
-    PostgreSqlTransactionRepository,
     ValueObjectSet,
 )
 from minos.common.testing import (
@@ -24,7 +24,7 @@ class TestExternalEntityWithPostgreSql(AggregateTestCase, PostgresAsyncTestCase)
     def setUp(self):
         super().setUp()
 
-        self.transaction_repository = PostgreSqlTransactionRepository.from_config(self.config)
+        self.transaction_repository = DatabaseTransactionRepository.from_config(self.config)
 
         self.event_repository = PostgreSqlEventRepository.from_config(
             self.config, transaction_repository=self.transaction_repository
