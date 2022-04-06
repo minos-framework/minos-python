@@ -59,7 +59,7 @@ class AiopgTransactionRepositoryOperationFactory(TransactionRepositoryOperationF
                     $$
                     LANGUAGE plpgsql;
                     """,
-                    lock=hash("aggregate_transaction_enum"),
+                    lock="aggregate_transaction_enum",
                 ),
                 AiopgDatabaseOperation(
                     """
@@ -71,7 +71,7 @@ class AiopgTransactionRepositoryOperationFactory(TransactionRepositoryOperationF
                         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                     );
                     """,
-                    lock=hash("aggregate_transaction"),
+                    lock="aggregate_transaction",
                 ),
             ]
         )
@@ -93,18 +93,18 @@ class AiopgTransactionRepositoryOperationFactory(TransactionRepositoryOperationF
 
         return AiopgDatabaseOperation(
             """
-            INSERT INTO aggregate_transaction (uuid, destination_uuid, status, event_offset)
+            INSERT INTO aggregate_transaction AS t (uuid, destination_uuid, status, event_offset)
             VALUES (%(uuid)s, %(destination_uuid)s, %(status)s, %(event_offset)s)
             ON CONFLICT (uuid)
             DO
                UPDATE SET status = %(status)s, event_offset = %(event_offset)s, updated_at = NOW()
-            WHERE (aggregate_destination_uuid = %(destination_uuid)s)
-              AND (NOT (aggregate_status = 'pending' AND %(status)s NOT IN ('pending', 'reserving', 'rejected')))
-              AND (NOT (aggregate_status = 'reserving' AND %(status)s NOT IN ('reserved', 'rejected')))
-              AND (NOT (aggregate_status = 'reserved' AND %(status)s NOT IN ('committing', 'rejected')))
-              AND (NOT (aggregate_status = 'committing' AND %(status)s NOT IN ('committed')))
-              AND (NOT (aggregate_status = 'committed'))
-              AND (NOT (aggregate_status = 'rejected'))
+            WHERE (t.destination_uuid = %(destination_uuid)s)
+              AND (NOT (t.status = 'pending' AND %(status)s NOT IN ('pending', 'reserving', 'rejected')))
+              AND (NOT (t.status = 'reserving' AND %(status)s NOT IN ('reserved', 'rejected')))
+              AND (NOT (t.status = 'reserved' AND %(status)s NOT IN ('committing', 'rejected')))
+              AND (NOT (t.status = 'committing' AND %(status)s NOT IN ('committed')))
+              AND (NOT (t.status = 'committed'))
+              AND (NOT (t.status = 'rejected'))
             RETURNING updated_at;
             """,
             params,
