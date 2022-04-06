@@ -6,9 +6,6 @@ from abc import (
     ABC,
     abstractmethod,
 )
-from asyncio import (
-    Queue,
-)
 from collections.abc import (
     AsyncIterator,
 )
@@ -88,19 +85,6 @@ class DatabaseClient(ABC, BuildableMixin):
 
     @abstractmethod
     def _fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
-        raise NotImplementedError
-
-    @property
-    def notifications(self) -> Queue:
-        """Get the notifications queue.
-
-        :return: A ``Queue`` instance.
-        """
-        return self._notifications
-
-    @property
-    @abstractmethod
-    def _notifications(self) -> Queue:
         raise NotImplementedError
 
 

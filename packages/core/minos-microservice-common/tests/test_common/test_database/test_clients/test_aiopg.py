@@ -83,10 +83,6 @@ class TestAiopgDatabaseClient(CommonTestCase, PostgresAsyncTestCase):
                 async with AiopgDatabaseClient.from_config(self.config):
                     pass
 
-    async def test_notifications(self):
-        async with AiopgDatabaseClient.from_config(self.config) as client:
-            self.assertEqual(client.connection.notifies, client.notifications)
-
     async def test_cursor(self):
         client = AiopgDatabaseClient.from_config(self.config)
         self.assertIsNone(client.cursor)

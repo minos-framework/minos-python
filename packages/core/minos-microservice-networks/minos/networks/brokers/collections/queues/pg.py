@@ -197,7 +197,7 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
                 return
 
             with suppress(TimeoutError):
-                return await wait_for(consume_queue(client.notifications, self._records), max_wait)
+                return await wait_for(consume_queue(client.connection.notifies, self._records), max_wait)
 
     async def _get_count(self, client: DatabaseClient) -> int:
         # noinspection PyTypeChecker
