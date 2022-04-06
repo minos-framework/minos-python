@@ -1,4 +1,8 @@
+from collections.abc import (
+    Iterable,
+)
 from typing import (
+    Any,
     Optional,
 )
 from uuid import (
@@ -7,6 +11,7 @@ from uuid import (
 
 from psycopg2.sql import (
     SQL,
+    Composable,
     Literal,
     Placeholder,
 )
@@ -113,31 +118,7 @@ class AiopgEventRepositoryOperationFactory(EventRepositoryOperationFactory):
             RETURNING id, uuid, version, created_at;
             """
         )
-
-        select_transaction = SQL(
-            """
-            SELECT {index} AS transaction_index, uuid, MAX(version) AS version
-            FROM aggregate_event
-            WHERE uuid = %(uuid)s AND transaction_uuid = {transaction_uuid}
-            GROUP BY uuid
-            """
-        )
-
-        from_query_parts = list()
-        parameters = dict()
-        for index, transaction_uuid in enumerate(transaction_uuids, start=1):
-            transaction_name = f"transaction_uuid_{index}"
-            parameters[transaction_name] = transaction_uuid
-
-            from_query_parts.append(
-                select_transaction.format(index=Literal(index), transaction_uuid=Placeholder(transaction_name))
-            )
-
-        from_query = SQL(" UNION ALL ").join(from_query_parts)
-
-        query = insert_values.format(from_parts=from_query)
-
-        parameters |= {
+        insert_parameters = {
             "uuid": uuid,
             "action": action,
             "name": name,
@@ -147,8 +128,34 @@ class AiopgEventRepositoryOperationFactory(EventRepositoryOperationFactory):
             "transaction_uuid": transaction_uuid,
         }
 
+        from_sql, from_parameters = self._build_submit_from(transaction_uuids)
+
+        query = insert_values.format(from_parts=from_sql)
+        parameters = from_parameters | insert_parameters
+
         return AiopgDatabaseOperation(query, parameters, lock)
 
+    def _build_submit_from(self, transaction_uuids: Iterable[UUID]) -> tuple[Composable, dict[str, Any]]:
+        select_transaction = SQL(
+            """
+            SELECT {index} AS transaction_index, uuid, MAX(version) AS version
+            FROM aggregate_event
+            WHERE uuid = %(uuid)s AND transaction_uuid = {transaction_uuid}
+            GROUP BY uuid
+            """
+        )
+        from_query_parts = list()
+        parameters = dict()
+        for index, transaction_uuid in enumerate(transaction_uuids, start=1):
+            name = f"transaction_uuid_{index}"
+            parameters[name] = transaction_uuid
+
+            from_query_parts.append(select_transaction.format(index=Literal(index), transaction_uuid=Placeholder(name)))
+
+        query = SQL(" UNION ALL ").join(from_query_parts)
+        return query, parameters
+
+    # noinspection PyShadowingBuiltins
     def build_select_rows(
         self,
         uuid: Optional[UUID] = None,
@@ -209,7 +216,7 @@ class AiopgEventRepositoryOperationFactory(EventRepositoryOperationFactory):
             conditions.append("transaction_uuid IN %(transaction_uuid_in)s")
 
         if not conditions:
-            return AiopgDatabaseOperation("{_select_all} ORDER BY id;")
+            return AiopgDatabaseOperation(f"{_select_all} ORDER BY id;")
 
         return AiopgDatabaseOperation(
             f"{_select_all} WHERE {' AND '.join(conditions)} ORDER BY id;",
@@ -221,6 +228,7 @@ class AiopgEventRepositoryOperationFactory(EventRepositoryOperationFactory):
                 "version_gt": version_gt,
                 "version_le": version_le,
                 "version_ge": version_ge,
+                "id": id,
                 "id_lt": id_lt,
                 "id_gt": id_gt,
                 "id_le": id_le,

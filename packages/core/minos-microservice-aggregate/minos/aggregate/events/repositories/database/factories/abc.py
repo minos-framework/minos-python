@@ -41,6 +41,7 @@ class EventRepositoryOperationFactory:
     ) -> DatabaseOperation:
         """TODO"""
 
+    # noinspection PyShadowingBuiltins
     @abstractmethod
     def build_select_rows(
         self,

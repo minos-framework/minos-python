@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import warnings
 from typing import (
     AsyncIterator,
     Optional,
@@ -26,15 +27,19 @@ from ..abc import (
 )
 from .factories import (
     AiopgEventRepositoryOperationFactory,
+    EventRepositoryOperationFactory,
 )
 
 
 class DatabaseEventRepository(DatabaseMixin, EventRepository):
     """PostgreSQL-based implementation of the event repository class in ``Minos``."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, operation_factory: Optional[EventRepositoryOperationFactory] = None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.operation_factory = AiopgEventRepositoryOperationFactory()
+        if operation_factory is None:
+            operation_factory = AiopgEventRepositoryOperationFactory()
+
+        self.operation_factory = operation_factory
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> Optional[EventRepository]:
@@ -90,3 +95,11 @@ class DatabaseEventRepository(DatabaseMixin, EventRepository):
 
 class PostgreSqlEventRepository(DatabaseEventRepository):
     """TODO"""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            f"{PostgreSqlEventRepository!r} has been deprecated. Use {DatabaseEventRepository} instead.",
+            DeprecationWarning,
+        )
+        kwargs["operation_factory"] = AiopgEventRepositoryOperationFactory()
+        super().__init__(*args, **kwargs)
