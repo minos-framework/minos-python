@@ -1,0 +1,3 @@
+from .aiopg import (
+    PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
+)
