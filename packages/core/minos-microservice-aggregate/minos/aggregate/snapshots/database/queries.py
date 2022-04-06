@@ -52,6 +52,7 @@ from ...queries import (
 )
 
 
+# noinspection SqlResolve,SqlNoDataSourceInspection
 class PostgreSqlSnapshotQueryBuilder:
     """PostgreSQL Snapshot Query Builder class.
 
@@ -99,7 +100,7 @@ class PostgreSqlSnapshotQueryBuilder:
         query = SQL(" WHERE ").join([self._build_select_from(), self._build_condition(self.condition)])
 
         if self.exclude_deleted:
-            query = SQL(" AND ").join([query, _EXCLUDE_DELETED_CONDITION])
+            query = SQL(" AND ").join([query, self._EXCLUDE_DELETED_CONDITION])
 
         if self.ordering is not None:
             query = SQL(" ").join([query, self._build_ordering(self.ordering)])
@@ -116,12 +117,12 @@ class PostgreSqlSnapshotQueryBuilder:
             self._parameters[name] = transaction_uuid
 
             from_query_parts.append(
-                _SELECT_TRANSACTION_CHUNK.format(index=Literal(index), transaction_uuid=Placeholder(name))
+                self._SELECT_TRANSACTION_CHUNK.format(index=Literal(index), transaction_uuid=Placeholder(name))
             )
 
         from_query = SQL(" UNION ALL ").join(from_query_parts)
 
-        query = _SELECT_ENTRIES_QUERY.format(from_parts=from_query)
+        query = self._SELECT_ENTRIES_QUERY.format(from_parts=from_query)
         return query
 
     def _build_condition(self, condition: _Condition) -> Composable:
@@ -145,14 +146,14 @@ class PostgreSqlSnapshotQueryBuilder:
 
     def _build_condition_composed(self, condition: _ComposedCondition) -> Composable:
         # noinspection PyTypeChecker
-        operator = _COMPOSED_MAPPER[type(condition)]
+        operator = self._COMPOSED_MAPPER[type(condition)]
         parts = (self._build_condition(c) for c in condition)
         return SQL("({composed})").format(composed=operator.join(parts))
 
     def _build_condition_simple(self, condition: _SimpleCondition) -> Composable:
         field = condition.field
         # noinspection PyTypeChecker
-        operator = _SIMPLE_MAPPER[type(condition)]
+        operator = self._SIMPLE_MAPPER[type(condition)]
 
         parameter = AvroDataEncoder(condition.parameter).build()
         if isinstance(parameter, list):
@@ -160,11 +161,11 @@ class PostgreSqlSnapshotQueryBuilder:
                 return self._build_condition(_FALSE_CONDITION)
             parameter = tuple(parameter)
 
-        if field in _FIXED_FIELDS_MAPPER:
+        if field in self._FIXED_FIELDS_MAPPER:
             name = self.generate_random_str()
             self._parameters[name] = parameter
 
-            field = _FIXED_FIELDS_MAPPER[field]
+            field = self._FIXED_FIELDS_MAPPER[field]
             name = Placeholder(name)
             return SQL("({field} {operator} {name})").format(field=field, operator=operator, name=name)
         else:
@@ -180,11 +181,11 @@ class PostgreSqlSnapshotQueryBuilder:
 
         parameter = AvroDataEncoder(condition.parameter).build()
 
-        if field in _FIXED_FIELDS_MAPPER:
+        if field in self._FIXED_FIELDS_MAPPER:
             name = self.generate_random_str()
             self._parameters[name] = parameter
 
-            field = _FIXED_FIELDS_MAPPER[field]
+            field = self._FIXED_FIELDS_MAPPER[field]
             name = Placeholder(name)
             return SQL("({field}::text LIKE {name})").format(field=field, name=name)
         else:
@@ -195,12 +196,11 @@ class PostgreSqlSnapshotQueryBuilder:
             name = Placeholder(name)
             return SQL("(data#>>{field} LIKE {name})").format(field=field, name=name)
 
-    @staticmethod
-    def _build_ordering(ordering: _Ordering) -> Composable:
+    def _build_ordering(self, ordering: _Ordering) -> Composable:
         field = ordering.by
-        direction = _ORDERING_MAPPER[ordering.reverse]
+        direction = self._ORDERING_MAPPER[ordering.reverse]
 
-        if field in _FIXED_FIELDS_MAPPER:
+        if field in self._FIXED_FIELDS_MAPPER:
             field = Identifier(field)
             order_by = SQL("ORDER BY {field} {direction}").format(field=field, direction=direction)
         else:
@@ -223,51 +223,51 @@ class PostgreSqlSnapshotQueryBuilder:
         return str(uuid4())
 
 
-_COMPOSED_MAPPER = {_AndCondition: SQL(" AND "), _OrCondition: SQL(" OR ")}
+    _COMPOSED_MAPPER = {_AndCondition: SQL(" AND "), _OrCondition: SQL(" OR ")}
 
-_SIMPLE_MAPPER = {
-    _LowerCondition: SQL("<"),
-    _LowerEqualCondition: SQL("<="),
-    _GreaterCondition: SQL(">"),
-    _GreaterEqualCondition: SQL(">="),
-    _EqualCondition: SQL("="),
-    _NotEqualCondition: SQL("<>"),
-    _InCondition: SQL("IN"),
-}
+    _SIMPLE_MAPPER = {
+        _LowerCondition: SQL("<"),
+        _LowerEqualCondition: SQL("<="),
+        _GreaterCondition: SQL(">"),
+        _GreaterEqualCondition: SQL(">="),
+        _EqualCondition: SQL("="),
+        _NotEqualCondition: SQL("<>"),
+        _InCondition: SQL("IN"),
+    }
 
-_FIXED_FIELDS_MAPPER = {
-    "uuid": Identifier("uuid"),
-    "version": Identifier("version"),
-    "created_at": Identifier("created_at"),
-    "updated_at": Identifier("updated_at"),
-}
+    _FIXED_FIELDS_MAPPER = {
+        "uuid": Identifier("uuid"),
+        "version": Identifier("version"),
+        "created_at": Identifier("created_at"),
+        "updated_at": Identifier("updated_at"),
+    }
 
-_ORDERING_MAPPER = {
-    True: SQL("DESC"),
-    False: SQL("ASC"),
-}
+    _ORDERING_MAPPER = {
+        True: SQL("DESC"),
+        False: SQL("ASC"),
+    }
 
-_SELECT_ENTRIES_QUERY = SQL(
-    "SELECT "
-    "   t2.uuid, "
-    "   t2.name, "
-    "   t2.version, "
-    "   t2.schema, "
-    "   t2.data, "
-    "   t2.created_at, "
-    "   t2.updated_at, "
-    "   t2.transaction_uuid "
-    "FROM ("
-    "   SELECT DISTINCT ON (uuid) t1.* "
-    "   FROM ( {from_parts} ) AS t1 "
-    "   ORDER BY uuid, transaction_index DESC "
-    ") AS t2"
-)
+    _SELECT_ENTRIES_QUERY = SQL(
+        "SELECT "
+        "   t2.uuid, "
+        "   t2.name, "
+        "   t2.version, "
+        "   t2.schema, "
+        "   t2.data, "
+        "   t2.created_at, "
+        "   t2.updated_at, "
+        "   t2.transaction_uuid "
+        "FROM ("
+        "   SELECT DISTINCT ON (uuid) t1.* "
+        "   FROM ( {from_parts} ) AS t1 "
+        "   ORDER BY uuid, transaction_index DESC "
+        ") AS t2"
+    )
 
-_SELECT_TRANSACTION_CHUNK = SQL(
-    "SELECT {index} AS transaction_index, * "
-    "FROM snapshot "
-    "WHERE name = %(name)s AND transaction_uuid = {transaction_uuid} "
-)
+    _SELECT_TRANSACTION_CHUNK = SQL(
+        "SELECT {index} AS transaction_index, * "
+        "FROM snapshot "
+        "WHERE name = %(name)s AND transaction_uuid = {transaction_uuid} "
+    )
 
-_EXCLUDE_DELETED_CONDITION = SQL("(data IS NOT NULL)")
+    _EXCLUDE_DELETED_CONDITION = SQL("(data IS NOT NULL)")

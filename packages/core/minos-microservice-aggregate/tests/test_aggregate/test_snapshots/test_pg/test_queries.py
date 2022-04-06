@@ -22,10 +22,6 @@ from minos.aggregate import (
     Ordering,
     PostgreSqlSnapshotQueryBuilder,
 )
-from minos.aggregate.snapshots.pg.queries import (
-    _SELECT_ENTRIES_QUERY,
-    _SELECT_TRANSACTION_CHUNK,
-)
 from minos.common import (
     NULL_UUID,
     AiopgDatabaseClient,
@@ -46,8 +42,8 @@ class TestPostgreSqlSnapshotQueryBuilder(AggregateTestCase, PostgresAsyncTestCas
             "name": self.classname,
             "transaction_uuid_1": NULL_UUID,
         }
-        self.base_select = _SELECT_ENTRIES_QUERY.format(
-            from_parts=_SELECT_TRANSACTION_CHUNK.format(
+        self.base_select = PostgreSqlSnapshotQueryBuilder._SELECT_ENTRIES_QUERY.format(
+            from_parts=PostgreSqlSnapshotQueryBuilder._SELECT_TRANSACTION_CHUNK.format(
                 index=Literal(1), transaction_uuid=Placeholder("transaction_uuid_1")
             )
         )
@@ -100,13 +96,13 @@ class TestPostgreSqlSnapshotQueryBuilder(AggregateTestCase, PostgresAsyncTestCas
 
         expected_query = SQL(" WHERE ").join(
             [
-                _SELECT_ENTRIES_QUERY.format(
+                PostgreSqlSnapshotQueryBuilder._SELECT_ENTRIES_QUERY.format(
                     from_parts=SQL(" UNION ALL ").join(
                         [
-                            _SELECT_TRANSACTION_CHUNK.format(
+                            PostgreSqlSnapshotQueryBuilder._SELECT_TRANSACTION_CHUNK.format(
                                 index=Literal(1), transaction_uuid=Placeholder("transaction_uuid_1")
                             ),
-                            _SELECT_TRANSACTION_CHUNK.format(
+                            PostgreSqlSnapshotQueryBuilder. _SELECT_TRANSACTION_CHUNK.format(
                                 index=Literal(2), transaction_uuid=Placeholder("transaction_uuid_2")
                             ),
                         ]

@@ -7,7 +7,7 @@ from .entries import (
 from .memory import (
     InMemorySnapshotRepository,
 )
-from .pg import (
+from .database import (
     PostgreSqlSnapshotQueryBuilder,
     PostgreSqlSnapshotReader,
     PostgreSqlSnapshotRepository,

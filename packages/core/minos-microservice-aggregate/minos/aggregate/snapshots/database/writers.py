@@ -105,15 +105,17 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         await self._store_offset(offset)
 
     async def _load_offset(self, **kwargs) -> int:
+        operation = self.operation_factory.build_get_offset()
         # noinspection PyBroadException
         try:
-            raw = await self.submit_query_and_fetchone(_SELECT_OFFSET_QUERY, **kwargs)
+            raw = await self.submit_query_and_fetchone(operation, **kwargs)
             return raw[0]
         except Exception:
             return 0
 
     async def _store_offset(self, offset: int) -> None:
-        await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset}, lock="insert_snapshot_aux_offset")
+        operation = self.operation_factory.build_store_offset(offset)
+        await self.submit_query(operation)
 
     async def _dispatch_one(self, event_entry: EventEntry, **kwargs) -> SnapshotEntry:
         if event_entry.action.is_delete:
@@ -165,8 +167,8 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         return snapshot_entry.build(**kwargs)
 
     async def _submit_entry(self, snapshot_entry: SnapshotEntry, **kwargs) -> SnapshotEntry:
-        params = snapshot_entry.as_raw()
-        response = await self.submit_query_and_fetchone(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params, **kwargs)
+        operation = self.operation_factory.build_insert(**snapshot_entry.as_raw())
+        response = await self.submit_query_and_fetchone(operation, **kwargs)
 
         snapshot_entry.created_at, snapshot_entry.updated_at = response
 
@@ -178,41 +180,5 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         )
         transaction_uuids = {transaction.uuid async for transaction in iterable}
         if len(transaction_uuids):
-            await self.submit_query(_DELETE_SNAPSHOT_ENTRIES_QUERY, {"transaction_uuids": tuple(transaction_uuids)})
-
-
-_INSERT_ONE_SNAPSHOT_ENTRY_QUERY = """
-INSERT INTO snapshot (uuid, name, version, schema, data, created_at, updated_at, transaction_uuid)
-VALUES (
-    %(uuid)s,
-    %(name)s,
-    %(version)s,
-    %(schema)s,
-    %(data)s,
-    %(created_at)s,
-    %(updated_at)s,
-    %(transaction_uuid)s
-)
-ON CONFLICT (uuid, transaction_uuid)
-DO
-   UPDATE SET version = %(version)s, schema = %(schema)s, data = %(data)s, updated_at = %(updated_at)s
-RETURNING created_at, updated_at;
-""".strip()
-
-_DELETE_SNAPSHOT_ENTRIES_QUERY = """
-DELETE FROM snapshot
-WHERE transaction_uuid IN %(transaction_uuids)s;
-""".strip()
-
-_SELECT_OFFSET_QUERY = """
-SELECT value
-FROM snapshot_aux_offset
-WHERE id = TRUE;
-"""
-
-_INSERT_OFFSET_QUERY = """
-INSERT INTO snapshot_aux_offset (id, value)
-VALUES (TRUE, %(value)s)
-ON CONFLICT (id)
-DO UPDATE SET value = GREATEST(%(value)s, (SELECT value FROM snapshot_aux_offset WHERE id = TRUE));
-""".strip()
+            operation = self.operation_factory.build_delete_by_transactions(transaction_uuids)
+            await self.submit_query(operation)
