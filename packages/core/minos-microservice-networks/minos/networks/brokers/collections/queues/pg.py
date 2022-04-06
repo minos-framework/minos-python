@@ -9,6 +9,7 @@ from abc import (
 )
 from asyncio import (
     CancelledError,
+    Event,
     PriorityQueue,
     QueueEmpty,
     TimeoutError,
@@ -38,9 +39,6 @@ from minos.common import (
     DatabaseMixin,
 )
 
-from ....utils import (
-    consume_queue,
-)
 from ...messages import (
     BrokerMessage,
 )
@@ -78,6 +76,7 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
         self._queue = PriorityQueue(maxsize=records)
 
         self._run_task = None
+        self._enqueued_event = Event()
 
     @property
     def retry(self) -> int:
@@ -150,8 +149,9 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
         await self.submit_query_and_fetchone(self._query_factory.build_insert(), (message.topic, message.avro_bytes))
         await self._notify_enqueued(message)
 
+    # noinspection PyUnusedLocal
     async def _notify_enqueued(self, message: BrokerMessage) -> None:
-        await self.submit_query(self._query_factory.build_notify())
+        self._enqueued_event.set()
 
     async def _dequeue(self) -> BrokerMessage:
         while True:
@@ -173,48 +173,39 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
                 self._queue.task_done()
 
     async def _run(self, max_wait: Optional[float] = 60.0) -> NoReturn:
-        async with self.pool.acquire() as client:
-            await self._listen_entries(client)
-            try:
-                while self._run_task is not None:
-                    await self._wait_for_entries(client, max_wait)
-                    await self._dequeue_batch(client)
-            finally:
-                await self._unlisten_entries(client)
+        while self._run_task is not None:
+            await self._wait_for_entries(max_wait)
+            await self._dequeue_batch()
 
-    async def _listen_entries(self, client: DatabaseClient) -> None:
-        # noinspection PyTypeChecker
-        await client.execute(self._query_factory.build_listen())
-
-    async def _unlisten_entries(self, client: DatabaseClient) -> None:
-        if not client.already_destroyed:
-            # noinspection PyTypeChecker
-            await client.execute(self._query_factory.build_unlisten())
-
-    async def _wait_for_entries(self, client: DatabaseClient, max_wait: Optional[float]) -> None:
+    async def _wait_for_entries(self, max_wait: Optional[float]) -> None:
         while True:
-            if await self._get_count(client):
+            if await self._get_count():
                 return
 
             with suppress(TimeoutError):
-                return await wait_for(consume_queue(client.connection.notifies, self._records), max_wait)
+                return await wait_for(self._wait_enqueued(), max_wait)
 
-    async def _get_count(self, client: DatabaseClient) -> int:
+    async def _wait_enqueued(self) -> None:
+        await self._enqueued_event.wait()
+        self._enqueued_event.clear()
+
+    async def _get_count(self) -> int:
         # noinspection PyTypeChecker
-        await client.execute(self._query_factory.build_count_not_processed(), (self._retry,))
-        count = (await client.fetch_one())[0]
+        row = await self.submit_query_and_fetchone(self._query_factory.build_count_not_processed(), (self._retry,))
+        count = row[0]
         return count
 
-    async def _dequeue_batch(self, client: DatabaseClient) -> None:
-        rows = await self._dequeue_rows(client)
+    async def _dequeue_batch(self) -> None:
+        async with self.pool.acquire() as client:
+            rows = await self._dequeue_rows(client)
 
-        if not len(rows):
-            return
+            if not len(rows):
+                return
 
-        entries = [_Entry(*row) for row in rows]
+            entries = [_Entry(*row) for row in rows]
 
-        # noinspection PyTypeChecker
-        await client.execute(self._query_factory.build_mark_processing(), (tuple(entry.id_ for entry in entries),))
+            # noinspection PyTypeChecker
+            await client.execute(self._query_factory.build_mark_processing(), (tuple(entry.id_ for entry in entries),))
 
         for entry in entries:
             await self._queue.put(entry)
@@ -276,27 +267,6 @@ class PostgreSqlBrokerQueueQueryFactory(ABC):
         :return: A ``SQL`` instance.
         """
         return SQL(f"UPDATE {self.build_table_name()} SET processing = TRUE WHERE id IN %s")
-
-    def build_notify(self) -> SQL:
-        """Build the "notify" query.
-
-        :return: A ``SQL`` instance.
-        """
-        return SQL(f"NOTIFY {self.build_table_name()}")
-
-    def build_listen(self) -> SQL:
-        """Build the "listen" query.
-
-        :return: A ``SQL`` instance.
-        """
-        return SQL(f"LISTEN {self.build_table_name()}")
-
-    def build_unlisten(self) -> SQL:
-        """Build the "unlisten" query.
-
-        :return: A ``SQL`` instance.
-        """
-        return SQL(f"UNLISTEN {self.build_table_name()}")
 
     def build_count_not_processed(self) -> SQL:
         """Build the "count not processed" query.

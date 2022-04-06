@@ -1,8 +1,16 @@
-from uuid import UUID
+from uuid import (
+    UUID,
+)
 
-from psycopg2.sql import SQL
+from psycopg2.sql import (
+    SQL,
+)
 
-from minos.common import AiopgDatabaseOperation, ComposedDatabaseOperation, DatabaseOperation
+from minos.common import (
+    AiopgDatabaseOperation,
+    ComposedDatabaseOperation,
+    DatabaseOperation,
+)
 
 
 # noinspection SqlNoDataSourceInspection,SqlResolve
