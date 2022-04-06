@@ -22,6 +22,7 @@ from ..abc import (
 )
 from .factories import (
     AiopgBrokerSubscriberQueueDatabaseOperationFactory,
+    BrokerSubscriberQueueDatabaseOperationFactory,
 )
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class DatabaseBrokerSubscriberQueue(DatabaseBrokerQueue, BrokerSubscriberQueue):
         self,
         topics: set[str],
         *args,
-        operation_factory: Optional[AiopgBrokerSubscriberQueueDatabaseOperationFactory] = None,
+        operation_factory: Optional[BrokerSubscriberQueueDatabaseOperationFactory] = None,
         **kwargs,
     ):
         if operation_factory is None:

@@ -28,7 +28,10 @@ class DatabaseBrokerPublisherQueue(DatabaseBrokerQueue, BrokerPublisherQueue):
     """PostgreSql Broker Publisher Queue class."""
 
     def __init__(
-        self, *args, operation_factory: Optional[BrokerPublisherQueueDatabaseOperationFactory] = None, **kwargs
+        self,
+        *args,
+        operation_factory: Optional[BrokerPublisherQueueDatabaseOperationFactory] = None,
+        **kwargs,
     ):
         if operation_factory is None:
             operation_factory = AiopgBrokerPublisherQueueDatabaseOperationFactory()

@@ -21,6 +21,7 @@ from ..abc import (
 )
 from .factories import (
     AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
+    BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
 )
 
 
@@ -29,7 +30,7 @@ class DatabaseBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateValida
 
     def __init__(
         self,
-        operation_factory: Optional[AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory] = None,
+        operation_factory: Optional[BrokerSubscriberDuplicateValidatorDatabaseOperationFactory] = None,
         *args,
         **kwargs,
     ):

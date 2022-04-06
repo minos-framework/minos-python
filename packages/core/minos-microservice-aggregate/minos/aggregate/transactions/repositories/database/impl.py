@@ -31,7 +31,12 @@ from .factories import (
 class DatabaseTransactionRepository(DatabaseMixin, TransactionRepository):
     """PostgreSql Transaction Repository class."""
 
-    def __init__(self, *args, operation_factory: Optional[TransactionDatatabaseOperationFactory] = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        operation_factory: Optional[TransactionDatatabaseOperationFactory] = None,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         if operation_factory is None:
             operation_factory = AiopgTransactionDatatabaseOperationFactory()

@@ -34,7 +34,12 @@ from .factories import (
 class DatabaseEventRepository(DatabaseMixin, EventRepository):
     """PostgreSQL-based implementation of the event repository class in ``Minos``."""
 
-    def __init__(self, *args, operation_factory: Optional[EventDatabaseOperationFactory] = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        operation_factory: Optional[EventDatabaseOperationFactory] = None,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         if operation_factory is None:
             operation_factory = AiopgEventDatabaseOperationFactory()

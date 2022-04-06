@@ -23,7 +23,12 @@ from .factories import (
 class DatabaseSnapshotSetup(DatabaseMixin):
     """Minos Snapshot Setup Class"""
 
-    def __init__(self, *args, operation_factory: Optional[SnapshotDatabaseOperationFactory] = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        operation_factory: Optional[SnapshotDatabaseOperationFactory] = None,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         if operation_factory is None:
             operation_factory = AiopgSnapshotDatabaseOperationFactory()
