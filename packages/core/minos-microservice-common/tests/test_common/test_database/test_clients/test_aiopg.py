@@ -145,10 +145,18 @@ class TestAiopgDatabaseClient(CommonTestCase, PostgresAsyncTestCase):
 
     async def test_execute_with_lock_multiple(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
+            self.assertIsNone(client.lock)
+
             await client.execute(self.sql, lock="foo")
+            foo_lock = client.lock
+            self.assertIsInstance(foo_lock, DatabaseLock)
+
             await client.execute(self.sql, lock="foo")
-            with self.assertRaises(ValueError):
-                await client.execute(self.sql, lock="bar")
+            self.assertEqual(foo_lock, client.lock)
+
+            await client.execute(self.sql, lock="bar")
+            self.assertNotEqual(foo_lock, client.lock)
+            self.assertIsInstance(client.lock, DatabaseLock)
 
     async def test_execute_raises_integrity(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:

@@ -151,26 +151,32 @@ class AiopgDatabaseClient(DatabaseClient):
             self._cursor = await self._connection.cursor(*args, **kwargs)
 
         if lock is not None:
-            if self._lock is not None:
-                if self._lock.key != lock:
-                    raise ValueError(f"Only one lock per instance is supported. Currently locked with {self._lock!r}")
-                return
-            from ..locks import (
-                DatabaseLock,
-            )
-
-            self._lock = DatabaseLock(self, lock, *args, **kwargs)
-            await self._lock.acquire()
+            await self._create_lock(lock)
 
     async def _destroy_cursor(self, **kwargs):
-        if self._lock is not None:
-            await self._lock.release()
-            self._lock = None
-
+        await self._destroy_lock()
         if self._cursor is not None:
             if not self._cursor.closed:
                 self._cursor.close()
             self._cursor = None
+
+    async def _create_lock(self, lock: Hashable, *args, **kwargs):
+        if self._lock is not None and self._lock.key == lock:
+            return
+        await self._destroy_lock()
+
+        from ..locks import (
+            DatabaseLock,
+        )
+
+        self._lock = DatabaseLock(self, lock, *args, **kwargs)
+        await self._lock.acquire()
+
+    async def _destroy_lock(self):
+        if self._lock is not None:
+            logger.debug(f"Destroying {self.lock!r}...")
+            await self._lock.release()
+            self._lock = None
 
     @property
     def lock(self) -> Optional[DatabaseLock]:
