@@ -29,33 +29,33 @@ class DatabaseBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateValida
 
     def __init__(
         self,
-        query_factory: Optional[AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory] = None,
+        operation_factory: Optional[AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory] = None,
         *args,
         **kwargs,
     ):
-        if query_factory is None:
-            query_factory = AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory()
+        if operation_factory is None:
+            operation_factory = AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory()
         super().__init__(*args, **kwargs)
-        self._query_factory = query_factory
+        self._operation_factory = operation_factory
 
     async def _setup(self) -> None:
         await super()._setup()
         await self._create_table()
 
     async def _create_table(self) -> None:
-        operation = self._query_factory.build_create_table()
+        operation = self._operation_factory.build_create_table()
         await self.submit_query(operation)
 
     @property
-    def query_factory(self) -> AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory:
+    def operation_factory(self) -> AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory:
         """Get the query factory.
 
         :return: A ``PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory`` instance.
         """
-        return self._query_factory
+        return self._operation_factory
 
     async def _is_unique(self, topic: str, uuid: UUID) -> bool:
-        operation = self._query_factory.build_insert_row(topic, uuid)
+        operation = self._operation_factory.build_insert_row(topic, uuid)
         try:
             await self.submit_query(operation)
             return True

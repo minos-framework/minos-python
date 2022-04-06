@@ -39,7 +39,7 @@ from ..abc import (
     BrokerQueue,
 )
 from .factories import (
-    AiopgBrokerQueueDatabaseOperationFactory,
+    BrokerQueueDatabaseOperationFactory,
 )
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
     def __init__(
         self,
         *args,
-        query_factory: AiopgBrokerQueueDatabaseOperationFactory,
+        operation_factory: BrokerQueueDatabaseOperationFactory,
         retry: Optional[int] = None,
         records: Optional[int] = None,
         **kwargs,
@@ -65,7 +65,7 @@ class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
         if records is None:
             records = 1000
 
-        self._query_factory = query_factory
+        self._operation_factory = operation_factory
         self._retry = retry
         self._records = records
 
@@ -91,12 +91,12 @@ class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
         return self._records
 
     @property
-    def query_factory(self) -> AiopgBrokerQueueDatabaseOperationFactory:
+    def operation_factory(self) -> BrokerQueueDatabaseOperationFactory:
         """Get the query factory.
 
         :return: A ``PostgreSqlBrokerQueueQueryFactory`` instance.
         """
-        return self._query_factory
+        return self._operation_factory
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> DatabaseBrokerQueue:
@@ -117,7 +117,7 @@ class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
         await super()._destroy()
 
     async def _create_table(self) -> None:
-        operation = self._query_factory.build_create_table()
+        operation = self._operation_factory.build_create_table()
         await self.submit_query(operation)
 
     async def _start_run(self) -> None:
@@ -139,12 +139,12 @@ class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
                 entry = self._queue.get_nowait()
             except QueueEmpty:
                 break
-            operation = self._query_factory.build_update_not_processed(entry.id_)
+            operation = self._operation_factory.build_update_not_processed(entry.id_)
             await self.submit_query(operation)
             self._queue.task_done()
 
     async def _enqueue(self, message: BrokerMessage) -> None:
-        operation = self._query_factory.build_insert(message.topic, message.avro_bytes)
+        operation = self._operation_factory.build_insert(message.topic, message.avro_bytes)
         await self.submit_query(operation)
         await self._notify_enqueued(message)
 
@@ -163,11 +163,11 @@ class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
                     logger.warning(
                         f"There was a problem while trying to deserialize the entry with {entry.id_!r} id: {exc}"
                     )
-                    operation = self._query_factory.build_update_not_processed(entry.id_)
+                    operation = self._operation_factory.build_update_not_processed(entry.id_)
                     await self.submit_query(operation)
                     continue
 
-                operation = self._query_factory.build_delete_processed(entry.id_)
+                operation = self._operation_factory.build_delete_processed(entry.id_)
                 await self.submit_query(operation)
                 return message
             finally:
@@ -192,7 +192,7 @@ class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
 
     async def _get_count(self) -> int:
         # noinspection PyTypeChecker
-        operation = self._query_factory.build_count_not_processed(self.retry)
+        operation = self._operation_factory.build_count_not_processed(self.retry)
         row = await self.submit_query_and_fetchone(operation)
         count = row[0]
         return count
@@ -207,14 +207,14 @@ class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
             entries = [_Entry(*row) for row in rows]
 
             ids = tuple(entry.id_ for entry in entries)
-            operation = self._query_factory.build_mark_processing(ids)
+            operation = self._operation_factory.build_mark_processing(ids)
             await client.execute(operation)
 
         for entry in entries:
             await self._queue.put(entry)
 
     async def _dequeue_rows(self, client: DatabaseClient) -> list[Any]:
-        operation = self._query_factory.build_select_not_processed(self._retry, self._records)
+        operation = self._operation_factory.build_select_not_processed(self._retry, self._records)
         await client.execute(operation)
         return [row async for row in client.fetch_all()]
 

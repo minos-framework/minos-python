@@ -19,10 +19,12 @@ class TestPostgreSqlBrokerSubscriberDuplicateValidator(NetworksTestCase, Postgre
     def test_is_subclass(self):
         self.assertTrue(issubclass(DatabaseBrokerSubscriberDuplicateValidator, BrokerSubscriberValidator))
 
-    async def test_query_factory(self):
+    async def test_operation_factory(self):
         validator = DatabaseBrokerSubscriberDuplicateValidator.from_config(self.config)
 
-        self.assertIsInstance(validator.query_factory, AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory)
+        self.assertIsInstance(
+            validator.operation_factory, AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory
+        )
 
     async def test_is_valid(self):
         one = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))

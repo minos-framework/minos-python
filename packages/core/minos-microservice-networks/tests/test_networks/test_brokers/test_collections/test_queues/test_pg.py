@@ -36,27 +36,27 @@ class _Aiopg_BrokerQueueDatabaseOperationFactory(AiopgBrokerQueueDatabaseOperati
 class TestPostgreSqlBrokerQueue(NetworksTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.query_factory = _Aiopg_BrokerQueueDatabaseOperationFactory()
+        self.operation_factory = _Aiopg_BrokerQueueDatabaseOperationFactory()
 
     def test_is_subclass(self):
         self.assertTrue(issubclass(DatabaseBrokerQueue, (BrokerQueue, DatabaseMixin)))
 
     def test_constructor(self):
-        queue = DatabaseBrokerQueue(query_factory=self.query_factory)
+        queue = DatabaseBrokerQueue(operation_factory=self.operation_factory)
         self.assertEqual(self.pool_factory.get_pool("database"), queue.pool)
-        self.assertEqual(self.query_factory, queue.query_factory)
+        self.assertEqual(self.operation_factory, queue.operation_factory)
         self.assertEqual(2, queue.retry)
         self.assertEqual(1000, queue.records)
 
-    async def test_query_factory(self):
-        queue = DatabaseBrokerQueue.from_config(self.config, query_factory=self.query_factory)
+    async def test_operation_factory(self):
+        queue = DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory)
 
-        self.assertEqual(self.query_factory, queue.query_factory)
+        self.assertEqual(self.operation_factory, queue.operation_factory)
 
     async def test_enqueue(self):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
 
-        async with DatabaseBrokerQueue.from_config(self.config, query_factory=self.query_factory) as queue:
+        async with DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory) as queue:
             await queue.enqueue(message)
             await sleep(0.5)  # To give time to consume the message from db.
 
@@ -66,7 +66,7 @@ class TestPostgreSqlBrokerQueue(NetworksTestCase, PostgresAsyncTestCase):
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
 
-        queue = DatabaseBrokerQueue.from_config(self.config, query_factory=self.query_factory)
+        queue = DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory)
         await queue.setup()
         await queue.enqueue(messages[0])
         await queue.enqueue(messages[1])
@@ -90,7 +90,7 @@ class TestPostgreSqlBrokerQueue(NetworksTestCase, PostgresAsyncTestCase):
             "fetch_all",
             return_value=FakeAsyncIterator([[1, messages[0].avro_bytes], [2, bytes()], [3, messages[1].avro_bytes]]),
         ):
-            async with DatabaseBrokerQueue.from_config(self.config, query_factory=self.query_factory) as queue:
+            async with DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory) as queue:
                 queue._get_count = AsyncMock(side_effect=[3, 0])
 
                 async with queue:
@@ -103,7 +103,7 @@ class TestPostgreSqlBrokerQueue(NetworksTestCase, PostgresAsyncTestCase):
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
-        async with DatabaseBrokerQueue.from_config(self.config, query_factory=self.query_factory) as queue:
+        async with DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory) as queue:
             await queue.enqueue(messages[0])
             await queue.enqueue(messages[1])
 
@@ -119,7 +119,7 @@ class TestPostgreSqlBrokerQueue(NetworksTestCase, PostgresAsyncTestCase):
             BrokerMessageV1("foo", BrokerMessageV1Payload(1)),
         ]
 
-        async with DatabaseBrokerQueue.from_config(self.config, query_factory=self.query_factory) as queue:
+        async with DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory) as queue:
 
             for message in unsorted:
                 await queue.enqueue(message)

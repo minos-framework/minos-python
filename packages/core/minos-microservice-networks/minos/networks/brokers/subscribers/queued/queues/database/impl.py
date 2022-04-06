@@ -34,22 +34,22 @@ class DatabaseBrokerSubscriberQueue(DatabaseBrokerQueue, BrokerSubscriberQueue):
         self,
         topics: set[str],
         *args,
-        query_factory: Optional[AiopgBrokerSubscriberQueueDatabaseOperationFactory] = None,
+        operation_factory: Optional[AiopgBrokerSubscriberQueueDatabaseOperationFactory] = None,
         **kwargs,
     ):
-        if query_factory is None:
-            query_factory = AiopgBrokerSubscriberQueueDatabaseOperationFactory()
-        super().__init__(topics, *args, query_factory=query_factory, **kwargs)
+        if operation_factory is None:
+            operation_factory = AiopgBrokerSubscriberQueueDatabaseOperationFactory()
+        super().__init__(topics, *args, operation_factory=operation_factory, **kwargs)
 
     async def _get_count(self) -> int:
         # noinspection PyTypeChecker
-        operation = self._query_factory.build_count_not_processed(self._retry, self.topics)
+        operation = self._operation_factory.build_count_not_processed(self._retry, self.topics)
         row = await self.submit_query_and_fetchone(operation)
         count = row[0]
         return count
 
     async def _dequeue_rows(self, client: DatabaseClient) -> list[Any]:
-        operation = self._query_factory.build_select_not_processed(self._retry, self._records, self.topics)
+        operation = self._operation_factory.build_select_not_processed(self._retry, self._records, self.topics)
         await client.execute(operation)
         return [row async for row in client.fetch_all()]
 

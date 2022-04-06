@@ -32,10 +32,10 @@ class TestPostgreSqlBrokerSubscriberQueue(NetworksTestCase, PostgresAsyncTestCas
     def test_is_subclass(self):
         self.assertTrue(issubclass(DatabaseBrokerSubscriberQueue, (DatabaseBrokerQueue, BrokerSubscriberQueue)))
 
-    async def test_query_factory(self):
+    async def test_operation_factory(self):
         queue = DatabaseBrokerSubscriberQueue.from_config(self.config, topics={"foo", "bar"})
 
-        self.assertIsInstance(queue.query_factory, AiopgBrokerSubscriberQueueDatabaseOperationFactory)
+        self.assertIsInstance(queue.operation_factory, AiopgBrokerSubscriberQueueDatabaseOperationFactory)
 
     async def test_enqueue(self):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))

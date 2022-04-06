@@ -18,13 +18,6 @@ from ......collections import (
 class BrokerSubscriberQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory, ABC):
     """PostgreSql Broker Subscriber Queue Query Factory class."""
 
-    def build_table_name(self) -> str:
-        """Get the table name.
-
-        :return: A ``str`` value.
-        """
-        return "broker_subscriber_queue"
-
     def build_count_not_processed(
         self,
         retry: int,

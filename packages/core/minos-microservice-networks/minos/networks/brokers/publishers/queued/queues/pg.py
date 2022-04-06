@@ -27,10 +27,12 @@ logger = logging.getLogger(__name__)
 class DatabaseBrokerPublisherQueue(DatabaseBrokerQueue, BrokerPublisherQueue):
     """PostgreSql Broker Publisher Queue class."""
 
-    def __init__(self, *args, query_factory: Optional[BrokerPublisherQueueDatabaseOperationFactory] = None, **kwargs):
-        if query_factory is None:
-            query_factory = AiopgBrokerPublisherQueueDatabaseOperationFactory()
-        super().__init__(*args, query_factory=query_factory, **kwargs)
+    def __init__(
+        self, *args, operation_factory: Optional[BrokerPublisherQueueDatabaseOperationFactory] = None, **kwargs
+    ):
+        if operation_factory is None:
+            operation_factory = AiopgBrokerPublisherQueueDatabaseOperationFactory()
+        super().__init__(*args, operation_factory=operation_factory, **kwargs)
 
 
 class BrokerPublisherQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory, ABC):

@@ -18,10 +18,10 @@ class TestPostgreSqlBrokerPublisherQueue(NetworksTestCase, PostgresAsyncTestCase
     def test_is_subclass(self):
         self.assertTrue(issubclass(DatabaseBrokerPublisherQueue, (DatabaseBrokerQueue, BrokerPublisherQueue)))
 
-    async def test_query_factory(self):
+    async def test_operation_factory(self):
         queue = DatabaseBrokerPublisherQueue.from_config(self.config)
 
-        self.assertIsInstance(queue.query_factory, AiopgBrokerPublisherQueueDatabaseOperationFactory)
+        self.assertIsInstance(queue.operation_factory, AiopgBrokerPublisherQueueDatabaseOperationFactory)
 
 
 class TestPostgreSqlBrokerPublisherQueueQueryFactory(unittest.TestCase):
