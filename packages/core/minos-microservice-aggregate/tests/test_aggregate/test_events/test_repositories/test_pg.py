@@ -41,7 +41,7 @@ class TestPostgreSqlEventRepositorySubmit(EventRepositorySubmitTestCase, Postgre
             await client.execute(
                 "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_event');"
             )
-            response = (await client.fetchone())[0]
+            response = (await client.fetch_one())[0]
         self.assertTrue(response)
 
 
