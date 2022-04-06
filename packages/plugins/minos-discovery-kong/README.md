@@ -19,7 +19,7 @@ Minos Kong is a plugin that integrate minos micorservices with Kong API Gateway
 Install the dependency:
 
 ```shell
-pip install minos-kong
+pip install minos-discovery-kong
 ```
 
 Modify `config.yml` file:
@@ -28,12 +28,43 @@ Modify `config.yml` file:
 ...
 discovery:
   connector: minos.networks.DiscoveryConnector
-  client: minos.plugins.minos_kong.MinosKongClient
+  client: minos.plugins.kong.KongDiscoveryClient
   host: localhost
-  port: 5567
+  port: 8001
 ...
 ```
 
+## How to
+The above configuration is sufficient for the microservice to subscribe on startup and unsubscribe on shutdown.
+Therefore, all you would have to do would be to make your requests against:
+
+`http://localhost:8000/your_endpoint`
+
+## Kong official documentation
+### Official docs
+You can get read the official docs [here](https://docs.konghq.com/gateway/2.8.x/admin-api/).
+
+### Postman
+
+You can get the official postman collection for postman [here](https://documenter.getpostman.com/view/10587735/SzS7QS2c#intro).
+
+## Konga - Administrative interface
+For development purposes you can add open-source administrative section by using next docker service:
+```yaml
+services:
+  ...
+  konga:
+      image: pantsel/konga
+      ports:
+          - 1337:1337
+      links:
+          - kong:kong
+      container_name: konga
+      environment:
+          - NODE_ENV=production
+```
+
+You can get read the official docs [here](https://pantsel.github.io/konga/).
 ## Documentation
 
 The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).
