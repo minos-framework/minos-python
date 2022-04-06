@@ -44,6 +44,7 @@ from .brokers import (
     PostgreSqlBrokerPublisherQueueQueryFactory,
     PostgreSqlBrokerQueue,
     PostgreSqlBrokerQueueBuilder,
+    PostgreSqlBrokerQueueQueryFactory,
     PostgreSqlBrokerSubscriberDuplicateValidator,
     PostgreSqlBrokerSubscriberDuplicateValidatorBuilder,
     PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,

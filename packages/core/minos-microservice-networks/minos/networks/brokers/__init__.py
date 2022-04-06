@@ -6,6 +6,7 @@ from .collections import (
     InMemoryBrokerQueue,
     PostgreSqlBrokerQueue,
     PostgreSqlBrokerQueueBuilder,
+    PostgreSqlBrokerQueueQueryFactory,
 )
 from .dispatchers import (
     BrokerDispatcher,

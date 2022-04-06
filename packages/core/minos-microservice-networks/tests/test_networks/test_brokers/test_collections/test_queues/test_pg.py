@@ -19,8 +19,6 @@ from minos.networks import (
     BrokerMessageV1Payload,
     BrokerQueue,
     PostgreSqlBrokerQueue,
-)
-from minos.networks.brokers.collections import (
     PostgreSqlBrokerQueueQueryFactory,
 )
 from tests.utils import (

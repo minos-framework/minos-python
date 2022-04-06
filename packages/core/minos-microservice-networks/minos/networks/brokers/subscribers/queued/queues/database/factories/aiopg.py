@@ -10,7 +10,8 @@ from minos.common import (
     AiopgDatabaseOperation,
     DatabaseOperation,
 )
-from minos.networks.brokers.collections import (
+
+from ......collections import (
     PostgreSqlBrokerQueueQueryFactory,
 )
 
