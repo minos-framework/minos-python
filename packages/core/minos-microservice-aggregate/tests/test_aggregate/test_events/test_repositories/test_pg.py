@@ -2,7 +2,7 @@ import unittest
 
 from minos.aggregate import (
     EventRepository,
-    PostgreSqlEventRepository,
+    DatabaseEventRepository,
 )
 from minos.common import (
     AiopgDatabaseClient,
@@ -18,22 +18,22 @@ from tests.testcases import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestPostgreSqlEventRepositorySubmit(EventRepositorySubmitTestCase, PostgresAsyncTestCase):
+class TestDatabaseEventRepositorySubmit(EventRepositorySubmitTestCase, PostgresAsyncTestCase):
     __test__ = True
 
     @staticmethod
     def build_event_repository() -> EventRepository:
         """Fort testing purposes."""
-        return PostgreSqlEventRepository()
+        return DatabaseEventRepository()
 
     def test_constructor(self):
         pool = DatabaseClientPool.from_config(self.config)
-        repository = PostgreSqlEventRepository(pool)
-        self.assertIsInstance(repository, PostgreSqlEventRepository)
+        repository = DatabaseEventRepository(pool)
+        self.assertIsInstance(repository, DatabaseEventRepository)
         self.assertIsInstance(repository.pool, DatabaseClientPool)
 
     def test_from_config(self):
-        repository = PostgreSqlEventRepository.from_config(self.config)
+        repository = DatabaseEventRepository.from_config(self.config)
         self.assertIsInstance(repository.pool, DatabaseClientPool)
 
     async def test_setup(self):
@@ -51,7 +51,7 @@ class TestPostgreSqlRepositorySelect(EventRepositorySelectTestCase, PostgresAsyn
     @staticmethod
     def build_event_repository() -> EventRepository:
         """Fort testing purposes."""
-        return PostgreSqlEventRepository()
+        return DatabaseEventRepository()
 
 
 if __name__ == "__main__":

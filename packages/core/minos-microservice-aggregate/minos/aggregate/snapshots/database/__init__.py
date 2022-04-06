@@ -4,8 +4,10 @@ from .abc import (
 from .api import (
     PostgreSqlSnapshotRepository,
 )
-from .queries import (
+from .factories import (
+    AiopgSnapshotRepositoryOperationFactory,
     PostgreSqlSnapshotQueryBuilder,
+    SnapshotRepositoryOperationFactory,
 )
 from .readers import (
     PostgreSqlSnapshotReader,

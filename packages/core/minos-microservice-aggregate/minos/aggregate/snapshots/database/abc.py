@@ -3,17 +3,19 @@ from __future__ import (
 )
 
 from typing import (
+    Optional,
     Type,
-    TypeVar, Optional,
+    TypeVar,
 )
 
 from minos.common import (
     Config,
     DatabaseMixin,
 )
+
 from .factories import (
+    AiopgSnapshotRepositoryOperationFactory,
     SnapshotRepositoryOperationFactory,
-    AiopgSnapshotRepositoryOperationFactory
 )
 
 

@@ -27,10 +27,10 @@ from minos.common import (
     AvroDataEncoder,
 )
 
-from ...contextvars import (
+from .....contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
-from ...queries import (
+from .....queries import (
     _FALSE_CONDITION,
     _AndCondition,
     _ComposedCondition,
@@ -221,7 +221,6 @@ class PostgreSqlSnapshotQueryBuilder:
         :return: A random string value.
         """
         return str(uuid4())
-
 
     _COMPOSED_MAPPER = {_AndCondition: SQL(" AND "), _OrCondition: SQL(" OR ")}
 

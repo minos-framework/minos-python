@@ -4,7 +4,7 @@ from minos.aggregate import (
     AlreadyDeletedException,
     DatabaseTransactionRepository,
     EntitySet,
-    PostgreSqlEventRepository,
+    DatabaseEventRepository,
     PostgreSqlSnapshotRepository,
     ValueObjectSet,
 )
@@ -26,7 +26,7 @@ class TestExternalEntityWithPostgreSql(AggregateTestCase, PostgresAsyncTestCase)
 
         self.transaction_repository = DatabaseTransactionRepository.from_config(self.config)
 
-        self.event_repository = PostgreSqlEventRepository.from_config(
+        self.event_repository = DatabaseEventRepository.from_config(
             self.config, transaction_repository=self.transaction_repository
         )
         self.snapshot_repository = PostgreSqlSnapshotRepository.from_config(

@@ -6,6 +6,7 @@ from datetime import (
 )
 from typing import (
     Any,
+    Optional,
 )
 from uuid import (
     UUID,
@@ -17,8 +18,15 @@ from minos.common import (
     DatabaseOperation,
 )
 
-from .abc import (
+from .....queries import (
+    _Condition,
+    _Ordering,
+)
+from ..abc import (
     SnapshotRepositoryOperationFactory,
+)
+from .queries import (
+    PostgreSqlSnapshotQueryBuilder,
 )
 
 
@@ -66,34 +74,11 @@ class AiopgSnapshotRepositoryOperationFactory(SnapshotRepositoryOperationFactory
     def build_delete_by_transactions(self, transaction_uuids: Iterable[UUID]) -> DatabaseOperation:
         """TODO"""
         return AiopgDatabaseOperation(
-            """            
+            """
             DELETE FROM snapshot
             WHERE transaction_uuid IN %(transaction_uuids)s;
             """,
             {"transaction_uuids": tuple(transaction_uuids)},
-        )
-
-    def build_store_offset(self, value: int) -> DatabaseOperation:
-        """TODO"""
-        return AiopgDatabaseOperation(
-            """
-            INSERT INTO snapshot_aux_offset (id, value)
-            VALUES (TRUE, %(value)s)
-            ON CONFLICT (id)
-            DO UPDATE SET value = GREATEST(%(value)s, (SELECT value FROM snapshot_aux_offset WHERE id = TRUE));
-            """.strip(),
-            {"value": value},
-            lock="insert_snapshot_aux_offset"
-        )
-
-    def build_get_offset(self) -> DatabaseOperation:
-        """TODO"""
-        return AiopgDatabaseOperation(
-            """
-            SELECT value
-            FROM snapshot_aux_offset
-            WHERE id = TRUE;
-            """
         )
 
     def build_insert(
@@ -137,4 +122,42 @@ class AiopgSnapshotRepositoryOperationFactory(SnapshotRepositoryOperationFactory
                 "updated_at": updated_at,
                 "transaction_uuid": transaction_uuid,
             },
+        )
+
+    def build_query(
+        self,
+        name: str,
+        condition: _Condition,
+        ordering: Optional[_Ordering],
+        limit: Optional[int],
+        transaction_uuids: tuple[UUID, ...],
+        exclude_deleted: bool,
+    ) -> DatabaseOperation:
+        """TODO"""
+        builder = PostgreSqlSnapshotQueryBuilder(name, condition, ordering, limit, transaction_uuids, exclude_deleted)
+        query, parameters = builder.build()
+
+        return AiopgDatabaseOperation(query, parameters)
+
+    def build_store_offset(self, value: int) -> DatabaseOperation:
+        """TODO"""
+        return AiopgDatabaseOperation(
+            """
+            INSERT INTO snapshot_aux_offset (id, value)
+            VALUES (TRUE, %(value)s)
+            ON CONFLICT (id)
+            DO UPDATE SET value = GREATEST(%(value)s, (SELECT value FROM snapshot_aux_offset WHERE id = TRUE));
+            """.strip(),
+            {"value": value},
+            lock="insert_snapshot_aux_offset",
+        )
+
+    def build_get_offset(self) -> DatabaseOperation:
+        """TODO"""
+        return AiopgDatabaseOperation(
+            """
+            SELECT value
+            FROM snapshot_aux_offset
+            WHERE id = TRUE;
+            """
         )

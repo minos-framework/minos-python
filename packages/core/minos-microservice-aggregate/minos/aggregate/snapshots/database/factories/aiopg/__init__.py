@@ -1,7 +1,6 @@
-from .abc import (
-    SnapshotRepositoryOperationFactory,
-)
-from .aiopg import (
+from .impl import (
     AiopgSnapshotRepositoryOperationFactory,
+)
+from .queries import (
     PostgreSqlSnapshotQueryBuilder,
 )

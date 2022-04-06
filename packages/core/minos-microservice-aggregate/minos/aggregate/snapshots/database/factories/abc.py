@@ -7,6 +7,7 @@ from collections.abc import (
 )
 from typing import (
     Any,
+    Optional,
 )
 from uuid import (
     UUID,
@@ -15,6 +16,11 @@ from uuid import (
 from minos.common import (
     DatabaseOperation,
     datetime,
+)
+
+from ....queries import (
+    _Condition,
+    _Ordering,
 )
 
 
@@ -30,14 +36,6 @@ class SnapshotRepositoryOperationFactory(ABC):
         """TODO"""
 
     @abstractmethod
-    def build_store_offset(self, value: int) -> DatabaseOperation:
-        """TODO"""
-
-    @abstractmethod
-    def build_get_offset(self) -> DatabaseOperation:
-        """TODO"""
-
-    @abstractmethod
     def build_insert(
         self,
         uuid: UUID,
@@ -49,4 +47,24 @@ class SnapshotRepositoryOperationFactory(ABC):
         updated_at: datetime,
         transaction_uuid: UUID,
     ) -> DatabaseOperation:
+        """TODO"""
+
+    @abstractmethod
+    def build_query(
+        self,
+        name: str,
+        condition: _Condition,
+        ordering: Optional[_Ordering],
+        limit: Optional[int],
+        transaction_uuids: tuple[UUID, ...],
+        exclude_deleted: bool,
+    ) -> DatabaseOperation:
+        """TODO"""
+
+    @abstractmethod
+    def build_store_offset(self, value: int) -> DatabaseOperation:
+        """TODO"""
+
+    @abstractmethod
+    def build_get_offset(self) -> DatabaseOperation:
         """TODO"""

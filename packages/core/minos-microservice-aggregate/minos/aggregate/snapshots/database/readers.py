@@ -33,9 +33,6 @@ from ..entries import (
 from .abc import (
     PostgreSqlSnapshotSetup,
 )
-from .queries import (
-    PostgreSqlSnapshotQueryBuilder,
-)
 
 if TYPE_CHECKING:
     from ...entities import (
@@ -125,10 +122,11 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         else:
             transaction_uuids = await transaction.uuids
 
-        qb = PostgreSqlSnapshotQueryBuilder(name, condition, ordering, limit, transaction_uuids, exclude_deleted)
-        query, parameters = qb.build()
+        operation = self.operation_factory.build_query(
+            name, condition, ordering, limit, transaction_uuids, exclude_deleted
+        )
 
-        async_iterable = self.submit_query_and_iter(query, parameters)
+        async_iterable = self.submit_query_and_iter(operation)
         if streaming_mode:
             async for row in async_iterable:
                 yield SnapshotEntry(*row)

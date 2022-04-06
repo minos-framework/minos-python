@@ -102,7 +102,7 @@ class TestPostgreSqlSnapshotQueryBuilder(AggregateTestCase, PostgresAsyncTestCas
                             PostgreSqlSnapshotQueryBuilder._SELECT_TRANSACTION_CHUNK.format(
                                 index=Literal(1), transaction_uuid=Placeholder("transaction_uuid_1")
                             ),
-                            PostgreSqlSnapshotQueryBuilder. _SELECT_TRANSACTION_CHUNK.format(
+                            PostgreSqlSnapshotQueryBuilder._SELECT_TRANSACTION_CHUNK.format(
                                 index=Literal(2), transaction_uuid=Placeholder("transaction_uuid_2")
                             ),
                         ]

@@ -84,7 +84,7 @@ class DatabaseEventRepository(DatabaseMixin, EventRepository):
 
     async def _select(self, **kwargs) -> AsyncIterator[EventEntry]:
         operation = self.operation_factory.build_select_rows(**kwargs)
-        async for row in self.submit_query_and_iter(operation, kwargs, **kwargs):
+        async for row in self.submit_query_and_iter(operation, **kwargs):
             yield EventEntry(*row)
 
     @property
