@@ -1,4 +1,5 @@
 from abc import (
+    ABC,
     abstractmethod,
 )
 from typing import (
@@ -18,7 +19,7 @@ from .....actions import (
 )
 
 
-class EventRepositoryOperationFactory:
+class EventRepositoryOperationFactory(ABC):
     """TODO"""
 
     @abstractmethod
