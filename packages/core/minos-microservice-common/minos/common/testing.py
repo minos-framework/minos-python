@@ -16,6 +16,10 @@ from uuid import (
     uuid4,
 )
 
+from minos.common import (
+    AiopgDatabaseOperation,
+)
+
 from .config import (
     Config,
 )
@@ -105,10 +109,12 @@ class PostgresAsyncTestCase(MinosTestCase, ABC):
 
         async with AiopgDatabaseClient(**meta) as client:
             template = "CREATE DATABASE {database} WITH OWNER = {user};"
-            await client.execute(template.format(**(meta | test)))
+            operation = AiopgDatabaseOperation(template.format(**(meta | test)))
+            await client.execute(operation)
 
     @staticmethod
     async def _drop_database(meta: dict[str, Any], test: dict[str, Any]) -> None:
         async with AiopgDatabaseClient(**meta) as client:
             template = "DROP DATABASE IF EXISTS {database}"
-            await client.execute(template.format(**(meta | test)))
+            operation = AiopgDatabaseOperation(template.format(**(meta | test)))
+            await client.execute(operation)

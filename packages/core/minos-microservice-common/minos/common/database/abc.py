@@ -16,6 +16,9 @@ from ..pools import (
 from ..setup import (
     SetupMixin,
 )
+from .operations import (
+    DatabaseOperation,
+)
 from .pools import (
     DatabaseClientPool,
     PostgreSqlPool,
@@ -48,40 +51,52 @@ class DatabaseMixin(SetupMixin):
 
         self._pool = database_pool
 
-    async def submit_query_and_fetchone(self, *args, **kwargs) -> tuple:
+    async def submit_query_and_fetchone(self, operation: DatabaseOperation) -> tuple:
         """Submit a SQL query and gets the first response.
 
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
+        :param operation: TODO
         :return: This method does not return anything.
         """
         async with self.pool.acquire() as client:
-            await client.execute(*args, **kwargs)
-            return await client.fetch_one(*args, **kwargs)
+            await client.execute(operation)
+            return await client.fetch_one()
 
     # noinspection PyUnusedLocal
-    async def submit_query_and_iter(self, *args, **kwargs) -> AsyncIterator[tuple]:
+    async def submit_query_and_iter(
+        self, operation: DatabaseOperation, streaming_mode: Optional[bool] = None
+    ) -> AsyncIterator[tuple]:
         """Submit a SQL query and return an asynchronous iterator.
 
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
+        :param operation: TODO
+        :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
+            database connection), otherwise preloads the full set of values on memory and then retrieves them.
         :return: This method does not return anything.
         """
+        if streaming_mode is None:
+            streaming_mode = False
+
         async with self.pool.acquire() as client:
-            await client.execute(*args, **kwargs)
-            async for value in client.fetch_all(*args, **kwargs):
-                yield value
+            await client.execute(operation)
+            async_iterable = client.fetch_all()
+            if streaming_mode:
+                async for value in async_iterable:
+                    yield value
+                return
+
+            iterable = [value async for value in async_iterable]
+
+        for value in iterable:
+            yield value
 
     # noinspection PyUnusedLocal
-    async def submit_query(self, *args, **kwargs) -> None:
+    async def submit_query(self, operation: DatabaseOperation) -> None:
         """Submit a SQL query.
 
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
+        :param operation: TODO
         :return: This method does not return anything.
         """
         async with self.pool.acquire() as client:
-            return await client.execute(*args, **kwargs)
+            return await client.execute(operation)
 
     @property
     def pool(self) -> DatabaseClientPool:

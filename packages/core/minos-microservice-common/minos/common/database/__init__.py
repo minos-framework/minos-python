@@ -11,7 +11,9 @@ from .clients import (
     UnableToConnectException,
 )
 from .locks import (
+    AiopgLockDatabaseOperationFactory,
     DatabaseLock,
+    LockDatabaseOperationFactory,
     PostgreSqlLock,
 )
 from .operations import (

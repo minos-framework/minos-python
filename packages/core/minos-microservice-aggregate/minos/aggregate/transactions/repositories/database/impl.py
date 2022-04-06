@@ -63,9 +63,9 @@ class DatabaseTransactionRepository(DatabaseMixin, TransactionRepository):
         transaction.updated_at = updated_at
         return transaction
 
-    async def _select(self, **kwargs) -> AsyncIterator[TransactionEntry]:
+    async def _select(self, streaming_mode: Optional[bool] = None, **kwargs) -> AsyncIterator[TransactionEntry]:
         operation = self.operation_factory.build_select_rows(**kwargs)
-        async for row in self.submit_query_and_iter(operation, **kwargs):
+        async for row in self.submit_query_and_iter(operation, streaming_mode=streaming_mode):
             yield TransactionEntry(*row, transaction_repository=self)
 
 

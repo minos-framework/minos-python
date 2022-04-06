@@ -17,6 +17,7 @@ from minos.common import (
     BuildableMixin,
     DatabaseClient,
     DatabaseClientBuilder,
+    DatabaseOperation,
 )
 from tests.utils import (
     CommonTestCase,
@@ -38,6 +39,10 @@ class _DatabaseClient(DatabaseClient):
 
     def _fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
         """For testing purposes."""
+
+
+class _DatabaseOperation(DatabaseOperation):
+    """For testing purposes."""
 
 
 class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
@@ -73,10 +78,10 @@ class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
         mock = AsyncMock()
         client = _DatabaseClient()
         client._execute = mock
+        operation = _DatabaseOperation()
+        await client.execute(operation)
 
-        await client.execute("foo")
-
-        self.assertEqual([call("foo")], mock.call_args_list)
+        self.assertEqual([call(operation)], mock.call_args_list)
 
     async def test_fetch_all(self):
         mock = MagicMock(return_value=FakeAsyncIterator(["one", "two"]))

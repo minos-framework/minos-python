@@ -12,6 +12,7 @@ from minos.aggregate import (
 )
 from minos.common import (
     AiopgDatabaseClient,
+    AiopgDatabaseOperation,
     DatabaseClientPool,
 )
 from minos.common.testing import (
@@ -54,9 +55,10 @@ class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCa
 
     async def test_setup(self):
         async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
-            await client.execute(
+            operation = AiopgDatabaseOperation(
                 "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_transaction');"
             )
+            await client.execute(operation)
             response = (await client.fetch_one())[0]
         self.assertTrue(response)
 

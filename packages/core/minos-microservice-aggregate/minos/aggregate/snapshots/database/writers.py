@@ -77,7 +77,7 @@ class DatabaseSnapshotWriter(DatabaseSnapshotSetup):
         :param name: Class name of the ``RootEntity`` to be checked.
         :return: ``True`` if it has the latest version for the identifier or ``False`` otherwise.
         """
-        offset = await self._load_offset(**kwargs)
+        offset = await self._load_offset()
         iterable = self._event_repository.select(id_gt=offset, name=name, **kwargs)
         try:
             await iterable.__anext__()
@@ -90,7 +90,7 @@ class DatabaseSnapshotWriter(DatabaseSnapshotSetup):
 
         :return: This method does not return anything.
         """
-        initial_offset = await self._load_offset(**kwargs)
+        initial_offset = await self._load_offset()
 
         offset = initial_offset
         async for event_entry in self._event_repository.select(id_gt=offset, **kwargs):
@@ -105,11 +105,11 @@ class DatabaseSnapshotWriter(DatabaseSnapshotSetup):
 
         await self._store_offset(offset)
 
-    async def _load_offset(self, **kwargs) -> int:
+    async def _load_offset(self) -> int:
         operation = self.operation_factory.build_get_offset()
         # noinspection PyBroadException
         try:
-            raw = await self.submit_query_and_fetchone(operation, **kwargs)
+            raw = await self.submit_query_and_fetchone(operation)
             return raw[0]
         except Exception:
             return 0
@@ -120,20 +120,20 @@ class DatabaseSnapshotWriter(DatabaseSnapshotSetup):
 
     async def _dispatch_one(self, event_entry: EventEntry, **kwargs) -> SnapshotEntry:
         if event_entry.action.is_delete:
-            return await self._submit_delete(event_entry, **kwargs)
+            return await self._submit_delete(event_entry)
 
         return await self._submit_update_or_create(event_entry, **kwargs)
 
-    async def _submit_delete(self, event_entry: EventEntry, **kwargs) -> SnapshotEntry:
+    async def _submit_delete(self, event_entry: EventEntry) -> SnapshotEntry:
         snapshot_entry = SnapshotEntry.from_event_entry(event_entry)
-        snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
+        snapshot_entry = await self._submit_entry(snapshot_entry)
         return snapshot_entry
 
     async def _submit_update_or_create(self, event_entry: EventEntry, **kwargs) -> SnapshotEntry:
         instance = await self._build_instance(event_entry, **kwargs)
 
         snapshot_entry = SnapshotEntry.from_root_entity(instance, transaction_uuid=event_entry.transaction_uuid)
-        snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
+        snapshot_entry = await self._submit_entry(snapshot_entry)
         return snapshot_entry
 
     async def _build_instance(self, event_entry: EventEntry, **kwargs) -> RootEntity:
@@ -167,9 +167,9 @@ class DatabaseSnapshotWriter(DatabaseSnapshotSetup):
         snapshot_entry = await self._reader.get_entry(name, uuid, **kwargs)
         return snapshot_entry.build(**kwargs)
 
-    async def _submit_entry(self, snapshot_entry: SnapshotEntry, **kwargs) -> SnapshotEntry:
+    async def _submit_entry(self, snapshot_entry: SnapshotEntry) -> SnapshotEntry:
         operation = self.operation_factory.build_insert(**snapshot_entry.as_raw())
-        response = await self.submit_query_and_fetchone(operation, **kwargs)
+        response = await self.submit_query_and_fetchone(operation)
 
         snapshot_entry.created_at, snapshot_entry.updated_at = response
 

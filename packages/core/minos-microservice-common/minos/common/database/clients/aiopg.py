@@ -9,9 +9,7 @@ from collections.abc import (
 )
 from typing import (
     TYPE_CHECKING,
-    Any,
     Optional,
-    Union,
 )
 
 import aiopg
@@ -23,13 +21,9 @@ from psycopg2 import (
     IntegrityError,
     OperationalError,
 )
-from psycopg2.sql import (
-    Composable,
-)
 
 from ..operations import (
     AiopgDatabaseOperation,
-    DatabaseOperation,
 )
 from .abc import (
     DatabaseClient,
@@ -129,35 +123,24 @@ class AiopgDatabaseClient(DatabaseClient):
         await self._destroy_cursor(**kwargs)
 
     # noinspection PyUnusedLocal
-    async def _fetch_all(
-        self,
-        *args,
-        **kwargs,
-    ) -> AsyncIterator[tuple]:
+    async def _fetch_all(self) -> AsyncIterator[tuple]:
         await self._create_cursor()
 
         async for row in self._cursor:
             yield row
 
     # noinspection PyUnusedLocal
-    async def _execute(
-        self,
-        operation: Union[str, Composable, AiopgDatabaseOperation],
-        parameters: Any = None,
-        *,
-        timeout: Optional[float] = None,
-        lock: Any = None,
-        **kwargs,
-    ) -> None:
-        if isinstance(operation, DatabaseOperation):
-            if isinstance(operation, AiopgDatabaseOperation):
-                operation, parameters, lock = operation.query, operation.parameters, operation.lock
-            else:
-                raise ValueError(f"The operation is not supported: {operation!r}")
+    async def _execute(self, operation: AiopgDatabaseOperation) -> None:
+        if not isinstance(operation, AiopgDatabaseOperation):
+            raise ValueError(f"The operation is not supported: {operation!r}")
 
-        await self._create_cursor(lock=lock)
+        await self._create_cursor(lock=operation.lock)
         try:
-            await self._cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
+            await self._cursor.execute(
+                operation=operation.query,
+                parameters=operation.parameters,
+                timeout=operation.timeout,
+            )
         except IntegrityError as exc:
             raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
 

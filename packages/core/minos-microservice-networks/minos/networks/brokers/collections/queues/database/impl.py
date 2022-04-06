@@ -145,7 +145,7 @@ class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
 
     async def _enqueue(self, message: BrokerMessage) -> None:
         operation = self._query_factory.build_insert(message.topic, message.avro_bytes)
-        await self.submit_query_and_fetchone(operation)
+        await self.submit_query(operation)
         await self._notify_enqueued(message)
 
     # noinspection PyUnusedLocal
@@ -214,8 +214,8 @@ class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
             await self._queue.put(entry)
 
     async def _dequeue_rows(self, client: DatabaseClient) -> list[Any]:
-        # noinspection PyTypeChecker
-        await client.execute(self._query_factory.build_select_not_processed(self._retry, self._records))
+        operation = self._query_factory.build_select_not_processed(self._retry, self._records)
+        await client.execute(operation)
         return [row async for row in client.fetch_all()]
 
 

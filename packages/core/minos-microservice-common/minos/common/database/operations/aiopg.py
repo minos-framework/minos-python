@@ -20,10 +20,15 @@ class AiopgDatabaseOperation(DatabaseOperation):
     """TODO"""
 
     def __init__(
-        self, query: Union[str, Composable], parameters: dict[str, Any] = None, lock: Optional[Hashable] = None
+        self,
+        query: Union[str, Composable],
+        parameters: dict[str, Any] = None,
+        lock: Optional[Hashable] = None,
+        timeout: Optional[float] = None,
     ):
         if parameters is None:
             parameters = dict()
         self.query = query
         self.parameters = parameters
         self.lock = lock
+        self.timeout = timeout

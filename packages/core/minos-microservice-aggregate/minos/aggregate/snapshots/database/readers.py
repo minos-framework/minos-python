@@ -89,6 +89,7 @@ class DatabaseSnapshotReader(DatabaseSnapshotSetup):
         async for snapshot_entry in self.find_entries(*args, **kwargs):
             yield snapshot_entry.build(**kwargs)
 
+    # noinspection PyUnusedLocal
     async def find_entries(
         self,
         name: str,
@@ -127,13 +128,8 @@ class DatabaseSnapshotReader(DatabaseSnapshotSetup):
             name, condition, ordering, limit, transaction_uuids, exclude_deleted
         )
 
-        async_iterable = self.submit_query_and_iter(operation)
-        if streaming_mode:
-            async for row in async_iterable:
-                yield SnapshotEntry(*row)
-        else:
-            for row in [row async for row in async_iterable]:
-                yield SnapshotEntry(*row)
+        async for row in self.submit_query_and_iter(operation, streaming_mode=streaming_mode):
+            yield SnapshotEntry(*row)
 
 
 class PostgreSqlSnapshotReader(DatabaseSnapshotReader):

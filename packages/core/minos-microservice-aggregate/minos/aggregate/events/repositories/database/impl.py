@@ -82,15 +82,16 @@ class DatabaseEventRepository(DatabaseMixin, EventRepository):
 
         return self.operation_factory.build_submit_row(transaction_uuids=transaction_uuids, **entry.as_raw(), lock=lock)
 
-    async def _select(self, **kwargs) -> AsyncIterator[EventEntry]:
+    async def _select(self, streaming_mode: Optional[bool] = None, **kwargs) -> AsyncIterator[EventEntry]:
         operation = self.operation_factory.build_select_rows(**kwargs)
-        async for row in self.submit_query_and_iter(operation, **kwargs):
+        async for row in self.submit_query_and_iter(operation, streaming_mode=streaming_mode):
             yield EventEntry(*row)
 
     @property
     async def _offset(self) -> int:
         operation = self.operation_factory.build_select_max_id()
-        return (await self.submit_query_and_fetchone(operation))[0] or 0
+        row = await self.submit_query_and_fetchone(operation)
+        return row[0] or 0
 
 
 class PostgreSqlEventRepository(DatabaseEventRepository):

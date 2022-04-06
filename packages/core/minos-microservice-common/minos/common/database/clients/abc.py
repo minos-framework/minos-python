@@ -57,40 +57,35 @@ class DatabaseClient(ABC, BuildableMixin):
     async def _reset(self, **kwargs) -> None:
         raise NotImplementedError
 
-    async def execute(self, operation: DatabaseOperation, *args, **kwargs) -> None:
+    async def execute(self, operation: DatabaseOperation) -> None:
         """Execute an operation.
 
         :param operation: TODO
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
         if isinstance(operation, ComposedDatabaseOperation):
             for op in operation.operations:
-                await self._execute(op, *args, **kwargs)
+                await self._execute(op)
         else:
-            await self._execute(operation, *args, **kwargs)
+            await self._execute(operation)
 
     @abstractmethod
-    async def _execute(self, *args, **kwargs) -> None:
+    async def _execute(self, operation: DatabaseOperation) -> None:
         raise NotImplementedError
 
-    async def fetch_one(self, *args, **kwargs) -> Any:
+    async def fetch_one(self) -> Any:
         """Fetch one value.
 
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        return await self.fetch_all(*args, **kwargs).__anext__()
+        return await self.fetch_all().__anext__()
 
-    def fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
+    def fetch_all(self) -> AsyncIterator[Any]:
         """Fetch all values with an asynchronous iterator.
 
-        :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        return self._fetch_all(*args, **kwargs)
+        return self._fetch_all()
 
     @abstractmethod
     def _fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:

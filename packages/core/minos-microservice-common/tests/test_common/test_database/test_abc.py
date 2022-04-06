@@ -3,6 +3,7 @@ import warnings
 
 from minos.common import (
     AiopgDatabaseClient,
+    AiopgDatabaseOperation,
     DatabaseClientPool,
     DatabaseMixin,
     NotProvidedException,
@@ -51,54 +52,75 @@ class TestDatabaseMixin(CommonTestCase, PostgresAsyncTestCase):
             self.assertIsInstance(database.pool, DatabaseClientPool)
 
     async def test_submit_query(self):
+        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")
+        op2 = AiopgDatabaseOperation("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
+
         async with DatabaseMixin() as database:
-            await database.submit_query("CREATE TABLE foo (id INT NOT NULL);")
+            await database.submit_query(op1)
 
         async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
-            await client.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
+            await client.execute(op2)
             self.assertTrue((await client.fetch_one())[0])
 
     async def test_submit_query_locked(self):
+        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);", lock=1234)
+        op2 = AiopgDatabaseOperation("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
+
         async with DatabaseMixin() as database:
-            await database.submit_query("CREATE TABLE foo (id INT NOT NULL);", lock=1234)
+            await database.submit_query(op1)
 
         async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
-            await client.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
+            await client.execute(op2)
             self.assertTrue((await client.fetch_one())[0])
 
     async def test_submit_query_and_fetchone(self):
-        async with DatabaseMixin() as database:
-            await database.submit_query("CREATE TABLE foo (id INT NOT NULL);")
-            await database.submit_query("INSERT INTO foo (id) VALUES (3), (4), (5);")
+        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")
+        op2 = AiopgDatabaseOperation("INSERT INTO foo (id) VALUES (3), (4), (5);")
+        op3 = AiopgDatabaseOperation("SELECT * FROM foo;")
 
-            observed = await database.submit_query_and_fetchone("SELECT * FROM foo;")
+        async with DatabaseMixin() as database:
+            await database.submit_query(op1)
+            await database.submit_query(op2)
+
+            observed = await database.submit_query_and_fetchone(op3)
 
         self.assertEqual((3,), observed)
 
     async def test_submit_query_and_iter(self):
-        async with DatabaseMixin() as database:
-            await database.submit_query("CREATE TABLE foo (id INT NOT NULL);")
-            await database.submit_query("INSERT INTO foo (id) VALUES (3), (4), (5);")
+        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")
+        op2 = AiopgDatabaseOperation("INSERT INTO foo (id) VALUES (3), (4), (5);")
+        op3 = AiopgDatabaseOperation("SELECT * FROM foo;")
 
-            observed = [v async for v in database.submit_query_and_iter("SELECT * FROM foo;")]
+        async with DatabaseMixin() as database:
+            await database.submit_query(op1)
+            await database.submit_query(op2)
+            observed = [v async for v in database.submit_query_and_iter(op3)]
 
         self.assertEqual([(3,), (4,), (5,)], observed)
 
     async def test_submit_query_and_iter_streaming_mode_true(self):
-        async with DatabaseMixin() as database:
-            await database.submit_query("CREATE TABLE foo (id INT NOT NULL);")
-            await database.submit_query("INSERT INTO foo (id) VALUES (3), (4), (5);")
+        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")
+        op2 = AiopgDatabaseOperation("INSERT INTO foo (id) VALUES (3), (4), (5);")
+        op3 = AiopgDatabaseOperation("SELECT * FROM foo;")
 
-            observed = [v async for v in database.submit_query_and_iter("SELECT * FROM foo;", streaming_mode=True)]
+        async with DatabaseMixin() as database:
+            await database.submit_query(op1)
+            await database.submit_query(op2)
+
+            observed = [v async for v in database.submit_query_and_iter(op3, streaming_mode=True)]
 
         self.assertEqual([(3,), (4,), (5,)], observed)
 
     async def test_submit_query_and_iter_locked(self):
-        async with DatabaseMixin() as database:
-            await database.submit_query("CREATE TABLE foo (id INT NOT NULL);")
-            await database.submit_query("INSERT INTO foo (id) VALUES (3), (4), (5);")
+        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);", lock=1234)
+        op2 = AiopgDatabaseOperation("INSERT INTO foo (id) VALUES (3), (4), (5);")
+        op3 = AiopgDatabaseOperation("SELECT * FROM foo;")
 
-            observed = [v async for v in database.submit_query_and_iter("SELECT * FROM foo;", lock=1234)]
+        async with DatabaseMixin() as database:
+            await database.submit_query(op1)
+            await database.submit_query(op2)
+
+            observed = [v async for v in database.submit_query_and_iter(op3)]
 
         self.assertEqual([(3,), (4,), (5,)], observed)
 
