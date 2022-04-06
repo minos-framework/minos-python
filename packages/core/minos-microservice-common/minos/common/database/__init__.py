@@ -14,6 +14,11 @@ from .locks import (
     DatabaseLock,
     PostgreSqlLock,
 )
+from .operations import (
+    AiopgDatabaseOperation,
+    ComposedDatabaseOperation,
+    DatabaseOperation,
+)
 from .pools import (
     DatabaseClientPool,
     DatabaseLockPool,

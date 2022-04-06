@@ -17,8 +17,9 @@ from tests.utils import (
 class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(DatabaseClient, (ABC, BuildableMixin)))
+        expected = {"_notifications", "_is_valid", "_execute", "_fetch_all", "_reset"}
         # noinspection PyUnresolvedReferences
-        self.assertEqual({"notifications", "is_valid", "execute", "fetch_all"}, DatabaseClient.__abstractmethods__)
+        self.assertEqual(expected, DatabaseClient.__abstractmethods__)
 
     def test_get_builder(self):
         self.assertIsInstance(DatabaseClient.get_builder(), DatabaseClientBuilder)

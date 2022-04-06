@@ -15,6 +15,8 @@ from .config import (
 )
 from .database import (
     AiopgDatabaseClient,
+    AiopgDatabaseOperation,
+    ComposedDatabaseOperation,
     DatabaseClient,
     DatabaseClientBuilder,
     DatabaseClientException,
@@ -22,6 +24,7 @@ from .database import (
     DatabaseLock,
     DatabaseLockPool,
     DatabaseMixin,
+    DatabaseOperation,
     IntegrityException,
     PostgreSqlLock,
     PostgreSqlLockPool,

@@ -29,9 +29,12 @@ from .entities import (
     RootEntity,
 )
 from .events import (
+    AiopgEventRepositoryOperationFactory,
+    DatabaseEventRepository,
     Event,
     EventEntry,
     EventRepository,
+    EventRepositoryOperationFactory,
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
