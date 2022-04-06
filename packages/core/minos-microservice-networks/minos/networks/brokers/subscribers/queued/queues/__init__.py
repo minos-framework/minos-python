@@ -2,12 +2,12 @@ from .abc import (
     BrokerSubscriberQueue,
     BrokerSubscriberQueueBuilder,
 )
-from .memory import (
-    InMemoryBrokerSubscriberQueue,
-    InMemoryBrokerSubscriberQueueBuilder,
-)
-from .pg import (
+from .database import (
     PostgreSqlBrokerSubscriberQueue,
     PostgreSqlBrokerSubscriberQueueBuilder,
     PostgreSqlBrokerSubscriberQueueQueryFactory,
+)
+from .memory import (
+    InMemoryBrokerSubscriberQueue,
+    InMemoryBrokerSubscriberQueueBuilder,
 )

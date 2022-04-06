@@ -3,10 +3,6 @@ from __future__ import (
 )
 
 import logging
-from abc import (
-    ABC,
-    abstractmethod,
-)
 from asyncio import (
     CancelledError,
     Event,
@@ -28,9 +24,6 @@ from typing import (
 from cached_property import (
     cached_property,
 )
-from psycopg2.sql import (
-    SQL,
-)
 
 from minos.common import (
     Builder,
@@ -39,11 +32,14 @@ from minos.common import (
     DatabaseMixin,
 )
 
-from ...messages import (
+from ....messages import (
     BrokerMessage,
 )
-from .abc import (
+from ..abc import (
     BrokerQueue,
+)
+from .factories import (
+    PostgreSqlBrokerQueueQueryFactory,
 )
 
 logger = logging.getLogger(__name__)
@@ -121,7 +117,8 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
         await super()._destroy()
 
     async def _create_table(self) -> None:
-        await self.submit_query(self._query_factory.build_create_table(), lock=self._query_factory.build_table_name())
+        operation = self._query_factory.build_create_table()
+        await self.submit_query(operation)
 
     async def _start_run(self) -> None:
         if self._run_task is None:
@@ -142,11 +139,13 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
                 entry = self._queue.get_nowait()
             except QueueEmpty:
                 break
-            await self.submit_query(self._query_factory.build_update_not_processed(), (entry.id_,))
+            operation = self._query_factory.build_update_not_processed(entry.id_)
+            await self.submit_query(operation)
             self._queue.task_done()
 
     async def _enqueue(self, message: BrokerMessage) -> None:
-        await self.submit_query_and_fetchone(self._query_factory.build_insert(), (message.topic, message.avro_bytes))
+        operation = self._query_factory.build_insert(message.topic, message.avro_bytes)
+        await self.submit_query_and_fetchone(operation)
         await self._notify_enqueued(message)
 
     # noinspection PyUnusedLocal
@@ -164,10 +163,12 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
                     logger.warning(
                         f"There was a problem while trying to deserialize the entry with {entry.id_!r} id: {exc}"
                     )
-                    await self.submit_query(self._query_factory.build_update_not_processed(), (entry.id_,))
+                    operation = self._query_factory.build_update_not_processed(entry.id_)
+                    await self.submit_query(operation)
                     continue
 
-                await self.submit_query(self._query_factory.build_delete_processed(), (entry.id_,))
+                operation = self._query_factory.build_delete_processed(entry.id_)
+                await self.submit_query(operation)
                 return message
             finally:
                 self._queue.task_done()
@@ -191,7 +192,8 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
 
     async def _get_count(self) -> int:
         # noinspection PyTypeChecker
-        row = await self.submit_query_and_fetchone(self._query_factory.build_count_not_processed(), (self._retry,))
+        operation = self._query_factory.build_count_not_processed(self.retry)
+        row = await self.submit_query_and_fetchone(operation)
         count = row[0]
         return count
 
@@ -204,101 +206,17 @@ class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
 
             entries = [_Entry(*row) for row in rows]
 
-            # noinspection PyTypeChecker
-            await client.execute(self._query_factory.build_mark_processing(), (tuple(entry.id_ for entry in entries),))
+            ids = tuple(entry.id_ for entry in entries)
+            operation = self._query_factory.build_mark_processing(ids)
+            await client.execute(operation)
 
         for entry in entries:
             await self._queue.put(entry)
 
     async def _dequeue_rows(self, client: DatabaseClient) -> list[Any]:
         # noinspection PyTypeChecker
-        await client.execute(self._query_factory.build_select_not_processed(), (self._retry, self._records))
+        await client.execute(self._query_factory.build_select_not_processed(self._retry, self._records))
         return [row async for row in client.fetch_all()]
-
-
-# noinspection SqlResolve,SqlNoDataSourceInspection
-class PostgreSqlBrokerQueueQueryFactory(ABC):
-    """PostgreSql Broker Queue Query Factory class."""
-
-    @abstractmethod
-    def build_table_name(self) -> str:
-        """Get the table name.
-
-        :return: A ``str`` value.
-        """
-        raise NotImplementedError
-
-    def build_create_table(self) -> SQL:
-        """Build the "create table" query.
-
-        :return: A ``SQL`` instance.
-        """
-        return SQL(
-            f"CREATE TABLE IF NOT EXISTS {self.build_table_name()} ("
-            "id BIGSERIAL NOT NULL PRIMARY KEY, "
-            "topic VARCHAR(255) NOT NULL, "
-            "data BYTEA NOT NULL, "
-            "retry INTEGER NOT NULL DEFAULT 0, "
-            "processing BOOL NOT NULL DEFAULT FALSE, "
-            "created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), "
-            "updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())"
-        )
-
-    def build_update_not_processed(self) -> SQL:
-        """Build the "update not processed" query.
-
-        :return: A ``SQL`` instance.
-        """
-        return SQL(
-            f"UPDATE {self.build_table_name()} "
-            "SET processing = FALSE, retry = retry + 1, updated_at = NOW() WHERE id = %s"
-        )
-
-    def build_delete_processed(self) -> SQL:
-        """Build the "delete processed" query.
-
-        :return: A ``SQL`` instance.
-        """
-        return SQL(f"DELETE FROM {self.build_table_name()} WHERE id = %s")
-
-    def build_mark_processing(self) -> SQL:
-        """
-
-        :return: A ``SQL`` instance.
-        """
-        return SQL(f"UPDATE {self.build_table_name()} SET processing = TRUE WHERE id IN %s")
-
-    def build_count_not_processed(self) -> SQL:
-        """Build the "count not processed" query.
-
-        :return:
-        """
-        return SQL(
-            f"SELECT COUNT(*) FROM (SELECT id FROM {self.build_table_name()} "
-            "WHERE NOT processing AND retry < %s FOR UPDATE SKIP LOCKED) s"
-        )
-
-    def build_insert(self) -> SQL:
-        """Build the "insert" query.
-
-        :return: A ``SQL`` instance.
-        """
-        return SQL(f"INSERT INTO {self.build_table_name()} (topic, data) VALUES (%s, %s) RETURNING id")
-
-    def build_select_not_processed(self) -> SQL:
-        """Build the "select not processed" query.
-
-        :return: A ``SQL`` instance.
-        """
-        return SQL(
-            "SELECT id, data "
-            f"FROM {self.build_table_name()} "
-            "WHERE NOT processing AND retry < %s "
-            "ORDER BY created_at "
-            "LIMIT %s "
-            "FOR UPDATE "
-            "SKIP LOCKED"
-        )
 
 
 class _Entry:
