@@ -1,7 +1,7 @@
+from .factories import (
+    PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
+)
 from .impl import (
     PostgreSqlBrokerSubscriberDuplicateValidator,
     PostgreSqlBrokerSubscriberDuplicateValidatorBuilder,
-)
-from .factories import (
-    PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
 )
