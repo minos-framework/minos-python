@@ -27,7 +27,9 @@ from tests.utils import (
 )
 
 
-class _Aiopg_BrokerQueueDatabaseOperationFactory(AiopgBrokerQueueDatabaseOperationFactory):
+class _AiopgBrokerQueueDatabaseOperationFactory(AiopgBrokerQueueDatabaseOperationFactory):
+    """For testing purposes."""
+
     def build_table_name(self) -> str:
         """For testing purposes."""
         return "test_table"
@@ -36,7 +38,7 @@ class _Aiopg_BrokerQueueDatabaseOperationFactory(AiopgBrokerQueueDatabaseOperati
 class TestPostgreSqlBrokerQueue(NetworksTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.operation_factory = _Aiopg_BrokerQueueDatabaseOperationFactory()
+        self.operation_factory = _AiopgBrokerQueueDatabaseOperationFactory()
 
     def test_is_subclass(self):
         self.assertTrue(issubclass(DatabaseBrokerQueue, (BrokerQueue, DatabaseMixin)))

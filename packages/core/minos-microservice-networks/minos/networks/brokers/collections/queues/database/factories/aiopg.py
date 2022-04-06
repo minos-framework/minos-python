@@ -1,5 +1,6 @@
 from abc import (
     ABC,
+    abstractmethod,
 )
 from collections.abc import (
     Iterable,
@@ -22,6 +23,14 @@ from .abc import (
 # noinspection SqlResolve,SqlNoDataSourceInspection,SqlNoDataSourceInspection,SqlResolve
 class AiopgBrokerQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory, ABC):
     """PostgreSql Broker Queue Query Factory class."""
+
+    @abstractmethod
+    def build_table_name(self) -> str:
+        """Get the table name.
+
+        :return: A ``str`` value.
+        """
+        raise NotImplementedError
 
     def build_create_table(self) -> DatabaseOperation:
         """Build the "create table" query.

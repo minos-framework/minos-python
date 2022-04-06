@@ -16,14 +16,6 @@ class BrokerQueueDatabaseOperationFactory(ABC):
     """PostgreSql Broker Queue Query Factory class."""
 
     @abstractmethod
-    def build_table_name(self) -> str:
-        """Get the table name.
-
-        :return: A ``str`` value.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def build_create_table(self) -> DatabaseOperation:
         """Build the "create table" query.
 
