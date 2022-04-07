@@ -16,14 +16,14 @@ from minos.common import (
     UnableToConnectException,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     CommonTestCase,
 )
 
 
-class TestDatabaseClientPool(CommonTestCase, PostgresAsyncTestCase):
+class TestDatabaseClientPool(CommonTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.pool = DatabaseClientPool.from_config(self.config)
@@ -74,7 +74,7 @@ class TestDatabaseClientPool(CommonTestCase, PostgresAsyncTestCase):
                     self.assertIsInstance(client, AiopgDatabaseClient)
 
 
-class TestPostgreSqlPool(CommonTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlPool(CommonTestCase, DatabaseMinosTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(PostgreSqlPool, DatabaseClientPool))
 
@@ -85,7 +85,7 @@ class TestPostgreSqlPool(CommonTestCase, PostgresAsyncTestCase):
             self.assertIsInstance(pool, DatabaseClientPool)
 
 
-class TestDatabaseLockPool(CommonTestCase, PostgresAsyncTestCase):
+class TestDatabaseLockPool(CommonTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.pool = DatabaseLockPool.from_config(self.config)
@@ -104,7 +104,7 @@ class TestDatabaseLockPool(CommonTestCase, PostgresAsyncTestCase):
             self.assertEqual("foo", lock.key)
 
 
-class TestPostgreSqlLockPool(CommonTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlLockPool(CommonTestCase, DatabaseMinosTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(PostgreSqlLockPool, DatabaseLockPool))
 

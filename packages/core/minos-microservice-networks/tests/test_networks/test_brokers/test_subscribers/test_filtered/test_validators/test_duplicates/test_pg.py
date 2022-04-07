@@ -1,7 +1,7 @@
 import unittest
 
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.networks import (
     AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
@@ -15,7 +15,7 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlBrokerSubscriberDuplicateValidator(NetworksTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlBrokerSubscriberDuplicateValidator(NetworksTestCase, DatabaseMinosTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(DatabaseBrokerSubscriberDuplicateValidator, BrokerSubscriberValidator))
 

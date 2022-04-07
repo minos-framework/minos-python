@@ -13,7 +13,7 @@ from minos.common import (
     SetupMixin,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.networks import (
     BrokerClient,
@@ -29,7 +29,7 @@ from tests.utils import (
 )
 
 
-class TestBrokerClient(NetworksTestCase, PostgresAsyncTestCase):
+class TestBrokerClient(NetworksTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.topic = "fooReply"

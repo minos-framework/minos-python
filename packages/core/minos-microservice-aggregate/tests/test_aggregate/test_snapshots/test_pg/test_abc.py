@@ -8,7 +8,7 @@ from minos.common import (
     AiopgDatabaseOperation,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     AggregateTestCase,
@@ -16,7 +16,7 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestDatabaseSnapshotSetup(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseSnapshotSetup(AggregateTestCase, DatabaseMinosTestCase):
     async def test_setup_snapshot_table(self):
         async with DatabaseSnapshotSetup.from_config(self.config):
             async with AiopgDatabaseClient(**self.config.get_default_database()) as client:

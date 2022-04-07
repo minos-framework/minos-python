@@ -12,7 +12,7 @@ from minos.common import (
     PostgreSqlPool,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     CommonTestCase,
@@ -20,7 +20,7 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection,SqlResolve
-class TestDatabaseMixin(CommonTestCase, PostgresAsyncTestCase):
+class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
     def test_constructor(self):
         pool = DatabaseClientPool.from_config(self.config)
         database = DatabaseMixin(pool)
@@ -125,7 +125,7 @@ class TestDatabaseMixin(CommonTestCase, PostgresAsyncTestCase):
         self.assertEqual([(3,), (4,), (5,)], observed)
 
 
-class TestPostgreSqlMinosDatabase(CommonTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlMinosDatabase(CommonTestCase, DatabaseMinosTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(PostgreSqlMinosDatabase, DatabaseMixin))
 

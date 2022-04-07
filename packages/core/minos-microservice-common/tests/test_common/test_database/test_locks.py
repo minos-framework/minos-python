@@ -8,14 +8,14 @@ from minos.common import (
     PostgreSqlLock,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     CommonTestCase,
 )
 
 
-class TestDatabaseLock(CommonTestCase, PostgresAsyncTestCase):
+class TestDatabaseLock(CommonTestCase, DatabaseMinosTestCase):
     def test_base(self):
         self.assertTrue(issubclass(DatabaseLock, Lock))
 
@@ -40,7 +40,7 @@ class TestDatabaseLock(CommonTestCase, PostgresAsyncTestCase):
         self.assertEqual(hash("foo"), lock.hashed_key)
 
 
-class TestPostgreSqlLock(CommonTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlLock(CommonTestCase, DatabaseMinosTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(PostgreSqlLock, DatabaseLock))
 

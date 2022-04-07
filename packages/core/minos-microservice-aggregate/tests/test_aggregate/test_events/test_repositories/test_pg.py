@@ -10,7 +10,7 @@ from minos.common import (
     DatabaseClientPool,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.testcases import (
     EventRepositorySelectTestCase,
@@ -19,7 +19,7 @@ from tests.testcases import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestDatabaseEventRepositorySubmit(EventRepositorySubmitTestCase, PostgresAsyncTestCase):
+class TestDatabaseEventRepositorySubmit(EventRepositorySubmitTestCase, DatabaseMinosTestCase):
     __test__ = True
 
     @staticmethod
@@ -47,7 +47,7 @@ class TestDatabaseEventRepositorySubmit(EventRepositorySubmitTestCase, PostgresA
         self.assertTrue(response)
 
 
-class TestPostgreSqlRepositorySelect(EventRepositorySelectTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlRepositorySelect(EventRepositorySelectTestCase, DatabaseMinosTestCase):
     __test__ = True
 
     @staticmethod

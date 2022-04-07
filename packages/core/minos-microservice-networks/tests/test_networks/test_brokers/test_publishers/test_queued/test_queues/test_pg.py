@@ -1,7 +1,7 @@
 import unittest
 
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.networks import (
     AiopgBrokerPublisherQueueDatabaseOperationFactory,
@@ -14,7 +14,7 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlBrokerPublisherQueue(NetworksTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlBrokerPublisherQueue(NetworksTestCase, DatabaseMinosTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(DatabaseBrokerPublisherQueue, (DatabaseBrokerQueue, BrokerPublisherQueue)))
 

@@ -17,7 +17,7 @@ from minos.aggregate import (
     TransactionEntry,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     AggregateTestCase,
@@ -25,7 +25,7 @@ from tests.utils import (
 )
 
 
-class TestDatabaseSnapshotRepository(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseSnapshotRepository(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
 

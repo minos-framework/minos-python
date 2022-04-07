@@ -23,7 +23,7 @@ from minos.common import (
     Config,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -253,7 +253,7 @@ class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
         self.assertEqual(common_config["port"], subscriber.port)
 
 
-class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(PostgresAsyncTestCase):
+class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(DatabaseMinosTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def test_build(self):

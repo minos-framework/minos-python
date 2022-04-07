@@ -22,7 +22,7 @@ from minos.common import (
     current_datetime,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.networks import (
     BrokerCommandEnrouteDecorator,
@@ -36,7 +36,7 @@ from tests.utils import (
 )
 
 
-class TestSnapshotService(AggregateTestCase, PostgresAsyncTestCase):
+class TestSnapshotService(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
 

@@ -31,7 +31,7 @@ from minos.common import (
     current_datetime,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     AggregateTestCase,
@@ -39,7 +39,7 @@ from tests.utils import (
 )
 
 
-class TestDatabaseSnapshotWriter(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseSnapshotWriter(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.uuid_1 = uuid4()

@@ -76,8 +76,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase, ABC):
         raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
 
 
-# noinspection SqlNoDataSourceInspection
-class PostgresAsyncTestCase(MinosTestCase, ABC):
+class DatabaseMinosTestCase(MinosTestCase, ABC):
     def setUp(self):
         self.base_config = Config(self.get_config_file_path())
         self._uuid = uuid4()

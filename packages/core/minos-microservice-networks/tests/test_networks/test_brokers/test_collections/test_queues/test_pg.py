@@ -12,7 +12,7 @@ from minos.common import (
     DatabaseMixin,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.networks import (
     AiopgBrokerQueueDatabaseOperationFactory,
@@ -35,7 +35,7 @@ class _AiopgBrokerQueueDatabaseOperationFactory(AiopgBrokerQueueDatabaseOperatio
         return "test_table"
 
 
-class TestPostgreSqlBrokerQueue(NetworksTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.operation_factory = _AiopgBrokerQueueDatabaseOperationFactory()

@@ -1,7 +1,7 @@
 import unittest
 
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.networks import (
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
@@ -15,7 +15,7 @@ from tests.utils import (
 )
 
 
-class TestBrokerClientPool(NetworksTestCase, PostgresAsyncTestCase):
+class TestBrokerClientPool(NetworksTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.publisher = InMemoryBrokerPublisher.from_config(self.config)

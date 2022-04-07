@@ -11,7 +11,7 @@ from minos.common import (
     AiopgDatabaseClient,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.networks import (
     AiopgBrokerSubscriberQueueDatabaseOperationFactory,
@@ -28,7 +28,7 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlBrokerSubscriberQueue(NetworksTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlBrokerSubscriberQueue(NetworksTestCase, DatabaseMinosTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(DatabaseBrokerSubscriberQueue, (DatabaseBrokerQueue, BrokerSubscriberQueue)))
 
@@ -85,7 +85,7 @@ class TestPostgreSqlBrokerSubscriberQueueQueryFactory(unittest.TestCase):
         self.assertEqual("broker_subscriber_queue", self.factory.build_table_name())
 
 
-class TestPostgreSqlBrokerSubscriberQueueBuilder(NetworksTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlBrokerSubscriberQueueBuilder(NetworksTestCase, DatabaseMinosTestCase):
     def test_build(self):
         builder = DatabaseBrokerSubscriberQueueBuilder().with_config(self.config).with_topics({"one", "two"})
         subscriber = builder.build()

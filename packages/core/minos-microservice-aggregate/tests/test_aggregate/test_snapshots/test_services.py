@@ -17,7 +17,7 @@ from minos.common import (
     ModelType,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.networks import (
     BrokerCommandEnrouteDecorator,
@@ -33,7 +33,7 @@ from tests.utils import (
 Agg = ModelType.build("Agg", {"uuid": UUID})
 
 
-class TestSnapshotService(AggregateTestCase, PostgresAsyncTestCase):
+class TestSnapshotService(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
 

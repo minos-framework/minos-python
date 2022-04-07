@@ -25,7 +25,7 @@ from minos.common import (
     DatabaseClientPool,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     AggregateTestCase,
@@ -33,7 +33,7 @@ from tests.utils import (
 )
 
 
-class TestDatabaseSnapshotReader(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseSnapshotReader(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
 

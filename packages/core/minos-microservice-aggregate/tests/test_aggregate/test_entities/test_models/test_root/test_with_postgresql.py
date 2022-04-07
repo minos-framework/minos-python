@@ -9,7 +9,7 @@ from minos.aggregate import (
     ValueObjectSet,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     AggregateTestCase,
@@ -20,7 +20,7 @@ from tests.utils import (
 )
 
 
-class TestExternalEntityWithPostgreSql(AggregateTestCase, PostgresAsyncTestCase):
+class TestExternalEntityWithPostgreSql(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self):
         super().setUp()
 

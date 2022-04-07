@@ -27,14 +27,14 @@ from minos.common import (
     AiopgDatabaseClient,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     AggregateTestCase,
 )
 
 
-class TestAiopgSnapshotQueryDatabaseOperationBuilder(AggregateTestCase, PostgresAsyncTestCase):
+class TestAiopgSnapshotQueryDatabaseOperationBuilder(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.classname = "path.to.Product"

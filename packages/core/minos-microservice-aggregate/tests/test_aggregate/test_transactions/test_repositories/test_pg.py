@@ -16,7 +16,7 @@ from minos.common import (
     DatabaseClientPool,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     AggregateTestCase,
@@ -24,7 +24,7 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestDatabaseTransactionRepository(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseTransactionRepository(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
 
@@ -146,7 +146,7 @@ class TestDatabaseTransactionRepository(AggregateTestCase, PostgresAsyncTestCase
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
 
 
-class TestDatabaseTransactionRepositorySelect(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseTransactionRepositorySelect(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.uuid_1 = uuid4()

@@ -23,7 +23,7 @@ from minos.common import (
     UnableToConnectException,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     CommonTestCase,
@@ -31,7 +31,7 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestAiopgDatabaseClient(CommonTestCase, PostgresAsyncTestCase):
+class TestAiopgDatabaseClient(CommonTestCase, DatabaseMinosTestCase):
     def setUp(self):
         super().setUp()
         self.operation = AiopgDatabaseOperation("SELECT * FROM information_schema.tables")

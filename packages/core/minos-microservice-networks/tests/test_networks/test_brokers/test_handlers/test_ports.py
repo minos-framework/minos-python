@@ -8,7 +8,7 @@ from minos.common import (
     Port,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.networks import (
     BrokerHandler,
@@ -22,7 +22,7 @@ from tests.utils import (
 )
 
 
-class TestBrokerPort(NetworksTestCase, PostgresAsyncTestCase):
+class TestBrokerPort(NetworksTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.publisher = InMemoryBrokerPublisher.from_config(self.config)
