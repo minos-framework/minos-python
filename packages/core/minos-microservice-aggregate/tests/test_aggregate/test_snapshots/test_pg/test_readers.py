@@ -97,7 +97,7 @@ class TestDatabaseSnapshotReader(AggregateTestCase, DatabaseMinosTestCase):
 
     def test_from_config(self):
         reader = DatabaseSnapshotReader.from_config(self.config)
-        self.assertIsInstance(reader.pool, DatabaseClientPool)
+        self.assertIsInstance(reader.database_pool, DatabaseClientPool)
 
     async def test_find_by_uuid(self):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])

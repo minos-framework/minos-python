@@ -15,7 +15,7 @@ from typing import (
 
 
 class DatabaseOperation(ABC):
-    """TODO"""
+    """Database Operation base class."""
 
     def __init__(self, *args, lock: Optional[Hashable] = None, timeout: Optional[float] = None, **kwargs):
         self.lock = lock
@@ -23,7 +23,7 @@ class DatabaseOperation(ABC):
 
 
 class ComposedDatabaseOperation(DatabaseOperation):
-    """TODO"""
+    """Composed Database Operation class."""
 
     def __init__(self, operations: Iterable[DatabaseOperation], *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,4 +31,4 @@ class ComposedDatabaseOperation(DatabaseOperation):
 
 
 class DatabaseOperationFactory(ABC):
-    """TODO"""
+    """Database Operation Factory base class."""

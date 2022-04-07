@@ -13,7 +13,7 @@ from .abc import (
 
 
 class AiopgDatabaseOperation(DatabaseOperation):
-    """TODO"""
+    """Aiopg Database Operation class."""
 
     def __init__(self, query: Union[str, Composable], parameters: dict[str, Any] = None, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -3,7 +3,8 @@ from typing import (
     Generic,
     Optional,
     TypeVar,
-    get_args, get_origin,
+    get_args,
+    get_origin,
 )
 
 from ..exceptions import (
@@ -57,15 +58,15 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
             if operation_factory_cls is None:
                 operation_factory_cls = self._get_generic_operation_factory()
             if operation_factory_cls is not None:
-                operation_factory = self.pool_instance_cls.get_factory(operation_factory_cls)
+                operation_factory = self.database_client_cls.get_factory(operation_factory_cls)
 
         self._operation_factory = operation_factory
 
     @property
     def operation_factory(self) -> Optional[GenericDatabaseOperationFactory]:
-        """TODO
+        """Get the operation factory if any.
 
-        :return: TODO
+        :return: A ``OperationFactory`` if it has been set or ``None`` otherwise.
         """
         return self._operation_factory
 
@@ -89,10 +90,10 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
     async def submit_query_and_fetchone(self, operation: DatabaseOperation) -> tuple:
         """Submit a SQL query and gets the first response.
 
-        :param operation: TODO
+        :param operation: The operation to be executed.
         :return: This method does not return anything.
         """
-        async with self.pool.acquire() as client:
+        async with self.database_pool.acquire() as client:
             await client.execute(operation)
             return await client.fetch_one()
 
@@ -102,7 +103,7 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
     ) -> AsyncIterator[tuple]:
         """Submit a SQL query and return an asynchronous iterator.
 
-        :param operation: TODO
+        :param operation: The operation to be executed.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
         :return: This method does not return anything.
@@ -110,7 +111,7 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
         if streaming_mode is None:
             streaming_mode = False
 
-        async with self.pool.acquire() as client:
+        async with self.database_pool.acquire() as client:
             await client.execute(operation)
             async_iterable = client.fetch_all()
             if streaming_mode:
@@ -127,24 +128,24 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
     async def submit_query(self, operation: DatabaseOperation) -> None:
         """Submit a SQL query.
 
-        :param operation: TODO
+        :param operation: The operation to be executed.
         :return: This method does not return anything.
         """
-        async with self.pool.acquire() as client:
+        async with self.database_pool.acquire() as client:
             return await client.execute(operation)
 
     @property
-    def pool_instance_cls(self) -> type[DatabaseClient]:
-        """TODO
+    def database_client_cls(self) -> type[DatabaseClient]:
+        """Get the client's class.
 
-        :return: TODO
+        :return: A ``type`` instance that is subclass of ``DatabaseClient``.
         """
-        return self.pool.instance_cls
+        return self.database_pool.client_cls
 
     @property
-    def pool(self) -> DatabaseClientPool:
-        """Get the connections pool.
+    def database_pool(self) -> DatabaseClientPool:
+        """Get the database pool.
 
-        :return: A ``Pool`` object.
+        :return: A ``DatabaseClientPool`` object.
         """
         return self._pool

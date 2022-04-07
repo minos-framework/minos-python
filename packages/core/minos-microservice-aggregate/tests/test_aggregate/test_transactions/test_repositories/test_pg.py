@@ -47,11 +47,11 @@ class TestDatabaseTransactionRepository(AggregateTestCase, DatabaseMinosTestCase
         pool = DatabaseClientPool.from_config(self.config)
         repository = DatabaseTransactionRepository(pool)
         self.assertIsInstance(repository, DatabaseTransactionRepository)
-        self.assertEqual(pool, repository.pool)
+        self.assertEqual(pool, repository.database_pool)
 
     def test_from_config(self):
         repository = DatabaseTransactionRepository.from_config(self.config)
-        self.assertIsInstance(repository.pool, DatabaseClientPool)
+        self.assertIsInstance(repository.database_pool, DatabaseClientPool)
 
     async def test_setup(self):
         async with AiopgDatabaseClient(**self.config.get_default_database()) as client:

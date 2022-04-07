@@ -21,14 +21,14 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
     def test_constructor(self):
         pool = DatabaseClientPool.from_config(self.config)
         database = DatabaseMixin(pool)
-        self.assertEqual(pool, database.pool)
+        self.assertEqual(pool, database.database_pool)
 
     async def test_constructor_with_pool_factory(self):
         pool_factory = PoolFactory(self.config, {"database": DatabaseClientPool})
         # noinspection PyTypeChecker
         database = DatabaseMixin(pool_factory=pool_factory)
         # noinspection PyUnresolvedReferences
-        self.assertEqual(pool_factory.get_pool("database"), database.pool)
+        self.assertEqual(pool_factory.get_pool("database"), database.database_pool)
 
     async def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):
@@ -37,7 +37,7 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
 
     async def test_pool(self):
         async with DatabaseMixin() as database:
-            self.assertIsInstance(database.pool, DatabaseClientPool)
+            self.assertIsInstance(database.database_pool, DatabaseClientPool)
 
     async def test_submit_query(self):
         op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")

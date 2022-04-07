@@ -14,30 +14,43 @@ from ..operations import (
 
 
 class ManageDatabaseOperationFactory(DatabaseOperationFactory, ABC):
-    """TODO"""
+    """Manage Database Operation Factory base class."""
 
     @abstractmethod
-    def build_create(
-        self,
-        database: str,
-    ) -> DatabaseOperation:
-        """TODO"""
+    def build_create(self, database: str) -> DatabaseOperation:
+        """Build the database operation to create a database.
+
+        :param database: The new database's name.
+        :return: A ``DatabaseOperation``.
+        """
 
     @abstractmethod
     def build_delete(self, database: str) -> DatabaseOperation:
-        """TODO"""
+        """Build the database operation to create a database.
+
+        :param database: The name of the database to be deleted.
+        :return: A ``DatabaseOperation``.
+        """
 
 
 # noinspection SqlNoDataSourceInspection
 class AiopgManageDatabaseOperationFactory(ManageDatabaseOperationFactory):
-    """TODO"""
+    """Aiopg Manage Database Operation Factory class."""
 
     def build_create(self, database: str) -> DatabaseOperation:
-        """TODO"""
+        """Build the database operation to create a database.
+
+        :param database: The new database's name.
+        :return: A ``DatabaseOperation``.
+        """
         return AiopgDatabaseOperation(f"CREATE DATABASE {database};")
 
     def build_delete(self, database: str) -> DatabaseOperation:
-        """TODO"""
+        """Build the database operation to create a database.
+
+        :param database: The name of the database to be deleted.
+        :return: A ``DatabaseOperation``.
+        """
         return AiopgDatabaseOperation(f"DROP DATABASE IF EXISTS {database};")
 
 

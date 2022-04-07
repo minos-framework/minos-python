@@ -102,7 +102,7 @@ class TestDatabaseSnapshotWriter(AggregateTestCase, DatabaseMinosTestCase):
         self.assertTrue(issubclass(DatabaseSnapshotWriter, DatabaseSnapshotSetup))
 
     def test_from_config(self):
-        self.assertIsInstance(self.writer.pool, DatabaseClientPool)
+        self.assertIsInstance(self.writer.database_pool, DatabaseClientPool)
 
     def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):

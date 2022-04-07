@@ -45,7 +45,7 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
 
     def test_constructor(self):
         queue = DatabaseBrokerQueue(operation_factory=self.operation_factory)
-        self.assertEqual(self.pool_factory.get_pool("database"), queue.pool)
+        self.assertEqual(self.pool_factory.get_pool("database"), queue.database_pool)
         self.assertEqual(self.operation_factory, queue.operation_factory)
         self.assertEqual(2, queue.retry)
         self.assertEqual(1000, queue.records)

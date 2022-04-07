@@ -88,10 +88,10 @@ class DatabaseClientPool(Pool[DatabaseClient]):
         await instance.reset()
 
     @property
-    def instance_cls(self) -> type[DatabaseClient]:
-        """TODO
+    def client_cls(self) -> type[DatabaseClient]:
+        """Get the instance's class.
 
-        :return: TODO
+        :return: A ``type`` instance that is subclass of ``DatabaseClient``.
         """
         return self.client_builder.instance_cls
 

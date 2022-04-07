@@ -31,11 +31,11 @@ class TestDatabaseEventRepositorySubmit(EventRepositorySubmitTestCase, DatabaseM
         pool = DatabaseClientPool.from_config(self.config)
         repository = DatabaseEventRepository(pool)
         self.assertIsInstance(repository, DatabaseEventRepository)
-        self.assertIsInstance(repository.pool, DatabaseClientPool)
+        self.assertIsInstance(repository.database_pool, DatabaseClientPool)
 
     def test_from_config(self):
         repository = DatabaseEventRepository.from_config(self.config)
-        self.assertIsInstance(repository.pool, DatabaseClientPool)
+        self.assertIsInstance(repository.database_pool, DatabaseClientPool)
 
     async def test_setup(self):
         async with AiopgDatabaseClient(**self.config.get_default_database()) as client:

@@ -36,10 +36,13 @@ from .abc import (
 
 # noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic
 class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
-    """TODO"""
+    """Aiopg Event Database Operation Factory class."""
 
     def build_create_table(self) -> DatabaseOperation:
-        """TODO"""
+        """Build the database operation to create the event table.
+
+        :return: A ``DatabaseOperation`` instance.s
+        """
         return ComposedDatabaseOperation(
             [
                 AiopgDatabaseOperation(
@@ -97,7 +100,20 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         lock: Optional[str],
         **kwargs,
     ) -> DatabaseOperation:
-        """TODO"""
+        """Build the database operation to submit a row into the event table.
+
+        :param transaction_uuids: The sequence of nested transaction in on top of the current event's transaction.
+        :param uuid: The identifier of the entity.
+        :param action: The action of the event.
+        :param name: The name of the entity.
+        :param version: The version of the entity
+        :param data: The data of the event.
+        :param created_at: The creation datetime.
+        :param transaction_uuid: The identifier of the transaction.
+        :param lock: The lock identifier.
+        :param kwargs: Additional named arguments.
+        :return: A ``DatabaseOperation`` instance.
+        """
         insert_values = SQL(
             """
             INSERT INTO aggregate_event (id, action, uuid, name, version, data, created_at, transaction_uuid)
@@ -178,7 +194,26 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         transaction_uuid_in: Optional[tuple[UUID, ...]] = None,
         **kwargs,
     ) -> DatabaseOperation:
-        """TODO"""
+        """Build the database operation to select rows.
+
+        :param uuid: The identifier must be equal to the given value.
+        :param name: The classname must be equal to the given value.
+        :param version: The version must be equal to the given value.
+        :param version_lt: The version must be lower than the given value.
+        :param version_gt: The version must be greater than the given value.
+        :param version_le: The version must be lower or equal to the given value.
+        :param version_ge: The version must be greater or equal to the given value.
+        :param id: The entry identifier must be equal to the given value.
+        :param id_lt: The entry identifier must be lower than the given value.
+        :param id_gt: The entry identifier must be greater than the given value.
+        :param id_le: The entry identifier must be lower or equal to the given value.
+        :param id_ge: The entry identifier must be greater or equal to the given value.
+        :param transaction_uuid: The transaction identifier must be equal to the given value.
+        :param transaction_uuid_ne: The transaction identifier must be distinct of the given value.
+        :param transaction_uuid_in: The destination transaction identifier must be equal to one of the given values.
+
+        :return: A ``DatabaseOperation`` instance.
+        """
 
         _select_all = """
             SELECT uuid, name, version, data, id, action, created_at, transaction_uuid
@@ -243,7 +278,10 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         )
 
     def build_select_max_id(self) -> DatabaseOperation:
-        """TODO"""
+        """Build the database operation to get the maximum identifier.
+
+        :return: A ``DatabaseOperation`` instance.
+        """
         return AiopgDatabaseOperation("SELECT MAX(id) FROM aggregate_event;".strip())
 
 

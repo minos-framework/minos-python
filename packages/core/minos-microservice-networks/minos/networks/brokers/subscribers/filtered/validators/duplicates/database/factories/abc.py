@@ -14,7 +14,7 @@ from minos.common import (
 
 # noinspection SqlNoDataSourceInspection,SqlResolve
 class BrokerSubscriberDuplicateValidatorDatabaseOperationFactory(DatabaseOperationFactory, ABC):
-    """TODO"""
+    """Broker Subscriber Duplicate Validator Database Operation Factory class."""
 
     @abstractmethod
     def build_create_table(self) -> DatabaseOperation:

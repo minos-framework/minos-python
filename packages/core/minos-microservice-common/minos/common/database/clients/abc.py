@@ -83,7 +83,7 @@ class DatabaseClient(ABC, BuildableMixin):
     async def execute(self, operation: DatabaseOperation) -> None:
         """Execute an operation.
 
-        :param operation: TODO
+        :param operation: The operation to be executed.
         :return: This method does not return anything.
         """
         if operation.lock is not None:
@@ -145,11 +145,11 @@ class DatabaseClient(ABC, BuildableMixin):
 
     @classmethod
     def register_factory(cls, base: type[DatabaseOperationFactory], impl: type[DatabaseOperationFactory]) -> None:
-        """TODO
+        """Register an operation factory implementation for an operation factory interface.
 
-        :param base: TODO
-        :param impl: TODO
-        :return:
+        :param base: The operation factory interface.
+        :param impl: The operation factory implementation.
+        :return: This method does not return anything.
         """
         if not issubclass(base, DatabaseOperationFactory):
             raise ValueError(f"{base!r} must be a subclass of {DatabaseOperationFactory!r}")
@@ -161,10 +161,10 @@ class DatabaseClient(ABC, BuildableMixin):
 
     @classmethod
     def get_factory(cls, base: type[DatabaseOperationFactory]) -> DatabaseOperationFactory:
-        """TODO
+        """Get an operation factory implementation for an operation factory interface.
 
-        :param base: TODO
-        :return: TODO
+        :param base: The operation factory interface.
+        :return: The operation factory implementation.
         """
         return cls._factories[base]()
 

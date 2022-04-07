@@ -198,7 +198,7 @@ class DatabaseBrokerQueue(
         return count
 
     async def _dequeue_batch(self) -> None:
-        async with self.pool.acquire() as client:
+        async with self.database_pool.acquire() as client:
             rows = await self._dequeue_rows(client)
 
             if not len(rows):
