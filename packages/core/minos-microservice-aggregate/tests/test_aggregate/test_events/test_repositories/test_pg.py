@@ -47,7 +47,7 @@ class TestDatabaseEventRepositorySubmit(EventRepositorySubmitTestCase, DatabaseM
         self.assertTrue(response)
 
 
-class TestPostgreSqlRepositorySelect(EventRepositorySelectTestCase, DatabaseMinosTestCase):
+class TestDatabaseEventRepositorySelect(EventRepositorySelectTestCase, DatabaseMinosTestCase):
     __test__ = True
 
     @staticmethod

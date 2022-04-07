@@ -16,7 +16,7 @@ from ......collections import (
 
 # noinspection SqlNoDataSourceInspection,SqlResolve,PyTypeChecker,PyArgumentList
 class BrokerSubscriberQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory, ABC):
-    """PostgreSql Broker Subscriber Queue Query Factory class."""
+    """Broker Subscriber Queue Database Operation Factory class."""
 
     def build_count_not_processed(
         self,

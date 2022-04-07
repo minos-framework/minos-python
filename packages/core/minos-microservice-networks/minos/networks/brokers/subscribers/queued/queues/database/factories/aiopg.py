@@ -24,7 +24,7 @@ from .abc import (
 class AiopgBrokerSubscriberQueueDatabaseOperationFactory(
     BrokerSubscriberQueueDatabaseOperationFactory, AiopgBrokerQueueDatabaseOperationFactory
 ):
-    """PostgreSql Broker Subscriber Queue Query Factory class."""
+    """Aiopg Broker Subscriber Queue Database Operation Factory class."""
 
     def build_table_name(self) -> str:
         """Get the table name.

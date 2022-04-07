@@ -14,7 +14,7 @@ from minos.common import (
 
 # noinspection SqlResolve,SqlNoDataSourceInspection,SqlNoDataSourceInspection,SqlResolve
 class BrokerQueueDatabaseOperationFactory(DatabaseOperationFactory, ABC):
-    """PostgreSql Broker Queue Query Factory class."""
+    """Broker Queue Database Operation Factory class."""
 
     @abstractmethod
     def build_create_table(self) -> DatabaseOperation:

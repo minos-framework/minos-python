@@ -41,9 +41,6 @@ from minos.networks import (
     BrokerMessage,
     BrokerSubscriber,
     BrokerSubscriberBuilder,
-    DatabaseBrokerSubscriberQueueBuilder,
-    InMemoryBrokerSubscriberQueueBuilder,
-    QueuedBrokerSubscriberBuilder,
 )
 
 from .common import (
@@ -196,27 +193,3 @@ class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder[KafkaBrokerSubscriber
 
 
 KafkaBrokerSubscriber.set_builder(KafkaBrokerSubscriberBuilder)
-
-
-class PostgreSqlQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):
-    """PostgreSql Queued Kafka Broker Subscriber Builder class."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args,
-            impl_builder=KafkaBrokerSubscriberBuilder.new(),
-            queue_builder=DatabaseBrokerSubscriberQueueBuilder.new(),
-            **kwargs,
-        )
-
-
-class InMemoryQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):
-    """In Memory Queued Kafka Broker Subscriber Builder class."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args,
-            impl_builder=KafkaBrokerSubscriberBuilder.new(),
-            queue_builder=InMemoryBrokerSubscriberQueueBuilder.new(),
-            **kwargs,
-        )

@@ -25,7 +25,7 @@ from .factories import (
 
 
 class DatabaseBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateValidator, DatabaseMixin):
-    """PostgreSql Broker Subscriber Duplicate Detector class."""
+    """Database Broker Subscriber Duplicate Detector class."""
 
     def __init__(
         self,
@@ -66,7 +66,7 @@ class DatabaseBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateValida
 
 
 class DatabaseBrokerSubscriberDuplicateValidatorBuilder(Builder[DatabaseBrokerSubscriberDuplicateValidator]):
-    """PostgreSql Broker Subscriber Duplicate Detector Builder class."""
+    """Database Broker Subscriber Duplicate Detector Builder class."""
 
     def with_config(self, config: Config):
         """Set config.

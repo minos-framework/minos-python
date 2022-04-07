@@ -54,7 +54,7 @@ from .....queries import (
 
 # noinspection SqlResolve,SqlNoDataSourceInspection
 class AiopgSnapshotQueryDatabaseOperationBuilder:
-    """PostgreSQL Snapshot Query Builder class.
+    """Aiopg Snapshot Query Database Operation Builder class.
 
     This class build postgres-compatible database queries over fields based on a condition, ordering, etc.
     """

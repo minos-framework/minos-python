@@ -14,7 +14,7 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlBrokerPublisherQueue(NetworksTestCase, DatabaseMinosTestCase):
+class TestDatabaseBrokerPublisherQueue(NetworksTestCase, DatabaseMinosTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(DatabaseBrokerPublisherQueue, (DatabaseBrokerQueue, BrokerPublisherQueue)))
 
@@ -24,7 +24,7 @@ class TestPostgreSqlBrokerPublisherQueue(NetworksTestCase, DatabaseMinosTestCase
         self.assertIsInstance(queue.operation_factory, AiopgBrokerPublisherQueueDatabaseOperationFactory)
 
 
-class TestPostgreSqlBrokerPublisherQueueQueryFactory(unittest.TestCase):
+class TestAiopgBrokerPublisherQueueDatabaseOperationFactory(unittest.TestCase):
     def setUp(self) -> None:
         self.factory = AiopgBrokerPublisherQueueDatabaseOperationFactory()
 

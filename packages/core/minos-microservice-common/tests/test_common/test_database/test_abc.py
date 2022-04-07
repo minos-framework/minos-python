@@ -1,5 +1,4 @@
 import unittest
-import warnings
 
 from minos.common import (
     AiopgDatabaseClient,
@@ -8,8 +7,6 @@ from minos.common import (
     DatabaseMixin,
     NotProvidedException,
     PoolFactory,
-    PostgreSqlMinosDatabase,
-    PostgreSqlPool,
 )
 from minos.common.testing import (
     DatabaseMinosTestCase,
@@ -37,15 +34,6 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
         with self.assertRaises(NotProvidedException):
             # noinspection PyArgumentEqualDefault
             DatabaseMixin(database_pool=None, pool_factory=None)
-
-    async def test_constructor_with_postgresql_pool(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            pool = PostgreSqlPool.from_config(self.config)
-            # noinspection PyTypeChecker,PyArgumentEqualDefault
-            database = DatabaseMixin(database_pool=None, pool_factory=None, postgresql_pool=pool)
-
-        self.assertEqual(pool, database.pool)
 
     async def test_pool(self):
         async with DatabaseMixin() as database:
@@ -123,19 +111,6 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
             observed = [v async for v in database.submit_query_and_iter(op3)]
 
         self.assertEqual([(3,), (4,), (5,)], observed)
-
-
-class TestPostgreSqlMinosDatabase(CommonTestCase, DatabaseMinosTestCase):
-    def test_is_subclass(self):
-        self.assertTrue(issubclass(PostgreSqlMinosDatabase, DatabaseMixin))
-
-    def test_warnings(self):
-        pool = DatabaseClientPool.from_config(self.config)
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            database = PostgreSqlMinosDatabase(pool)
-            self.assertIsInstance(database, DatabaseMixin)
 
 
 if __name__ == "__main__":

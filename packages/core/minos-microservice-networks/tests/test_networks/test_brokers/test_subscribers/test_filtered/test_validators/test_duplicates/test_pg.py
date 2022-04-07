@@ -15,7 +15,7 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlBrokerSubscriberDuplicateValidator(NetworksTestCase, DatabaseMinosTestCase):
+class TestDatabaseBrokerSubscriberDuplicateValidator(NetworksTestCase, DatabaseMinosTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(DatabaseBrokerSubscriberDuplicateValidator, BrokerSubscriberValidator))
 

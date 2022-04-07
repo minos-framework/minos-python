@@ -22,7 +22,7 @@ from .abc import (
 class AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory(
     BrokerSubscriberDuplicateValidatorDatabaseOperationFactory
 ):
-    """PostgreSql Broker Subscriber Duplicate Detector Query Factory class."""
+    """Aiopg Broker Subscriber Duplicate Detector Database Operation class."""
 
     @staticmethod
     def build_table_name() -> str:

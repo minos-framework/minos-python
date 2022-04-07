@@ -2,7 +2,6 @@ from __future__ import (
     annotations,
 )
 
-import warnings
 from collections.abc import (
     Hashable,
 )
@@ -55,11 +54,3 @@ class DatabaseLock(Lock):
         """
         operation = self.operation_factory.build_release(self.hashed_key)
         await self.client.execute(operation)
-
-
-class PostgreSqlLock(DatabaseLock):
-    """PostgreSql Lock class."""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(f"{PostgreSqlLock!r} has been deprecated. Use {DatabaseLock} instead.", DeprecationWarning)
-        super().__init__(*args, **kwargs)

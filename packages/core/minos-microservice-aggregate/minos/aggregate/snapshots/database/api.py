@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 
 class DatabaseSnapshotRepository(SnapshotRepository):
-    """PostgreSQL Snapshot class.
+    """Database Snapshot Repository class.
 
     The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
     class.

@@ -28,7 +28,7 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlBrokerSubscriberQueue(NetworksTestCase, DatabaseMinosTestCase):
+class TestDatabaseBrokerSubscriberQueue(NetworksTestCase, DatabaseMinosTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(DatabaseBrokerSubscriberQueue, (DatabaseBrokerQueue, BrokerSubscriberQueue)))
 
@@ -77,7 +77,7 @@ class TestPostgreSqlBrokerSubscriberQueue(NetworksTestCase, DatabaseMinosTestCas
         self.assertEqual(messages, observed)
 
 
-class TestPostgreSqlBrokerSubscriberQueueQueryFactory(unittest.TestCase):
+class TestAiopgBrokerSubscriberQueueDatabaseOperationFactory(unittest.TestCase):
     def setUp(self) -> None:
         self.factory = AiopgBrokerSubscriberQueueDatabaseOperationFactory()
 
@@ -85,7 +85,7 @@ class TestPostgreSqlBrokerSubscriberQueueQueryFactory(unittest.TestCase):
         self.assertEqual("broker_subscriber_queue", self.factory.build_table_name())
 
 
-class TestPostgreSqlBrokerSubscriberQueueBuilder(NetworksTestCase, DatabaseMinosTestCase):
+class TestDatabaseBrokerSubscriberQueueBuilder(NetworksTestCase, DatabaseMinosTestCase):
     def test_build(self):
         builder = DatabaseBrokerSubscriberQueueBuilder().with_config(self.config).with_topics({"one", "two"})
         subscriber = builder.build()

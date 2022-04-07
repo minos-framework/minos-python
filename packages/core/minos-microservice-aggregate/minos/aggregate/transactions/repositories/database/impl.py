@@ -27,7 +27,7 @@ from .factories import (
 
 
 class DatabaseTransactionRepository(DatabaseMixin, TransactionRepository):
-    """PostgreSql Transaction Repository class."""
+    """Database Transaction Repository class."""
 
     def __init__(
         self,

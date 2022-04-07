@@ -30,7 +30,7 @@ from .factories import (
 
 
 class DatabaseEventRepository(DatabaseMixin, EventRepository):
-    """PostgreSQL-based implementation of the event repository class in ``Minos``."""
+    """Database-based implementation of the event repository class."""
 
     def __init__(
         self,
@@ -49,9 +49,7 @@ class DatabaseEventRepository(DatabaseMixin, EventRepository):
         return super()._from_config(config, database_key=None, **kwargs)
 
     async def _setup(self):
-        """Setup miscellaneous repository thing.
-
-        In the PostgreSQL case, configures the needed table to be used to store the data.
+        """Setup miscellaneous repository things.
 
         :return: This method does not return anything.
         """

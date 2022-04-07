@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseBrokerSubscriberQueue(DatabaseBrokerQueue, BrokerSubscriberQueue):
-    """PostgreSql Broker Subscriber Queue class."""
+    """Database Broker Subscriber Queue class."""
 
     def __init__(self, topics: set[str], *args, **kwargs):
         super().__init__(topics, *args, operation_factory_cls=BrokerSubscriberQueueDatabaseOperationFactory, **kwargs)
@@ -48,7 +48,7 @@ class DatabaseBrokerSubscriberQueue(DatabaseBrokerQueue, BrokerSubscriberQueue):
 class DatabaseBrokerSubscriberQueueBuilder(
     BrokerSubscriberQueueBuilder[DatabaseBrokerSubscriberQueue], DatabaseBrokerQueueBuilder
 ):
-    """PostgreSql Broker Subscriber Queue Builder class."""
+    """Database Broker Subscriber Queue Builder class."""
 
 
 DatabaseBrokerSubscriberQueue.set_builder(DatabaseBrokerSubscriberQueueBuilder)

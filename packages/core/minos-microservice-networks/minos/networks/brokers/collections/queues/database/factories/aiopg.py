@@ -22,7 +22,7 @@ from .abc import (
 
 # noinspection SqlResolve,SqlNoDataSourceInspection,SqlNoDataSourceInspection,SqlResolve
 class AiopgBrokerQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory, ABC):
-    """PostgreSql Broker Queue Query Factory class."""
+    """Aiopg Broker Queue Database Operation Factory class."""
 
     @abstractmethod
     def build_table_name(self) -> str:

@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
-    """PostgreSql Broker Queue class."""
+    """Database Broker Queue class."""
 
     _queue: PriorityQueue[_Entry]
 
@@ -98,7 +98,7 @@ class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
     def operation_factory(self) -> BrokerQueueDatabaseOperationFactory:
         """Get the query factory.
 
-        :return: A ``PostgreSqlBrokerQueueQueryFactory`` instance.
+        :return: A ``BrokerQueueDatabaseOperationFactory`` instance.
         """
         return self._operation_factory
 
@@ -245,7 +245,7 @@ class _Entry:
 
 
 class DatabaseBrokerQueueBuilder(Builder):
-    """PostgreSql Broker Queue Builder class."""
+    """Database Broker Queue Builder class."""
 
     def with_config(self, config: Config):
         """Set config.

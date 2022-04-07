@@ -1,5 +1,4 @@
 import unittest
-import warnings
 from collections import (
     namedtuple,
 )
@@ -22,22 +21,14 @@ from kafka.errors import (
 from minos.common import (
     Config,
 )
-from minos.common.testing import (
-    DatabaseMinosTestCase,
-)
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerSubscriber,
-    DatabaseBrokerSubscriberQueue,
-    InMemoryBrokerSubscriberQueue,
-    QueuedBrokerSubscriber,
 )
 from minos.plugins.kafka import (
-    InMemoryQueuedKafkaBrokerSubscriberBuilder,
     KafkaBrokerSubscriber,
     KafkaBrokerSubscriberBuilder,
-    PostgreSqlQueuedKafkaBrokerSubscriberBuilder,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -251,39 +242,6 @@ class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
         self.assertEqual({"one", "two"}, subscriber.topics)
         self.assertEqual(common_config["host"], subscriber.host)
         self.assertEqual(common_config["port"], subscriber.port)
-
-
-class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(DatabaseMinosTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
-    def test_build(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            builder = (
-                PostgreSqlQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
-            )
-
-        subscriber = builder.build()
-
-        self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
-        self.assertIsInstance(subscriber.impl, KafkaBrokerSubscriber)
-        self.assertIsInstance(subscriber.queue, DatabaseBrokerSubscriberQueue)
-
-
-class TestInMemoryQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
-    def setUp(self) -> None:
-        self.config = Config(CONFIG_FILE_PATH)
-
-    def test_build(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            builder = InMemoryQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
-
-        subscriber = builder.build()
-
-        self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
-        self.assertIsInstance(subscriber.impl, KafkaBrokerSubscriber)
-        self.assertIsInstance(subscriber.queue, InMemoryBrokerSubscriberQueue)
 
 
 if __name__ == "__main__":

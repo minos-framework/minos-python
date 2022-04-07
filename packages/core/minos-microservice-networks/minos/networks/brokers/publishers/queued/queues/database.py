@@ -24,20 +24,20 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseBrokerPublisherQueue(DatabaseBrokerQueue, BrokerPublisherQueue):
-    """PostgreSql Broker Publisher Queue class."""
+    """Database Broker Publisher Queue class."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, operation_factory_cls=BrokerPublisherQueueDatabaseOperationFactory, **kwargs)
 
 
 class BrokerPublisherQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory, ABC):
-    """TODO"""
+    """Broker Publisher Queue Database Operation Factory class."""
 
 
 class AiopgBrokerPublisherQueueDatabaseOperationFactory(
     BrokerPublisherQueueDatabaseOperationFactory, AiopgBrokerQueueDatabaseOperationFactory
 ):
-    """PostgreSql Broker Publisher Queue Query Factory class."""
+    """Aiopg Broker Publisher Queue Query Factory class."""
 
     def build_table_name(self) -> str:
         """Get the table name.

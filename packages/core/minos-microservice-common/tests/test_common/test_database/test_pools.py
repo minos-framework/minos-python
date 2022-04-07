@@ -1,5 +1,4 @@
 import unittest
-import warnings
 from unittest.mock import (
     patch,
 )
@@ -11,8 +10,6 @@ from minos.common import (
     DatabaseClientPool,
     DatabaseLock,
     DatabaseLockPool,
-    PostgreSqlLockPool,
-    PostgreSqlPool,
     UnableToConnectException,
 )
 from minos.common.testing import (
@@ -74,17 +71,6 @@ class TestDatabaseClientPool(CommonTestCase, DatabaseMinosTestCase):
                     self.assertIsInstance(client, AiopgDatabaseClient)
 
 
-class TestPostgreSqlPool(CommonTestCase, DatabaseMinosTestCase):
-    def test_is_subclass(self):
-        self.assertTrue(issubclass(PostgreSqlPool, DatabaseClientPool))
-
-    def test_warnings(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            pool = PostgreSqlPool.from_config(self.config)
-            self.assertIsInstance(pool, DatabaseClientPool)
-
-
 class TestDatabaseLockPool(CommonTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -102,17 +88,6 @@ class TestDatabaseLockPool(CommonTestCase, DatabaseMinosTestCase):
         async with self.pool.acquire("foo") as lock:
             self.assertIsInstance(lock, DatabaseLock)
             self.assertEqual("foo", lock.key)
-
-
-class TestPostgreSqlLockPool(CommonTestCase, DatabaseMinosTestCase):
-    def test_is_subclass(self):
-        self.assertTrue(issubclass(PostgreSqlLockPool, DatabaseLockPool))
-
-    def test_warnings(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            pool = PostgreSqlLockPool.from_config(self.config)
-            self.assertIsInstance(pool, DatabaseLockPool)
 
 
 if __name__ == "__main__":

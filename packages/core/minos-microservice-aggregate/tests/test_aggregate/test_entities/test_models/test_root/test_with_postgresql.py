@@ -20,7 +20,7 @@ from tests.utils import (
 )
 
 
-class TestExternalEntityWithPostgreSql(AggregateTestCase, DatabaseMinosTestCase):
+class TestExternalEntityWithDatabase(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self):
         super().setUp()
 

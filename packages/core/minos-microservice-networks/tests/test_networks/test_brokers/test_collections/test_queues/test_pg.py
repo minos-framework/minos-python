@@ -35,7 +35,7 @@ class _AiopgBrokerQueueDatabaseOperationFactory(AiopgBrokerQueueDatabaseOperatio
         return "test_table"
 
 
-class TestPostgreSqlBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
+class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.operation_factory = _AiopgBrokerQueueDatabaseOperationFactory()

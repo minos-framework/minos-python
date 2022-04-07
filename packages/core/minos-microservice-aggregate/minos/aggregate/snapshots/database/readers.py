@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseSnapshotReader(DatabaseSnapshotSetup):
-    """PostgreSQL Snapshot class.
+    """Database Snapshot Reader class.
 
     The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
     class.

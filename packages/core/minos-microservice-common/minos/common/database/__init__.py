@@ -10,7 +10,6 @@ from .locks import (
     AiopgLockDatabaseOperationFactory,
     DatabaseLock,
     LockDatabaseOperationFactory,
-    PostgreSqlLock,
 )
 from .manage import (
     AiopgManageDatabaseOperationFactory,
@@ -18,7 +17,6 @@ from .manage import (
 )
 from .mixins import (
     DatabaseMixin,
-    PostgreSqlMinosDatabase,
 )
 from .operations import (
     AiopgDatabaseOperation,
@@ -29,6 +27,4 @@ from .operations import (
 from .pools import (
     DatabaseClientPool,
     DatabaseLockPool,
-    PostgreSqlLockPool,
-    PostgreSqlPool,
 )

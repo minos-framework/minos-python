@@ -1,4 +1,3 @@
-import warnings
 from typing import (
     AsyncIterator,
     Optional,
@@ -22,12 +21,11 @@ from .operations import (
 from .pools import (
     DatabaseClient,
     DatabaseClientPool,
-    PostgreSqlPool,
 )
 
 
 class DatabaseMixin(SetupMixin):
-    """PostgreSql Minos Database base class."""
+    """Database Mixin class."""
 
     @Inject()
     def __init__(
@@ -35,17 +33,12 @@ class DatabaseMixin(SetupMixin):
         database_pool: Optional[DatabaseClientPool] = None,
         pool_factory: Optional[PoolFactory] = None,
         database_key: Optional[str] = None,
-        postgresql_pool: Optional[PostgreSqlPool] = None,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs, pool_factory=pool_factory)
         if database_pool is None and pool_factory is not None:
             database_pool = pool_factory.get_pool(type_="database", identifier=database_key)
-
-        if database_pool is None and postgresql_pool is not None:
-            warnings.warn("'postgresql_pool' argument has been deprecated", DeprecationWarning)
-            database_pool = postgresql_pool
 
         if not isinstance(database_pool, DatabaseClientPool):
             raise NotProvidedException(f"A {DatabaseClientPool!r} instance is required. Obtained: {database_pool}")
@@ -114,13 +107,3 @@ class DatabaseMixin(SetupMixin):
         :return: A ``Pool`` object.
         """
         return self._pool
-
-
-class PostgreSqlMinosDatabase(DatabaseMixin):
-    """PostgreSql Minos Database class."""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            f"{PostgreSqlMinosDatabase!r} has been deprecated. Use {DatabaseMixin} instead.", DeprecationWarning
-        )
-        super().__init__(*args, **kwargs)

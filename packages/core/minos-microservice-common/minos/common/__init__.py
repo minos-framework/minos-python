@@ -31,10 +31,6 @@ from .database import (
     IntegrityException,
     LockDatabaseOperationFactory,
     ManageDatabaseOperationFactory,
-    PostgreSqlLock,
-    PostgreSqlLockPool,
-    PostgreSqlMinosDatabase,
-    PostgreSqlPool,
     UnableToConnectException,
 )
 from .datetime import (
