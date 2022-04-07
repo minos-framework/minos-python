@@ -10,7 +10,9 @@ from minos.plugins.kong import (
     KongClient,
     KongDiscoveryClient,
 )
-from tests.utils import TEST_HOST
+from tests.utils import (
+    TEST_HOST,
+)
 
 PROTOCOL = "http"
 
