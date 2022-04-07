@@ -79,10 +79,7 @@ class DiscoveryConnector(SetupMixin):
         discovery_config = config.get_discovery()
 
         client_cls = cls._client_cls_from_config(discovery_config)
-        client_host = discovery_config.get("host")
-        client_port = discovery_config.get("port")
-
-        return client_cls(host=client_host, port=client_port)
+        return client_cls.from_config(config)
 
     @staticmethod
     def _client_cls_from_config(discovery_config: dict[str, Any]) -> type[DiscoveryClient]:

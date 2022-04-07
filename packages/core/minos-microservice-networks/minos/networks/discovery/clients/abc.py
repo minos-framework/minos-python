@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from abc import (
     ABC,
@@ -6,12 +8,14 @@ from abc import (
 
 from minos.common import (
     Object,
+    Config,
+    SetupMixin,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class DiscoveryClient(ABC, Object):
+class DiscoveryClient(ABC, SetupMixin):
     """Discovery Client class."""
 
     def __init__(self, host: str, port: int, **kwargs):
@@ -27,6 +31,14 @@ class DiscoveryClient(ABC, Object):
         """
         # noinspection HttpUrlsUsage
         return f"http://{self.host}:{self.port}"
+
+    @classmethod
+    def _from_config(cls, config: Config, **kwargs) -> DiscoveryClient:
+        discovery_config = config.get_discovery()
+
+        client_host = discovery_config.get("host")
+        client_port = discovery_config.get("port")
+        return cls(host=client_host, port=client_port, **kwargs)
 
     @abstractmethod
     async def subscribe(
