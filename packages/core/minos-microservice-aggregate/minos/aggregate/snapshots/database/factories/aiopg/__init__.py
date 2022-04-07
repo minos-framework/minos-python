@@ -3,5 +3,4 @@ from .impl import (
 )
 from .queries import (
     AiopgSnapshotQueryDatabaseOperationBuilder,
-    PostgreSqlSnapshotQueryBuilder,
 )

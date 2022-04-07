@@ -16,7 +16,7 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestPostgreSqlSnapshotSetup(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseSnapshotSetup(AggregateTestCase, PostgresAsyncTestCase):
     async def test_setup_snapshot_table(self):
         async with DatabaseSnapshotSetup.from_config(self.config):
             async with AiopgDatabaseClient(**self.config.get_default_database()) as client:

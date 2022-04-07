@@ -39,7 +39,6 @@ from .events import (
     FieldDiffContainer,
     IncrementalFieldDiff,
     InMemoryEventRepository,
-    PostgreSqlEventRepository,
 )
 from .exceptions import (
     AggregateException,
@@ -67,11 +66,6 @@ from .snapshots import (
     DatabaseSnapshotSetup,
     DatabaseSnapshotWriter,
     InMemorySnapshotRepository,
-    PostgreSqlSnapshotQueryBuilder,
-    PostgreSqlSnapshotReader,
-    PostgreSqlSnapshotRepository,
-    PostgreSqlSnapshotSetup,
-    PostgreSqlSnapshotWriter,
     SnapshotDatabaseOperationFactory,
     SnapshotEntry,
     SnapshotRepository,
@@ -82,7 +76,6 @@ from .transactions import (
     AiopgTransactionDatabaseOperationFactory,
     DatabaseTransactionRepository,
     InMemoryTransactionRepository,
-    PostgreSqlTransactionRepository,
     TransactionDatabaseOperationFactory,
     TransactionEntry,
     TransactionRepository,

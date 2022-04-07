@@ -24,7 +24,7 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseTransactionRepository(AggregateTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
@@ -146,7 +146,7 @@ class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCa
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
 
 
-class TestPostgreSqlTransactionRepositorySelect(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseTransactionRepositorySelect(AggregateTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.uuid_1 = uuid4()

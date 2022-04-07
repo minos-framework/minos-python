@@ -2,7 +2,6 @@ from __future__ import (
     annotations,
 )
 
-import warnings
 from typing import (
     AsyncIterator,
     Optional,
@@ -71,14 +70,3 @@ class DatabaseTransactionRepository(DatabaseMixin, TransactionRepository):
         operation = self.operation_factory.build_select_rows(**kwargs)
         async for row in self.submit_query_and_iter(operation, streaming_mode=streaming_mode):
             yield TransactionEntry(*row, transaction_repository=self)
-
-
-class PostgreSqlTransactionRepository(DatabaseTransactionRepository):
-    """TODO"""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            f"{PostgreSqlTransactionRepository!r} has been deprecated. Use {DatabaseTransactionRepository} instead.",
-            DeprecationWarning,
-        )
-        super().__init__(*args, **kwargs)

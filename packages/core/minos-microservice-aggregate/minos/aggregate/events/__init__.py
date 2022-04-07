@@ -15,5 +15,4 @@ from .repositories import (
     EventDatabaseOperationFactory,
     EventRepository,
     InMemoryEventRepository,
-    PostgreSqlEventRepository,
 )

@@ -2,7 +2,6 @@ from __future__ import (
     annotations,
 )
 
-import warnings
 from typing import (
     AsyncIterator,
     Optional,
@@ -96,14 +95,3 @@ class DatabaseEventRepository(DatabaseMixin, EventRepository):
         operation = self.operation_factory.build_select_max_id()
         row = await self.submit_query_and_fetchone(operation)
         return row[0] or 0
-
-
-class PostgreSqlEventRepository(DatabaseEventRepository):
-    """TODO"""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            f"{PostgreSqlEventRepository!r} has been deprecated. Use {DatabaseEventRepository} instead.",
-            DeprecationWarning,
-        )
-        super().__init__(*args, **kwargs)

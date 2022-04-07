@@ -25,7 +25,7 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlSnapshotRepository(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseSnapshotRepository(AggregateTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 

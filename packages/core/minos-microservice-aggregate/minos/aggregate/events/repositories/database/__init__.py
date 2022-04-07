@@ -4,5 +4,4 @@ from .factories import (
 )
 from .impl import (
     DatabaseEventRepository,
-    PostgreSqlEventRepository,
 )

@@ -39,7 +39,7 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlSnapshotWriter(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseSnapshotWriter(AggregateTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.uuid_1 = uuid4()

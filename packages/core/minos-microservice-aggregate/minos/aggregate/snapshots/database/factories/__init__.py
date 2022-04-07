@@ -4,5 +4,4 @@ from .abc import (
 from .aiopg import (
     AiopgSnapshotDatabaseOperationFactory,
     AiopgSnapshotQueryDatabaseOperationBuilder,
-    PostgreSqlSnapshotQueryBuilder,
 )

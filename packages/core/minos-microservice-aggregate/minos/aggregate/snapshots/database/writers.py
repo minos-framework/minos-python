@@ -2,7 +2,6 @@ from __future__ import (
     annotations,
 )
 
-import warnings
 from typing import (
     TYPE_CHECKING,
     Type,
@@ -183,14 +182,3 @@ class DatabaseSnapshotWriter(DatabaseSnapshotSetup):
         if len(transaction_uuids):
             operation = self.operation_factory.build_delete_by_transactions(transaction_uuids)
             await self.submit_query(operation)
-
-
-class PostgreSqlSnapshotWriter(DatabaseSnapshotWriter):
-    """TODO"""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            f"{PostgreSqlSnapshotWriter!r} has been deprecated. Use {DatabaseSnapshotWriter} instead.",
-            DeprecationWarning,
-        )
-        super().__init__(*args, **kwargs)

@@ -2,7 +2,6 @@ from __future__ import (
     annotations,
 )
 
-import warnings
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
@@ -72,14 +71,3 @@ class DatabaseSnapshotRepository(SnapshotRepository):
 
     def _synchronize(self, *args, **kwargs) -> Awaitable[None]:
         return self.writer.dispatch(**kwargs)
-
-
-class PostgreSqlSnapshotRepository(DatabaseSnapshotRepository):
-    """TODO"""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            f"{PostgreSqlSnapshotRepository!r} has been deprecated. Use {DatabaseSnapshotRepository} instead.",
-            DeprecationWarning,
-        )
-        super().__init__(*args, **kwargs)

@@ -4,7 +4,6 @@ from .abc import (
 from .database import (
     AiopgTransactionDatabaseOperationFactory,
     DatabaseTransactionRepository,
-    PostgreSqlTransactionRepository,
     TransactionDatabaseOperationFactory,
 )
 from .memory import (

@@ -2,7 +2,6 @@ from __future__ import (
     annotations,
 )
 
-import warnings
 from typing import (
     Optional,
     Type,
@@ -44,14 +43,3 @@ class DatabaseSnapshotSetup(DatabaseMixin):
 
 
 T = TypeVar("T", bound=DatabaseSnapshotSetup)
-
-
-class PostgreSqlSnapshotSetup(DatabaseSnapshotSetup):
-    """TODO"""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            f"{PostgreSqlSnapshotSetup!r} has been deprecated. Use {DatabaseSnapshotSetup} instead.",
-            DeprecationWarning,
-        )
-        super().__init__(*args, **kwargs)

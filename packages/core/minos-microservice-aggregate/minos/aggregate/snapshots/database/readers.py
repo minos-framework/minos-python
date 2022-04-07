@@ -3,7 +3,6 @@ from __future__ import (
 )
 
 import logging
-import warnings
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
@@ -130,14 +129,3 @@ class DatabaseSnapshotReader(DatabaseSnapshotSetup):
 
         async for row in self.submit_query_and_iter(operation, streaming_mode=streaming_mode):
             yield SnapshotEntry(*row)
-
-
-class PostgreSqlSnapshotReader(DatabaseSnapshotReader):
-    """TODO"""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            f"{PostgreSqlSnapshotReader!r} has been deprecated. Use {DatabaseSnapshotReader} instead.",
-            DeprecationWarning,
-        )
-        super().__init__(*args, **kwargs)

@@ -33,7 +33,7 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlSnapshotReader(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseSnapshotReader(AggregateTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 

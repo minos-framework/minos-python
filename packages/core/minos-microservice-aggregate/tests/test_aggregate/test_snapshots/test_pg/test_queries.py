@@ -34,7 +34,7 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlSnapshotQueryBuilder(AggregateTestCase, PostgresAsyncTestCase):
+class TestAiopgSnapshotQueryDatabaseOperationBuilder(AggregateTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.classname = "path.to.Product"

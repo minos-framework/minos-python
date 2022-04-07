@@ -9,7 +9,6 @@ from .repositories import (
     AiopgTransactionDatabaseOperationFactory,
     DatabaseTransactionRepository,
     InMemoryTransactionRepository,
-    PostgreSqlTransactionRepository,
     TransactionDatabaseOperationFactory,
     TransactionRepository,
 )
