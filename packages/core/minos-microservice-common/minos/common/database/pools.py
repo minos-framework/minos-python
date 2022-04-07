@@ -27,7 +27,6 @@ from ..pools import (
     Pool,
 )
 from .clients import (
-    AiopgDatabaseClient,
     DatabaseClient,
     DatabaseClientBuilder,
     UnableToConnectException,
@@ -49,9 +48,15 @@ class DatabaseClientPool(Pool[DatabaseClient]):
 
     @classmethod
     def _from_config(cls, config: Config, identifier: Optional[str] = None, **kwargs):
-        client_cls = config.get_database_by_name(identifier).get("client", AiopgDatabaseClient)
-        # noinspection PyTypeChecker
-        base_builder: DatabaseClientBuilder = client_cls.get_builder()
+        base_builder = config.get_database_by_name(identifier).get("client")
+
+        if base_builder is None:
+            raise ValueError(f"{base_builder!r} is not a {DatabaseClientBuilder!r} instance.")
+        elif issubclass(base_builder, DatabaseClient):
+            base_builder = base_builder.get_builder()
+        elif issubclass(base_builder, DatabaseClientBuilder):
+            base_builder = base_builder()
+
         client_builder = base_builder.with_name(identifier).with_config(config)
 
         return cls(client_builder=client_builder, **kwargs)
