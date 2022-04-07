@@ -59,8 +59,8 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> KongDiscoveryClient:
         if "auth_type" in kwargs:
-            auth_type = kwargs['auth_type']
-            kwargs.pop('auth_type')
+            auth_type = kwargs["auth_type"]
+            kwargs.pop("auth_type")
         else:
             auth_type = config.get_by_key("discovery.auth-type")
 
