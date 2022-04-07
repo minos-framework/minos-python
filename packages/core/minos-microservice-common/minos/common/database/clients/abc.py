@@ -37,14 +37,14 @@ if TYPE_CHECKING:
     from ..locks import (
         DatabaseLock,
     )
+
 logger = logging.getLogger(__name__)
 
 
 class DatabaseClient(ABC, BuildableMixin):
     """Database Client base class."""
 
-    _factories: dict[type[DatabaseOperationFactory], type[DatabaseOperationFactory]] = dict()
-
+    _factories: dict[type[DatabaseOperationFactory], type[DatabaseOperationFactory]]
     _lock: Optional[DatabaseLock]
 
     def __init__(self, *args, **kwargs):
@@ -86,6 +86,9 @@ class DatabaseClient(ABC, BuildableMixin):
         :param operation: The operation to be executed.
         :return: This method does not return anything.
         """
+        if not isinstance(operation, DatabaseOperation):
+            raise ValueError(f"The operation must be a {DatabaseOperation!r} instance. Obtained: {operation!r}")
+
         if operation.lock is not None:
             await self._create_lock(operation.lock)
 
@@ -157,6 +160,9 @@ class DatabaseClient(ABC, BuildableMixin):
         if not issubclass(impl, base):
             raise ValueError(f"{impl!r} must be a subclass of {base!r}")
 
+        if not hasattr(cls, "_factories"):
+            cls._factories = dict()
+
         cls._factories[base] = impl
 
     @classmethod
@@ -166,6 +172,9 @@ class DatabaseClient(ABC, BuildableMixin):
         :param base: The operation factory interface.
         :return: The operation factory implementation.
         """
+        if not hasattr(cls, "_factories") or base not in cls._factories:
+            raise ValueError(f"{cls!r} does not contain any registered factory implementation for {base!r}")
+
         return cls._factories[base]()
 
 

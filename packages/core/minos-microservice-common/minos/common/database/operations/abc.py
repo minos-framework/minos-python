@@ -27,7 +27,7 @@ class ComposedDatabaseOperation(DatabaseOperation):
 
     def __init__(self, operations: Iterable[DatabaseOperation], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.operations = operations
+        self.operations = tuple(operations)
 
 
 class DatabaseOperationFactory(ABC):

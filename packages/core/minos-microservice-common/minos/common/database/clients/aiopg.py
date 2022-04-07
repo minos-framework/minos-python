@@ -122,7 +122,7 @@ class AiopgDatabaseClient(DatabaseClient):
     # noinspection PyUnusedLocal
     async def _execute(self, operation: AiopgDatabaseOperation) -> None:
         if not isinstance(operation, AiopgDatabaseOperation):
-            raise ValueError(f"The operation is not supported: {operation!r}")
+            raise ValueError(f"The operation must be a {AiopgDatabaseOperation!r} instance. Obtained: {operation!r}")
 
         await self._create_cursor()
         try:

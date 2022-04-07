@@ -19,6 +19,7 @@ from minos.common import (
     AiopgDatabaseClient,
     AiopgDatabaseOperation,
     DatabaseLock,
+    DatabaseOperation,
     IntegrityException,
     UnableToConnectException,
 )
@@ -159,6 +160,14 @@ class TestAiopgDatabaseClient(CommonTestCase, DatabaseMinosTestCase):
             await client.execute(op2)
             self.assertNotEqual(foo_lock, client.lock)
             self.assertIsInstance(client.lock, DatabaseLock)
+
+    async def test_execute_raises_unsupported(self):
+        class _DatabaseOperation(DatabaseOperation):
+            """For testing purposes."""
+
+        async with AiopgDatabaseClient.from_config(self.config) as client:
+            with self.assertRaises(ValueError):
+                await client.execute(_DatabaseOperation())
 
     async def test_execute_raises_integrity(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
