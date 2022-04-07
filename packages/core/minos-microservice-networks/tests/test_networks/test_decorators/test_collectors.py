@@ -31,8 +31,10 @@ class TestEnrouteCollector(unittest.IsolatedAsyncioTestCase):
 
         observed = analyzer.get_all()
         expected = {
-            "get_tickets": {BrokerQueryEnrouteDecorator("GetTickets"),
-                            RestQueryEnrouteDecorator(self.ticket_route, "GET")},
+            "get_tickets": {
+                BrokerQueryEnrouteDecorator("GetTickets"),
+                RestQueryEnrouteDecorator(self.ticket_route, "GET"),
+            },
             "create_ticket": {
                 BrokerCommandEnrouteDecorator("CreateTicket"),
                 BrokerCommandEnrouteDecorator("AddTicket"),
