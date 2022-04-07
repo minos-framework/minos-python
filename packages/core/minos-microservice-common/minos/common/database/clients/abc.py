@@ -2,19 +2,19 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from abc import (
     ABC,
     abstractmethod,
 )
+from asyncio import wait_for
 from collections.abc import (
-    AsyncIterator,
+    AsyncIterator, Hashable,
 )
 from typing import (
     Any,
     Optional,
 )
-
-from minos.common.database.operations import DatabaseOperationFactory
 
 from ...builders import (
     BuildableMixin,
@@ -26,7 +26,10 @@ from ...config import (
 from ..operations import (
     ComposedDatabaseOperation,
     DatabaseOperation,
+    DatabaseOperationFactory,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class DatabaseClient(ABC, BuildableMixin):
@@ -55,6 +58,7 @@ class DatabaseClient(ABC, BuildableMixin):
         :param kwargs: Additional named parameters.
         :return: This method does not return anything.
         """
+        await self._destroy_lock()
         return await self._reset(**kwargs)
 
     @abstractmethod
@@ -67,15 +71,36 @@ class DatabaseClient(ABC, BuildableMixin):
         :param operation: TODO
         :return: This method does not return anything.
         """
+        if operation.lock is not None:
+            await self._create_lock(operation.lock)
+
         if isinstance(operation, ComposedDatabaseOperation):
             for op in operation.operations:
-                await self._execute(op)
+                await wait_for(self._execute(op), operation.timeout)
         else:
-            await self._execute(operation)
+            await wait_for(self._execute(operation), operation.timeout)
 
     @abstractmethod
     async def _execute(self, operation: DatabaseOperation) -> None:
         raise NotImplementedError
+
+    async def _create_lock(self, lock: Hashable, *args, **kwargs):
+        if self._lock is not None and self._lock.key == lock:
+            return
+        await self._destroy_lock()
+
+        from ..locks import (
+            DatabaseLock,
+        )
+
+        self._lock = DatabaseLock(self, lock, *args, **kwargs)
+        await self._lock.acquire()
+
+    async def _destroy_lock(self):
+        if self._lock is not None:
+            logger.debug(f"Destroying {self._lock!r}...")
+            await self._lock.release()
+            self._lock = None
 
     async def fetch_one(self) -> Any:
         """Fetch one value.

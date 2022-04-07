@@ -1,9 +1,5 @@
-from collections.abc import (
-    Hashable,
-)
 from typing import (
     Any,
-    Optional,
     Union,
 )
 
@@ -19,16 +15,9 @@ from .abc import (
 class AiopgDatabaseOperation(DatabaseOperation):
     """TODO"""
 
-    def __init__(
-        self,
-        query: Union[str, Composable],
-        parameters: dict[str, Any] = None,
-        lock: Optional[Hashable] = None,
-        timeout: Optional[float] = None,
-    ):
+    def __init__(self, query: Union[str, Composable], parameters: dict[str, Any] = None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         if parameters is None:
             parameters = dict()
         self.query = query
         self.parameters = parameters
-        self.lock = lock
-        self.timeout = timeout
