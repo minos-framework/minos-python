@@ -5,17 +5,20 @@ from unittest.mock import (
 
 from minos.common import (
     AiopgDatabaseClient,
+    Config,
     DatabaseClient,
     DatabaseClientBuilder,
     DatabaseClientPool,
     DatabaseLock,
     DatabaseLockPool,
     UnableToConnectException,
+    classname,
 )
 from minos.common.testing import (
     DatabaseMinosTestCase,
 )
 from tests.utils import (
+    CONFIG_FILE_PATH,
     CommonTestCase,
 )
 
@@ -42,6 +45,16 @@ class TestDatabaseClientPool(CommonTestCase, DatabaseMinosTestCase):
         pool = DatabaseClientPool.from_config(self.config, key="event")
         self.assertIsInstance(pool.client_builder, DatabaseClientBuilder)
         self.assertEqual(AiopgDatabaseClient, pool.client_builder.instance_cls)
+
+    def test_from_config_client_builder(self):
+        config = Config(CONFIG_FILE_PATH, databases_default_client=classname(DatabaseClientBuilder))
+        pool = DatabaseClientPool.from_config(config)
+        self.assertIsInstance(pool.client_builder, DatabaseClientBuilder)
+
+    def test_from_config_client_none(self):
+        config = Config(CONFIG_FILE_PATH, databases_default_client=None)
+        with self.assertRaises(ValueError):
+            DatabaseClientPool.from_config(config)
 
     async def test_acquire_once(self):
         async with self.pool.acquire() as c1:

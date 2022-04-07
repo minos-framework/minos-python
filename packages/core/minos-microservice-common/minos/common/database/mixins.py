@@ -78,8 +78,6 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
             if origin is None or not issubclass(origin, DatabaseMixin):
                 continue
             args = get_args(base)
-            if not len(args):
-                continue
             operation_factory_cls = args[0]
             if not isinstance(operation_factory_cls, type) or not issubclass(
                 operation_factory_cls, DatabaseOperationFactory

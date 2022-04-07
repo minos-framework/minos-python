@@ -3,8 +3,10 @@ import unittest
 from minos.common import (
     AiopgDatabaseClient,
     AiopgDatabaseOperation,
+    AiopgLockDatabaseOperationFactory,
     DatabaseClientPool,
     DatabaseMixin,
+    LockDatabaseOperationFactory,
     NotProvidedException,
     PoolFactory,
 )
@@ -38,6 +40,33 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
     async def test_pool(self):
         async with DatabaseMixin() as database:
             self.assertIsInstance(database.database_pool, DatabaseClientPool)
+
+    async def test_operation_factory(self):
+        operation_factory = AiopgLockDatabaseOperationFactory()
+        mixin = DatabaseMixin(operation_factory=operation_factory)
+        self.assertEqual(operation_factory, mixin.operation_factory)
+
+    async def test_operation_factory_from_cls_init(self):
+        mixin = DatabaseMixin(operation_factory_cls=LockDatabaseOperationFactory)
+        self.assertIsInstance(mixin.operation_factory, AiopgLockDatabaseOperationFactory)
+
+    async def test_operation_factory_from_cls_generic(self):
+        class _DatabaseMixin(DatabaseMixin[LockDatabaseOperationFactory]):
+            """For testing purposes."""
+
+        mixin = _DatabaseMixin()
+        self.assertIsInstance(mixin.operation_factory, AiopgLockDatabaseOperationFactory)
+
+    async def test_operation_factory_none(self):
+        mixin = DatabaseMixin()
+        self.assertEqual(None, mixin.operation_factory)
+
+    async def test_operation_factory_from_cls_generic_raises(self):
+        class _DatabaseMixin(DatabaseMixin[int]):
+            """For testing purposes."""
+
+        with self.assertRaises(TypeError):
+            _DatabaseMixin()
 
     async def test_submit_query(self):
         op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")
