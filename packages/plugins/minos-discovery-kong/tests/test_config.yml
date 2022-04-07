@@ -1,0 +1,5 @@
+discovery:
+    client: minos.networks.InMemoryDiscoveryClient
+    auth-type: jwt
+    host: localhost
+    port: 8001
