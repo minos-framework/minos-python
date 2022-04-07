@@ -4,3 +4,4 @@ from pathlib import (
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+TEST_HOST = "172.160.16.24"

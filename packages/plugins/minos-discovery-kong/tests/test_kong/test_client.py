@@ -14,6 +14,7 @@ from minos.plugins.kong import (
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
+    TEST_HOST,
 )
 
 PROTOCOL = "http"
@@ -44,7 +45,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         name = self.generate_underscore_uuid()
 
         response = await self.client.subscribe(
-            "172.160.16.24",
+            TEST_HOST,
             5660,
             name,
             [{"url": "/", "method": "GET"}, {"url": "/foo", "method": "POST"}, {"url": "/bar", "method": "GET"}],
@@ -52,7 +53,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(201 == response.status_code)
 
         response = await self.client.subscribe(
-            "172.160.16.24",
+            TEST_HOST,
             5660,
             name,
             [{"url": "/", "method": "GET"}, {"url": "/foo", "method": "POST"}, {"url": "/bar", "method": "GET"}],
@@ -62,7 +63,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
     async def test_subscribe(self):
         name = self.generate_underscore_uuid()
         response = await self.client.subscribe(
-            "172.160.16.24",
+            TEST_HOST,
             5660,
             name,
             [{"url": "/", "method": "GET"}, {"url": "/foo", "method": "POST"}, {"url": "/bar", "method": "GET"}],
@@ -75,13 +76,13 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
             response_data = response.json()
             self.assertTrue(200 == response.status_code)
             self.assertEqual(5660, response_data["port"])
-            self.assertEqual("172.160.16.24", response_data["host"])
+            self.assertEqual(TEST_HOST, response_data["host"])
             self.assertEqual(PROTOCOL, response_data["protocol"])
 
     async def test_subscribe_with_auth(self):
         name = self.generate_underscore_uuid()
         response = await self.client.subscribe(
-            "172.160.16.24",
+            TEST_HOST,
             5660,
             name,
             [
@@ -98,13 +99,13 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
             response_data = response.json()
             self.assertTrue(200 == response.status_code)
             self.assertEqual(5660, response_data["port"])
-            self.assertEqual("172.160.16.24", response_data["host"])
+            self.assertEqual(TEST_HOST, response_data["host"])
             self.assertEqual(PROTOCOL, response_data["protocol"])
 
     async def test_unsubscribe(self):
         name = self.generate_underscore_uuid()
         response = await self.client.subscribe(
-            "172.160.16.24", 5660, name, [{"url": "/foo", "method": "POST"}, {"url": "/bar", "method": "GET"}]
+            TEST_HOST, 5660, name, [{"url": "/foo", "method": "POST"}, {"url": "/bar", "method": "GET"}]
         )
 
         self.assertTrue(201 == response.status_code)
@@ -120,7 +121,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
     async def test_route_params(self):
         expected = ["/foo/.*", "/bar/.*/.*"]
         response = await self.client.subscribe(
-            "172.160.16.24",
+            TEST_HOST,
             5660,
             "test",
             [{"url": "/foo/{:user}", "method": "POST"}, {"url": "/bar/{:domain}/{:username}", "method": "GET"}],
@@ -155,7 +156,7 @@ class TestKongDiscoveryClientFromConfig(unittest.IsolatedAsyncioTestCase):
     async def test_subscribe(self):
         name = self.generate_underscore_uuid()
         response = await self.client.subscribe(
-            "172.160.16.24",
+            TEST_HOST,
             5660,
             name,
             [{"url": "/", "method": "GET"}, {"url": "/foo", "method": "POST"}, {"url": "/bar", "method": "GET"}],
@@ -168,13 +169,13 @@ class TestKongDiscoveryClientFromConfig(unittest.IsolatedAsyncioTestCase):
             response_data = response.json()
             self.assertTrue(200 == response.status_code)
             self.assertEqual(5660, response_data["port"])
-            self.assertEqual("172.160.16.24", response_data["host"])
+            self.assertEqual(TEST_HOST, response_data["host"])
             self.assertEqual(PROTOCOL, response_data["protocol"])
 
     async def test_subscribe_with_auth(self):
         name = self.generate_underscore_uuid()
         response = await self.client.subscribe(
-            "172.160.16.24",
+            TEST_HOST,
             5660,
             name,
             [
@@ -191,7 +192,7 @@ class TestKongDiscoveryClientFromConfig(unittest.IsolatedAsyncioTestCase):
             response_data = response.json()
             self.assertTrue(200 == response.status_code)
             self.assertEqual(5660, response_data["port"])
-            self.assertEqual("172.160.16.24", response_data["host"])
+            self.assertEqual(TEST_HOST, response_data["host"])
             self.assertEqual(PROTOCOL, response_data["protocol"])
 
 
@@ -211,7 +212,7 @@ class TestKongDiscoveryClientFromConfigOverrideAuth(unittest.IsolatedAsyncioTest
     async def test_subscribe(self):
         name = self.generate_underscore_uuid()
         response = await self.client.subscribe(
-            "172.160.16.24",
+            TEST_HOST,
             5660,
             name,
             [{"url": "/", "method": "GET"}, {"url": "/foo", "method": "POST"}, {"url": "/bar", "method": "GET"}],
@@ -224,13 +225,13 @@ class TestKongDiscoveryClientFromConfigOverrideAuth(unittest.IsolatedAsyncioTest
             response_data = response.json()
             self.assertTrue(200 == response.status_code)
             self.assertEqual(5660, response_data["port"])
-            self.assertEqual("172.160.16.24", response_data["host"])
+            self.assertEqual(TEST_HOST, response_data["host"])
             self.assertEqual(PROTOCOL, response_data["protocol"])
 
     async def test_subscribe_with_auth(self):
         name = self.generate_underscore_uuid()
         response = await self.client.subscribe(
-            "172.160.16.24",
+            TEST_HOST,
             5660,
             name,
             [
@@ -247,7 +248,7 @@ class TestKongDiscoveryClientFromConfigOverrideAuth(unittest.IsolatedAsyncioTest
             response_data = response.json()
             self.assertTrue(200 == response.status_code)
             self.assertEqual(5660, response_data["port"])
-            self.assertEqual("172.160.16.24", response_data["host"])
+            self.assertEqual(TEST_HOST, response_data["host"])
             self.assertEqual(PROTOCOL, response_data["protocol"])
 
 

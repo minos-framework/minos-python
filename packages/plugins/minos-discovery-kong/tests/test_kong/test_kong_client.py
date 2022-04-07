@@ -10,6 +10,7 @@ from minos.plugins.kong import (
     KongClient,
     KongDiscoveryClient,
 )
+from tests.utils import TEST_HOST
 
 PROTOCOL = "http"
 
@@ -32,7 +33,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         response = await self.kong.register_service(
             discovery_route=self.client.route,
             service_name=name,
-            microservice_host="172.160.16.24",
+            microservice_host=TEST_HOST,
             microservice_port=5660,
         )
 
@@ -44,7 +45,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
             response_data = response.json()
             self.assertTrue(200 == response.status_code)
             self.assertEqual(5660, response_data["port"])
-            self.assertEqual("172.160.16.24", response_data["host"])
+            self.assertEqual(TEST_HOST, response_data["host"])
             self.assertEqual(PROTOCOL, response_data["protocol"])
 
     async def test_create_consumer(self):
@@ -62,7 +63,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(201 == response.status_code)
         resp = response.json()
 
-        response = await self.kong.add_basic_auth_to_consumer(username=user_name, password="test", consumer=resp["id"])
+        response = await self.kong.add_basic_auth_to_consumer(user_name, "test", resp["id"])
 
         self.assertTrue(201 == response.status_code)
 
@@ -95,7 +96,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         response = await self.kong.register_service(
             discovery_route=self.client.route,
             service_name=name,
-            microservice_host="172.160.16.24",
+            microservice_host=TEST_HOST,
             microservice_port=5660,
         )
 
@@ -110,7 +111,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         response = await self.kong.register_service(
             discovery_route=self.client.route,
             service_name=name,
-            microservice_host="172.160.16.24",
+            microservice_host=TEST_HOST,
             microservice_port=5660,
         )
 
@@ -125,7 +126,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         response = await self.kong.register_service(
             discovery_route=self.client.route,
             service_name=name,
-            microservice_host="172.160.16.24",
+            microservice_host=TEST_HOST,
             microservice_port=5660,
         )
 
@@ -152,7 +153,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         response = await self.kong.register_service(
             discovery_route=self.client.route,
             service_name=name,
-            microservice_host="172.160.16.24",
+            microservice_host=TEST_HOST,
             microservice_port=5660,
         )
 
