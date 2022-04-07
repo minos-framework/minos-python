@@ -16,12 +16,14 @@ rest:
     host: localhost
     port: 8080
 repository:
+    client: minos.common.AiopgDatabaseClient
     database: order_db
     user: minos
     password: min0s
     host: localhost
     port: 5432
 snapshot:
+    client: minos.common.AiopgDatabaseClient
     database: order_db
     user: minos
     password: min0s
@@ -31,6 +33,7 @@ broker:
   host: localhost
   port: 9092
   queue:
+    client: minos.common.AiopgDatabaseClient
     database: order_db
     user: minos
     password: min0s
