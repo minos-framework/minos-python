@@ -4,7 +4,8 @@ from abc import (
 )
 
 from ...operations import (
-    DatabaseOperation,DatabaseOperationFactory
+    DatabaseOperation,
+    DatabaseOperationFactory,
 )
 
 

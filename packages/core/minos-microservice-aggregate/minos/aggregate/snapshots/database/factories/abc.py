@@ -5,6 +5,9 @@ from abc import (
 from collections.abc import (
     Iterable,
 )
+from datetime import (
+    datetime,
+)
 from typing import (
     Any,
     Optional,
@@ -15,7 +18,7 @@ from uuid import (
 
 from minos.common import (
     DatabaseOperation,
-    datetime, DatabaseOperationFactory,
+    DatabaseOperationFactory,
 )
 
 from ....queries import (

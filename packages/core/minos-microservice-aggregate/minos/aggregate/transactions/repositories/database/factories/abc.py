@@ -6,6 +6,9 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from datetime import (
+    datetime,
+)
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -16,7 +19,7 @@ from uuid import (
 
 from minos.common import (
     DatabaseOperation,
-    datetime, DatabaseOperationFactory,
+    DatabaseOperationFactory,
 )
 
 if TYPE_CHECKING:

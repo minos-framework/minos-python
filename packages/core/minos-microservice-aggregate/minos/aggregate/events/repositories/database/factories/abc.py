@@ -2,6 +2,9 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from datetime import (
+    datetime,
+)
 from typing import (
     Optional,
 )
@@ -11,9 +14,8 @@ from uuid import (
 
 from minos.common import (
     DatabaseOperation,
-    datetime,
+    DatabaseOperationFactory,
 )
-from minos.common import DatabaseOperationFactory
 
 from .....actions import (
     Action,

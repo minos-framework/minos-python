@@ -6,7 +6,8 @@ from abc import (
     ABC,
 )
 from collections.abc import (
-    Iterable, Hashable,
+    Hashable,
+    Iterable,
 )
 from typing import (
     Optional,

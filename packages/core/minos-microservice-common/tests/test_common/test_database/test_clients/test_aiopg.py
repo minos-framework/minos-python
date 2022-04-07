@@ -126,7 +126,7 @@ class TestAiopgDatabaseClient(CommonTestCase, PostgresAsyncTestCase):
             with patch.object(Cursor, "execute") as execute_mock:
                 await client.execute(self.operation)
         self.assertEqual(
-            [call(operation=self.operation.query, parameters=self.operation.parameters, timeout=None)],
+            [call(operation=self.operation.query, parameters=self.operation.parameters)],
             execute_mock.call_args_list,
         )
 

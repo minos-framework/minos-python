@@ -7,7 +7,6 @@ from collections.abc import (
     AsyncIterator,
 )
 from typing import (
-    TYPE_CHECKING,
     Optional,
 )
 
@@ -32,11 +31,6 @@ from .exceptions import (
     UnableToConnectException,
 )
 
-if TYPE_CHECKING:
-    from ..locks import (
-        DatabaseLock,
-    )
-
 logger = logging.getLogger(__name__)
 
 
@@ -45,7 +39,6 @@ class AiopgDatabaseClient(DatabaseClient):
 
     _connection: Optional[Connection]
     _cursor: Optional[Cursor]
-    _lock: Optional[DatabaseLock]
 
     def __init__(
         self,
@@ -75,8 +68,6 @@ class AiopgDatabaseClient(DatabaseClient):
         self._password = password
 
         self._connection = None
-
-        self._lock = None
         self._cursor = None
 
     async def _setup(self) -> None:
@@ -148,14 +139,6 @@ class AiopgDatabaseClient(DatabaseClient):
             if not self._cursor.closed:
                 self._cursor.close()
             self._cursor = None
-
-    @property
-    def lock(self) -> Optional[DatabaseLock]:
-        """Get the lock.
-
-        :return: A ``DatabaseLock`` instance.
-        """
-        return self._lock
 
     @property
     def cursor(self) -> Optional[Cursor]:

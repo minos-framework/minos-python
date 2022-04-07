@@ -7,11 +7,15 @@ from abc import (
     ABC,
     abstractmethod,
 )
-from asyncio import wait_for
+from asyncio import (
+    wait_for,
+)
 from collections.abc import (
-    AsyncIterator, Hashable,
+    AsyncIterator,
+    Hashable,
 )
 from typing import (
+    TYPE_CHECKING,
     Any,
     Optional,
 )
@@ -29,13 +33,24 @@ from ..operations import (
     DatabaseOperationFactory,
 )
 
+if TYPE_CHECKING:
+    from ..locks import (
+        DatabaseLock,
+    )
 logger = logging.getLogger(__name__)
 
 
 class DatabaseClient(ABC, BuildableMixin):
     """Database Client base class."""
 
-    _factories = dict()
+    _factories: dict[type[DatabaseOperationFactory], type[DatabaseOperationFactory]] = dict()
+
+    _lock: Optional[DatabaseLock]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._lock = None
 
     @classmethod
     def _from_config(cls, config: Config, name: Optional[str] = None, **kwargs) -> DatabaseClient:
@@ -101,6 +116,14 @@ class DatabaseClient(ABC, BuildableMixin):
             logger.debug(f"Destroying {self._lock!r}...")
             await self._lock.release()
             self._lock = None
+
+    @property
+    def lock(self) -> Optional[DatabaseLock]:
+        """Get the lock.
+
+        :return: A ``DatabaseLock`` instance.
+        """
+        return self._lock
 
     async def fetch_one(self) -> Any:
         """Fetch one value.

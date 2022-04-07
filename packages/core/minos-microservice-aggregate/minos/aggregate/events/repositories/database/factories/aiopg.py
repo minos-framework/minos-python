@@ -1,6 +1,9 @@
 from collections.abc import (
     Iterable,
 )
+from datetime import (
+    datetime,
+)
 from typing import (
     Any,
     Optional,
@@ -21,7 +24,6 @@ from minos.common import (
     AiopgDatabaseOperation,
     ComposedDatabaseOperation,
     DatabaseOperation,
-    datetime,
 )
 
 from .....actions import (
