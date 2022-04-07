@@ -3,7 +3,6 @@ from __future__ import (
 )
 
 from typing import (
-    Optional,
     Type,
     TypeVar,
 )
@@ -18,20 +17,8 @@ from .factories import (
 )
 
 
-class DatabaseSnapshotSetup(DatabaseMixin):
+class DatabaseSnapshotSetup(DatabaseMixin[SnapshotDatabaseOperationFactory]):
     """Minos Snapshot Setup Class"""
-
-    def __init__(
-        self,
-        *args,
-        operation_factory: Optional[SnapshotDatabaseOperationFactory] = None,
-        **kwargs,
-    ):
-        super().__init__(*args, **kwargs)
-        if operation_factory is None:
-            operation_factory = self.pool_instance_cls.get_factory(SnapshotDatabaseOperationFactory)
-
-        self.operation_factory = operation_factory
 
     @classmethod
     def _from_config(cls: Type[T], config: Config, **kwargs) -> T:

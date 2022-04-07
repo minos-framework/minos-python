@@ -29,20 +29,8 @@ from .factories import (
 )
 
 
-class DatabaseEventRepository(DatabaseMixin, EventRepository):
+class DatabaseEventRepository(DatabaseMixin[EventDatabaseOperationFactory], EventRepository):
     """Database-based implementation of the event repository class."""
-
-    def __init__(
-        self,
-        *args,
-        operation_factory: Optional[EventDatabaseOperationFactory] = None,
-        **kwargs,
-    ):
-        super().__init__(*args, **kwargs)
-        if operation_factory is None:
-            operation_factory = self.pool_instance_cls.get_factory(EventDatabaseOperationFactory)
-
-        self.operation_factory = operation_factory
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> Optional[EventRepository]:

@@ -2,9 +2,6 @@ from __future__ import (
     annotations,
 )
 
-from typing import (
-    Optional,
-)
 from uuid import (
     UUID,
 )
@@ -24,40 +21,22 @@ from .factories import (
 )
 
 
-class DatabaseBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateValidator, DatabaseMixin):
+class DatabaseBrokerSubscriberDuplicateValidator(
+    BrokerSubscriberDuplicateValidator,
+    DatabaseMixin[BrokerSubscriberDuplicateValidatorDatabaseOperationFactory],
+):
     """Database Broker Subscriber Duplicate Detector class."""
-
-    def __init__(
-        self,
-        operation_factory: Optional[BrokerSubscriberDuplicateValidatorDatabaseOperationFactory] = None,
-        *args,
-        **kwargs,
-    ):
-        super().__init__(*args, **kwargs)
-        if operation_factory is None:
-            operation_factory = self.pool_instance_cls.get_factory(
-                BrokerSubscriberDuplicateValidatorDatabaseOperationFactory
-            )
-        self._operation_factory = operation_factory
 
     async def _setup(self) -> None:
         await super()._setup()
         await self._create_table()
 
     async def _create_table(self) -> None:
-        operation = self._operation_factory.build_create_table()
+        operation = self.operation_factory.build_create_table()
         await self.submit_query(operation)
 
-    @property
-    def operation_factory(self) -> BrokerSubscriberDuplicateValidatorDatabaseOperationFactory:
-        """Get the query factory.
-
-        :return: A ``BrokerSubscriberDuplicateValidatorDatabaseOperationFactory`` instance.
-        """
-        return self._operation_factory
-
     async def _is_unique(self, topic: str, uuid: UUID) -> bool:
-        operation = self._operation_factory.build_insert_row(topic, uuid)
+        operation = self.operation_factory.build_insert_row(topic, uuid)
         try:
             await self.submit_query(operation)
             return True

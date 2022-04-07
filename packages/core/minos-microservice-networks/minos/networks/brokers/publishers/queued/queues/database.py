@@ -23,13 +23,6 @@ from .abc import (
 logger = logging.getLogger(__name__)
 
 
-class DatabaseBrokerPublisherQueue(DatabaseBrokerQueue, BrokerPublisherQueue):
-    """Database Broker Publisher Queue class."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, operation_factory_cls=BrokerPublisherQueueDatabaseOperationFactory, **kwargs)
-
-
 class BrokerPublisherQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory, ABC):
     """Broker Publisher Queue Database Operation Factory class."""
 
@@ -50,3 +43,9 @@ class AiopgBrokerPublisherQueueDatabaseOperationFactory(
 AiopgDatabaseClient.register_factory(
     BrokerPublisherQueueDatabaseOperationFactory, AiopgBrokerPublisherQueueDatabaseOperationFactory
 )
+
+
+class DatabaseBrokerPublisherQueue(
+    DatabaseBrokerQueue[BrokerPublisherQueueDatabaseOperationFactory], BrokerPublisherQueue
+):
+    """Database Broker Publisher Queue class."""

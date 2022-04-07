@@ -1,6 +1,9 @@
 from typing import (
     AsyncIterator,
+    Generic,
     Optional,
+    TypeVar,
+    get_args, get_origin,
 )
 
 from ..exceptions import (
@@ -17,14 +20,17 @@ from ..setup import (
 )
 from .operations import (
     DatabaseOperation,
+    DatabaseOperationFactory,
 )
 from .pools import (
     DatabaseClient,
     DatabaseClientPool,
 )
 
+GenericDatabaseOperationFactory = TypeVar("GenericDatabaseOperationFactory", bound=DatabaseOperationFactory)
 
-class DatabaseMixin(SetupMixin):
+
+class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
     """Database Mixin class."""
 
     @Inject()
@@ -33,6 +39,8 @@ class DatabaseMixin(SetupMixin):
         database_pool: Optional[DatabaseClientPool] = None,
         pool_factory: Optional[PoolFactory] = None,
         database_key: Optional[str] = None,
+        operation_factory: Optional[GenericDatabaseOperationFactory] = None,
+        operation_factory_cls: Optional[type[GenericDatabaseOperationFactory]] = None,
         *args,
         **kwargs,
     ):
@@ -44,6 +52,39 @@ class DatabaseMixin(SetupMixin):
             raise NotProvidedException(f"A {DatabaseClientPool!r} instance is required. Obtained: {database_pool}")
 
         self._pool = database_pool
+
+        if operation_factory is None:
+            if operation_factory_cls is None:
+                operation_factory_cls = self._get_generic_operation_factory()
+            if operation_factory_cls is not None:
+                operation_factory = self.pool_instance_cls.get_factory(operation_factory_cls)
+
+        self._operation_factory = operation_factory
+
+    @property
+    def operation_factory(self) -> Optional[GenericDatabaseOperationFactory]:
+        """TODO
+
+        :return: TODO
+        """
+        return self._operation_factory
+
+    def _get_generic_operation_factory(self) -> Optional[type[GenericDatabaseOperationFactory]]:
+        operation_factory_cls = None
+        # noinspection PyUnresolvedReferences
+        for base in self.__orig_bases__:
+            origin = get_origin(base)
+            if origin is None or not issubclass(origin, DatabaseMixin):
+                continue
+            args = get_args(base)
+            if not len(args):
+                continue
+            operation_factory_cls = args[0]
+            if not isinstance(operation_factory_cls, type) or not issubclass(
+                operation_factory_cls, DatabaseOperationFactory
+            ):
+                raise TypeError(f"{type(self)!r} must contain a {DatabaseOperationFactory!r} as generic value.")
+        return operation_factory_cls
 
     async def submit_query_and_fetchone(self, operation: DatabaseOperation) -> tuple:
         """Submit a SQL query and gets the first response.

@@ -26,20 +26,8 @@ from .factories import (
 )
 
 
-class DatabaseTransactionRepository(DatabaseMixin, TransactionRepository):
+class DatabaseTransactionRepository(DatabaseMixin[TransactionDatabaseOperationFactory], TransactionRepository):
     """Database Transaction Repository class."""
-
-    def __init__(
-        self,
-        *args,
-        operation_factory: Optional[TransactionDatabaseOperationFactory] = None,
-        **kwargs,
-    ):
-        super().__init__(*args, **kwargs)
-        if operation_factory is None:
-            operation_factory = self.pool_instance_cls.get_factory(TransactionDatabaseOperationFactory)
-
-        self.operation_factory = operation_factory
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> DatabaseTransactionRepository:
