@@ -14,6 +14,8 @@ from typing import (
     Optional,
 )
 
+from minos.common.database.operations import DatabaseOperationFactory
+
 from ...builders import (
     BuildableMixin,
     Builder,
@@ -29,6 +31,8 @@ from ..operations import (
 
 class DatabaseClient(ABC, BuildableMixin):
     """Database Client base class."""
+
+    _factories = dict()
 
     @classmethod
     def _from_config(cls, config: Config, name: Optional[str] = None, **kwargs) -> DatabaseClient:
@@ -90,6 +94,31 @@ class DatabaseClient(ABC, BuildableMixin):
     @abstractmethod
     def _fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
         raise NotImplementedError
+
+    @classmethod
+    def register_factory(cls, base: type[DatabaseOperationFactory], impl: type[DatabaseOperationFactory]) -> None:
+        """TODO
+
+        :param base: TODO
+        :param impl: TODO
+        :return:
+        """
+        if not issubclass(base, DatabaseOperationFactory):
+            raise ValueError(f"{base!r} must be a subclass of {DatabaseOperationFactory!r}")
+
+        if not issubclass(impl, base):
+            raise ValueError(f"{impl!r} must be a subclass of {base!r}")
+
+        cls._factories[base] = impl
+
+    @classmethod
+    def get_factory(cls, base: type[DatabaseOperationFactory]) -> DatabaseOperationFactory:
+        """TODO
+
+        :param base: TODO
+        :return: TODO
+        """
+        return cls._factories[base]()
 
 
 class DatabaseClientBuilder(Builder[DatabaseClient]):

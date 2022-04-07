@@ -7,6 +7,7 @@ from psycopg2.sql import (
 )
 
 from minos.common import (
+    AiopgDatabaseClient,
     AiopgDatabaseOperation,
     DatabaseOperation,
 )
@@ -65,3 +66,9 @@ class AiopgBrokerSubscriberQueueDatabaseOperationFactory(
             ),
             {"retry": retry, "topics": tuple(topics), "records": records},
         )
+
+
+AiopgDatabaseClient.register_factory(
+    BrokerSubscriberQueueDatabaseOperationFactory,
+    AiopgBrokerSubscriberQueueDatabaseOperationFactory,
+)

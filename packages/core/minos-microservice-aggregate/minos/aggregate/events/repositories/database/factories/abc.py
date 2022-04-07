@@ -13,13 +13,14 @@ from minos.common import (
     DatabaseOperation,
     datetime,
 )
+from minos.common import DatabaseOperationFactory
 
 from .....actions import (
     Action,
 )
 
 
-class EventDatabaseOperationFactory(ABC):
+class EventDatabaseOperationFactory(DatabaseOperationFactory, ABC):
     """TODO"""
 
     @abstractmethod

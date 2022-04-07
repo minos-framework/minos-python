@@ -6,16 +6,15 @@ import logging
 from abc import (
     ABC,
 )
-from typing import (
-    Optional,
+
+from minos.common import (
+    AiopgDatabaseClient,
 )
 
 from ....collections import (
     AiopgBrokerQueueDatabaseOperationFactory,
-    DatabaseBrokerQueue,
-)
-from ....collections.queues.database.factories.abc import (
     BrokerQueueDatabaseOperationFactory,
+    DatabaseBrokerQueue,
 )
 from .abc import (
     BrokerPublisherQueue,
@@ -27,15 +26,8 @@ logger = logging.getLogger(__name__)
 class DatabaseBrokerPublisherQueue(DatabaseBrokerQueue, BrokerPublisherQueue):
     """PostgreSql Broker Publisher Queue class."""
 
-    def __init__(
-        self,
-        *args,
-        operation_factory: Optional[BrokerPublisherQueueDatabaseOperationFactory] = None,
-        **kwargs,
-    ):
-        if operation_factory is None:
-            operation_factory = AiopgBrokerPublisherQueueDatabaseOperationFactory()
-        super().__init__(*args, operation_factory=operation_factory, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, operation_factory_cls=BrokerPublisherQueueDatabaseOperationFactory, **kwargs)
 
 
 class BrokerPublisherQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory, ABC):
@@ -53,3 +45,8 @@ class AiopgBrokerPublisherQueueDatabaseOperationFactory(
         :return: A ``str`` value.
         """
         return "broker_publisher_queue"
+
+
+AiopgDatabaseClient.register_factory(
+    BrokerPublisherQueueDatabaseOperationFactory, AiopgBrokerPublisherQueueDatabaseOperationFactory
+)

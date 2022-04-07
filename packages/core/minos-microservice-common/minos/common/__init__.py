@@ -31,6 +31,9 @@ from .database import (
     PostgreSqlMinosDatabase,
     PostgreSqlPool,
     UnableToConnectException,
+    DatabaseOperationFactory,
+    LockDatabaseOperationFactory,
+    AiopgLockDatabaseOperationFactory,
 )
 from .datetime import (
     NULL_DATETIME,

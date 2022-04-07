@@ -8,11 +8,12 @@ from uuid import (
 
 from minos.common import (
     DatabaseOperation,
+    DatabaseOperationFactory,
 )
 
 
 # noinspection SqlNoDataSourceInspection,SqlResolve
-class BrokerSubscriberDuplicateValidatorDatabaseOperationFactory(ABC):
+class BrokerSubscriberDuplicateValidatorDatabaseOperationFactory(DatabaseOperationFactory, ABC):
     """TODO"""
 
     @abstractmethod

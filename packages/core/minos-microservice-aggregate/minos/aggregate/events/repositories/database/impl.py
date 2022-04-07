@@ -26,7 +26,6 @@ from ..abc import (
     EventRepository,
 )
 from .factories import (
-    AiopgEventDatabaseOperationFactory,
     EventDatabaseOperationFactory,
 )
 
@@ -42,7 +41,7 @@ class DatabaseEventRepository(DatabaseMixin, EventRepository):
     ):
         super().__init__(*args, **kwargs)
         if operation_factory is None:
-            operation_factory = AiopgEventDatabaseOperationFactory()
+            operation_factory = self.pool_instance_cls.get_factory(EventDatabaseOperationFactory)
 
         self.operation_factory = operation_factory
 

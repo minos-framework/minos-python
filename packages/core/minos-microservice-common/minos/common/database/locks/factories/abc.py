@@ -4,11 +4,11 @@ from abc import (
 )
 
 from ...operations import (
-    DatabaseOperation,
+    DatabaseOperation,DatabaseOperationFactory
 )
 
 
-class LockDatabaseOperationFactory(ABC):
+class LockDatabaseOperationFactory(DatabaseOperationFactory, ABC):
     """TODO"""
 
     @abstractmethod

@@ -11,6 +11,7 @@ from uuid import (
 )
 
 from minos.common import (
+    AiopgDatabaseClient,
     AiopgDatabaseOperation,
     ComposedDatabaseOperation,
     DatabaseOperation,
@@ -18,7 +19,7 @@ from minos.common import (
 )
 
 from .abc import (
-    TransactionDatatabaseOperationFactory,
+    TransactionDatabaseOperationFactory,
 )
 
 if TYPE_CHECKING:
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
 
 
 # noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic
-class AiopgTransactionDatatabaseOperationFactory(TransactionDatatabaseOperationFactory):
+class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFactory):
     """TODO"""
 
     def build_create_table(self) -> DatabaseOperation:
@@ -196,3 +197,6 @@ class AiopgTransactionDatatabaseOperationFactory(TransactionDatatabaseOperationF
                 "updated_at_ge": updated_at_ge,
             },
         )
+
+
+AiopgDatabaseClient.register_factory(TransactionDatabaseOperationFactory, AiopgTransactionDatabaseOperationFactory)

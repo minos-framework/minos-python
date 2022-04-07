@@ -1,6 +1,6 @@
 from .factories import (
-    AiopgTransactionDatatabaseOperationFactory,
-    TransactionDatatabaseOperationFactory,
+    AiopgTransactionDatabaseOperationFactory,
+    TransactionDatabaseOperationFactory,
 )
 from .impl import (
     DatabaseTransactionRepository,

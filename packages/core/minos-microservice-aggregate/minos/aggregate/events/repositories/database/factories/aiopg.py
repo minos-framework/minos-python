@@ -17,6 +17,7 @@ from psycopg2.sql import (
 )
 
 from minos.common import (
+    AiopgDatabaseClient,
     AiopgDatabaseOperation,
     ComposedDatabaseOperation,
     DatabaseOperation,
@@ -242,3 +243,6 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
     def build_select_max_id(self) -> DatabaseOperation:
         """TODO"""
         return AiopgDatabaseOperation("SELECT MAX(id) FROM aggregate_event;".strip())
+
+
+AiopgDatabaseClient.register_factory(EventDatabaseOperationFactory, AiopgEventDatabaseOperationFactory)

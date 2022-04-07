@@ -53,7 +53,8 @@ class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
     def __init__(
         self,
         *args,
-        operation_factory: BrokerQueueDatabaseOperationFactory,
+        operation_factory: Optional[BrokerQueueDatabaseOperationFactory] = None,
+        operation_factory_cls: Optional[type[BrokerQueueDatabaseOperationFactory]] = None,
         retry: Optional[int] = None,
         records: Optional[int] = None,
         **kwargs,
@@ -64,6 +65,9 @@ class DatabaseBrokerQueue(BrokerQueue, DatabaseMixin):
             retry = 2
         if records is None:
             records = 1000
+
+        if operation_factory is None:
+            operation_factory = self.pool_instance_cls.get_factory(operation_factory_cls)
 
         self._operation_factory = operation_factory
         self._retry = retry

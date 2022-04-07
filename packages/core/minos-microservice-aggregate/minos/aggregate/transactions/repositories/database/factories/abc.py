@@ -16,7 +16,7 @@ from uuid import (
 
 from minos.common import (
     DatabaseOperation,
-    datetime,
+    datetime, DatabaseOperationFactory,
 )
 
 if TYPE_CHECKING:
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     )
 
 
-class TransactionDatatabaseOperationFactory(ABC):
+class TransactionDatabaseOperationFactory(DatabaseOperationFactory, ABC):
     """TODO"""
 
     @abstractmethod

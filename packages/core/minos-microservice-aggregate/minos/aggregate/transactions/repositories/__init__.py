@@ -2,10 +2,10 @@ from .abc import (
     TransactionRepository,
 )
 from .database import (
-    AiopgTransactionDatatabaseOperationFactory,
+    AiopgTransactionDatabaseOperationFactory,
     DatabaseTransactionRepository,
     PostgreSqlTransactionRepository,
-    TransactionDatatabaseOperationFactory,
+    TransactionDatabaseOperationFactory,
 )
 from .memory import (
     InMemoryTransactionRepository,

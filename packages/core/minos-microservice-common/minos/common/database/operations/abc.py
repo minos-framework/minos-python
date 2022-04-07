@@ -20,3 +20,7 @@ class ComposedDatabaseOperation(DatabaseOperation):
     def __init__(self, operations: Iterable[DatabaseOperation]):
         super().__init__()
         self.operations = operations
+
+
+class DatabaseOperationFactory(ABC):
+    """TODO"""

@@ -5,7 +5,6 @@ from __future__ import (
 import logging
 from typing import (
     Any,
-    Optional,
 )
 
 from minos.common import (
@@ -21,7 +20,6 @@ from ..abc import (
     BrokerSubscriberQueueBuilder,
 )
 from .factories import (
-    AiopgBrokerSubscriberQueueDatabaseOperationFactory,
     BrokerSubscriberQueueDatabaseOperationFactory,
 )
 
@@ -31,16 +29,8 @@ logger = logging.getLogger(__name__)
 class DatabaseBrokerSubscriberQueue(DatabaseBrokerQueue, BrokerSubscriberQueue):
     """PostgreSql Broker Subscriber Queue class."""
 
-    def __init__(
-        self,
-        topics: set[str],
-        *args,
-        operation_factory: Optional[BrokerSubscriberQueueDatabaseOperationFactory] = None,
-        **kwargs,
-    ):
-        if operation_factory is None:
-            operation_factory = AiopgBrokerSubscriberQueueDatabaseOperationFactory()
-        super().__init__(topics, *args, operation_factory=operation_factory, **kwargs)
+    def __init__(self, topics: set[str], *args, **kwargs):
+        super().__init__(topics, *args, operation_factory_cls=BrokerSubscriberQueueDatabaseOperationFactory, **kwargs)
 
     async def _get_count(self) -> int:
         # noinspection PyTypeChecker

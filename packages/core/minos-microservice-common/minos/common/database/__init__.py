@@ -20,6 +20,7 @@ from .operations import (
     AiopgDatabaseOperation,
     ComposedDatabaseOperation,
     DatabaseOperation,
+    DatabaseOperationFactory,
 )
 from .pools import (
     DatabaseClientPool,

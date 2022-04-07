@@ -7,6 +7,7 @@ from psycopg2.sql import (
 )
 
 from minos.common import (
+    AiopgDatabaseClient,
     AiopgDatabaseOperation,
     ComposedDatabaseOperation,
     DatabaseOperation,
@@ -68,3 +69,9 @@ class AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory(
                 "uuid": uuid,
             },
         )
+
+
+AiopgDatabaseClient.register_factory(
+    BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
+    AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
+)

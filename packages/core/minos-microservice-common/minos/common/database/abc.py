@@ -20,6 +20,7 @@ from .operations import (
     DatabaseOperation,
 )
 from .pools import (
+    DatabaseClient,
     DatabaseClientPool,
     PostgreSqlPool,
 )
@@ -97,6 +98,14 @@ class DatabaseMixin(SetupMixin):
         """
         async with self.pool.acquire() as client:
             return await client.execute(operation)
+
+    @property
+    def pool_instance_cls(self) -> type[DatabaseClient]:
+        """TODO
+
+        :return: TODO
+        """
+        return self.pool.instance_cls
 
     @property
     def pool(self) -> DatabaseClientPool:

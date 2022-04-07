@@ -83,6 +83,14 @@ class DatabaseClientPool(Pool[DatabaseClient]):
         await instance.reset()
 
     @property
+    def instance_cls(self) -> type[DatabaseClient]:
+        """TODO
+
+        :return: TODO
+        """
+        return self.client_builder.instance_cls
+
+    @property
     def client_builder(self) -> DatabaseClientBuilder:
         """Get the client builder class.
 

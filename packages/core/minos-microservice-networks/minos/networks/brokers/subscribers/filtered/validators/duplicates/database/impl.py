@@ -20,7 +20,6 @@ from ..abc import (
     BrokerSubscriberDuplicateValidator,
 )
 from .factories import (
-    AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
 )
 
@@ -34,9 +33,11 @@ class DatabaseBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateValida
         *args,
         **kwargs,
     ):
-        if operation_factory is None:
-            operation_factory = AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory()
         super().__init__(*args, **kwargs)
+        if operation_factory is None:
+            operation_factory = self.pool_instance_cls.get_factory(
+                BrokerSubscriberDuplicateValidatorDatabaseOperationFactory
+            )
         self._operation_factory = operation_factory
 
     async def _setup(self) -> None:
@@ -48,10 +49,10 @@ class DatabaseBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateValida
         await self.submit_query(operation)
 
     @property
-    def operation_factory(self) -> AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory:
+    def operation_factory(self) -> BrokerSubscriberDuplicateValidatorDatabaseOperationFactory:
         """Get the query factory.
 
-        :return: A ``PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory`` instance.
+        :return: A ``BrokerSubscriberDuplicateValidatorDatabaseOperationFactory`` instance.
         """
         return self._operation_factory
 

@@ -15,7 +15,7 @@ from uuid import (
 
 from minos.common import (
     DatabaseOperation,
-    datetime,
+    datetime, DatabaseOperationFactory,
 )
 
 from ....queries import (
@@ -24,7 +24,7 @@ from ....queries import (
 )
 
 
-class SnapshotDatabaseOperationFactory(ABC):
+class SnapshotDatabaseOperationFactory(DatabaseOperationFactory, ABC):
     """TODO"""
 
     @abstractmethod

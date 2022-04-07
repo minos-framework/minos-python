@@ -13,6 +13,7 @@ from uuid import (
 )
 
 from minos.common import (
+    AiopgDatabaseClient,
     AiopgDatabaseOperation,
     ComposedDatabaseOperation,
     DatabaseOperation,
@@ -163,3 +164,6 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
             WHERE id = TRUE;
             """
         )
+
+
+AiopgDatabaseClient.register_factory(SnapshotDatabaseOperationFactory, AiopgSnapshotDatabaseOperationFactory)

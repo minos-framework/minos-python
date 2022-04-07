@@ -79,11 +79,11 @@ from .snapshots import (
 )
 from .transactions import (
     TRANSACTION_CONTEXT_VAR,
-    AiopgTransactionDatatabaseOperationFactory,
+    AiopgTransactionDatabaseOperationFactory,
     DatabaseTransactionRepository,
     InMemoryTransactionRepository,
     PostgreSqlTransactionRepository,
-    TransactionDatatabaseOperationFactory,
+    TransactionDatabaseOperationFactory,
     TransactionEntry,
     TransactionRepository,
     TransactionService,

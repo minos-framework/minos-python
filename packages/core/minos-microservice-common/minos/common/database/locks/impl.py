@@ -18,7 +18,6 @@ from ..clients import (
     DatabaseClient,
 )
 from .factories import (
-    AiopgLockDatabaseOperationFactory,
     LockDatabaseOperationFactory,
 )
 
@@ -36,7 +35,7 @@ class DatabaseLock(Lock):
     ):
         super().__init__(key, *args, **kwargs)
         if operation_factory is None:
-            operation_factory = AiopgLockDatabaseOperationFactory()
+            operation_factory = client.get_factory(LockDatabaseOperationFactory)
 
         self.client = client
         self.operation_factory = operation_factory
