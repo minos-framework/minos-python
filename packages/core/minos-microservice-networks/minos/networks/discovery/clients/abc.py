@@ -7,7 +7,6 @@ from abc import (
 )
 
 from minos.common import (
-    Object,
     Config,
     SetupMixin,
 )
