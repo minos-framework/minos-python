@@ -86,9 +86,9 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
             5660,
             name,
             [
-                {"url": "/", "method": "GET", "authorized": True, "allowed_groups": ["super_admin", "admin"]},
-                {"url": "/foo", "method": "POST", "authorized": True, "allowed_groups": ["super_admin", "admin"]},
-                {"url": "/bar", "method": "GET", "authorized": True, "allowed_groups": ["super_admin", "admin"]},
+                {"url": "/", "method": "GET", "authenticated": True, "authorized_groups": ["super_admin", "admin"]},
+                {"url": "/foo", "method": "POST", "authenticated": True, "authorized_groups": ["super_admin", "admin"]},
+                {"url": "/bar", "method": "GET", "authenticated": True, "authorized_groups": ["super_admin", "admin"]},
             ],
         )
         self.assertTrue(201 == response.status_code)
@@ -179,9 +179,9 @@ class TestKongDiscoveryClientFromConfig(unittest.IsolatedAsyncioTestCase):
             5660,
             name,
             [
-                {"url": "/", "method": "GET", "authorized": True, "allowed_groups": ["super_admin", "admin"]},
-                {"url": "/foo", "method": "POST", "authorized": True, "allowed_groups": ["super_admin", "admin"]},
-                {"url": "/bar", "method": "GET", "authorized": True, "allowed_groups": ["super_admin", "admin"]},
+                {"url": "/", "method": "GET", "authenticated": True, "authorized_groups": ["super_admin", "admin"]},
+                {"url": "/foo", "method": "POST", "authenticated": True, "authorized_groups": ["super_admin", "admin"]},
+                {"url": "/bar", "method": "GET", "authenticated": True, "authorized_groups": ["super_admin", "admin"]},
             ],
         )
         self.assertTrue(201 == response.status_code)
@@ -235,9 +235,9 @@ class TestKongDiscoveryClientFromConfigOverrideAuth(unittest.IsolatedAsyncioTest
             5660,
             name,
             [
-                {"url": "/", "method": "GET", "authorized": True, "allowed_groups": ["super_admin", "admin"]},
-                {"url": "/foo", "method": "POST", "authorized": True, "allowed_groups": ["super_admin", "admin"]},
-                {"url": "/bar", "method": "GET", "authorized": True, "allowed_groups": ["super_admin", "admin"]},
+                {"url": "/", "method": "GET", "authenticated": True, "authorized_groups": ["super_admin", "admin"]},
+                {"url": "/foo", "method": "POST", "authenticated": True, "authorized_groups": ["super_admin", "admin"]},
+                {"url": "/bar", "method": "GET", "authenticated": True, "authorized_groups": ["super_admin", "admin"]},
             ],
         )
         self.assertTrue(201 == response.status_code)

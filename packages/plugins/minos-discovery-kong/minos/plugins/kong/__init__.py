@@ -6,3 +6,6 @@ from .client import (
     KongClient,
     KongDiscoveryClient,
 )
+from .middleware import (
+    middleware,
+)

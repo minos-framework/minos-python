@@ -62,7 +62,10 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
             auth_type = kwargs["auth_type"]
             kwargs.pop("auth_type")
         else:
-            auth_type = config.get_by_key("discovery.auth-type")
+            try:
+                auth_type = config.get_by_key("discovery.auth-type")
+            except Exception:
+                auth_type = None
 
         return super()._from_config(config, auth_type=auth_type, **kwargs)
 
@@ -106,7 +109,7 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
             response = await self.with_circuit_breaker(fn)  # send the route request
             resp = response.json()
 
-            if "authorized" in endpoint and self.auth_type:
+            if "authenticated" in endpoint and self.auth_type:
                 if self.auth_type == "basic-auth":
                     fn = partial(self.kong.activate_basic_auth_plugin_on_route, route_id=resp["id"])
                     await self.with_circuit_breaker(fn)
@@ -114,9 +117,9 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
                     fn = partial(self.kong.activate_jwt_plugin_on_route, route_id=resp["id"])
                     await self.with_circuit_breaker(fn)
 
-            if "allowed_groups" in endpoint:
+            if "authorized_groups" in endpoint:
                 fn = partial(
-                    self.kong.activate_acl_plugin_on_route, route_id=resp["id"], allow=endpoint["allowed_groups"]
+                    self.kong.activate_acl_plugin_on_route, route_id=resp["id"], allow=endpoint["authorized_groups"]
                 )
                 await self.with_circuit_breaker(fn)
 
