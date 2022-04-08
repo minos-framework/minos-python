@@ -20,15 +20,14 @@ from psycopg2 import (
     OperationalError,
 )
 
-from ..operations import (
-    AiopgDatabaseOperation,
-)
-from .abc import (
+from minos.common import (
     DatabaseClient,
-)
-from .exceptions import (
     IntegrityException,
     UnableToConnectException,
+)
+
+from .operations import (
+    AiopgDatabaseOperation,
 )
 
 logger = logging.getLogger(__name__)

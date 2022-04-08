@@ -16,8 +16,6 @@ from psycopg2 import (
 )
 
 from minos.common import (
-    AiopgDatabaseClient,
-    AiopgDatabaseOperation,
     DatabaseLock,
     DatabaseOperation,
     IntegrityException,
@@ -26,13 +24,17 @@ from minos.common import (
 from minos.common.testing import (
     DatabaseMinosTestCase,
 )
+from minos.plugins.aiopg import (
+    AiopgDatabaseClient,
+    AiopgDatabaseOperation,
+)
 from tests.utils import (
-    CommonTestCase,
+    AiopgTestCase,
 )
 
 
 # noinspection SqlNoDataSourceInspection
-class TestAiopgDatabaseClient(CommonTestCase, DatabaseMinosTestCase):
+class TestAiopgDatabaseClient(AiopgTestCase, DatabaseMinosTestCase):
     def setUp(self):
         super().setUp()
         self.operation = AiopgDatabaseOperation("SELECT * FROM information_schema.tables")

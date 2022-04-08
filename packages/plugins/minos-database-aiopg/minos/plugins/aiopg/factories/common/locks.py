@@ -1,12 +1,13 @@
+from minos.common import (
+    DatabaseOperation,
+    LockDatabaseOperationFactory,
+)
+
 from ...clients import (
     AiopgDatabaseClient,
 )
 from ...operations import (
     AiopgDatabaseOperation,
-    DatabaseOperation,
-)
-from .abc import (
-    LockDatabaseOperationFactory,
 )
 
 

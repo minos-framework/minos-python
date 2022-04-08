@@ -10,6 +10,6 @@ BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
 
-class CommonTestCase(MinosTestCase):
+class AiopgTestCase(MinosTestCase):
     def get_config_file_path(self) -> Path:
         return CONFIG_FILE_PATH

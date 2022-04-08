@@ -14,10 +14,6 @@ from .config import (
     MinosConfig,
 )
 from .database import (
-    AiopgDatabaseClient,
-    AiopgDatabaseOperation,
-    AiopgLockDatabaseOperationFactory,
-    AiopgManageDatabaseOperationFactory,
     ComposedDatabaseOperation,
     DatabaseClient,
     DatabaseClientBuilder,

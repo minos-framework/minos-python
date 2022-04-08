@@ -24,7 +24,6 @@ from .config import (
     Config,
 )
 from .database import (
-    AiopgDatabaseClient,
     DatabaseClient,
     DatabaseClientPool,
     ManageDatabaseOperationFactory,
@@ -84,7 +83,9 @@ class DatabaseMinosTestCase(MinosTestCase, ABC):
         super().setUp()
 
     def get_client(self) -> DatabaseClient:
-        return AiopgDatabaseClient.from_config(self.base_config)
+        default_config = self.base_config.get_default_database()
+        client = default_config.get("client")
+        return client.from_config(self.base_config)
 
     def get_config(self) -> Config:
         config = Config(self.get_config_file_path())

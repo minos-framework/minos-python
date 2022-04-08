@@ -1,8 +1,10 @@
 import unittest
 
 from minos.common import (
-    AiopgDatabaseOperation,
     DatabaseOperation,
+)
+from minos.plugins.aiopg import (
+    AiopgDatabaseOperation,
 )
 
 

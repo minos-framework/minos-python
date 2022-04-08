@@ -7,7 +7,7 @@ from psycopg2.sql import (
     Composable,
 )
 
-from .abc import (
+from minos.common import (
     DatabaseOperation,
 )
 
