@@ -81,7 +81,7 @@ class AioHttpRequest(HttpRequest):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.raw!r})"
 
-    @cached_property
+    @property
     def user(self) -> Optional[UUID]:
         """
         Returns the UUID of the user making the Request.
