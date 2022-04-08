@@ -1,5 +1,13 @@
+from __future__ import (
+    annotations,
+)
+
 from abc import (
     ABC,
+)
+from collections.abc import (
+    AsyncIterator,
+    Iterable,
 )
 from datetime import (
     timedelta,
@@ -15,14 +23,25 @@ from typing import (
     Callable,
     Optional,
 )
+from uuid import (
+    UUID,
+)
 
 from minos.common import (
+    DatabaseClient,
+    DatabaseOperation,
     DeclarativeModel,
+    LockDatabaseOperationFactory,
+    ManageDatabaseOperationFactory,
 )
 from minos.common.testing import (
     MinosTestCase,
 )
 from minos.networks import (
+    BrokerPublisherQueueDatabaseOperationFactory,
+    BrokerQueueDatabaseOperationFactory,
+    BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
+    BrokerSubscriberQueueDatabaseOperationFactory,
     EnrouteDecorator,
     HttpConnector,
     Request,
@@ -38,6 +57,157 @@ CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 class NetworksTestCase(MinosTestCase, ABC):
     def get_config_file_path(self):
         return CONFIG_FILE_PATH
+
+
+class FakeDatabaseClient(DatabaseClient):
+    """For testing purposes"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.kwargs = kwargs
+        self._response = tuple()
+
+    async def _is_valid(self, **kwargs) -> bool:
+        """For testing purposes"""
+        return True
+
+    async def _reset(self, **kwargs) -> None:
+        """For testing purposes"""
+        self._response = tuple()
+
+    async def _execute(self, operation: FakeDatabaseOperation) -> None:
+        """For testing purposes"""
+        self._response = operation.response
+
+    async def _fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
+        """For testing purposes"""
+        for value in self._response:
+            yield value
+
+
+class FakeDatabaseOperation(DatabaseOperation):
+    """For testing purposes"""
+
+    def __init__(self, content: str, response: Optional[Iterable[Any]] = tuple(), *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.content = content
+        self.response = tuple(response)
+
+
+class FakeLockDatabaseOperationFactory(LockDatabaseOperationFactory):
+    """For testing purposes"""
+
+    def build_acquire(self, hashed_key: int) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("acquire")
+
+    def build_release(self, hashed_key: int) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("release")
+
+
+FakeDatabaseClient.register_factory(LockDatabaseOperationFactory, FakeLockDatabaseOperationFactory)
+
+
+class FakeManageDatabaseOperationFactory(ManageDatabaseOperationFactory):
+    """For testing purposes"""
+
+    def build_create(self, database: str) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("create")
+
+    def build_delete(self, database: str) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("delete")
+
+
+FakeDatabaseClient.register_factory(ManageDatabaseOperationFactory, FakeManageDatabaseOperationFactory)
+
+
+class FakeBrokerQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory):
+    """For testing purposes."""
+
+    def build_create_table(self) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("create_queue_table")
+
+    def build_update_not_processed(self, id_: int) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("update_not_processed")
+
+    def build_delete_processed(self, id_: int) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("delete_processed")
+
+    def build_mark_processing(self, ids: Iterable[int]) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("mark_processing")
+
+    def build_count_not_processed(self, retry: int, *args, **kwargs) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("count_not_processed")
+
+    def build_insert(self, topic: str, data: bytes) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("insert")
+
+    def build_select_not_processed(self, retry: int, records: int, *args, **kwargs) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("select_not_processed")
+
+
+class FakeBrokerPublisherQueueDatabaseOperationFactory(
+    BrokerPublisherQueueDatabaseOperationFactory, FakeBrokerQueueDatabaseOperationFactory
+):
+    """For testing purposes"""
+
+
+FakeDatabaseClient.register_factory(
+    BrokerPublisherQueueDatabaseOperationFactory, FakeBrokerPublisherQueueDatabaseOperationFactory
+)
+
+
+class FakeBrokerSubscriberQueueDatabaseOperationFactory(
+    BrokerSubscriberQueueDatabaseOperationFactory, FakeBrokerQueueDatabaseOperationFactory
+):
+    """For testing purposes"""
+
+    def build_count_not_processed(
+        self, retry: int, topics: Iterable[str] = tuple(), *args, **kwargs
+    ) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("count_not_processed")
+
+    def build_select_not_processed(
+        self, retry: int, records: int, topics: Iterable[str] = tuple(), *args, **kwargs
+    ) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("select_not_processed")
+
+
+FakeDatabaseClient.register_factory(
+    BrokerSubscriberQueueDatabaseOperationFactory, FakeBrokerSubscriberQueueDatabaseOperationFactory
+)
+
+
+class FakeBrokerSubscriberDuplicateValidatorDatabaseOperationFactory(
+    BrokerSubscriberDuplicateValidatorDatabaseOperationFactory
+):
+    """For testing purposes"""
+
+    def build_create_table(self) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("create_table")
+
+    def build_insert_row(self, topic: str, uuid: UUID) -> DatabaseOperation:
+        """For testing purposes"""
+        return FakeDatabaseOperation("insert_row")
+
+
+FakeDatabaseClient.register_factory(
+    BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
+    FakeBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
+)
 
 
 @total_ordering

@@ -7,10 +7,6 @@ __version__ = "0.6.0"
 from .brokers import (
     REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
-    AiopgBrokerPublisherQueueDatabaseOperationFactory,
-    AiopgBrokerQueueDatabaseOperationFactory,
-    AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
-    AiopgBrokerSubscriberQueueDatabaseOperationFactory,
     BrokerClient,
     BrokerClientPool,
     BrokerDispatcher,

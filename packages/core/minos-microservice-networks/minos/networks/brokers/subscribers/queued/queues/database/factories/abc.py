@@ -1,5 +1,6 @@
 from abc import (
     ABC,
+    abstractmethod,
 )
 from collections.abc import (
     Iterable,
@@ -18,6 +19,7 @@ from ......collections import (
 class BrokerSubscriberQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory, ABC):
     """Broker Subscriber Queue Database Operation Factory class."""
 
+    @abstractmethod
     def build_count_not_processed(
         self,
         retry: int,
@@ -30,6 +32,7 @@ class BrokerSubscriberQueueDatabaseOperationFactory(BrokerQueueDatabaseOperation
         :return:
         """
 
+    @abstractmethod
     def build_select_not_processed(
         self,
         retry: int,

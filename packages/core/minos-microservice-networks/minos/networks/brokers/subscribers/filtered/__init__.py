@@ -2,7 +2,6 @@ from .impl import (
     FilteredBrokerSubscriber,
 )
 from .validators import (
-    AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     BrokerSubscriberDuplicateValidator,
     BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     BrokerSubscriberValidator,

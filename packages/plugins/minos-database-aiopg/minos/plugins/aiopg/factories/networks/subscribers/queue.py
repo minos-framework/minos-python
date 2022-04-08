@@ -7,16 +7,20 @@ from psycopg2.sql import (
 )
 
 from minos.common import (
-    AiopgDatabaseClient,
-    AiopgDatabaseOperation,
     DatabaseOperation,
 )
-
-from ......collections import (
-    AiopgBrokerQueueDatabaseOperationFactory,
-)
-from .abc import (
+from minos.networks import (
     BrokerSubscriberQueueDatabaseOperationFactory,
+)
+
+from ....clients import (
+    AiopgDatabaseClient,
+)
+from ....operations import (
+    AiopgDatabaseOperation,
+)
+from ..collections import (
+    AiopgBrokerQueueDatabaseOperationFactory,
 )
 
 

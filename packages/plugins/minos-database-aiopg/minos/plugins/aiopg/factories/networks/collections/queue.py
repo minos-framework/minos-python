@@ -11,12 +11,14 @@ from psycopg2.sql import (
 )
 
 from minos.common import (
-    AiopgDatabaseOperation,
     DatabaseOperation,
 )
-
-from .abc import (
+from minos.networks import (
     BrokerQueueDatabaseOperationFactory,
+)
+
+from ....clients import (
+    AiopgDatabaseOperation,
 )
 
 

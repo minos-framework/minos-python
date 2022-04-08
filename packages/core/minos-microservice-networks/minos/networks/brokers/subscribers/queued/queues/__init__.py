@@ -3,7 +3,6 @@ from .abc import (
     BrokerSubscriberQueueBuilder,
 )
 from .database import (
-    AiopgBrokerSubscriberQueueDatabaseOperationFactory,
     BrokerSubscriberQueueDatabaseOperationFactory,
     DatabaseBrokerSubscriberQueue,
     DatabaseBrokerSubscriberQueueBuilder,

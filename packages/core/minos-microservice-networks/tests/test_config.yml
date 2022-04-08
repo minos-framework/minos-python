@@ -16,34 +16,12 @@ rest:
     host: localhost
     port: 8080
 repository:
-    client: minos.common.AiopgDatabaseClient
+    client: tests.utils.FakeDatabaseClient
     database: order_db
     user: minos
     password: min0s
     host: localhost
     port: 5432
-snapshot:
-    client: minos.common.AiopgDatabaseClient
-    database: order_db
-    user: minos
-    password: min0s
-    host: localhost
-    port: 5432
-broker:
-  host: localhost
-  port: 9092
-  queue:
-    client: minos.common.AiopgDatabaseClient
-    database: order_db
-    user: minos
-    password: min0s
-    host: localhost
-    port: 5432
-    records: 10
-    retry: 2
-saga:
-    storage:
-        path: "./order.lmdb"
 discovery:
     client: minos.networks.InMemoryDiscoveryClient
     host: discovery-service

@@ -4,8 +4,8 @@ from minos.common.testing import (
     DatabaseMinosTestCase,
 )
 from minos.networks import (
-    AiopgBrokerPublisherQueueDatabaseOperationFactory,
     BrokerPublisherQueue,
+    BrokerPublisherQueueDatabaseOperationFactory,
     DatabaseBrokerPublisherQueue,
     DatabaseBrokerQueue,
 )
@@ -21,15 +21,7 @@ class TestDatabaseBrokerPublisherQueue(NetworksTestCase, DatabaseMinosTestCase):
     async def test_operation_factory(self):
         queue = DatabaseBrokerPublisherQueue.from_config(self.config)
 
-        self.assertIsInstance(queue.operation_factory, AiopgBrokerPublisherQueueDatabaseOperationFactory)
-
-
-class TestAiopgBrokerPublisherQueueDatabaseOperationFactory(unittest.TestCase):
-    def setUp(self) -> None:
-        self.factory = AiopgBrokerPublisherQueueDatabaseOperationFactory()
-
-    def test_build_table_name(self):
-        self.assertEqual("broker_publisher_queue", self.factory.build_table_name())
+        self.assertIsInstance(queue.operation_factory, BrokerPublisherQueueDatabaseOperationFactory)
 
 
 if __name__ == "__main__":

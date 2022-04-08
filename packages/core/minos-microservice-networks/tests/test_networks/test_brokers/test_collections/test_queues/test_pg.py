@@ -2,20 +2,22 @@ import unittest
 from asyncio import (
     sleep,
 )
+from itertools import (
+    chain,
+    cycle,
+)
 from unittest.mock import (
     AsyncMock,
     patch,
 )
 
 from minos.common import (
-    AiopgDatabaseClient,
     DatabaseMixin,
 )
 from minos.common.testing import (
     DatabaseMinosTestCase,
 )
 from minos.networks import (
-    AiopgBrokerQueueDatabaseOperationFactory,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerQueue,
@@ -23,22 +25,16 @@ from minos.networks import (
 )
 from tests.utils import (
     FakeAsyncIterator,
+    FakeBrokerQueueDatabaseOperationFactory,
+    FakeDatabaseClient,
     NetworksTestCase,
 )
-
-
-class _AiopgBrokerQueueDatabaseOperationFactory(AiopgBrokerQueueDatabaseOperationFactory):
-    """For testing purposes."""
-
-    def build_table_name(self) -> str:
-        """For testing purposes."""
-        return "test_table"
 
 
 class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.operation_factory = _AiopgBrokerQueueDatabaseOperationFactory()
+        self.operation_factory = FakeBrokerQueueDatabaseOperationFactory()
 
     def test_is_subclass(self):
         self.assertTrue(issubclass(DatabaseBrokerQueue, (BrokerQueue, DatabaseMixin)))
@@ -58,9 +54,17 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
     async def test_enqueue(self):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
 
-        async with DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory) as queue:
-            await queue.enqueue(message)
-            await sleep(0.5)  # To give time to consume the message from db.
+        with patch.object(
+            FakeDatabaseClient,
+            "fetch_all",
+            side_effect=chain(
+                [FakeAsyncIterator([(0,)]), FakeAsyncIterator([(1, message.avro_bytes)])],
+                cycle([FakeAsyncIterator([(0,)])]),
+            ),
+        ):
+            async with DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory) as queue:
+                await queue.enqueue(message)
+                await sleep(0.5)  # To give time to consume the message from db.
 
     async def test_aiter(self):
         messages = [
@@ -73,11 +77,23 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
         await queue.enqueue(messages[0])
         await queue.enqueue(messages[1])
 
-        observed = list()
-        async for message in queue:
-            observed.append(message)
-            if len(messages) == len(observed):
-                await queue.destroy()
+        with patch.object(
+            FakeDatabaseClient,
+            "fetch_all",
+            side_effect=chain(
+                [
+                    FakeAsyncIterator([(2,)]),
+                    FakeAsyncIterator([(1, messages[0].avro_bytes), (2, messages[1].avro_bytes)]),
+                ],
+                cycle([FakeAsyncIterator([(0,)])]),
+            ),
+        ):
+
+            observed = list()
+            async for message in queue:
+                observed.append(message)
+                if len(messages) == len(observed):
+                    await queue.destroy()
 
         self.assertEqual(messages, observed)
 
@@ -88,7 +104,7 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
         ]
 
         with patch.object(
-            AiopgDatabaseClient,
+            FakeDatabaseClient,
             "fetch_all",
             return_value=FakeAsyncIterator([[1, messages[0].avro_bytes], [2, bytes()], [3, messages[1].avro_bytes]]),
         ):
@@ -105,11 +121,28 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
             BrokerMessageV1("foo", BrokerMessageV1Payload("bar")),
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
-        async with DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory) as queue:
-            await queue.enqueue(messages[0])
-            await queue.enqueue(messages[1])
 
-            observed = [await queue.dequeue(), await queue.dequeue()]
+        with patch.object(
+            FakeDatabaseClient,
+            "fetch_all",
+            side_effect=chain(
+                [
+                    FakeAsyncIterator([(0,)]),
+                    FakeAsyncIterator(
+                        [
+                            (1, messages[0].avro_bytes),
+                            (2, messages[1].avro_bytes),
+                        ]
+                    ),
+                ],
+                cycle([FakeAsyncIterator([(0,)])]),
+            ),
+        ):
+            async with DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory) as queue:
+                await queue.enqueue(messages[0])
+                await queue.enqueue(messages[1])
+
+                observed = [await queue.dequeue(), await queue.dequeue()]
 
         self.assertEqual(messages, observed)
 
@@ -121,15 +154,28 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
             BrokerMessageV1("foo", BrokerMessageV1Payload(1)),
         ]
 
-        async with DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory) as queue:
-
-            for message in unsorted:
-                await queue.enqueue(message)
-
-            await sleep(0.5)
-            observed = list()
-            for _ in range(len(unsorted)):
-                observed.append(await queue.dequeue())
+        with patch.object(
+            FakeDatabaseClient,
+            "fetch_all",
+            side_effect=chain(
+                [
+                    FakeAsyncIterator([(2,)]),
+                    FakeAsyncIterator(
+                        [
+                            (1, unsorted[0].avro_bytes),
+                            (2, unsorted[1].avro_bytes),
+                            (3, unsorted[2].avro_bytes),
+                            (4, unsorted[3].avro_bytes),
+                        ]
+                    ),
+                ],
+                cycle([FakeAsyncIterator([(0,)])]),
+            ),
+        ):
+            async with DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory) as queue:
+                observed = list()
+                for _ in range(len(unsorted)):
+                    observed.append(await queue.dequeue())
 
         expected = [unsorted[3], unsorted[1], unsorted[2], unsorted[0]]
 
