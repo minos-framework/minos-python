@@ -14,6 +14,7 @@ from minos.networks import (
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+CONFIG_FILE_NO_AUTH_PATH = BASE_PATH / "test_config_no_auth.yml"
 rand = 27
 TEST_HOST = f"{rand}.{rand}.{rand}.{rand}"
 

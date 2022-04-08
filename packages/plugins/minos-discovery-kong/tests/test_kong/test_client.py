@@ -13,6 +13,7 @@ from minos.plugins.kong import (
     KongDiscoveryClient,
 )
 from tests.utils import (
+    CONFIG_FILE_NO_AUTH_PATH,
     CONFIG_FILE_PATH,
     TEST_HOST,
 )
@@ -239,6 +240,39 @@ class TestKongDiscoveryClientFromConfigOverrideAuth(unittest.IsolatedAsyncioTest
                 {"url": "/foo", "method": "POST", "authenticated": True, "authorized_groups": ["super_admin", "admin"]},
                 {"url": "/bar", "method": "GET", "authenticated": True, "authorized_groups": ["super_admin", "admin"]},
             ],
+        )
+        self.assertTrue(201 == response.status_code)
+
+        async with httpx.AsyncClient() as client:
+            url = f"{PROTOCOL}://{self.client.host}:{self.client.port}/services/{name}"
+            response = await client.get(url)
+            response_data = response.json()
+            self.assertTrue(200 == response.status_code)
+            self.assertEqual(5660, response_data["port"])
+            self.assertEqual(TEST_HOST, response_data["host"])
+            self.assertEqual(PROTOCOL, response_data["protocol"])
+
+
+class TestKongDiscoveryClientFromConfigNoAuth(unittest.IsolatedAsyncioTestCase):
+    KONG_HOST = os.getenv("KONG_HOST", "localhost")
+    KONG_PORT = os.getenv("KONG_PORT", 8001)
+
+    def setUp(self) -> None:
+        config = Config(CONFIG_FILE_NO_AUTH_PATH)
+        self.client = KongDiscoveryClient.from_config(config=config, circuit_breaker_time=0.1)
+
+    @staticmethod
+    def generate_underscore_uuid():
+        name = str(uuid4())
+        return name.replace("-", "_")
+
+    async def test_subscribe(self):
+        name = self.generate_underscore_uuid()
+        response = await self.client.subscribe(
+            TEST_HOST,
+            5660,
+            name,
+            [{"url": "/", "method": "GET"}, {"url": "/foo", "method": "POST"}, {"url": "/bar", "method": "GET"}],
         )
         self.assertTrue(201 == response.status_code)
 

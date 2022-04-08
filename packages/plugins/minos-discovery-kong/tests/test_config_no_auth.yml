@@ -1,0 +1,4 @@
+discovery:
+    client: minos.networks.InMemoryDiscoveryClient
+    host: localhost
+    port: 8001
