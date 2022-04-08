@@ -51,11 +51,11 @@ repos:
                 files: ^packages/plugins/minos-discovery-minos/
                 language: system
 
-            -   id: kong-discovery-kong-check
+            -   id: minos-discovery-kong-check
                 pass_filenames: false
-                entry: make --directory=packages/plugins/kong-discovery-kong check
-                name: Check kong-discovery-kong
-                files: ^packages/plugins/kong-discovery-kong/
+                entry: make --directory=packages/plugins/minos-discovery-kong check
+                name: Check minos-discovery-kong
+                files: ^packages/plugins/minos-discovery-kong/
                 language: system
 
             -   id: minos-http-aiohttp-check
