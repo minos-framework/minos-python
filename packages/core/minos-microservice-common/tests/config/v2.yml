@@ -6,7 +6,7 @@ serializer:
   client: tests.utils.FakeSerializer
 databases:
   default:
-    client: minos.common.AiopgDatabaseClient
+    client: tests.utils.FakeDatabaseClient
     database: order_db
     user: minos
     password: min0s

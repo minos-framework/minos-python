@@ -1,9 +1,6 @@
 import unittest
 
 from minos.common import (
-    AiopgDatabaseClient,
-    AiopgDatabaseOperation,
-    AiopgLockDatabaseOperationFactory,
     DatabaseClientPool,
     DatabaseMixin,
     LockDatabaseOperationFactory,
@@ -15,6 +12,9 @@ from minos.common.testing import (
 )
 from tests.utils import (
     CommonTestCase,
+    FakeDatabaseClient,
+    FakeDatabaseOperation,
+    FakeLockDatabaseOperationFactory,
 )
 
 
@@ -22,6 +22,7 @@ from tests.utils import (
 class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
     def test_constructor(self):
         pool = DatabaseClientPool.from_config(self.config)
+        # noinspection PyTypeChecker
         database = DatabaseMixin(pool)
         self.assertEqual(pool, database.database_pool)
 
@@ -42,20 +43,20 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
             self.assertIsInstance(database.database_pool, DatabaseClientPool)
 
     async def test_operation_factory(self):
-        operation_factory = AiopgLockDatabaseOperationFactory()
+        operation_factory = FakeLockDatabaseOperationFactory()
         mixin = DatabaseMixin(operation_factory=operation_factory)
         self.assertEqual(operation_factory, mixin.operation_factory)
 
     async def test_operation_factory_from_cls_init(self):
         mixin = DatabaseMixin(operation_factory_cls=LockDatabaseOperationFactory)
-        self.assertIsInstance(mixin.operation_factory, AiopgLockDatabaseOperationFactory)
+        self.assertIsInstance(mixin.operation_factory, FakeLockDatabaseOperationFactory)
 
     async def test_operation_factory_from_cls_generic(self):
         class _DatabaseMixin(DatabaseMixin[LockDatabaseOperationFactory]):
             """For testing purposes."""
 
         mixin = _DatabaseMixin()
-        self.assertIsInstance(mixin.operation_factory, AiopgLockDatabaseOperationFactory)
+        self.assertIsInstance(mixin.operation_factory, FakeLockDatabaseOperationFactory)
 
     async def test_operation_factory_none(self):
         mixin = DatabaseMixin()
@@ -69,31 +70,31 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
             _DatabaseMixin()
 
     async def test_submit_query(self):
-        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")
-        op2 = AiopgDatabaseOperation("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
+        op1 = FakeDatabaseOperation("create_table")
+        op2 = FakeDatabaseOperation("check_exist", [(True,)])
 
         async with DatabaseMixin() as database:
             await database.submit_query(op1)
 
-        async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
+        async with FakeDatabaseClient(**self.config.get_default_database()) as client:
             await client.execute(op2)
             self.assertTrue((await client.fetch_one())[0])
 
     async def test_submit_query_locked(self):
-        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);", lock=1234)
-        op2 = AiopgDatabaseOperation("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
+        op1 = FakeDatabaseOperation("create_table", lock=1234)
+        op2 = FakeDatabaseOperation("check_exist", [(True,)])
 
         async with DatabaseMixin() as database:
             await database.submit_query(op1)
 
-        async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
+        async with FakeDatabaseClient(**self.config.get_default_database()) as client:
             await client.execute(op2)
             self.assertTrue((await client.fetch_one())[0])
 
     async def test_submit_query_and_fetchone(self):
-        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")
-        op2 = AiopgDatabaseOperation("INSERT INTO foo (id) VALUES (3), (4), (5);")
-        op3 = AiopgDatabaseOperation("SELECT * FROM foo;")
+        op1 = FakeDatabaseOperation("create_table")
+        op2 = FakeDatabaseOperation("insert")
+        op3 = FakeDatabaseOperation("select", [(3,), (4,), (5,)])
 
         async with DatabaseMixin() as database:
             await database.submit_query(op1)
@@ -104,9 +105,9 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
         self.assertEqual((3,), observed)
 
     async def test_submit_query_and_iter(self):
-        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")
-        op2 = AiopgDatabaseOperation("INSERT INTO foo (id) VALUES (3), (4), (5);")
-        op3 = AiopgDatabaseOperation("SELECT * FROM foo;")
+        op1 = FakeDatabaseOperation("create_table")
+        op2 = FakeDatabaseOperation("insert")
+        op3 = FakeDatabaseOperation("select", [(3,), (4,), (5,)])
 
         async with DatabaseMixin() as database:
             await database.submit_query(op1)
@@ -116,9 +117,9 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
         self.assertEqual([(3,), (4,), (5,)], observed)
 
     async def test_submit_query_and_iter_streaming_mode_true(self):
-        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")
-        op2 = AiopgDatabaseOperation("INSERT INTO foo (id) VALUES (3), (4), (5);")
-        op3 = AiopgDatabaseOperation("SELECT * FROM foo;")
+        op1 = FakeDatabaseOperation("create_table")
+        op2 = FakeDatabaseOperation("insert")
+        op3 = FakeDatabaseOperation("select", [(3,), (4,), (5,)])
 
         async with DatabaseMixin() as database:
             await database.submit_query(op1)
@@ -129,9 +130,9 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
         self.assertEqual([(3,), (4,), (5,)], observed)
 
     async def test_submit_query_and_iter_locked(self):
-        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);", lock=1234)
-        op2 = AiopgDatabaseOperation("INSERT INTO foo (id) VALUES (3), (4), (5);")
-        op3 = AiopgDatabaseOperation("SELECT * FROM foo;")
+        op1 = FakeDatabaseOperation("create_table", lock=1234)
+        op2 = FakeDatabaseOperation("insert")
+        op3 = FakeDatabaseOperation("select", [(3,), (4,), (5,)])
 
         async with DatabaseMixin() as database:
             await database.submit_query(op1)

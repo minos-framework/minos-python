@@ -4,14 +4,12 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    AiopgDatabaseClient,
     Config,
     DatabaseClient,
     DatabaseClientBuilder,
     DatabaseClientPool,
     DatabaseLock,
     DatabaseLockPool,
-    UnableToConnectException,
     classname,
 )
 from minos.common.testing import (
@@ -20,6 +18,7 @@ from minos.common.testing import (
 from tests.utils import (
     CONFIG_FILE_PATH,
     CommonTestCase,
+    FakeDatabaseClient,
 )
 
 
@@ -44,7 +43,7 @@ class TestDatabaseClientPool(CommonTestCase, DatabaseMinosTestCase):
     def test_from_config(self):
         pool = DatabaseClientPool.from_config(self.config, key="event")
         self.assertIsInstance(pool.client_builder, DatabaseClientBuilder)
-        self.assertEqual(AiopgDatabaseClient, pool.client_builder.instance_cls)
+        self.assertEqual(FakeDatabaseClient, pool.client_builder.instance_cls)
 
     def test_from_config_client_builder(self):
         config = Config(CONFIG_FILE_PATH, databases_default_client=classname(DatabaseClientBuilder))
@@ -72,16 +71,15 @@ class TestDatabaseClientPool(CommonTestCase, DatabaseMinosTestCase):
                 self.assertNotEqual(c1, c2)
 
     async def test_acquire_with_reset(self):
-        with patch.object(AiopgDatabaseClient, "reset") as reset_mock:
+        with patch.object(FakeDatabaseClient, "reset") as reset_mock:
             async with self.pool.acquire():
                 self.assertEqual(0, reset_mock.call_count)
         self.assertEqual(1, reset_mock.call_count)
 
     async def test_acquire_with_connection_error(self):
-        with patch.object(AiopgDatabaseClient, "_create_connection", side_effect=(UnableToConnectException(""), None)):
-            with patch.object(AiopgDatabaseClient, "is_valid", return_value=True):
-                async with self.pool.acquire() as client:
-                    self.assertIsInstance(client, AiopgDatabaseClient)
+        with patch.object(FakeDatabaseClient, "is_valid", return_value=True):
+            async with self.pool.acquire() as client:
+                self.assertIsInstance(client, FakeDatabaseClient)
 
 
 class TestDatabaseLockPool(CommonTestCase, DatabaseMinosTestCase):

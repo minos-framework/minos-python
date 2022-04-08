@@ -13,7 +13,6 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    AiopgDatabaseClient,
     BuildableMixin,
     ComposedDatabaseOperation,
     DatabaseClient,
@@ -24,6 +23,7 @@ from minos.common import (
 from tests.utils import (
     CommonTestCase,
     FakeAsyncIterator,
+    FakeDatabaseClient,
 )
 
 
@@ -159,19 +159,19 @@ class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
 
 class TestDatabaseClientBuilder(CommonTestCase):
     def test_with_name(self):
-        builder = DatabaseClientBuilder(AiopgDatabaseClient).with_name("query")
+        builder = DatabaseClientBuilder(FakeDatabaseClient).with_name("query")
         self.assertEqual({"name": "query"}, builder.kwargs)
 
     def test_with_config(self):
-        builder = DatabaseClientBuilder(AiopgDatabaseClient).with_name("query").with_config(self.config)
+        builder = DatabaseClientBuilder(FakeDatabaseClient).with_name("query").with_config(self.config)
         self.assertEqual({"name": "query"} | self.config.get_database_by_name("query"), builder.kwargs)
 
     def test_build(self):
-        builder = DatabaseClientBuilder(AiopgDatabaseClient).with_name("query").with_config(self.config)
+        builder = DatabaseClientBuilder(FakeDatabaseClient).with_name("query").with_config(self.config)
         client = builder.build()
 
-        self.assertIsInstance(client, AiopgDatabaseClient)
-        self.assertEqual(self.config.get_database_by_name("query")["database"], client.database)
+        self.assertIsInstance(client, FakeDatabaseClient)
+        self.assertEqual(self.config.get_database_by_name("query")["database"], client.kwargs["database"])
 
 
 if __name__ == "__main__":
