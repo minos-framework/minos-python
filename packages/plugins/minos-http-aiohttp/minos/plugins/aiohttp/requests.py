@@ -90,14 +90,14 @@ class AioHttpRequest(HttpRequest):
             return None
         return UUID(self.headers["user"])
 
-    @property
+    @cached_property
     def headers(self) -> dict[str, str]:
         """Get the headers of the request.
 
         :return: A dictionary in which keys are ``str`` instances and values are ``str`` instances.
         """
         # noinspection PyTypeChecker
-        return self.raw.headers
+        return self.raw.headers.copy()
 
     @property
     def has_content(self) -> bool:
