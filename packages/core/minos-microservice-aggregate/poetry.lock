@@ -442,7 +442,7 @@ test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "68b13cc914d2cf6d62d9195948eee0a89b6722bc73dfdd27f60c84c1aa0150d3"
+content-hash = "e834c028de4f16ef5579578f8382fafdec7a4cb3324b70cd502049424c4af4e7"
 
 [metadata.files]
 aiomisc = [
