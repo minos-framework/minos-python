@@ -9,11 +9,11 @@ from minos.common import (
     MinosImportException,
 )
 from minos.networks import (
+    DiscoveryClient,
     DiscoveryConnector,
     InMemoryDiscoveryClient,
     MinosInvalidDiscoveryClient,
     get_host_ip,
-    DiscoveryClient,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
