@@ -7,7 +7,9 @@ from minos.aggregate.testing import (
     SnapshotRepositoryReaderTestCase,
     SnapshotRepositoryWriterTestCase,
 )
-from minos.aggregate.testing.snapshot_repository import Car
+from minos.aggregate.testing.snapshot_repository import (
+    Car,
+)
 from minos.plugins.aiopg import (
     AiopgDatabaseOperation,
 )
