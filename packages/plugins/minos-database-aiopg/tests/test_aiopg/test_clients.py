@@ -21,9 +21,6 @@ from minos.common import (
     IntegrityException,
     UnableToConnectException,
 )
-from minos.common.testing import (
-    DatabaseMinosTestCase,
-)
 from minos.plugins.aiopg import (
     AiopgDatabaseClient,
     AiopgDatabaseOperation,
@@ -34,7 +31,7 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestAiopgDatabaseClient(AiopgTestCase, DatabaseMinosTestCase):
+class TestAiopgDatabaseClient(AiopgTestCase):
     def setUp(self):
         super().setUp()
         self.operation = AiopgDatabaseOperation("SELECT * FROM information_schema.tables")

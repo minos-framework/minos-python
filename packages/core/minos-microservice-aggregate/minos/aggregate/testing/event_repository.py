@@ -28,12 +28,12 @@ from minos.common import (
     NULL_UUID,
     current_datetime,
 )
-from tests.utils import (
-    AggregateTestCase,
+from minos.common.testing import (
+    MinosTestCase,
 )
 
 
-class EventRepositoryTestCase(AggregateTestCase):
+class EventRepositoryTestCase(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.uuid = uuid4()
