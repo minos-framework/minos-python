@@ -33,6 +33,7 @@ from tests.utils import (
 )
 
 
+@unittest.skip
 class TestDatabaseSnapshotReader(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()

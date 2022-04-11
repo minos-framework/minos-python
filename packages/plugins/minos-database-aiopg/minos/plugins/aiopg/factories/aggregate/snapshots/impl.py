@@ -12,19 +12,23 @@ from uuid import (
     UUID,
 )
 
+from minos.aggregate import (
+    SnapshotDatabaseOperationFactory,
+)
+from minos.aggregate.queries import (
+    _Condition,
+    _Ordering,
+)
 from minos.common import (
-    AiopgDatabaseClient,
-    AiopgDatabaseOperation,
     ComposedDatabaseOperation,
     DatabaseOperation,
 )
 
-from .....queries import (
-    _Condition,
-    _Ordering,
+from ....clients import (
+    AiopgDatabaseClient,
 )
-from ..abc import (
-    SnapshotDatabaseOperationFactory,
+from ....operations import (
+    AiopgDatabaseOperation,
 )
 from .queries import (
     AiopgSnapshotQueryDatabaseOperationBuilder,

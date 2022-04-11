@@ -29,7 +29,6 @@ from .entities import (
     RootEntity,
 )
 from .events import (
-    AiopgEventDatabaseOperationFactory,
     DatabaseEventRepository,
     Event,
     EventDatabaseOperationFactory,
@@ -59,8 +58,6 @@ from .queries import (
     Ordering,
 )
 from .snapshots import (
-    AiopgSnapshotDatabaseOperationFactory,
-    AiopgSnapshotQueryDatabaseOperationBuilder,
     DatabaseSnapshotReader,
     DatabaseSnapshotRepository,
     DatabaseSnapshotSetup,
@@ -73,7 +70,6 @@ from .snapshots import (
 )
 from .transactions import (
     TRANSACTION_CONTEXT_VAR,
-    AiopgTransactionDatabaseOperationFactory,
     DatabaseTransactionRepository,
     InMemoryTransactionRepository,
     TransactionDatabaseOperationFactory,

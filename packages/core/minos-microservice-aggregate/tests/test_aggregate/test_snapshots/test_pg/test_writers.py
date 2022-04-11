@@ -39,6 +39,7 @@ from tests.utils import (
 )
 
 
+@unittest.skip
 class TestDatabaseSnapshotWriter(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()

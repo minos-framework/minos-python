@@ -2,14 +2,14 @@ service:
     name: Order
     aggregate: tests.utils.Order
 repository:
-    client: minos.common.AiopgDatabaseClient
+    client: tests.utils.FakeDatabaseClient
     database: order_db
     user: minos
     password: min0s
     host: localhost
     port: 5432
 snapshot:
-    client: minos.common.AiopgDatabaseClient
+    client: tests.utils.FakeDatabaseClient
     database: order_db
     user: minos
     password: min0s
@@ -22,7 +22,7 @@ broker:
   host: localhost
   port: 9092
   queue:
-    client: minos.common.AiopgDatabaseClient
+    client: tests.utils.FakeDatabaseClient
     database: order_db
     user: minos
     password: min0s

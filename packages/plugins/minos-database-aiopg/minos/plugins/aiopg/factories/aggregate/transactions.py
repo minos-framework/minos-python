@@ -6,28 +6,27 @@ from datetime import (
     datetime,
 )
 from typing import (
-    TYPE_CHECKING,
     Optional,
 )
 from uuid import (
     UUID,
 )
 
+from minos.aggregate import (
+    TransactionDatabaseOperationFactory,
+    TransactionStatus,
+)
 from minos.common import (
-    AiopgDatabaseClient,
-    AiopgDatabaseOperation,
     ComposedDatabaseOperation,
     DatabaseOperation,
 )
 
-from .abc import (
-    TransactionDatabaseOperationFactory,
+from ...clients import (
+    AiopgDatabaseClient,
 )
-
-if TYPE_CHECKING:
-    from ....entries import (
-        TransactionStatus,
-    )
+from ...operations import (
+    AiopgDatabaseOperation,
+)
 
 
 # noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic

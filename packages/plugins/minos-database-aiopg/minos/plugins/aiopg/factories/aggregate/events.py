@@ -19,18 +19,20 @@ from psycopg2.sql import (
     Placeholder,
 )
 
+from minos.aggregate import (
+    Action,
+    EventDatabaseOperationFactory,
+)
 from minos.common import (
-    AiopgDatabaseClient,
-    AiopgDatabaseOperation,
     ComposedDatabaseOperation,
     DatabaseOperation,
 )
 
-from .....actions import (
-    Action,
+from ...clients import (
+    AiopgDatabaseClient,
 )
-from .abc import (
-    EventDatabaseOperationFactory,
+from ...operations import (
+    AiopgDatabaseOperation,
 )
 
 

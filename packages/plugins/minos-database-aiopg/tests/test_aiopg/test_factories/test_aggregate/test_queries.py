@@ -18,13 +18,15 @@ from psycopg2.sql import (
 
 from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
-    AiopgSnapshotQueryDatabaseOperationBuilder,
     Condition,
     Ordering,
 )
+from minos.plugins.aiopg import (
+    AiopgSnapshotQueryDatabaseOperationBuilder,
+    AiopgDatabaseClient,
+)
 from minos.common import (
     NULL_UUID,
-    AiopgDatabaseClient,
 )
 from minos.common.testing import (
     DatabaseMinosTestCase,

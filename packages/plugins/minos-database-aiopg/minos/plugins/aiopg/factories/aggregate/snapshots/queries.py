@@ -22,15 +22,10 @@ from psycopg2.sql import (
     Placeholder,
 )
 
-from minos.common import (
-    NULL_UUID,
-    AvroDataEncoder,
-)
-
-from .....contextvars import (
+from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
-from .....queries import (
+from minos.aggregate.queries import (
     _FALSE_CONDITION,
     _AndCondition,
     _ComposedCondition,
@@ -49,6 +44,10 @@ from .....queries import (
     _Ordering,
     _SimpleCondition,
     _TrueCondition,
+)
+from minos.common import (
+    NULL_UUID,
+    AvroDataEncoder,
 )
 
 

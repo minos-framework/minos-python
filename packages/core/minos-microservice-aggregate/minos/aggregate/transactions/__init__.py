@@ -6,7 +6,6 @@ from .entries import (
     TransactionStatus,
 )
 from .repositories import (
-    AiopgTransactionDatabaseOperationFactory,
     DatabaseTransactionRepository,
     InMemoryTransactionRepository,
     TransactionDatabaseOperationFactory,

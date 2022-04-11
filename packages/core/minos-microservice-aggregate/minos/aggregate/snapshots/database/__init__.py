@@ -5,8 +5,6 @@ from .api import (
     DatabaseSnapshotRepository,
 )
 from .factories import (
-    AiopgSnapshotDatabaseOperationFactory,
-    AiopgSnapshotQueryDatabaseOperationBuilder,
     SnapshotDatabaseOperationFactory,
 )
 from .readers import (
