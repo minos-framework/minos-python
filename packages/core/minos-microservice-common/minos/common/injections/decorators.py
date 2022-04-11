@@ -73,6 +73,7 @@ class Injectable:
 
         # noinspection PyTypeChecker
         output_type: OutputType = types.new_class(input_type.__name__, bases, {})
+        output_type.__module__ = input_type.__module__
 
         # noinspection PyProtectedMember
         output_type._set_injectable_name(self._name)

@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "minos-discovery-kong"
+version = "0.7.0.dev1"
+description = "The minos-kong plugin offer an interface that permit integrate Minos Microservice with Kong API Gateway"
+readme = "README.md"
+repository = "https://github.com/minos-framework/minos-python"
+homepage = "https://www.minos.run/"
+authors = ["Minos Framework Devs <hey@minos.run>"]
+license = "MIT"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+]
+keywords = [
+    "clariteia",
+    "minos",
+    "microservice",
+    "saga",
+    "kong"
+]
+packages = [
+    { include = "minos" }
+]
+include = [
+    "AUTHORS.md",
+    "HISTORY.md",
+    "LICENSE",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+minos-microservice-common = { version ="^0.7.0*", allow-prereleases = true }
+minos-microservice-networks = { version ="^0.7.0*", allow-prereleases = true }
+httpx = "^0.22.0"
+
+[tool.poetry.dev-dependencies]
+minos-microservice-common = { path = "../../core/minos-microservice-common", develop = true }
+minos-microservice-networks = { path = "../../core/minos-microservice-networks", develop = true }
+black = "^22.1"
+isort = "^5.8.0"
+pytest = "^6.2.4"
+coverage = "^6.3"
+flake8 = "^4.0.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
