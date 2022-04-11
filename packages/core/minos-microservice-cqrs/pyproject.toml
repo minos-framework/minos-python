@@ -31,9 +31,9 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-aggregate = "^0.6.0"
-minos-microservice-common = "^0.6.0"
-minos-microservice-networks = "^0.6.0"
+minos-microservice-aggregate = "^0.7.0"
+minos-microservice-common = "^0.7.0"
+minos-microservice-networks = "^0.7.0"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }
