@@ -7,7 +7,6 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    InMemoryTransactionRepository,
     TransactionEntry,
     TransactionRepository,
     TransactionRepositoryConflictException,
