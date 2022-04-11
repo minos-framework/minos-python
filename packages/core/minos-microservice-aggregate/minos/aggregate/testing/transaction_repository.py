@@ -1,78 +1,59 @@
-import unittest
+from abc import (
+    ABC,
+    abstractmethod,
+)
 from uuid import (
     uuid4,
 )
 
 from minos.aggregate import (
-    DatabaseTransactionRepository,
+    InMemoryTransactionRepository,
     TransactionEntry,
     TransactionRepository,
     TransactionRepositoryConflictException,
     TransactionStatus,
 )
-from minos.common import (
-    DatabaseClientPool,
-)
 from minos.common.testing import (
-    DatabaseMinosTestCase,
-)
-from tests.utils import (
-    AggregateTestCase,
+    MinosTestCase,
 )
 
 
-# noinspection SqlNoDataSourceInspection
-@unittest.skip
-class TestDatabaseTransactionRepository(AggregateTestCase, DatabaseMinosTestCase):
+class TransactionRepositoryTestCase(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-
-        self.transaction_repository = DatabaseTransactionRepository()
-
         self.uuid = uuid4()
 
-    async def asyncSetUp(self) -> None:
+        self.transaction_repository = self.build_transaction_repository()
+
+    async def asyncSetUp(self):
         await super().asyncSetUp()
         await self.transaction_repository.setup()
 
-    async def asyncTearDown(self) -> None:
+    async def asyncTearDown(self):
         await self.transaction_repository.destroy()
         await super().asyncTearDown()
 
+    def tearDown(self):
+        super().tearDown()
+
+    @abstractmethod
+    def build_transaction_repository(self) -> TransactionRepository:
+        """For testing purposes."""
+
+
+class TransactionRepositorySubmitTestCase(TransactionRepositoryTestCase, ABC):
+    __test__ = False
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.uuid = uuid4()
+
     async def test_subclass(self) -> None:
-        self.assertTrue(issubclass(DatabaseTransactionRepository, TransactionRepository))
-
-    def test_constructor(self):
-        pool = DatabaseClientPool.from_config(self.config)
-        repository = DatabaseTransactionRepository(pool)
-        self.assertIsInstance(repository, DatabaseTransactionRepository)
-        self.assertEqual(pool, repository.database_pool)
-
-    def test_from_config(self):
-        repository = DatabaseTransactionRepository.from_config(self.config)
-        self.assertIsInstance(repository.database_pool, DatabaseClientPool)
-
-    async def test_setup(self):
-        async with self.get_client() as client:
-            from minos.plugins.aiopg import (
-                AiopgDatabaseOperation,
-            )
-
-            operation = AiopgDatabaseOperation(
-                "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_transaction');"
-            )
-            await client.execute(operation)
-            response = (await client.fetch_one())[0]
-        self.assertTrue(response)
+        self.assertTrue(isinstance(self.transaction_repository, TransactionRepository))
 
     async def test_submit(self):
         await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
         expected = [TransactionEntry(self.uuid, TransactionStatus.PENDING, 34)]
-        observed = [v async for v in self.transaction_repository.select()]
-        self.assertEqual(expected, observed)
-
-    async def test_select_empty(self):
-        expected = []
         observed = [v async for v in self.transaction_repository.select()]
         self.assertEqual(expected, observed)
 
@@ -148,9 +129,15 @@ class TestDatabaseTransactionRepository(AggregateTestCase, DatabaseMinosTestCase
         with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
 
+    async def test_select_empty(self):
+        expected = []
+        observed = [v async for v in self.transaction_repository.select()]
+        self.assertEqual(expected, observed)
 
-@unittest.skip
-class TestDatabaseTransactionRepositorySelect(AggregateTestCase, DatabaseMinosTestCase):
+
+class TransactionRepositorySelectTestCase(TransactionRepositoryTestCase, ABC):
+    __test__ = False
+
     def setUp(self) -> None:
         super().setUp()
         self.uuid_1 = uuid4()
@@ -158,8 +145,6 @@ class TestDatabaseTransactionRepositorySelect(AggregateTestCase, DatabaseMinosTe
         self.uuid_3 = uuid4()
         self.uuid_4 = uuid4()
         self.uuid_5 = uuid4()
-
-        self.transaction_repository = DatabaseTransactionRepository()
 
         self.entries = [
             TransactionEntry(self.uuid_1, TransactionStatus.PENDING, 12),
@@ -171,7 +156,6 @@ class TestDatabaseTransactionRepositorySelect(AggregateTestCase, DatabaseMinosTe
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.transaction_repository.setup()
         await self._populate()
 
     async def _populate(self):
@@ -182,10 +166,6 @@ class TestDatabaseTransactionRepositorySelect(AggregateTestCase, DatabaseMinosTe
         await self.transaction_repository.submit(
             TransactionEntry(self.uuid_5, TransactionStatus.PENDING, 20, self.uuid_1)
         )
-
-    async def asyncTearDown(self):
-        await self.transaction_repository.destroy()
-        await super().asyncTearDown()
 
     async def test_select(self):
         expected = self.entries
@@ -286,7 +266,3 @@ class TestDatabaseTransactionRepositorySelect(AggregateTestCase, DatabaseMinosTe
         expected = [self.entries[2], self.entries[3], self.entries[4]]
         observed = [v async for v in self.transaction_repository.select(updated_at_ge=updated_at)]
         self.assertEqual(expected, observed)
-
-
-if __name__ == "__main__":
-    unittest.main()
