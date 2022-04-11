@@ -73,6 +73,7 @@ middleware:
   - minos.plugins.kong.middleware
 
 discovery:
+  connector: minos.networks.DiscoveryConnector
   client: minos.plugins.kong.KongDiscoveryClient
   host: localhost
   auth-type: basic-auth

@@ -1,4 +1,5 @@
 discovery:
+    connector: minos.networks.DiscoveryConnector
     client: minos.networks.InMemoryDiscoveryClient
     auth-type: jwt
     host: localhost

@@ -1,138 +1,137 @@
-from __future__ import (
-    annotations,
-)
-
-import logging
-from collections.abc import (
-    Iterable,
-)
-from functools import (
-    partial,
-)
-from typing import (
-    Optional,
+from uuid import (
+    UUID,
 )
 
 import httpx as httpx
 
-from minos.common import (
-    CircuitBreakerMixin,
-    Config,
-)
-from minos.networks import (
-    DiscoveryClient,
-)
 
-from .kong_client import (
-    KongClient,
-)
-from .utils import (
-    Endpoint,
-)
+class KongClient:
+    """Kong Client class."""
 
-logger = logging.getLogger(__name__)
+    def __init__(self, route):
+        self.route = route
 
-
-class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
-    """Kong Discovery Client class."""
-
-    def __init__(
-        self,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
-        circuit_breaker_exceptions: Iterable[type] = tuple(),
-        **kwargs,
-    ):
-        if host is None:
-            host = "localhost"
-        if port is None:
-            port = 5567
-        super().__init__(
-            host, port, circuit_breaker_exceptions=(httpx.HTTPStatusError, *circuit_breaker_exceptions), **kwargs
-        )
-        self.kong = KongClient(self.route)
-
-        self.auth_type = None
-        if "auth_type" in kwargs:
-            self.auth_type = kwargs["auth_type"]
-
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> KongDiscoveryClient:
-        if "auth_type" in kwargs:
-            auth_type = kwargs["auth_type"]
-            kwargs.pop("auth_type")
-        else:
-            try:
-                auth_type = config.get_by_key("discovery.auth-type")
-            except Exception:
-                auth_type = None
-
-        return super()._from_config(config, auth_type=auth_type, **kwargs)
-
-    async def subscribe(
-        self, host: str, port: int, name: str, endpoints: list[dict[str, str]], *args, **kwargs
+    @staticmethod
+    async def register_service(
+        discovery_route: str, service_name: str, microservice_host: str, microservice_port: int
     ) -> httpx.Response:
-        """Perform the subscription query.
+        url = f"{discovery_route}/services"  # kong url for service POST or add
+        data = {"name": service_name, "protocol": "http", "host": microservice_host, "port": microservice_port}
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, json=data)
+            return response
 
-        :param host: The ip of the microservice to be subscribed.
-        :param port: The port of the microservice to be subscribed.
-        :param name: The name of the microservice to be subscribed.
-        :param endpoints: List of endpoints exposed by the microservice.
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
-        :return: This method does not return anything.
+    @staticmethod
+    async def delete_service(discovery_route: str, service_name) -> httpx.Response:
         """
+        the delete of a service must be checking before if the service already have the routes
+        if yes the DELETE routes must be called
+        :param discovery_route:
+        :param service_name:
+        :return:
+        """
+        async with httpx.AsyncClient() as client:
+            url_get_route = f"{discovery_route}/services/{service_name}/routes"  # url to get the routes
+            response_routes = await client.get(url_get_route)
+            json_routes_response = response_routes.json()
+            if len(json_routes_response["data"]) > 0:  # service already have route, routes must be deleted
+                for route in json_routes_response["data"]:
+                    url_delete_route = f"{discovery_route}/routes/{route['id']}"  # url for routes delete
+                    await client.delete(url_delete_route)
+            url_delete_service = f"{discovery_route}/services/{service_name}"  # url for service delete
+            response_delete_service = await client.delete(url_delete_service)
+            return response_delete_service
 
-        fnsr = partial(self.kong.register_service, self.route, name, host, port)
-        response_service = await self.with_circuit_breaker(fnsr)  # register a service
-        if response_service.status_code == 409:  # service already exist
-            # if service already exist, delete and add again
-            fn_delete = partial(self.kong.delete_service, self.route, name)
-            await self.with_circuit_breaker(fn_delete)  # delete the service
-            fnsr = partial(self.kong.register_service, self.route, name, host, port)
-            response_service = await self.with_circuit_breaker(fnsr)  # send the servie subscription again
+    @staticmethod
+    async def create_route(
+        endpoint: str,
+        protocols: list[str],
+        methods: list[str],
+        paths: list[str],
+        service: str,
+        strip_path: bool = False,
+    ):
+        url = f"{endpoint}/routes"
+        payload = {
+            "protocols": protocols,
+            "methods": methods,
+            "paths": paths,
+            "service": {"id": service},
+            "strip_path": strip_path,
+        }
 
-        content_service = response_service.json()  # get the servie information like the id
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(url, json=payload)
 
-        for endpoint in endpoints:
-            endpointClass = Endpoint(endpoint["url"])
+            return resp
 
-            fn = partial(
-                self.kong.create_route,
-                self.route,
-                ["http"],
-                [endpoint["method"]],
-                [endpointClass.path_as_str],
-                content_service["id"],
-                False,
+    async def create_consumer(self, username: str, user: UUID, tags: list[str]):
+        payload = {"username": username, "custom_id": str(user), "tags": tags}
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(f"{self.route}/consumers", json=payload)
+            return resp
+
+    async def add_basic_auth_to_consumer(self, username: str, password: str, consumer: str):
+        payload = {
+            "username": username,
+            "password": password,
+        }
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(f"{self.route}/consumers/{consumer}/basic-auth", json=payload)
+
+            return resp
+
+    async def add_jwt_to_consumer(self, consumer: str):
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"{self.route}/consumers/{consumer}/jwt",
+                headers={"content-type": "application/x-www-form-urlencoded"},
             )
-            response = await self.with_circuit_breaker(fn)  # send the route request
-            resp = response.json()
 
-            if "authenticated" in endpoint and self.auth_type:
-                if self.auth_type == "basic-auth":
-                    fn = partial(self.kong.activate_basic_auth_plugin_on_route, route_id=resp["id"])
-                    await self.with_circuit_breaker(fn)
-                elif self.auth_type == "jwt":
-                    fn = partial(self.kong.activate_jwt_plugin_on_route, route_id=resp["id"])
-                    await self.with_circuit_breaker(fn)
+            return resp
 
-            if "authorized_groups" in endpoint:
-                fn = partial(
-                    self.kong.activate_acl_plugin_on_route, route_id=resp["id"], allow=endpoint["authorized_groups"]
-                )
-                await self.with_circuit_breaker(fn)
+    async def add_acl_to_consumer(self, role: str, consumer: str):
+        payload = {
+            "group": role,
+        }
 
-        return response
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(f"{self.route}/consumers/{consumer}/acls", json=payload)
+            return resp
 
-    async def unsubscribe(self, name: str, *args, **kwargs) -> httpx.Response:
-        """Perform the unsubscription query.
+    async def activate_acl_plugin_on_service(self, service_name: str, allow: list[str]):
+        payload = {"name": "acl", "config": {"allow": allow}}
 
-        :param name: The name of the microservice to be unsubscribed.
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
-        :return: This method does not return anything.
-        """
-        fn = partial(self.kong.delete_service, self.route, name)
-        response = await self.with_circuit_breaker(fn)
-        return response
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(f"{self.route}/services/{service_name}/plugins", json=payload)
+            return resp
+
+    async def activate_acl_plugin_on_route(self, route_id: str, allow: list[str]):
+        payload = {"name": "acl", "config": {"allow": allow}}
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(f"{self.route}/routes/{route_id}/plugins", json=payload)
+            return resp
+
+    async def activate_basic_auth_plugin_on_service(self, service_name: str):
+        payload = {"name": "basic-auth", "config": {"hide_credentials": False}}
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(f"{self.route}/services/{service_name}/plugins", json=payload)
+            return resp
+
+    async def activate_basic_auth_plugin_on_route(self, route_id: str):
+        payload = {"name": "basic-auth", "config": {"hide_credentials": False}}
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(f"{self.route}/routes/{route_id}/plugins", json=payload)
+            return resp
+
+    async def activate_jwt_plugin_on_route(self, route_id: str):
+        payload = {"name": "jwt", "config": {"secret_is_base64": False, "run_on_preflight": True}}
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(f"{self.route}/routes/{route_id}/plugins", json=payload)
+            return resp
