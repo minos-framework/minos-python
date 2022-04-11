@@ -77,7 +77,7 @@ class TestAioHttpRequest(unittest.IsolatedAsyncioTestCase):
         raw = mocked_request(headers={"something": "123"})
         request = AioHttpRequest(raw)
         self.assertEqual({"something": "123"}, request.headers)
-        request.headers['something'] = "321"
+        request.headers["something"] = "321"
         self.assertEqual({"something": "321"}, request.headers)
 
     def test_user(self):
