@@ -4,8 +4,8 @@ from abc import (
 )
 
 from minos.common import (
-    Object,
     Config,
+    Object,
 )
 from minos.networks import (
     DiscoveryClient,
