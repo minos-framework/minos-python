@@ -6,12 +6,12 @@ from .factories import (
     AiopgBrokerQueueDatabaseOperationFactory,
     AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     AiopgBrokerSubscriberQueueDatabaseOperationFactory,
+    AiopgEventDatabaseOperationFactory,
     AiopgLockDatabaseOperationFactory,
     AiopgManageDatabaseOperationFactory,
-    AiopgTransactionDatabaseOperationFactory,
-    AiopgSnapshotQueryDatabaseOperationBuilder,
     AiopgSnapshotDatabaseOperationFactory,
-    AiopgEventDatabaseOperationFactory,
+    AiopgSnapshotQueryDatabaseOperationBuilder,
+    AiopgTransactionDatabaseOperationFactory,
 )
 from .operations import (
     AiopgDatabaseOperation,
