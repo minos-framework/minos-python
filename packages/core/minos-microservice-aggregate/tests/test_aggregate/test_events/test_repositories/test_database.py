@@ -96,63 +96,305 @@ class TestDatabaseEventRepositorySubmit(AggregateTestCase, EventRepositorySubmit
 class TestDatabaseEventRepositorySelect(AggregateTestCase, EventRepositorySelectTestCase):
     __test__ = True
 
+    async def _populate(self):
+        with patch.object(
+            DatabaseClient,
+            "fetch_one",
+            side_effect=[
+                (1, uuid4(), 1, current_datetime()),
+                (2, uuid4(), 2, current_datetime()),
+                (3, uuid4(), 1, current_datetime()),
+                (4, uuid4(), 3, current_datetime()),
+                (5, uuid4(), 4, current_datetime()),
+                (6, uuid4(), 2, current_datetime()),
+                (7, uuid4(), 1, current_datetime()),
+                (8, uuid4(), 3, current_datetime()),
+                (9, uuid4(), 3, current_datetime()),
+                (10, uuid4(), 4, current_datetime()),
+            ],
+        ):
+            await super()._populate()
+
     def build_event_repository(self) -> EventRepository:
         """For testing purposes."""
         return DatabaseEventRepository.from_config(self.config)
 
     async def test_select(self):
-        await super().test_select()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[0].as_raw().values()),
+                    tuple(self.entries[1].as_raw().values()),
+                    tuple(self.entries[2].as_raw().values()),
+                    tuple(self.entries[3].as_raw().values()),
+                    tuple(self.entries[4].as_raw().values()),
+                    tuple(self.entries[5].as_raw().values()),
+                    tuple(self.entries[6].as_raw().values()),
+                    tuple(self.entries[7].as_raw().values()),
+                    tuple(self.entries[8].as_raw().values()),
+                    tuple(self.entries[9].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select()
 
     async def test_select_id(self):
-        await super().test_select_id()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[1].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_id()
 
     async def test_select_id_lt(self):
-        await super().test_select_id_lt()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[0].as_raw().values()),
+                    tuple(self.entries[1].as_raw().values()),
+                    tuple(self.entries[2].as_raw().values()),
+                    tuple(self.entries[3].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_id_lt()
 
     async def test_select_id_gt(self):
-        await super().test_select_id_gt()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[4].as_raw().values()),
+                    tuple(self.entries[5].as_raw().values()),
+                    tuple(self.entries[6].as_raw().values()),
+                    tuple(self.entries[7].as_raw().values()),
+                    tuple(self.entries[8].as_raw().values()),
+                    tuple(self.entries[9].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_id_gt()
 
     async def test_select_id_le(self):
-        await super().test_select_id_le()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[0].as_raw().values()),
+                    tuple(self.entries[1].as_raw().values()),
+                    tuple(self.entries[2].as_raw().values()),
+                    tuple(self.entries[3].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_id_le()
 
     async def test_select_id_ge(self):
-        await super().test_select_id_ge()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[4].as_raw().values()),
+                    tuple(self.entries[5].as_raw().values()),
+                    tuple(self.entries[6].as_raw().values()),
+                    tuple(self.entries[7].as_raw().values()),
+                    tuple(self.entries[8].as_raw().values()),
+                    tuple(self.entries[9].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_id_ge()
 
     async def test_select_uuid(self):
-        await super().test_select_uuid()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[2].as_raw().values()),
+                    tuple(self.entries[5].as_raw().values()),
+                    tuple(self.entries[7].as_raw().values()),
+                    tuple(self.entries[8].as_raw().values()),
+                    tuple(self.entries[9].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_uuid()
 
     async def test_select_name(self):
-        await super().test_select_name()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[6].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_name()
 
     async def test_select_version(self):
-        await super().test_select_version()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[4].as_raw().values()),
+                    tuple(self.entries[9].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_version()
 
     async def test_select_version_lt(self):
-        await super().test_select_version_lt()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[0].as_raw().values()),
+                    tuple(self.entries[2].as_raw().values()),
+                    tuple(self.entries[6].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_version_lt()
 
     async def test_select_version_gt(self):
-        await super().test_select_version_gt()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[1].as_raw().values()),
+                    tuple(self.entries[3].as_raw().values()),
+                    tuple(self.entries[4].as_raw().values()),
+                    tuple(self.entries[5].as_raw().values()),
+                    tuple(self.entries[7].as_raw().values()),
+                    tuple(self.entries[8].as_raw().values()),
+                    tuple(self.entries[9].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_version_gt()
 
     async def test_select_version_le(self):
-        await super().test_select_version_le()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[0].as_raw().values()),
+                    tuple(self.entries[2].as_raw().values()),
+                    tuple(self.entries[6].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_version_le()
 
     async def test_select_version_ge(self):
-        await super().test_select_version_ge()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[1].as_raw().values()),
+                    tuple(self.entries[3].as_raw().values()),
+                    tuple(self.entries[4].as_raw().values()),
+                    tuple(self.entries[5].as_raw().values()),
+                    tuple(self.entries[7].as_raw().values()),
+                    tuple(self.entries[8].as_raw().values()),
+                    tuple(self.entries[9].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_version_ge()
 
     async def test_select_transaction_uuid_null(self):
-        await super().test_select_transaction_uuid_null()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[0].as_raw().values()),
+                    tuple(self.entries[1].as_raw().values()),
+                    tuple(self.entries[2].as_raw().values()),
+                    tuple(self.entries[3].as_raw().values()),
+                    tuple(self.entries[4].as_raw().values()),
+                    tuple(self.entries[5].as_raw().values()),
+                    tuple(self.entries[6].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_transaction_uuid_null()
 
     async def test_select_transaction_uuid(self):
-        await super().test_select_transaction_uuid()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[7].as_raw().values()),
+                    tuple(self.entries[9].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_transaction_uuid()
 
     async def test_select_transaction_uuid_ne(self):
-        await super().test_select_transaction_uuid_ne()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[7].as_raw().values()),
+                    tuple(self.entries[8].as_raw().values()),
+                    tuple(self.entries[9].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_transaction_uuid_ne()
 
     async def test_select_transaction_uuid_in(self):
-        await super().test_select_transaction_uuid_in()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[7].as_raw().values()),
+                    tuple(self.entries[8].as_raw().values()),
+                    tuple(self.entries[9].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_transaction_uuid_in()
 
     async def test_select_combined(self):
-        await super().test_select_combined()
+        with patch.object(
+            DatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator(
+                [
+                    tuple(self.entries[2].as_raw().values()),
+                    tuple(self.entries[5].as_raw().values()),
+                    tuple(self.entries[7].as_raw().values()),
+                    tuple(self.entries[8].as_raw().values()),
+                    tuple(self.entries[9].as_raw().values()),
+                ]
+            ),
+        ):
+            await super().test_select_combined()
 
 
 if __name__ == "__main__":
