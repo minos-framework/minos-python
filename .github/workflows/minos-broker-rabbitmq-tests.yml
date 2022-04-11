@@ -18,7 +18,11 @@ jobs:
         defaults:
             run:
                 working-directory: packages/plugins/minos-broker-rabbitmq
-
+        services:
+            rabbitmq:
+                image: rabbitmq:3
+                ports:
+                    - 5672:5672
         env:
             MINOS_BROKER_HOST: rabbitmq
 
