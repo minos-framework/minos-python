@@ -28,7 +28,7 @@ Raw = namedtuple("Raw", ["headers", "content"])
 
 
 class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
-    async def test_middleware_no_user_headers(self):
+    async def test_middleware_user_headers(self):
         user_uuid = uuid4()
         request_headers = {"X-Consumer-Custom-ID": str(user_uuid)}
         request = InMemoryHttpRequest(content="foo", headers=request_headers)
@@ -37,6 +37,15 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("foobar", await response.content())
 
         self.assertEqual({"X-Consumer-Custom-ID": str(user_uuid), "user": str(user_uuid)}, request_headers)
+
+    async def test_middleware_no_user_headers(self):
+        request_headers = {}
+        request = InMemoryHttpRequest(content="foo", headers=request_headers)
+        response = await middleware(request, _fn)
+
+        self.assertEqual("foobar", await response.content())
+
+        self.assertEqual({}, request_headers)
 
 
 if __name__ == "__main__":
