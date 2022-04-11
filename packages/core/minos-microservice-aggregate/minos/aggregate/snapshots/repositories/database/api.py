@@ -23,7 +23,7 @@ from .writers import (
 )
 
 if TYPE_CHECKING:
-    from ...entities import (
+    from ....entities import (
         RootEntity,
     )
 
@@ -71,3 +71,11 @@ class DatabaseSnapshotRepository(SnapshotRepository):
 
     def _synchronize(self, *args, **kwargs) -> Awaitable[None]:
         return self.writer.dispatch(**kwargs)
+
+    @property
+    def find_entries(self):
+        return self.reader.find_entries
+
+    @property
+    def is_synced(self):
+        return self.writer.is_synced

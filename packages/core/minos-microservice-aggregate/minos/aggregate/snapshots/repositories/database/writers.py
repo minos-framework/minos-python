@@ -16,21 +16,21 @@ from minos.common import (
     import_module,
 )
 
-from ...events import (
+from ....events import (
     Event,
     EventEntry,
     EventRepository,
 )
-from ...exceptions import (
+from ....exceptions import (
     NotFoundException,
     SnapshotRepositoryConflictException,
     TransactionNotFoundException,
 )
-from ...transactions import (
+from ....transactions import (
     TransactionRepository,
     TransactionStatus,
 )
-from ..entries import (
+from ...entries import (
     SnapshotEntry,
 )
 from .abc import (
@@ -41,7 +41,7 @@ from .readers import (
 )
 
 if TYPE_CHECKING:
-    from ...entities import (
+    from ....entities import (
         RootEntity,
     )
 

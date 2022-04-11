@@ -11,6 +11,7 @@ from typing import (
     AsyncIterator,
     Awaitable,
     Optional,
+    Union,
 )
 from uuid import (
     UUID,
@@ -19,20 +20,21 @@ from uuid import (
 from minos.common import (
     Injectable,
     SetupMixin,
+    classname,
 )
 
-from ..queries import (
+from ...queries import (
     _TRUE_CONDITION,
     _Condition,
     _Ordering,
 )
-from ..transactions import (
+from ...transactions import (
     TRANSACTION_CONTEXT_VAR,
     TransactionEntry,
 )
 
 if TYPE_CHECKING:
-    from ..entities import (
+    from ...entities import (
         RootEntity,
     )
 
@@ -45,7 +47,13 @@ class SnapshotRepository(ABC, SetupMixin):
     class.
     """
 
-    async def get(self, name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs) -> RootEntity:
+    async def get(
+        self,
+        name: Union[str, type[RootEntity]],
+        uuid: UUID,
+        transaction: Optional[TransactionEntry] = None,
+        **kwargs,
+    ) -> RootEntity:
         """Get a ``RootEntity`` instance from its identifier.
 
         :param name: Class name of the ``RootEntity``.
@@ -56,6 +64,9 @@ class SnapshotRepository(ABC, SetupMixin):
         :param kwargs: Additional named arguments.
         :return: The ``RootEntity`` instance.
         """
+        if isinstance(name, type):
+            name = classname(name)
+
         if transaction is None:
             transaction = TRANSACTION_CONTEXT_VAR.get()
 
@@ -103,7 +114,7 @@ class SnapshotRepository(ABC, SetupMixin):
 
     async def find(
         self,
-        name: str,
+        name: Union[str, type[RootEntity]],
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
@@ -127,6 +138,9 @@ class SnapshotRepository(ABC, SetupMixin):
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``RootEntity`` instances.
         """
+        if isinstance(name, type):
+            name = classname(name)
+
         if transaction is None:
             transaction = TRANSACTION_CONTEXT_VAR.get()
 

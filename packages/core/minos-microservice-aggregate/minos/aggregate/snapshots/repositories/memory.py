@@ -20,19 +20,19 @@ from minos.common import (
     NotProvidedException,
 )
 
-from ..events import (
+from ...events import (
     EventEntry,
     EventRepository,
 )
-from ..exceptions import (
+from ...exceptions import (
     AlreadyDeletedException,
     NotFoundException,
 )
-from ..queries import (
+from ...queries import (
     _Condition,
     _Ordering,
 )
-from ..transactions import (
+from ...transactions import (
     TransactionEntry,
     TransactionRepository,
     TransactionStatus,
@@ -42,7 +42,7 @@ from .abc import (
 )
 
 if TYPE_CHECKING:
-    from ..entities import (
+    from ...entities import (
         RootEntity,
     )
 
