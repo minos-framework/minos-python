@@ -93,13 +93,66 @@ class TestDatabaseEventRepositorySubmit(AggregateTestCase, EventRepositorySubmit
             await super().test_offset()
 
 
-@unittest.skip
 class TestDatabaseEventRepositorySelect(AggregateTestCase, EventRepositorySelectTestCase):
     __test__ = True
 
     def build_event_repository(self) -> EventRepository:
         """For testing purposes."""
         return DatabaseEventRepository.from_config(self.config)
+
+    async def test_select(self):
+        await super().test_select()
+
+    async def test_select_id(self):
+        await super().test_select_id()
+
+    async def test_select_id_lt(self):
+        await super().test_select_id_lt()
+
+    async def test_select_id_gt(self):
+        await super().test_select_id_gt()
+
+    async def test_select_id_le(self):
+        await super().test_select_id_le()
+
+    async def test_select_id_ge(self):
+        await super().test_select_id_ge()
+
+    async def test_select_uuid(self):
+        await super().test_select_uuid()
+
+    async def test_select_name(self):
+        await super().test_select_name()
+
+    async def test_select_version(self):
+        await super().test_select_version()
+
+    async def test_select_version_lt(self):
+        await super().test_select_version_lt()
+
+    async def test_select_version_gt(self):
+        await super().test_select_version_gt()
+
+    async def test_select_version_le(self):
+        await super().test_select_version_le()
+
+    async def test_select_version_ge(self):
+        await super().test_select_version_ge()
+
+    async def test_select_transaction_uuid_null(self):
+        await super().test_select_transaction_uuid_null()
+
+    async def test_select_transaction_uuid(self):
+        await super().test_select_transaction_uuid()
+
+    async def test_select_transaction_uuid_ne(self):
+        await super().test_select_transaction_uuid_ne()
+
+    async def test_select_transaction_uuid_in(self):
+        await super().test_select_transaction_uuid_in()
+
+    async def test_select_combined(self):
+        await super().test_select_combined()
 
 
 if __name__ == "__main__":
