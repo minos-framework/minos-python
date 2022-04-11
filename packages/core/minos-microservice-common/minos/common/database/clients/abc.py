@@ -67,6 +67,10 @@ class DatabaseClient(ABC, BuildableMixin):
     async def _is_valid(self, **kwargs) -> bool:
         raise NotImplementedError
 
+    async def _destroy(self) -> None:
+        await self.reset()
+        await super()._destroy()
+
     async def reset(self, **kwargs) -> None:
         """Reset the current instance status.
 

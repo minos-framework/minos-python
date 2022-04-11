@@ -74,9 +74,8 @@ class AiopgDatabaseClient(DatabaseClient):
         await self._create_connection()
 
     async def _destroy(self) -> None:
-        await self.reset()
-        await self._close_connection()
         await super()._destroy()
+        await self._close_connection()
 
     async def _create_connection(self):
         try:

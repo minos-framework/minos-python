@@ -10,6 +10,7 @@ from unittest.mock import (
     AsyncMock,
     MagicMock,
     call,
+    patch,
 )
 
 from minos.common import (
@@ -17,13 +18,14 @@ from minos.common import (
     ComposedDatabaseOperation,
     DatabaseClient,
     DatabaseClientBuilder,
+    DatabaseLock,
     DatabaseOperation,
     DatabaseOperationFactory,
+    LockDatabaseOperationFactory,
 )
 from tests.utils import (
     CommonTestCase,
     FakeAsyncIterator,
-    FakeDatabaseClient,
 )
 
 
@@ -55,7 +57,22 @@ class _DatabaseOperationFactoryImpl(_DatabaseOperationFactory):
     """For testing purposes."""
 
 
-class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
+class _LockDatabaseOperationFactory(LockDatabaseOperationFactory):
+    """For testing purposes."""
+
+    def build_acquire(self, hashed_key: int) -> DatabaseOperation:
+        """For testing purposes."""
+        return _DatabaseOperation()
+
+    def build_release(self, hashed_key: int) -> DatabaseOperation:
+        """For testing purposes."""
+        return _DatabaseOperation()
+
+
+_DatabaseClient.register_factory(LockDatabaseOperationFactory, _LockDatabaseOperationFactory)
+
+
+class TestDatabaseClient(CommonTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(DatabaseClient, (ABC, BuildableMixin)))
         expected = {"_is_valid", "_execute", "_fetch_all", "_reset"}
@@ -64,6 +81,10 @@ class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
 
     def test_get_builder(self):
         self.assertIsInstance(DatabaseClient.get_builder(), DatabaseClientBuilder)
+
+    def test_from_config(self):
+        client = _DatabaseClient.from_config(self.config)
+        self.assertIsInstance(client, DatabaseClient)
 
     async def test_is_valid(self):
         mock = AsyncMock(side_effect=[True, False])
@@ -74,6 +95,26 @@ class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(False, await client.is_valid())
 
         self.assertEqual([call(), call()], mock.call_args_list)
+
+    async def test_lock(self):
+        _DatabaseClient.register_factory(LockDatabaseOperationFactory, _LockDatabaseOperationFactory)
+        op1 = _DatabaseOperation(lock="foo")
+        client = _DatabaseClient()
+        self.assertIsNone(client.lock)
+        async with client:
+            self.assertIsNone(client.lock)
+            await client.execute(op1)
+            self.assertIsInstance(client.lock, DatabaseLock)
+
+        self.assertIsNone(client.lock)
+
+    async def test_lock_reset(self):
+        op1 = _DatabaseOperation(lock="foo")
+        async with _DatabaseClient() as client:
+            await client.execute(op1)
+            self.assertIsInstance(client.lock, DatabaseLock)
+            await client.reset()
+            self.assertIsNone(client.lock)
 
     async def test_reset(self):
         mock = AsyncMock()
@@ -102,6 +143,36 @@ class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual([call(composed.operations[0]), call(composed.operations[1])], mock.call_args_list)
 
+    async def test_execute_with_lock(self):
+        op1 = _DatabaseOperation(lock="foo")
+        with patch.object(DatabaseLock, "acquire") as enter_lock_mock:
+            with patch.object(DatabaseLock, "release") as exit_lock_mock:
+                async with _DatabaseClient() as client:
+                    await client.execute(op1)
+                    self.assertEqual(1, enter_lock_mock.call_count)
+                    self.assertEqual(0, exit_lock_mock.call_count)
+                    enter_lock_mock.reset_mock()
+                    exit_lock_mock.reset_mock()
+            self.assertEqual(0, enter_lock_mock.call_count)
+            self.assertEqual(1, exit_lock_mock.call_count)
+
+    async def test_execute_with_lock_multiple(self):
+        op1 = _DatabaseOperation(lock="foo")
+        op2 = _DatabaseOperation(lock="bar")
+        async with _DatabaseClient() as client:
+            self.assertIsNone(client.lock)
+
+            await client.execute(op1)
+            foo_lock = client.lock
+            self.assertIsInstance(foo_lock, DatabaseLock)
+
+            await client.execute(op1)
+            self.assertEqual(foo_lock, client.lock)
+
+            await client.execute(op2)
+            self.assertNotEqual(foo_lock, client.lock)
+            self.assertIsInstance(client.lock, DatabaseLock)
+
     async def test_execute_raises_unsupported(self):
         client = _DatabaseClient()
         with self.assertRaises(ValueError):
@@ -127,12 +198,16 @@ class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([call()], mock.call_args_list)
 
     def test_register_factory(self):
+        expected = {
+            LockDatabaseOperationFactory: _LockDatabaseOperationFactory,
+            _DatabaseOperationFactory: _DatabaseOperationFactoryImpl,
+        }
         try:
             _DatabaseClient.register_factory(_DatabaseOperationFactory, _DatabaseOperationFactoryImpl)
 
-            self.assertEqual({_DatabaseOperationFactory: _DatabaseOperationFactoryImpl}, _DatabaseClient._factories)
+            self.assertEqual(expected, _DatabaseClient._factories)
         finally:
-            _DatabaseClient._factories.clear()
+            _DatabaseClient._factories.pop(_DatabaseOperationFactory)
 
     def test_register_factory_raises(self):
         with self.assertRaises(ValueError):
@@ -143,14 +218,10 @@ class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
             _DatabaseClient.register_factory(_DatabaseOperationFactoryImpl, _DatabaseOperationFactory)
 
     def test_get_factory(self):
-        try:
-            _DatabaseClient._factories = {_DatabaseOperationFactory: _DatabaseOperationFactoryImpl}
-            self.assertIsInstance(
-                _DatabaseClient.get_factory(_DatabaseOperationFactory),
-                _DatabaseOperationFactoryImpl,
-            )
-        finally:
-            _DatabaseClient._factories.clear()
+        self.assertIsInstance(
+            _DatabaseClient.get_factory(LockDatabaseOperationFactory),
+            _LockDatabaseOperationFactory,
+        )
 
     def test_get_factory_raises(self):
         with self.assertRaises(ValueError):
@@ -159,19 +230,12 @@ class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
 
 class TestDatabaseClientBuilder(CommonTestCase):
     def test_with_name(self):
-        builder = DatabaseClientBuilder(FakeDatabaseClient).with_name("query")
+        builder = DatabaseClientBuilder(_DatabaseClient).with_name("query")
         self.assertEqual({"name": "query"}, builder.kwargs)
 
     def test_with_config(self):
-        builder = DatabaseClientBuilder(FakeDatabaseClient).with_name("query").with_config(self.config)
+        builder = DatabaseClientBuilder(_DatabaseClient).with_name("query").with_config(self.config)
         self.assertEqual({"name": "query"} | self.config.get_database_by_name("query"), builder.kwargs)
-
-    def test_build(self):
-        builder = DatabaseClientBuilder(FakeDatabaseClient).with_name("query").with_config(self.config)
-        client = builder.build()
-
-        self.assertIsInstance(client, FakeDatabaseClient)
-        self.assertEqual(self.config.get_database_by_name("query")["database"], client.kwargs["database"])
 
 
 if __name__ == "__main__":

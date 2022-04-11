@@ -16,7 +16,6 @@ from psycopg2 import (
 )
 
 from minos.common import (
-    DatabaseLock,
     DatabaseOperation,
     IntegrityException,
     UnableToConnectException,
@@ -102,24 +101,7 @@ class TestAiopgDatabaseClient(AiopgTestCase):
             await client.reset()
             self.assertIsNone(client.cursor)
 
-    async def test_lock(self):
-        op1 = AiopgDatabaseOperation("SELECT * FROM information_schema.tables", lock="foo")
-        client = AiopgDatabaseClient.from_config(self.config)
-        self.assertIsNone(client.lock)
-        async with client:
-            self.assertIsNone(client.lock)
-            await client.execute(op1)
-            self.assertIsInstance(client.lock, DatabaseLock)
 
-        self.assertIsNone(client.lock)
-
-    async def test_lock_reset(self):
-        op1 = AiopgDatabaseOperation("SELECT * FROM information_schema.tables", lock="foo")
-        async with AiopgDatabaseClient.from_config(self.config) as client:
-            await client.execute(op1)
-            self.assertIsInstance(client.lock, DatabaseLock)
-            await client.reset()
-            self.assertIsNone(client.lock)
 
     async def test_execute(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
@@ -129,36 +111,6 @@ class TestAiopgDatabaseClient(AiopgTestCase):
             [call(operation=self.operation.query, parameters=self.operation.parameters)],
             execute_mock.call_args_list,
         )
-
-    async def test_execute_with_lock(self):
-        op1 = AiopgDatabaseOperation("SELECT * FROM information_schema.tables", lock="foo")
-        with patch.object(DatabaseLock, "acquire") as enter_lock_mock:
-            with patch.object(DatabaseLock, "release") as exit_lock_mock:
-                async with AiopgDatabaseClient.from_config(self.config) as client:
-                    await client.execute(op1)
-                    self.assertEqual(1, enter_lock_mock.call_count)
-                    self.assertEqual(0, exit_lock_mock.call_count)
-                    enter_lock_mock.reset_mock()
-                    exit_lock_mock.reset_mock()
-            self.assertEqual(0, enter_lock_mock.call_count)
-            self.assertEqual(1, exit_lock_mock.call_count)
-
-    async def test_execute_with_lock_multiple(self):
-        op1 = AiopgDatabaseOperation("SELECT * FROM information_schema.tables", lock="foo")
-        op2 = AiopgDatabaseOperation("SELECT * FROM information_schema.tables", lock="bar")
-        async with AiopgDatabaseClient.from_config(self.config) as client:
-            self.assertIsNone(client.lock)
-
-            await client.execute(op1)
-            foo_lock = client.lock
-            self.assertIsInstance(foo_lock, DatabaseLock)
-
-            await client.execute(op1)
-            self.assertEqual(foo_lock, client.lock)
-
-            await client.execute(op2)
-            self.assertNotEqual(foo_lock, client.lock)
-            self.assertIsInstance(client.lock, DatabaseLock)
 
     async def test_execute_raises_unsupported(self):
         class _DatabaseOperation(DatabaseOperation):
