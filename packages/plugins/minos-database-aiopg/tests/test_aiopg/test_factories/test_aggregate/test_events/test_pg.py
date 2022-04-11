@@ -4,15 +4,16 @@ from minos.aggregate import (
     DatabaseEventRepository,
     EventRepository,
 )
-from minos.common import (
-    DatabaseClientPool,
-)
 from minos.aggregate.testing import (
     EventRepositorySelectTestCase,
     EventRepositorySubmitTestCase,
 )
-
-from tests.utils import AiopgTestCase
+from minos.common import (
+    DatabaseClientPool,
+)
+from tests.utils import (
+    AiopgTestCase,
+)
 
 
 # noinspection SqlNoDataSourceInspection

@@ -21,12 +21,12 @@ from minos.aggregate import (
     Condition,
     Ordering,
 )
-from minos.plugins.aiopg import (
-    AiopgSnapshotQueryDatabaseOperationBuilder,
-    AiopgDatabaseClient,
-)
 from minos.common import (
     NULL_UUID,
+)
+from minos.plugins.aiopg import (
+    AiopgDatabaseClient,
+    AiopgSnapshotQueryDatabaseOperationBuilder,
 )
 from tests.utils import (
     AiopgTestCase,
