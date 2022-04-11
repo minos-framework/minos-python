@@ -13,6 +13,7 @@ from contextlib import (
     suppress,
 )
 from typing import (
+    TYPE_CHECKING,
     AsyncIterator,
     Awaitable,
     Optional,
@@ -31,6 +32,7 @@ from minos.common import (
     NotProvidedException,
     PoolFactory,
     SetupMixin,
+    classname,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -64,6 +66,11 @@ from ..fields import (
 from ..models import (
     Event,
 )
+
+if TYPE_CHECKING:
+    from ...entities import (
+        RootEntity,
+    )
 
 
 @Injectable("event_repository")
@@ -233,7 +240,7 @@ class EventRepository(ABC, SetupMixin):
     async def select(
         self,
         uuid: Optional[UUID] = None,
-        name: Optional[str] = None,
+        name: Optional[Union[str, type[RootEntity]]] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
         version_gt: Optional[int] = None,
@@ -268,6 +275,8 @@ class EventRepository(ABC, SetupMixin):
         :param transaction_uuid_in: The destination transaction identifier must be equal to one of the given values.
         :return: A list of entries.
         """
+        if isinstance(name, type):
+            name = classname(name)
         generator = self._select(
             uuid=uuid,
             name=name,

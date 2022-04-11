@@ -101,8 +101,6 @@ class TestAiopgDatabaseClient(AiopgTestCase):
             await client.reset()
             self.assertIsNone(client.cursor)
 
-
-
     async def test_execute(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
             with patch.object(Cursor, "execute") as execute_mock:
