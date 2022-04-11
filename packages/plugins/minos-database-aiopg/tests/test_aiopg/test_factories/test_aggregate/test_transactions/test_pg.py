@@ -1,4 +1,5 @@
 import unittest
+
 from minos.aggregate import (
     DatabaseTransactionRepository,
     TransactionRepository,
