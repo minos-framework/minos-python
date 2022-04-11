@@ -20,24 +20,9 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
         decorator = enroute.rest.command(
             path="tickets/",
             method="GET",
-            authorized=True,
-            allowed_groups=[
-                "super_admin",
-                "admin",
-            ],
+            foo="bar",
         )
-        self.assertEqual(
-            RestCommandEnrouteDecorator(
-                "tickets/",
-                "GET",
-                authorized=True,
-                allowed_groups=[
-                    "super_admin",
-                    "admin",
-                ],
-            ),
-            decorator,
-        )
+        self.assertEqual({"foo": "bar"}, decorator.kwargs)
 
     def test_rest_query(self):
         decorator = enroute.rest.query(path="tickets/", method="GET")
@@ -47,24 +32,9 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
         decorator = enroute.rest.query(
             path="tickets/",
             method="GET",
-            authorized=True,
-            allowed_groups=[
-                "super_admin",
-                "admin",
-            ],
+            foo="bar",
         )
-        self.assertEqual(
-            RestQueryEnrouteDecorator(
-                "tickets/",
-                "GET",
-                authorized=True,
-                allowed_groups=[
-                    "super_admin",
-                    "admin",
-                ],
-            ),
-            decorator,
-        )
+        self.assertEqual({"foo": "bar"}, decorator.kwargs)
 
     def test_rest_event_raises(self):
         with self.assertRaises(AttributeError):

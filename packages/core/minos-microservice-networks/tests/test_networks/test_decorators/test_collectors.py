@@ -68,17 +68,7 @@ class TestEnrouteCollector(unittest.IsolatedAsyncioTestCase):
 
         observed = analyzer.get_rest_command_query()
         expected = {
-            "get_tickets": {
-                RestQueryEnrouteDecorator(
-                    self.ticket_route,
-                    "GET",
-                    authorized=True,
-                    allowed_groups=[
-                        "super_admin",
-                        "admin",
-                    ],
-                )
-            },
+            "get_tickets": {RestQueryEnrouteDecorator(self.ticket_route, "GET", foo="bar")},
         }
 
         self.assertEqual(expected, observed)
