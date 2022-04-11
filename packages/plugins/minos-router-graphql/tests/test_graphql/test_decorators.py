@@ -47,11 +47,7 @@ class TestGraphQlEnrouteDecorator(unittest.TestCase):
                     name="order",
                     argument=GraphQLField(GraphQLString),
                     output=GraphQLString,
-                    authorized=True,
-                    allowed_groups=[
-                        "foo",
-                        "bar",
-                    ],
+                    foo="bar",
                 )
             },
         }

@@ -87,11 +87,7 @@ class FakeQueryService2:
         name="order",
         argument=GraphQLField(GraphQLString),
         output=GraphQLString,
-        authorized=True,
-        allowed_groups=[
-            "foo",
-            "bar",
-        ],
+        foo="bar",
     )
     def get_order(self, request: Request):
         """For testng purposes."""
