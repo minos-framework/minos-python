@@ -11,6 +11,7 @@ from minos.aggregate.testing.snapshot_repository import (
     Car,
 )
 from minos.plugins.aiopg import (
+    AiopgDatabaseClient,
     AiopgDatabaseOperation,
 )
 from tests.utils import (
@@ -26,7 +27,7 @@ class TestDatabaseSnapshotRepositoryWriter(AiopgTestCase, SnapshotRepositoryWrit
         return DatabaseSnapshotRepository.from_config(self.config)
 
     async def test_setup_snapshot_table(self):
-        async with self.get_client() as client:
+        async with AiopgDatabaseClient.from_config(self.config) as client:
             operation = AiopgDatabaseOperation(
                 "SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'snapshot');"
             )
@@ -35,7 +36,7 @@ class TestDatabaseSnapshotRepositoryWriter(AiopgTestCase, SnapshotRepositoryWrit
         self.assertEqual(True, observed)
 
     async def test_setup_snapshot_aux_offset_table(self):
-        async with self.get_client() as client:
+        async with AiopgDatabaseClient.from_config(self.config) as client:
             operation = AiopgDatabaseOperation(
                 "SELECT EXISTS (SELECT FROM pg_tables WHERE "
                 "schemaname = 'public' AND tablename = 'snapshot_aux_offset');"

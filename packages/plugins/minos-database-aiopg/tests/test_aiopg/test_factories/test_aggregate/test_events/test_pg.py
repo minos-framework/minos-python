@@ -11,6 +11,10 @@ from minos.aggregate.testing import (
 from minos.common import (
     DatabaseClientPool,
 )
+from minos.plugins.aiopg import (
+    AiopgDatabaseClient,
+    AiopgDatabaseOperation,
+)
 from tests.utils import (
     AiopgTestCase,
 )
@@ -35,11 +39,7 @@ class TestDatabaseEventRepositorySubmit(AiopgTestCase, EventRepositorySubmitTest
         self.assertIsInstance(repository.database_pool, DatabaseClientPool)
 
     async def test_setup(self):
-        async with self.get_client() as client:
-            from minos.plugins.aiopg import (
-                AiopgDatabaseOperation,
-            )
-
+        async with AiopgDatabaseClient.from_config(self.config) as client:
             operation = AiopgDatabaseOperation(
                 "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_event');"
             )
