@@ -22,7 +22,7 @@ class TestDatabaseEventRepositorySubmit(AiopgTestCase, EventRepositorySubmitTest
 
     def build_event_repository(self) -> EventRepository:
         """Fort testing purposes."""
-        return DatabaseEventRepository()
+        return DatabaseEventRepository.from_config(self.config)
 
     def test_constructor(self):
         pool = DatabaseClientPool.from_config(self.config)
@@ -53,7 +53,7 @@ class TestDatabaseEventRepositorySelect(AiopgTestCase, EventRepositorySelectTest
 
     def build_event_repository(self) -> EventRepository:
         """Fort testing purposes."""
-        return DatabaseEventRepository()
+        return DatabaseEventRepository.from_config(self.config)
 
 
 if __name__ == "__main__":

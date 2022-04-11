@@ -24,7 +24,7 @@ class TestDatabaseTransactionRepository(AiopgTestCase, TransactionRepositorySubm
     __test__ = True
 
     def build_transaction_repository(self) -> TransactionRepository:
-        return DatabaseTransactionRepository()
+        return DatabaseTransactionRepository.from_config(self.config)
 
     def test_constructor(self):
         pool = DatabaseClientPool.from_config(self.config)
@@ -50,7 +50,7 @@ class TestDatabaseTransactionRepositorySelect(AiopgTestCase, TransactionReposito
     __test__ = True
 
     def build_transaction_repository(self) -> TransactionRepository:
-        return DatabaseTransactionRepository()
+        return DatabaseTransactionRepository.from_config(self.config)
 
 
 if __name__ == "__main__":
