@@ -12,7 +12,7 @@ from minos.networks import (
     DiscoveryConnector,
     InMemoryDiscoveryClient,
     MinosInvalidDiscoveryClient,
-    get_host_ip,
+    get_host_ip, DiscoveryClient,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -35,6 +35,17 @@ class TestDiscoveryConnector(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([], connector.endpoints)
         self.assertEqual("192.168.1.32", connector.host)
         self.assertEqual(8080, connector.port)
+
+    def test_from_config(self):
+        connector = DiscoveryConnector.from_config(self.config)
+        expected = [
+            {'url': '/order', 'method': 'DELETE'},
+            {'url': '/order', 'method': 'GET', 'foo': 'bar'},
+            {'url': '/ticket', 'method': 'POST', 'foo': 'bar'}
+        ]
+
+        self.assertEqual(expected, connector.endpoints)
+        self.assertIsInstance(connector.client, DiscoveryClient)
 
     def test_config_minos_client_does_not_exist(self):
         config = Config(self.CONFIG_FILE_PATH, minos_discovery_client="wrong-client")
@@ -59,9 +70,9 @@ class TestDiscoveryConnector(unittest.IsolatedAsyncioTestCase):
             8080,
             "Order",
             [
-                {"url": "/order", "method": "DELETE"},
-                {"url": "/order", "method": "GET"},
-                {"url": "/ticket", "method": "POST"},
+                {'url': '/order', 'method': 'DELETE'},
+                {'url': '/order', 'method': 'GET', 'foo': 'bar'},
+                {'url': '/ticket', 'method': 'POST', 'foo': 'bar'}
             ],
         )
         self.assertEqual(expected, mock.call_args)

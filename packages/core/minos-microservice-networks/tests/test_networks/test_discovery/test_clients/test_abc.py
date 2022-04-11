@@ -5,9 +5,13 @@ from abc import (
 
 from minos.common import (
     Object,
+    Config,
 )
 from minos.networks import (
     DiscoveryClient,
+)
+from tests.utils import (
+    CONFIG_FILE_PATH,
 )
 
 
@@ -30,6 +34,8 @@ class _DiscoveryClient(DiscoveryClient):
 
 
 class TestDiscoveryClient(unittest.IsolatedAsyncioTestCase):
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
+
     def test_abstract(self):
         self.assertTrue(issubclass(DiscoveryClient, (ABC, Object)))
         # noinspection PyUnresolvedReferences
@@ -38,6 +44,12 @@ class TestDiscoveryClient(unittest.IsolatedAsyncioTestCase):
     def test_route(self):
         client = _DiscoveryClient("localhost", 9999)
         self.assertEqual("http://localhost:9999", client.route)
+
+    def test_from_config(self):
+        self.config = Config(self.CONFIG_FILE_PATH)
+        client = _DiscoveryClient.from_config(config=self.config)
+        self.assertEqual("discovery-service", client.host)
+        self.assertEqual(8080, client.port)
 
 
 if __name__ == "__main__":
