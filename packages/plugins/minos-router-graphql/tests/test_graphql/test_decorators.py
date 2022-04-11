@@ -49,8 +49,8 @@ class TestGraphQlEnrouteDecorator(unittest.TestCase):
                     output=GraphQLString,
                     authorized=True,
                     allowed_groups=[
-                        "super_admin",
-                        "admin",
+                        "foo",
+                        "bar",
                     ],
                 )
             },

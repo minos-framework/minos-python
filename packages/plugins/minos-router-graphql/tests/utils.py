@@ -89,8 +89,8 @@ class FakeQueryService2:
         output=GraphQLString,
         authorized=True,
         allowed_groups=[
-            "supèr_admin",
-            "admin",
+            "foo",
+            "bar",
         ],
     )
     def get_order(self, request: Request):
