@@ -42,17 +42,6 @@ class SnapshotEntry:
     Is the python object representation of a row in the ``snapshot`` storage system.
     """
 
-    __slots__ = (
-        "uuid",
-        "name",
-        "version",
-        "schema",
-        "data",
-        "created_at",
-        "updated_at",
-        "transaction_uuid",
-    )
-
     # noinspection PyShadowingBuiltins
     def __init__(
         self,

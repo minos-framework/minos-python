@@ -31,7 +31,6 @@ from ...events import (
 )
 from ...exceptions import (
     AlreadyDeletedException,
-    NotFoundException,
 )
 from ...queries import (
     _Condition,
@@ -136,10 +135,6 @@ class InMemorySnapshotRepository(SnapshotRepository):
     ) -> SnapshotEntry:
         transaction_uuids = await self._get_transaction_uuids(transaction)
         entries = await self._get_event_entries(name, uuid, transaction_uuids)
-
-        if not len(entries):
-            raise NotFoundException(f"Not found any entries for the {uuid!r} id.")
-
         return self._build_instance(entries, **kwargs)
 
     async def _get_transaction_uuids(self, transaction: Optional[TransactionEntry]) -> tuple[UUID, ...]:
@@ -182,7 +177,15 @@ class InMemorySnapshotRepository(SnapshotRepository):
         instance = cls.from_diff(entries[0].event, **kwargs)
         for entry in entries[1:]:
             instance.apply_diff(entry.event)
-        return SnapshotEntry.from_root_entity(instance)
+
+        snapshot = SnapshotEntry.from_root_entity(instance)
+
+        def _fn(*ag, **kw):
+            return instance
+
+        snapshot.build = _fn  # FIXME
+
+        return snapshot
 
     async def _synchronize(self, **kwargs) -> None:
         pass
