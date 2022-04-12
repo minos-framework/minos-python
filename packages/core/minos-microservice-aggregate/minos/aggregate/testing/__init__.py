@@ -1,6 +1,4 @@
 from .event_repository import (
-    EventRepositorySelectTestCase,
-    EventRepositorySubmitTestCase,
     EventRepositoryTestCase,
 )
 from .snapshot_repository import (

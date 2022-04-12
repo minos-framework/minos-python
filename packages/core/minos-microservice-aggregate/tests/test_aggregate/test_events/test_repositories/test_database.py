@@ -16,8 +16,7 @@ from minos.aggregate import (
     EventRepository,
 )
 from minos.aggregate.testing import (
-    EventRepositorySelectTestCase,
-    EventRepositorySubmitTestCase,
+    EventRepositoryTestCase,
 )
 from minos.common import (
     DatabaseClient,
@@ -30,7 +29,7 @@ from tests.utils import (
 )
 
 
-class TestDatabaseEventRepositorySubmit(AggregateTestCase, EventRepositorySubmitTestCase):
+class TestDatabaseEventRepositorySubmit(AggregateTestCase, EventRepositoryTestCase):
     __test__ = True
 
     def build_event_repository(self) -> EventRepository:
@@ -92,9 +91,6 @@ class TestDatabaseEventRepositorySubmit(AggregateTestCase, EventRepositorySubmit
         with patch.object(DatabaseClient, "fetch_one", side_effect=fetch_one):
             await super().test_offset()
 
-
-class TestDatabaseEventRepositorySelect(AggregateTestCase, EventRepositorySelectTestCase):
-    __test__ = True
 
     async def populate(self) -> None:
         with patch.object(

@@ -5,23 +5,14 @@ from minos.aggregate import (
     InMemoryEventRepository,
 )
 from minos.aggregate.testing import (
-    EventRepositorySelectTestCase,
-    EventRepositorySubmitTestCase,
+    EventRepositoryTestCase,
 )
 from tests.utils import (
     AggregateTestCase,
 )
 
 
-class TestInMemoryEventRepositorySubmit(AggregateTestCase, EventRepositorySubmitTestCase):
-    __test__ = True
-
-    def build_event_repository(self) -> EventRepository:
-        """For testing purposes."""
-        return InMemoryEventRepository()
-
-
-class TestInMemoryEventRepositorySelect(AggregateTestCase, EventRepositorySelectTestCase):
+class TestInMemoryEventRepositorySubmit(AggregateTestCase, EventRepositoryTestCase):
     __test__ = True
 
     def build_event_repository(self) -> EventRepository:

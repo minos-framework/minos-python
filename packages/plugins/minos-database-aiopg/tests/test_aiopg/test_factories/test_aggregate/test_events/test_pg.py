@@ -5,8 +5,7 @@ from minos.aggregate import (
     EventRepository,
 )
 from minos.aggregate.testing import (
-    EventRepositorySelectTestCase,
-    EventRepositorySubmitTestCase,
+    EventRepositoryTestCase,
 )
 from minos.common import (
     DatabaseClientPool,
@@ -21,7 +20,7 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestDatabaseEventRepositorySubmit(AiopgTestCase, EventRepositorySubmitTestCase):
+class TestDatabaseEventRepositorySubmit(AiopgTestCase, EventRepositoryTestCase):
     __test__ = True
 
     def build_event_repository(self) -> EventRepository:
@@ -46,14 +45,6 @@ class TestDatabaseEventRepositorySubmit(AiopgTestCase, EventRepositorySubmitTest
             await client.execute(operation)
             response = (await client.fetch_one())[0]
         self.assertTrue(response)
-
-
-class TestDatabaseEventRepositorySelect(AiopgTestCase, EventRepositorySelectTestCase):
-    __test__ = True
-
-    def build_event_repository(self) -> EventRepository:
-        """Fort testing purposes."""
-        return DatabaseEventRepository.from_config(self.config)
 
 
 if __name__ == "__main__":
