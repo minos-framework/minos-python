@@ -1,4 +1,7 @@
 import unittest
+from datetime import (
+    datetime,
+)
 from unittest.mock import (
     AsyncMock,
     MagicMock,
@@ -522,6 +525,24 @@ class TestTransactionEntry(AggregateTestCase):
             f"destination_uuid={destination_uuid!r}, updated_at={None!r})"
         )
         self.assertEqual(expected, repr(transaction))
+
+    def test_as_raw(self):
+        uuid = uuid4()
+        status = TransactionStatus.PENDING
+        event_offset = 56
+        updated_at = datetime(2020, 10, 13, 8, 45, 32)
+        destination_uuid = uuid4()
+
+        entry = TransactionEntry(uuid, status, event_offset, destination_uuid, updated_at)
+        expected = {
+            "uuid": uuid,
+            "status": status,
+            "event_offset": event_offset,
+            "destination_uuid": destination_uuid,
+            "updated_at": updated_at,
+        }
+
+        self.assertEqual(expected, entry.as_raw())
 
 
 class TestTransactionStatus(unittest.TestCase):

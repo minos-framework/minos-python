@@ -39,10 +39,7 @@ class DatabaseTransactionRepository(DatabaseMixin[TransactionDatabaseOperationFa
 
     async def _submit(self, transaction: TransactionEntry) -> TransactionEntry:
         operation = self.operation_factory.build_submit_row(
-            uuid=transaction.uuid,
-            destination_uuid=transaction.destination_uuid,
-            status=transaction.status,
-            event_offset=transaction.event_offset,
+            **transaction.as_raw(),
         )
 
         try:

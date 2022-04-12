@@ -171,7 +171,7 @@ class FakeTransactionDatabaseOperationFactory(TransactionDatabaseOperationFactor
         return FakeDatabaseOperation("create")
 
     def build_submit_row(
-        self, uuid: UUID, destination_uuid: UUID, status: TransactionStatus, event_offset: int
+        self, uuid: UUID, destination_uuid: UUID, status: TransactionStatus, event_offset: int, **kwargs
     ) -> DatabaseOperation:
         """For testing purposes."""
         return FakeDatabaseOperation("submit")

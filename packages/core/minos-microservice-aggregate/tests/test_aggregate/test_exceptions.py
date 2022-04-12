@@ -9,16 +9,19 @@ from minos.aggregate import (
     NotFoundException,
     SnapshotRepositoryConflictException,
     SnapshotRepositoryException,
+    TransactionRepositoryConflictException,
+    TransactionRepositoryException,
 )
 from minos.common import (
     MinosException,
 )
 from tests.utils import (
+    AggregateTestCase,
     Car,
 )
 
 
-class TestExceptions(unittest.TestCase):
+class TestExceptions(AggregateTestCase):
     def test_base(self):
         self.assertTrue(issubclass(AggregateException, MinosException))
 
@@ -51,6 +54,16 @@ class TestExceptions(unittest.TestCase):
 
     def test_snapshot_already_deleted(self):
         self.assertTrue(issubclass(AlreadyDeletedException, SnapshotRepositoryException))
+
+    def test_transaction(self):
+        self.assertTrue(issubclass(TransactionRepositoryException, AggregateException))
+
+    def test_transaction_conflict(self):
+        message = "There was a conflict"
+        exception = TransactionRepositoryConflictException(message)
+
+        self.assertIsInstance(exception, TransactionRepositoryException)
+        self.assertEqual(message, str(exception))
 
 
 if __name__ == "__main__":
