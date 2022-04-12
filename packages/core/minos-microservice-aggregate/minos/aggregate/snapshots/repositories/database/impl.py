@@ -16,6 +16,7 @@ from uuid import (
 from minos.common import (
     NULL_UUID,
     Config,
+    DatabaseMixin,
     Inject,
     NotProvidedException,
     import_module,
@@ -47,6 +48,9 @@ from ...entries import (
 from ..abc import (
     SnapshotRepository,
 )
+from .factories import (
+    SnapshotDatabaseOperationFactory,
+)
 
 if TYPE_CHECKING:
     from ....entities import (
@@ -54,7 +58,7 @@ if TYPE_CHECKING:
     )
 
 
-class DatabaseSnapshotRepository(SnapshotRepository):
+class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatabaseOperationFactory]):
     """Database Snapshot Repository class.
 
     The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
@@ -120,6 +124,7 @@ class DatabaseSnapshotRepository(SnapshotRepository):
 
         # noinspection PyUnusedLocal
 
+    # noinspection PyUnusedLocal
     async def find_entries(
         self,
         name: str,
@@ -250,7 +255,7 @@ class DatabaseSnapshotRepository(SnapshotRepository):
         return previous
 
     async def _select_one_instance(self, name: str, uuid: UUID, **kwargs) -> RootEntity:
-        snapshot_entry = await self._reader.get_entry(name, uuid, **kwargs)
+        snapshot_entry = await self.get_entry(name, uuid, **kwargs)
         return snapshot_entry.build(**kwargs)
 
     async def _submit_entry(self, snapshot_entry: SnapshotEntry) -> SnapshotEntry:

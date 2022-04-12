@@ -5,8 +5,7 @@ from minos.aggregate import (
     TransactionRepository,
 )
 from minos.aggregate.testing import (
-    TransactionRepositorySelectTestCase,
-    TransactionRepositorySubmitTestCase,
+    TransactionRepositoryTestCase,
 )
 from minos.common import (
     DatabaseClientPool,
@@ -21,7 +20,7 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestDatabaseTransactionRepository(AiopgTestCase, TransactionRepositorySubmitTestCase):
+class TestDatabaseTransactionRepository(AiopgTestCase, TransactionRepositoryTestCase):
     __test__ = True
 
     def build_transaction_repository(self) -> TransactionRepository:
@@ -45,13 +44,6 @@ class TestDatabaseTransactionRepository(AiopgTestCase, TransactionRepositorySubm
             await client.execute(operation)
             response = (await client.fetch_one())[0]
         self.assertTrue(response)
-
-
-class TestDatabaseTransactionRepositorySelect(AiopgTestCase, TransactionRepositorySelectTestCase):
-    __test__ = True
-
-    def build_transaction_repository(self) -> TransactionRepository:
-        return DatabaseTransactionRepository.from_config(self.config)
 
 
 if __name__ == "__main__":

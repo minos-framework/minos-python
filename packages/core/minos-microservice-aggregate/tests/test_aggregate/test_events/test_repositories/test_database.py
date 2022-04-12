@@ -91,7 +91,6 @@ class TestDatabaseEventRepositorySubmit(AggregateTestCase, EventRepositoryTestCa
         with patch.object(DatabaseClient, "fetch_one", side_effect=fetch_one):
             await super().test_offset()
 
-
     async def populate(self) -> None:
         with patch.object(
             DatabaseClient,
@@ -110,10 +109,6 @@ class TestDatabaseEventRepositorySubmit(AggregateTestCase, EventRepositoryTestCa
             ],
         ):
             await super().populate()
-
-    def build_event_repository(self) -> EventRepository:
-        """For testing purposes."""
-        return DatabaseEventRepository.from_config(self.config)
 
     async def test_select(self):
         with patch.object(

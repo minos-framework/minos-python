@@ -10,8 +10,7 @@ from minos.aggregate import (
     TransactionStatus,
 )
 from minos.aggregate.testing import (
-    TransactionRepositorySelectTestCase,
-    TransactionRepositorySubmitTestCase,
+    TransactionRepositoryTestCase,
 )
 from minos.common import (
     DatabaseClient,
@@ -24,7 +23,7 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestDatabaseTransactionRepository(AggregateTestCase, TransactionRepositorySubmitTestCase):
+class TestDatabaseTransactionRepository(AggregateTestCase, TransactionRepositoryTestCase):
     __test__ = True
 
     def build_transaction_repository(self) -> TransactionRepository:
@@ -128,13 +127,6 @@ class TestDatabaseTransactionRepository(AggregateTestCase, TransactionRepository
             ],
         ):
             await super().test_submit_rejected_raises()
-
-
-class TestDatabaseTransactionRepositorySelect(AggregateTestCase, TransactionRepositorySelectTestCase):
-    __test__ = True
-
-    def build_transaction_repository(self) -> TransactionRepository:
-        return DatabaseTransactionRepository.from_config(self.config)
 
     async def populate(self) -> None:
         with patch.object(

@@ -6,7 +6,5 @@ from .snapshot_repository import (
     SnapshotRepositoryWriterTestCase,
 )
 from .transaction_repository import (
-    TransactionRepositorySelectTestCase,
-    TransactionRepositorySubmitTestCase,
     TransactionRepositoryTestCase,
 )
