@@ -15,7 +15,7 @@ from tests.utils import (
 )
 
 
-class TestInMemorySnapshotRepositoryReader(AggregateTestCase, SnapshotRepositoryTestCase):
+class TestInMemorySnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCase):
     __test__ = True
 
     def build_snapshot_repository(self) -> SnapshotRepository:
@@ -29,6 +29,9 @@ class TestInMemorySnapshotRepositoryReader(AggregateTestCase, SnapshotRepository
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
             InMemorySnapshotRepository(transaction_repository=None)
+
+    async def test_dispatch_with_offset(self):
+        pass
 
 
 if __name__ == "__main__":

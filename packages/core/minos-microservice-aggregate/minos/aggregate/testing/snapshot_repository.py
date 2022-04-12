@@ -326,7 +326,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
 
         await self.snapshot_repository.synchronize()
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(id_gt=0), mock.call_args)
+        self.assertEqual(call(id_gt=0, synchronize=False), mock.call_args)
         mock.reset_mock()
 
         # noinspection PyTypeChecker
@@ -339,17 +339,17 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
 
         await self.snapshot_repository.synchronize()
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(id_gt=11), mock.call_args)
+        self.assertEqual(call(id_gt=11, synchronize=False), mock.call_args)
         mock.reset_mock()
 
         await self.snapshot_repository.synchronize()
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(id_gt=12), mock.call_args)
+        self.assertEqual(call(id_gt=12, synchronize=False), mock.call_args)
         mock.reset_mock()
 
         await self.snapshot_repository.synchronize()
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(id_gt=12), mock.call_args)
+        self.assertEqual(call(id_gt=12, synchronize=False), mock.call_args)
         mock.reset_mock()
 
     async def test_find_by_uuid(self):

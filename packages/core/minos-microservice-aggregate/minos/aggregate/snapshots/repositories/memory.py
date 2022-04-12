@@ -2,11 +2,16 @@ from __future__ import (
     annotations,
 )
 
+from contextlib import (
+    suppress,
+)
+from functools import (
+    cmp_to_key,
+)
 from operator import (
     attrgetter,
 )
 from typing import (
-    TYPE_CHECKING,
     AsyncIterator,
     Optional,
 )
@@ -37,14 +42,12 @@ from ...transactions import (
     TransactionRepository,
     TransactionStatus,
 )
+from ..entries import (
+    SnapshotEntry,
+)
 from .abc import (
     SnapshotRepository,
 )
-
-if TYPE_CHECKING:
-    from ...entities import (
-        RootEntity,
-    )
 
 
 class InMemorySnapshotRepository(SnapshotRepository):
@@ -73,45 +76,69 @@ class InMemorySnapshotRepository(SnapshotRepository):
         self._event_repository = event_repository
         self._transaction_repository = transaction_repository
 
-    async def _find(
+    async def _find_entries(
         self,
         name: str,
         condition: _Condition,
-        ordering: Optional[_Ordering] = None,
-        limit: Optional[int] = None,
+        ordering: Optional[_Ordering],
+        limit: Optional[int],
+        exclude_deleted: bool,
         **kwargs,
-    ) -> AsyncIterator[RootEntity]:
+    ) -> AsyncIterator[SnapshotEntry]:
         uuids = {v.uuid async for v in self._event_repository.select(name=name)}
 
-        instances = list()
+        entries = list()
         for uuid in uuids:
-            try:
-                instance = await self.get(name, uuid, **kwargs)
-            except AlreadyDeletedException:
-                continue
+            entry = await self._get(name, uuid, **kwargs)
 
-            if condition.evaluate(instance):
-                instances.append(instance)
+            try:
+                instance = entry.build()
+                if condition.evaluate(instance):
+                    entries.append(entry)
+            except AlreadyDeletedException:
+                # noinspection PyTypeChecker
+                if not exclude_deleted and condition.evaluate(entry):
+                    entries.append(entry)
 
         if ordering is not None:
-            instances.sort(key=attrgetter(ordering.by), reverse=ordering.reverse)
+
+            def _cmp(a: SnapshotEntry, b: SnapshotEntry) -> int:
+                with suppress(AlreadyDeletedException):
+                    with suppress(AlreadyDeletedException):
+                        try:
+                            aa = attrgetter(ordering.by)(a.build())
+                        except AlreadyDeletedException:
+                            aa = attrgetter(ordering.by)(a)
+                    with suppress(AlreadyDeletedException):
+                        try:
+                            bb = attrgetter(ordering.by)(b.build())
+                        except AlreadyDeletedException:
+                            bb = attrgetter(ordering.by)(b)
+
+                    if aa > bb:
+                        return 1
+                    elif aa < bb:
+                        return -1
+
+                return 0
+
+            entries.sort(key=cmp_to_key(_cmp), reverse=ordering.reverse)
 
         if limit is not None:
-            instances = instances[:limit]
+            entries = entries[:limit]
 
-        for instance in instances:
-            yield instance
+        for entry in entries:
+            yield entry
 
     # noinspection PyMethodOverriding
-    async def _get(self, name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs) -> RootEntity:
+    async def _get(
+        self, name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs
+    ) -> SnapshotEntry:
         transaction_uuids = await self._get_transaction_uuids(transaction)
         entries = await self._get_event_entries(name, uuid, transaction_uuids)
 
         if not len(entries):
             raise NotFoundException(f"Not found any entries for the {uuid!r} id.")
-
-        if entries[-1].action.is_delete:
-            raise AlreadyDeletedException(f"The {uuid!r} identifier belongs to an already deleted instance.")
 
         return self._build_instance(entries, **kwargs)
 
@@ -147,12 +174,15 @@ class InMemorySnapshotRepository(SnapshotRepository):
         return entries
 
     @staticmethod
-    def _build_instance(entries: list[EventEntry], **kwargs) -> RootEntity:
+    def _build_instance(entries: list[EventEntry], **kwargs) -> SnapshotEntry:
+        if entries[-1].action.is_delete:
+            return SnapshotEntry.from_event_entry(entries[-1])
+
         cls = entries[0].type_
         instance = cls.from_diff(entries[0].event, **kwargs)
         for entry in entries[1:]:
             instance.apply_diff(entry.event)
-        return instance
+        return SnapshotEntry.from_root_entity(instance)
 
     async def _synchronize(self, **kwargs) -> None:
         pass
