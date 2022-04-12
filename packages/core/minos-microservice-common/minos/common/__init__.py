@@ -103,6 +103,7 @@ from .model import (
     SchemaEncoder,
     TypeHintBuilder,
     TypeHintComparator,
+    TypeHintParser,
     is_model_type,
 )
 from .object import (
