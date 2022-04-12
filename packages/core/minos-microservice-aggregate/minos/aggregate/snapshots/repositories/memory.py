@@ -180,11 +180,6 @@ class InMemorySnapshotRepository(SnapshotRepository):
 
         snapshot = SnapshotEntry.from_root_entity(instance)
 
-        def _fn(*ag, **kw):
-            return instance
-
-        snapshot.build = _fn  # FIXME
-
         return snapshot
 
     async def _synchronize(self, **kwargs) -> None:
