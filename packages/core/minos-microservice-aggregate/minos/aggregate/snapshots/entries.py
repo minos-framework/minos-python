@@ -59,7 +59,7 @@ class SnapshotEntry:
         uuid: UUID,
         name: str,
         version: int,
-        schema: Optional[Union[list[dict[str, Any]], dict[str, Any]]] = None,
+        schema: Optional[Union[list[dict[str, Any]], dict[str, Any]], bytes, memoryview] = None,
         data: Optional[dict[str, Any]] = None,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,

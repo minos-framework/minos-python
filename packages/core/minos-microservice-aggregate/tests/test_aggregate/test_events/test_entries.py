@@ -40,7 +40,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(NULL_UUID, entry.transaction_uuid)
 
     # noinspection SpellCheckingInspection
-    def test_constructor_with_memoryview(self):
+    def test_constructor_with_memoryview_data(self):
         entry = EventEntry(self.uuid, "example.Car", 0, memoryview(bytes("car", "utf-8")))
         self.assertEqual(bytes("car", "utf-8"), entry.data)
 
