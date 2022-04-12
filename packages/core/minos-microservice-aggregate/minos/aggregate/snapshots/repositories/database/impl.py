@@ -2,15 +2,20 @@ from __future__ import (
     annotations,
 )
 
+from collections.abc import (
+    AsyncIterator,
+)
 from typing import (
     TYPE_CHECKING,
-    Type,
+    Optional,
 )
 from uuid import (
     UUID,
 )
 
 from minos.common import (
+    NULL_UUID,
+    Config,
     Inject,
     NotProvidedException,
     import_module,
@@ -26,18 +31,21 @@ from ....exceptions import (
     SnapshotRepositoryConflictException,
     TransactionNotFoundException,
 )
+from ....queries import (
+    _Condition,
+    _EqualCondition,
+    _Ordering,
+)
 from ....transactions import (
+    TransactionEntry,
     TransactionRepository,
     TransactionStatus,
 )
 from ...entries import (
     SnapshotEntry,
 )
-from .abc import (
-    DatabaseSnapshotSetup,
-)
-from .readers import (
-    DatabaseSnapshotReader,
+from ..abc import (
+    SnapshotRepository,
 )
 
 if TYPE_CHECKING:
@@ -46,14 +54,17 @@ if TYPE_CHECKING:
     )
 
 
-class DatabaseSnapshotWriter(DatabaseSnapshotSetup):
-    """Minos Snapshot Dispatcher class."""
+class DatabaseSnapshotRepository(SnapshotRepository):
+    """Database Snapshot Repository class.
+
+    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
+    class.
+    """
 
     @Inject()
     def __init__(
         self,
         *args,
-        reader: DatabaseSnapshotReader,
         event_repository: EventRepository,
         transaction_repository: TransactionRepository,
         **kwargs,
@@ -66,9 +77,89 @@ class DatabaseSnapshotWriter(DatabaseSnapshotSetup):
         if transaction_repository is None:
             raise NotProvidedException("A transaction repository instance is required.")
 
-        self._reader = reader
         self._event_repository = event_repository
         self._transaction_repository = transaction_repository
+
+    @classmethod
+    def _from_config(cls, config: Config, **kwargs) -> DatabaseSnapshotRepository:
+        return cls(database_key=None, **kwargs)
+
+    async def _setup(self) -> None:
+        operation = self.operation_factory.build_create_table()
+        await self.submit_query(operation)
+
+    async def _destroy(self) -> None:
+        await super()._destroy()
+
+    async def _get(self, name: str, uuid: UUID, **kwargs) -> RootEntity:
+        snapshot_entry = await self.get_entry(name, uuid, **kwargs)
+        instance = snapshot_entry.build(**kwargs)
+        return instance
+
+        # noinspection PyUnusedLocal
+
+    async def get_entry(self, name: str, uuid: UUID, **kwargs) -> SnapshotEntry:
+        """Get a ``SnapshotEntry`` from its identifier.
+
+        :param name: Class name of the ``RootEntity``.
+        :param uuid: Identifier of the ``RootEntity``.
+        :param kwargs: Additional named arguments.
+        :return: The ``SnapshotEntry`` instance.
+        """
+
+        try:
+            return await self.find_entries(
+                name, _EqualCondition("uuid", uuid), **kwargs | {"exclude_deleted": False}
+            ).__anext__()
+        except StopAsyncIteration:
+            raise NotFoundException(f"The instance could not be found: {uuid!s}")
+
+    async def _find(self, *args, **kwargs) -> AsyncIterator[RootEntity]:
+        async for snapshot_entry in self.find_entries(*args, **kwargs):
+            yield snapshot_entry.build(**kwargs)
+
+        # noinspection PyUnusedLocal
+
+    async def find_entries(
+        self,
+        name: str,
+        condition: _Condition,
+        ordering: Optional[_Ordering] = None,
+        limit: Optional[int] = None,
+        streaming_mode: bool = False,
+        transaction: Optional[TransactionEntry] = None,
+        exclude_deleted: bool = True,
+        **kwargs,
+    ) -> AsyncIterator[SnapshotEntry]:
+        """Find a collection of ``SnapshotEntry`` instances based on a ``Condition``.
+
+        :param name: Class name of the ``RootEntity``.
+        :param condition: The condition that must be satisfied by the ``RootEntity`` instances.
+        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
+            is to retrieve them without any order pattern.
+        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
+            instances that meet the given condition.
+        :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
+            database connection), otherwise preloads the full set of values on memory and then retrieves them.
+        :param transaction: The transaction within the operation is performed. If not any value is provided, then the
+            transaction is extracted from the context var. If not any transaction is being scoped then the query is
+            performed to the global snapshot.
+        :param exclude_deleted: If ``True``, deleted ``RootEntity`` entries are included, otherwise deleted
+            ``RootEntity`` entries are filtered.
+        :param kwargs: Additional named arguments.
+        :return: An asynchronous iterator that containing the ``RootEntity`` instances.
+        """
+        if transaction is None:
+            transaction_uuids = (NULL_UUID,)
+        else:
+            transaction_uuids = await transaction.uuids
+
+        operation = self.operation_factory.build_query(
+            name, condition, ordering, limit, transaction_uuids, exclude_deleted
+        )
+
+        async for row in self.submit_query_and_iter(operation, streaming_mode=streaming_mode):
+            yield SnapshotEntry(*row)
 
     async def is_synced(self, name: str, **kwargs) -> bool:
         """Check if the snapshot has the latest version of a ``RootEntity`` instance.
@@ -84,11 +175,7 @@ class DatabaseSnapshotWriter(DatabaseSnapshotSetup):
         except StopAsyncIteration:
             return True
 
-    async def dispatch(self, **kwargs) -> None:
-        """Perform a dispatching step, based on the sequence of non already processed ``EventEntry`` objects.
-
-        :return: This method does not return anything.
-        """
+    async def _synchronize(self, **kwargs) -> None:
         initial_offset = await self._load_offset()
 
         offset = initial_offset
@@ -153,7 +240,7 @@ class DatabaseSnapshotWriter(DatabaseSnapshotSetup):
             previous = await self._select_one_instance(event.name, event.uuid, **kwargs)
         except NotFoundException:
             # noinspection PyTypeChecker
-            cls: Type[RootEntity] = import_module(event.name)
+            cls = import_module(event.name)
             return cls.from_diff(event, **kwargs)
 
         if previous.version >= event.version:

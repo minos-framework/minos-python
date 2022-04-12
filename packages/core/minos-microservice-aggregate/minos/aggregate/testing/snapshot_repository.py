@@ -100,6 +100,7 @@ class SnapshotRepositoryWriterTestCase(SnapshotRepositoryTestCase, ABC):
         self.transaction_1 = uuid4()
         self.transaction_2 = uuid4()
         self.transaction_3 = uuid4()
+        self.transaction_4 = uuid4()
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -137,6 +138,11 @@ class SnapshotRepositoryWriterTestCase(SnapshotRepositoryTestCase, ABC):
         )
         await self.transaction_repository.submit(
             TransactionEntry(self.transaction_3, TransactionStatus.REJECTED, await self.event_repository.offset)
+        )
+        await self.transaction_repository.submit(
+            TransactionEntry(
+                self.transaction_4, TransactionStatus.REJECTED, await self.event_repository.offset, self.transaction_3
+            )
         )
 
     def test_type(self):
@@ -491,7 +497,10 @@ class SnapshotRepositoryReaderTestCase(SnapshotRepositoryTestCase, ABC):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
 
         iterable = self.snapshot_repository.find(
-            Car, condition, ordering=Ordering.ASC("updated_at"), transaction_uuid=self.transaction_3
+            Car,
+            condition,
+            ordering=Ordering.ASC("updated_at"),
+            transaction=TransactionEntry(self.transaction_4),
         )
         observed = [v async for v in iterable]
 

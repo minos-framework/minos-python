@@ -51,7 +51,7 @@ class TestDatabaseSnapshotRepositoryWriter(AiopgTestCase, SnapshotRepositoryWrit
         self.assertTrue(await self.snapshot_repository.is_synced(Car))
 
 
-class TestDatabaseSnapshotReader(AiopgTestCase, SnapshotRepositoryReaderTestCase):
+class TestDatabaseSnapshotRepositoryReader(AiopgTestCase, SnapshotRepositoryReaderTestCase):
     __test__ = True
 
     def build_snapshot_repository(self):
