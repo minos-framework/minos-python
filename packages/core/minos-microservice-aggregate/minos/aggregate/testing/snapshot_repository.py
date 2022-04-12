@@ -658,15 +658,3 @@ class SnapshotRepositoryReaderTestCase(SnapshotRepositoryTestCase, ABC):
             ),
         ]
         self.assertEqual(expected, observed)
-
-    def _assert_equal_snapshot_entries(self, expected: list[SnapshotEntry], observed: list[SnapshotEntry]):
-        self.assertEqual(len(expected), len(observed))
-        for exp, obs in zip(expected, observed):
-            if exp.data is None:
-                with self.assertRaises(AlreadyDeletedException):
-                    # noinspection PyStatementEffect
-                    obs.build()
-            else:
-                self.assertEqual(exp.build(), obs.build())
-            self.assertIsInstance(obs.created_at, datetime)
-            self.assertIsInstance(obs.updated_at, datetime)
