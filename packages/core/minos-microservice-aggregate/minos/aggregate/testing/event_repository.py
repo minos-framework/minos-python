@@ -236,9 +236,9 @@ class EventRepositorySelectTestCase(EventRepositoryTestCase, ABC):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self._populate()
+        await self.populate()
 
-    async def _populate(self):
+    async def populate(self) -> None:
         await self.transaction_repository.submit(TransactionEntry(self.first_transaction))
         await self.transaction_repository.submit(TransactionEntry(self.second_transaction))
 

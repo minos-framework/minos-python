@@ -96,7 +96,7 @@ class TestDatabaseEventRepositorySubmit(AggregateTestCase, EventRepositorySubmit
 class TestDatabaseEventRepositorySelect(AggregateTestCase, EventRepositorySelectTestCase):
     __test__ = True
 
-    async def _populate(self):
+    async def populate(self) -> None:
         with patch.object(
             DatabaseClient,
             "fetch_one",
@@ -113,7 +113,7 @@ class TestDatabaseEventRepositorySelect(AggregateTestCase, EventRepositorySelect
                 (10, uuid4(), 4, current_datetime()),
             ],
         ):
-            await super()._populate()
+            await super().populate()
 
     def build_event_repository(self) -> EventRepository:
         """For testing purposes."""

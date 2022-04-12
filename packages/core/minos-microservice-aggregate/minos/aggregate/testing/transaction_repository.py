@@ -155,9 +155,9 @@ class TransactionRepositorySelectTestCase(TransactionRepositoryTestCase, ABC):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self._populate()
+        await self.populate()
 
-    async def _populate(self):
+    async def populate(self) -> None:
         await self.transaction_repository.submit(TransactionEntry(self.uuid_1, TransactionStatus.PENDING, 12))
         await self.transaction_repository.submit(TransactionEntry(self.uuid_2, TransactionStatus.PENDING, 15))
         await self.transaction_repository.submit(TransactionEntry(self.uuid_3, TransactionStatus.REJECTED, 16))

@@ -136,7 +136,7 @@ class TestDatabaseTransactionRepositorySelect(AggregateTestCase, TransactionRepo
     def build_transaction_repository(self) -> TransactionRepository:
         return DatabaseTransactionRepository.from_config(self.config)
 
-    async def _populate(self):
+    async def populate(self) -> None:
         with patch.object(
             DatabaseClient,
             "fetch_one",
@@ -149,7 +149,7 @@ class TestDatabaseTransactionRepositorySelect(AggregateTestCase, TransactionRepo
                 (current_datetime(),),
             ],
         ):
-            await super()._populate()
+            await super().populate()
 
     async def test_select(self):
         with patch.object(

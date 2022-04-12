@@ -104,9 +104,9 @@ class SnapshotRepositoryWriterTestCase(SnapshotRepositoryTestCase, ABC):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self._populate()
+        await self.populate()
 
-    async def _populate(self):
+    async def populate(self) -> None:
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         name: str = Car.classname
@@ -371,9 +371,9 @@ class SnapshotRepositoryReaderTestCase(SnapshotRepositoryTestCase, ABC):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self._populate()
+        await self.populate()
 
-    async def _populate(self):
+    async def populate(self) -> None:
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         name: str = Car.classname
