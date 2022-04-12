@@ -2,8 +2,7 @@ from .event_repository import (
     EventRepositoryTestCase,
 )
 from .snapshot_repository import (
-    SnapshotRepositoryReaderTestCase,
-    SnapshotRepositoryWriterTestCase,
+    SnapshotRepositoryTestCase,
 )
 from .transaction_repository import (
     TransactionRepositoryTestCase,

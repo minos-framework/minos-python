@@ -4,8 +4,7 @@ from minos.aggregate import (
     DatabaseSnapshotRepository,
 )
 from minos.aggregate.testing import (
-    SnapshotRepositoryReaderTestCase,
-    SnapshotRepositoryWriterTestCase,
+    SnapshotRepositoryTestCase,
 )
 from minos.aggregate.testing.snapshot_repository import (
     Car,
@@ -20,7 +19,7 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestDatabaseSnapshotRepositoryWriter(AiopgTestCase, SnapshotRepositoryWriterTestCase):
+class TestDatabaseSnapshotRepositoryWriter(AiopgTestCase, SnapshotRepositoryTestCase):
     __test__ = True
 
     def build_snapshot_repository(self):
@@ -46,16 +45,10 @@ class TestDatabaseSnapshotRepositoryWriter(AiopgTestCase, SnapshotRepositoryWrit
         self.assertEqual(True, observed)
 
     async def test_is_synced(self):
+        await self.populate()
         self.assertFalse(await self.snapshot_repository.is_synced(Car))
         await self.snapshot_repository.synchronize()
         self.assertTrue(await self.snapshot_repository.is_synced(Car))
-
-
-class TestDatabaseSnapshotRepositoryReader(AiopgTestCase, SnapshotRepositoryReaderTestCase):
-    __test__ = True
-
-    def build_snapshot_repository(self):
-        return DatabaseSnapshotRepository.from_config(self.config)
 
 
 if __name__ == "__main__":

@@ -57,42 +57,14 @@ class Car(RootEntity):
 
 
 class SnapshotRepositoryTestCase(MinosTestCase, ABC):
+    __test__ = False
+
     snapshot_repository: SnapshotRepository
 
     def setUp(self) -> None:
         super().setUp()
         self.snapshot_repository = self.build_snapshot_repository()
 
-    @abstractmethod
-    def build_snapshot_repository(self) -> SnapshotRepository:
-        pass
-
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-        await self.snapshot_repository.setup()
-
-    async def asyncTearDown(self):
-        await self.snapshot_repository.destroy()
-        await super().asyncTearDown()
-
-    def assert_equal_snapshot_entries(self, expected: list[SnapshotEntry], observed: list[SnapshotEntry]):
-        self.assertEqual(len(expected), len(observed))
-        for exp, obs in zip(expected, observed):
-            if exp.data is None:
-                with self.assertRaises(AlreadyDeletedException):
-                    # noinspection PyStatementEffect
-                    obs.build()
-            else:
-                self.assertEqual(exp.build(), obs.build())
-            self.assertIsInstance(obs.created_at, datetime)
-            self.assertIsInstance(obs.updated_at, datetime)
-
-
-class SnapshotRepositoryWriterTestCase(SnapshotRepositoryTestCase, ABC):
-    __test__ = False
-
-    def setUp(self) -> None:
-        super().setUp()
         self.uuid_1 = uuid4()
         self.uuid_2 = uuid4()
         self.uuid_3 = uuid4()
@@ -102,9 +74,9 @@ class SnapshotRepositoryWriterTestCase(SnapshotRepositoryTestCase, ABC):
         self.transaction_3 = uuid4()
         self.transaction_4 = uuid4()
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-        await self.populate()
+    @abstractmethod
+    def build_snapshot_repository(self) -> SnapshotRepository:
+        pass
 
     async def populate(self) -> None:
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
@@ -145,11 +117,35 @@ class SnapshotRepositoryWriterTestCase(SnapshotRepositoryTestCase, ABC):
             )
         )
 
+    async def populate_and_synchronize(self):
+        await self.populate()
+        await self.snapshot_repository.synchronize()
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.snapshot_repository.setup()
+
+    async def asyncTearDown(self):
+        await self.snapshot_repository.destroy()
+        await super().asyncTearDown()
+
+    def assert_equal_snapshot_entries(self, expected: list[SnapshotEntry], observed: list[SnapshotEntry]):
+        self.assertEqual(len(expected), len(observed))
+        for exp, obs in zip(expected, observed):
+            if exp.data is None:
+                with self.assertRaises(AlreadyDeletedException):
+                    # noinspection PyStatementEffect
+                    obs.build()
+            else:
+                self.assertEqual(exp.build(), obs.build())
+            self.assertIsInstance(obs.created_at, datetime)
+            self.assertIsInstance(obs.updated_at, datetime)
+
     def test_type(self):
         self.assertTrue(isinstance(self.snapshot_repository, SnapshotRepository))
 
     async def test_dispatch(self):
-        await self.snapshot_repository.synchronize()
+        await self.populate_and_synchronize()
 
         # noinspection PyTypeChecker
         iterable = self.snapshot_repository.find_entries(
@@ -184,7 +180,7 @@ class SnapshotRepositoryWriterTestCase(SnapshotRepositoryTestCase, ABC):
         self.assert_equal_snapshot_entries(expected, observed)
 
     async def test_dispatch_first_transaction(self):
-        await self.snapshot_repository.synchronize()
+        await self.populate_and_synchronize()
 
         # noinspection PyTypeChecker
         iterable = self.snapshot_repository.find_entries(
@@ -223,7 +219,7 @@ class SnapshotRepositoryWriterTestCase(SnapshotRepositoryTestCase, ABC):
         self.assert_equal_snapshot_entries(expected, observed)
 
     async def test_dispatch_second_transaction(self):
-        await self.snapshot_repository.synchronize()
+        await self.populate_and_synchronize()
 
         # noinspection PyTypeChecker
         iterable = self.snapshot_repository.find_entries(
@@ -253,7 +249,7 @@ class SnapshotRepositoryWriterTestCase(SnapshotRepositoryTestCase, ABC):
         self.assert_equal_snapshot_entries(expected, observed)
 
     async def test_dispatch_third_transaction(self):
-        await self.snapshot_repository.synchronize()
+        await self.populate_and_synchronize()
 
         # noinspection PyTypeChecker
         iterable = self.snapshot_repository.find_entries(
@@ -292,6 +288,7 @@ class SnapshotRepositoryWriterTestCase(SnapshotRepositoryTestCase, ABC):
         self.assert_equal_snapshot_entries(expected, observed)
 
     async def test_dispatch_ignore_previous_version(self):
+        await self.populate()
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         name: str = Car.classname
@@ -322,6 +319,8 @@ class SnapshotRepositoryWriterTestCase(SnapshotRepositoryTestCase, ABC):
         self.assert_equal_snapshot_entries(expected, observed)
 
     async def test_dispatch_with_offset(self):
+        await self.populate()
+
         mock = MagicMock(side_effect=self.event_repository.select)
         self.event_repository.select = mock
 
@@ -353,67 +352,8 @@ class SnapshotRepositoryWriterTestCase(SnapshotRepositoryTestCase, ABC):
         self.assertEqual(call(id_gt=12), mock.call_args)
         mock.reset_mock()
 
-
-class SnapshotRepositoryReaderTestCase(SnapshotRepositoryTestCase, ABC):
-    __test__ = False
-
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.uuid_1 = uuid4()
-        self.uuid_2 = uuid4()
-        self.uuid_3 = uuid4()
-
-        self.transaction_1 = uuid4()
-        self.transaction_2 = uuid4()
-        self.transaction_3 = uuid4()
-        self.transaction_4 = uuid4()
-
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-        await self.populate()
-
-    async def populate(self) -> None:
-        diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
-        # noinspection PyTypeChecker
-        name: str = Car.classname
-
-        await self.event_repository.create(EventEntry(self.uuid_1, name, 1, diff.avro_bytes))
-        await self.event_repository.update(EventEntry(self.uuid_1, name, 2, diff.avro_bytes))
-        await self.event_repository.create(EventEntry(self.uuid_2, name, 1, diff.avro_bytes))
-        await self.event_repository.update(EventEntry(self.uuid_1, name, 3, diff.avro_bytes))
-        await self.event_repository.delete(EventEntry(self.uuid_1, name, 4))
-        await self.event_repository.update(EventEntry(self.uuid_2, name, 2, diff.avro_bytes))
-        await self.event_repository.update(
-            EventEntry(self.uuid_2, name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
-        )
-        await self.event_repository.delete(
-            EventEntry(self.uuid_2, name, 3, bytes(), transaction_uuid=self.transaction_2)
-        )
-        await self.event_repository.update(
-            EventEntry(self.uuid_2, name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
-        )
-        await self.event_repository.create(EventEntry(self.uuid_3, name, 1, diff.avro_bytes))
-        await self.event_repository.delete(
-            EventEntry(self.uuid_2, name, 3, bytes(), transaction_uuid=self.transaction_3)
-        )
-        await self.transaction_repository.submit(
-            TransactionEntry(self.transaction_1, TransactionStatus.PENDING, await self.event_repository.offset)
-        )
-        await self.transaction_repository.submit(
-            TransactionEntry(self.transaction_2, TransactionStatus.PENDING, await self.event_repository.offset)
-        )
-        await self.transaction_repository.submit(
-            TransactionEntry(self.transaction_3, TransactionStatus.REJECTED, await self.event_repository.offset)
-        )
-        await self.transaction_repository.submit(
-            TransactionEntry(
-                self.transaction_4, TransactionStatus.REJECTED, await self.event_repository.offset, self.transaction_3
-            )
-        )
-        await self.snapshot_repository.synchronize()
-
     async def test_find_by_uuid(self):
+        await self.populate_and_synchronize()
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
 
         iterable = self.snapshot_repository.find(Car, condition, ordering=Ordering.ASC("updated_at"))
@@ -440,6 +380,7 @@ class SnapshotRepositoryReaderTestCase(SnapshotRepositoryTestCase, ABC):
         self.assertEqual(expected, observed)
 
     async def test_find_with_transaction(self):
+        await self.populate_and_synchronize()
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
 
         iterable = self.snapshot_repository.find(
@@ -471,6 +412,7 @@ class SnapshotRepositoryReaderTestCase(SnapshotRepositoryTestCase, ABC):
         self.assertEqual(expected, observed)
 
     async def test_find_with_transaction_delete(self):
+        await self.populate_and_synchronize()
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
 
         iterable = self.snapshot_repository.find(
@@ -494,6 +436,7 @@ class SnapshotRepositoryReaderTestCase(SnapshotRepositoryTestCase, ABC):
         self.assertEqual(expected, observed)
 
     async def test_find_with_transaction_reverted(self):
+        await self.populate_and_synchronize()
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
 
         iterable = self.snapshot_repository.find(
@@ -525,6 +468,7 @@ class SnapshotRepositoryReaderTestCase(SnapshotRepositoryTestCase, ABC):
         self.assertEqual(expected, observed)
 
     async def test_find_streaming_true(self):
+        await self.populate_and_synchronize()
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
 
         iterable = self.snapshot_repository.find(
@@ -553,6 +497,7 @@ class SnapshotRepositoryReaderTestCase(SnapshotRepositoryTestCase, ABC):
         self.assertEqual(expected, observed)
 
     async def test_find_with_duplicates(self):
+        await self.populate_and_synchronize()
         uuids = [self.uuid_2, self.uuid_2, self.uuid_3]
         condition = Condition.IN("uuid", uuids)
 
@@ -580,14 +525,14 @@ class SnapshotRepositoryReaderTestCase(SnapshotRepositoryTestCase, ABC):
         self.assertEqual(expected, observed)
 
     async def test_find_empty(self):
-
+        await self.populate_and_synchronize()
         observed = {v async for v in self.snapshot_repository.find(Car, Condition.FALSE)}
 
         expected = set()
         self.assertEqual(expected, observed)
 
     async def test_get(self):
-
+        await self.populate_and_synchronize()
         observed = await self.snapshot_repository.get(Car, self.uuid_2)
 
         expected = Car(
@@ -596,6 +541,7 @@ class SnapshotRepositoryReaderTestCase(SnapshotRepositoryTestCase, ABC):
         self.assertEqual(expected, observed)
 
     async def test_get_with_transaction(self):
+        await self.populate_and_synchronize()
 
         observed = await self.snapshot_repository.get(
             Car, self.uuid_2, transaction=TransactionEntry(self.transaction_1)
@@ -607,18 +553,19 @@ class SnapshotRepositoryReaderTestCase(SnapshotRepositoryTestCase, ABC):
         self.assertEqual(expected, observed)
 
     async def test_get_raises(self):
-
+        await self.populate_and_synchronize()
         with self.assertRaises(AlreadyDeletedException):
             await self.snapshot_repository.get(Car, self.uuid_1)
         with self.assertRaises(NotFoundException):
             await self.snapshot_repository.get(Car, uuid4())
 
     async def test_get_with_transaction_raises(self):
-
+        await self.populate_and_synchronize()
         with self.assertRaises(AlreadyDeletedException):
             await self.snapshot_repository.get(Car, self.uuid_2, transaction=TransactionEntry(self.transaction_2))
 
     async def test_find(self):
+        await self.populate_and_synchronize()
         condition = Condition.EQUAL("color", "blue")
         iterable = self.snapshot_repository.find(Car, condition, ordering=Ordering.ASC("updated_at"))
         observed = [v async for v in iterable]
@@ -644,7 +591,7 @@ class SnapshotRepositoryReaderTestCase(SnapshotRepositoryTestCase, ABC):
         self.assertEqual(expected, observed)
 
     async def test_find_all(self):
-
+        await self.populate_and_synchronize()
         iterable = self.snapshot_repository.find(Car, Condition.TRUE, Ordering.ASC("updated_at"))
         observed = [v async for v in iterable]
 

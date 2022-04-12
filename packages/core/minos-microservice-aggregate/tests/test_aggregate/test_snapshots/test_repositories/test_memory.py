@@ -5,7 +5,7 @@ from minos.aggregate import (
     SnapshotRepository,
 )
 from minos.aggregate.testing import (
-    SnapshotRepositoryReaderTestCase,
+    SnapshotRepositoryTestCase,
 )
 from minos.common import (
     NotProvidedException,
@@ -15,7 +15,7 @@ from tests.utils import (
 )
 
 
-class TestInMemorySnapshotRepositoryReader(AggregateTestCase, SnapshotRepositoryReaderTestCase):
+class TestInMemorySnapshotRepositoryReader(AggregateTestCase, SnapshotRepositoryTestCase):
     __test__ = True
 
     def build_snapshot_repository(self) -> SnapshotRepository:
