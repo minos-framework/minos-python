@@ -3,7 +3,7 @@ from abc import (
     abstractmethod,
 )
 from datetime import (
-    datetime,
+    timedelta,
 )
 from typing import (
     Optional,
@@ -33,6 +33,7 @@ from minos.aggregate import (
     TransactionStatus,
 )
 from minos.common import (
+    classname,
     current_datetime,
 )
 from minos.common.testing import (
@@ -80,8 +81,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
 
     async def populate(self) -> None:
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
-        # noinspection PyTypeChecker
-        name: str = Car.classname
+        name: str = classname(Car)
 
         await self.event_repository.create(EventEntry(self.uuid_1, name, 1, diff.avro_bytes))
         await self.event_repository.update(EventEntry(self.uuid_1, name, 2, diff.avro_bytes))
@@ -119,6 +119,9 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
 
     async def populate_and_synchronize(self):
         await self.populate()
+        await self.synchronize()
+
+    async def synchronize(self):
         await self.snapshot_repository.synchronize()
 
     async def asyncSetUp(self):
@@ -138,8 +141,8 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
                     obs.build()
             else:
                 self.assertEqual(exp.build(), obs.build())
-            self.assertIsInstance(obs.created_at, datetime)
-            self.assertIsInstance(obs.updated_at, datetime)
+            self.assertAlmostEqual(exp.created_at or current_datetime(), obs.created_at, delta=timedelta(seconds=5))
+            self.assertAlmostEqual(exp.updated_at or current_datetime(), obs.updated_at, delta=timedelta(seconds=5))
 
     def test_type(self):
         self.assertTrue(isinstance(self.snapshot_repository, SnapshotRepository))
@@ -294,7 +297,9 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         name: str = Car.classname
         condition = Condition.EQUAL("uuid", self.uuid_1)
 
-        async def _fn(*args, **kwargs):
+        async def _fn(*args, id_gt: Optional[int] = None, **kwargs):
+            if id_gt is not None and id_gt > 0:
+                return
             yield EventEntry(self.uuid_1, name, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())
             yield EventEntry(self.uuid_1, name, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
             yield EventEntry(self.uuid_1, name, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
