@@ -1,6 +1,6 @@
-from .queue import (
+from .queues import (
     AiopgBrokerSubscriberQueueDatabaseOperationFactory,
 )
-from .validator import (
+from .validators import (
     AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
 )

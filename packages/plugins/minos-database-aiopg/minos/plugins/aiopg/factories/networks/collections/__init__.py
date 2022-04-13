@@ -1,3 +1,3 @@
-from .queue import (
+from .queues import (
     AiopgBrokerQueueDatabaseOperationFactory,
 )
