@@ -249,4 +249,4 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
         )
 
 
-AiopgDatabaseClient.register_factory(TransactionDatabaseOperationFactory, AiopgTransactionDatabaseOperationFactory)
+AiopgDatabaseClient.set_factory(TransactionDatabaseOperationFactory, AiopgTransactionDatabaseOperationFactory)

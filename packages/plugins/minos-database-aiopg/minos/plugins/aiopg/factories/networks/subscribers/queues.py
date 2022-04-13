@@ -70,7 +70,7 @@ class AiopgBrokerSubscriberQueueDatabaseOperationFactory(
         )
 
 
-AiopgDatabaseClient.register_factory(
+AiopgDatabaseClient.set_factory(
     BrokerSubscriberQueueDatabaseOperationFactory,
     AiopgBrokerSubscriberQueueDatabaseOperationFactory,
 )

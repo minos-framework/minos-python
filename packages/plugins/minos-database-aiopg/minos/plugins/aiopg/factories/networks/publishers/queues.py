@@ -23,6 +23,6 @@ class AiopgBrokerPublisherQueueDatabaseOperationFactory(
         return "broker_publisher_queue"
 
 
-AiopgDatabaseClient.register_factory(
+AiopgDatabaseClient.set_factory(
     BrokerPublisherQueueDatabaseOperationFactory, AiopgBrokerPublisherQueueDatabaseOperationFactory
 )

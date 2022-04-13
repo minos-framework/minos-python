@@ -151,7 +151,7 @@ class DatabaseClient(ABC, BuildableMixin):
         raise NotImplementedError
 
     @classmethod
-    def register_factory(cls, base: type[DatabaseOperationFactory], impl: type[DatabaseOperationFactory]) -> None:
+    def set_factory(cls, base: type[DatabaseOperationFactory], impl: type[DatabaseOperationFactory]) -> None:
         """Register an operation factory implementation for an operation factory interface.
 
         :param base: The operation factory interface.

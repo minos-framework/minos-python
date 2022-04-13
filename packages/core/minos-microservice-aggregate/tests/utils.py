@@ -145,7 +145,7 @@ class FakeLockDatabaseOperationFactory(LockDatabaseOperationFactory):
         return FakeDatabaseOperation("release")
 
 
-FakeDatabaseClient.register_factory(LockDatabaseOperationFactory, FakeLockDatabaseOperationFactory)
+FakeDatabaseClient.set_factory(LockDatabaseOperationFactory, FakeLockDatabaseOperationFactory)
 
 
 class FakeManagementDatabaseOperationFactory(ManagementDatabaseOperationFactory):
@@ -160,7 +160,7 @@ class FakeManagementDatabaseOperationFactory(ManagementDatabaseOperationFactory)
         return FakeDatabaseOperation("delete")
 
 
-FakeDatabaseClient.register_factory(ManagementDatabaseOperationFactory, FakeManagementDatabaseOperationFactory)
+FakeDatabaseClient.set_factory(ManagementDatabaseOperationFactory, FakeManagementDatabaseOperationFactory)
 
 
 class FakeTransactionDatabaseOperationFactory(TransactionDatabaseOperationFactory):
@@ -200,7 +200,7 @@ class FakeTransactionDatabaseOperationFactory(TransactionDatabaseOperationFactor
         return FakeDatabaseOperation("select")
 
 
-FakeDatabaseClient.register_factory(TransactionDatabaseOperationFactory, FakeTransactionDatabaseOperationFactory)
+FakeDatabaseClient.set_factory(TransactionDatabaseOperationFactory, FakeTransactionDatabaseOperationFactory)
 
 
 class FakeEventDatabaseOperationFactory(EventDatabaseOperationFactory):
@@ -253,7 +253,7 @@ class FakeEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         return FakeDatabaseOperation("select_max_id")
 
 
-FakeDatabaseClient.register_factory(EventDatabaseOperationFactory, FakeEventDatabaseOperationFactory)
+FakeDatabaseClient.set_factory(EventDatabaseOperationFactory, FakeEventDatabaseOperationFactory)
 
 
 class FakeSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
@@ -302,7 +302,7 @@ class FakeSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         return FakeDatabaseOperation("get_offset")
 
 
-FakeDatabaseClient.register_factory(SnapshotDatabaseOperationFactory, FakeSnapshotDatabaseOperationFactory)
+FakeDatabaseClient.set_factory(SnapshotDatabaseOperationFactory, FakeSnapshotDatabaseOperationFactory)
 
 
 class FakeAsyncIterator:

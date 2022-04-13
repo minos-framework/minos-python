@@ -303,4 +303,4 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         return AiopgDatabaseOperation(f"SELECT MAX(id) FROM {self.build_table_name()};".strip())
 
 
-AiopgDatabaseClient.register_factory(EventDatabaseOperationFactory, AiopgEventDatabaseOperationFactory)
+AiopgDatabaseClient.set_factory(EventDatabaseOperationFactory, AiopgEventDatabaseOperationFactory)

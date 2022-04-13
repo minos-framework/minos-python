@@ -119,7 +119,7 @@ class FakeLockDatabaseOperationFactory(LockDatabaseOperationFactory):
         return FakeDatabaseOperation("release")
 
 
-FakeDatabaseClient.register_factory(LockDatabaseOperationFactory, FakeLockDatabaseOperationFactory)
+FakeDatabaseClient.set_factory(LockDatabaseOperationFactory, FakeLockDatabaseOperationFactory)
 
 
 class FakeManagementDatabaseOperationFactory(ManagementDatabaseOperationFactory):
@@ -134,7 +134,7 @@ class FakeManagementDatabaseOperationFactory(ManagementDatabaseOperationFactory)
         return FakeDatabaseOperation("delete")
 
 
-FakeDatabaseClient.register_factory(ManagementDatabaseOperationFactory, FakeManagementDatabaseOperationFactory)
+FakeDatabaseClient.set_factory(ManagementDatabaseOperationFactory, FakeManagementDatabaseOperationFactory)
 
 
 class FakeDatabaseOperation(DatabaseOperation):

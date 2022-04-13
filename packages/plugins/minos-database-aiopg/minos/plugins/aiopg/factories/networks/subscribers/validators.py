@@ -75,7 +75,7 @@ class AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory(
         )
 
 
-AiopgDatabaseClient.register_factory(
+AiopgDatabaseClient.set_factory(
     BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
 )

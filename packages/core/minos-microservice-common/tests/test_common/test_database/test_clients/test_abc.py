@@ -69,7 +69,7 @@ class _LockDatabaseOperationFactory(LockDatabaseOperationFactory):
         return _DatabaseOperation()
 
 
-_DatabaseClient.register_factory(LockDatabaseOperationFactory, _LockDatabaseOperationFactory)
+_DatabaseClient.set_factory(LockDatabaseOperationFactory, _LockDatabaseOperationFactory)
 
 
 class TestDatabaseClient(CommonTestCase):
@@ -97,7 +97,7 @@ class TestDatabaseClient(CommonTestCase):
         self.assertEqual([call(), call()], mock.call_args_list)
 
     async def test_lock(self):
-        _DatabaseClient.register_factory(LockDatabaseOperationFactory, _LockDatabaseOperationFactory)
+        _DatabaseClient.set_factory(LockDatabaseOperationFactory, _LockDatabaseOperationFactory)
         op1 = _DatabaseOperation(lock="foo")
         client = _DatabaseClient()
         self.assertIsNone(client.lock)
@@ -197,25 +197,25 @@ class TestDatabaseClient(CommonTestCase):
 
         self.assertEqual([call()], mock.call_args_list)
 
-    def test_register_factory(self):
+    def test_set_factory(self):
         expected = {
             LockDatabaseOperationFactory: _LockDatabaseOperationFactory,
             _DatabaseOperationFactory: _DatabaseOperationFactoryImpl,
         }
         try:
-            _DatabaseClient.register_factory(_DatabaseOperationFactory, _DatabaseOperationFactoryImpl)
+            _DatabaseClient.set_factory(_DatabaseOperationFactory, _DatabaseOperationFactoryImpl)
 
             self.assertEqual(expected, _DatabaseClient._factories)
         finally:
             _DatabaseClient._factories.pop(_DatabaseOperationFactory)
 
-    def test_register_factory_raises(self):
+    def test_set_factory_raises(self):
         with self.assertRaises(ValueError):
             # noinspection PyTypeChecker
-            _DatabaseClient.register_factory(object, DatabaseOperationFactory)
+            _DatabaseClient.set_factory(object, DatabaseOperationFactory)
 
         with self.assertRaises(ValueError):
-            _DatabaseClient.register_factory(_DatabaseOperationFactoryImpl, _DatabaseOperationFactory)
+            _DatabaseClient.set_factory(_DatabaseOperationFactoryImpl, _DatabaseOperationFactory)
 
     def test_get_factory(self):
         self.assertIsInstance(

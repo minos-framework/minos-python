@@ -234,4 +234,4 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         )
 
 
-AiopgDatabaseClient.register_factory(SnapshotDatabaseOperationFactory, AiopgSnapshotDatabaseOperationFactory)
+AiopgDatabaseClient.set_factory(SnapshotDatabaseOperationFactory, AiopgSnapshotDatabaseOperationFactory)

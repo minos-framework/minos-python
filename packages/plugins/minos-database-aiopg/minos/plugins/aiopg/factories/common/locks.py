@@ -31,4 +31,4 @@ class AiopgLockDatabaseOperationFactory(LockDatabaseOperationFactory):
         return AiopgDatabaseOperation("select pg_advisory_unlock(%(hashed_key)s)", {"hashed_key": hashed_key})
 
 
-AiopgDatabaseClient.register_factory(LockDatabaseOperationFactory, AiopgLockDatabaseOperationFactory)
+AiopgDatabaseClient.set_factory(LockDatabaseOperationFactory, AiopgLockDatabaseOperationFactory)

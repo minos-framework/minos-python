@@ -32,4 +32,4 @@ class AiopgManagementDatabaseOperationFactory(ManagementDatabaseOperationFactory
         return AiopgDatabaseOperation(f"DROP DATABASE IF EXISTS {database};")
 
 
-AiopgDatabaseClient.register_factory(ManagementDatabaseOperationFactory, AiopgManagementDatabaseOperationFactory)
+AiopgDatabaseClient.set_factory(ManagementDatabaseOperationFactory, AiopgManagementDatabaseOperationFactory)

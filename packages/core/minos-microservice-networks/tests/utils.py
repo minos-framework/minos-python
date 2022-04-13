@@ -106,7 +106,7 @@ class FakeLockDatabaseOperationFactory(LockDatabaseOperationFactory):
         return FakeDatabaseOperation("release")
 
 
-FakeDatabaseClient.register_factory(LockDatabaseOperationFactory, FakeLockDatabaseOperationFactory)
+FakeDatabaseClient.set_factory(LockDatabaseOperationFactory, FakeLockDatabaseOperationFactory)
 
 
 class FakeManagementDatabaseOperationFactory(ManagementDatabaseOperationFactory):
@@ -121,7 +121,7 @@ class FakeManagementDatabaseOperationFactory(ManagementDatabaseOperationFactory)
         return FakeDatabaseOperation("delete")
 
 
-FakeDatabaseClient.register_factory(ManagementDatabaseOperationFactory, FakeManagementDatabaseOperationFactory)
+FakeDatabaseClient.set_factory(ManagementDatabaseOperationFactory, FakeManagementDatabaseOperationFactory)
 
 
 class FakeBrokerQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory):
@@ -162,7 +162,7 @@ class FakeBrokerPublisherQueueDatabaseOperationFactory(
     """For testing purposes"""
 
 
-FakeDatabaseClient.register_factory(
+FakeDatabaseClient.set_factory(
     BrokerPublisherQueueDatabaseOperationFactory, FakeBrokerPublisherQueueDatabaseOperationFactory
 )
 
@@ -185,7 +185,7 @@ class FakeBrokerSubscriberQueueDatabaseOperationFactory(
         return FakeDatabaseOperation("select_not_processed")
 
 
-FakeDatabaseClient.register_factory(
+FakeDatabaseClient.set_factory(
     BrokerSubscriberQueueDatabaseOperationFactory, FakeBrokerSubscriberQueueDatabaseOperationFactory
 )
 
@@ -204,7 +204,7 @@ class FakeBrokerSubscriberDuplicateValidatorDatabaseOperationFactory(
         return FakeDatabaseOperation("insert_row")
 
 
-FakeDatabaseClient.register_factory(
+FakeDatabaseClient.set_factory(
     BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     FakeBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
 )
