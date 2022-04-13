@@ -12,6 +12,7 @@ from psycopg2.extras import (
 )
 from psycopg2.sql import (
     SQL,
+    Identifier,
     Literal,
     Placeholder,
 )
@@ -43,7 +44,7 @@ class TestAiopgSnapshotQueryDatabaseOperationBuilder(AiopgTestCase):
         }
         self.base_select = AiopgSnapshotQueryDatabaseOperationBuilder._SELECT_ENTRIES_QUERY.format(
             from_parts=AiopgSnapshotQueryDatabaseOperationBuilder._SELECT_TRANSACTION_CHUNK.format(
-                index=Literal(1), transaction_uuid=Placeholder("transaction_uuid_1")
+                index=Literal(1), transaction_uuid=Placeholder("transaction_uuid_1"), table_name=Identifier("snapshot")
             )
         )
 
@@ -99,10 +100,14 @@ class TestAiopgSnapshotQueryDatabaseOperationBuilder(AiopgTestCase):
                     from_parts=SQL(" UNION ALL ").join(
                         [
                             AiopgSnapshotQueryDatabaseOperationBuilder._SELECT_TRANSACTION_CHUNK.format(
-                                index=Literal(1), transaction_uuid=Placeholder("transaction_uuid_1")
+                                index=Literal(1),
+                                transaction_uuid=Placeholder("transaction_uuid_1"),
+                                table_name=Identifier("snapshot"),
                             ),
                             AiopgSnapshotQueryDatabaseOperationBuilder._SELECT_TRANSACTION_CHUNK.format(
-                                index=Literal(2), transaction_uuid=Placeholder("transaction_uuid_2")
+                                index=Literal(2),
+                                transaction_uuid=Placeholder("transaction_uuid_2"),
+                                table_name=Identifier("snapshot"),
                             ),
                         ]
                     )

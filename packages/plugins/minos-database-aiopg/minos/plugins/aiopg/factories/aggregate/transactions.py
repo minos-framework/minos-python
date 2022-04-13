@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from collections.abc import (
+    Iterable,
+)
 from datetime import (
     datetime,
 )
@@ -32,6 +35,13 @@ from ...operations import (
 # noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic
 class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFactory):
     """Aiopg Transaction Database Operation Factory class."""
+
+    def build_table_name(self) -> str:
+        """Get the table name.
+
+        :return: A ``str`` value.
+        """
+        return "aggregate_transaction"
 
     def build_create_table(self) -> DatabaseOperation:
         """Build the database operation to create the snapshot table.
@@ -64,11 +74,11 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
                     $$
                     LANGUAGE plpgsql;
                     """,
-                    lock="aggregate_transaction_enum",
+                    lock="transaction_status",
                 ),
                 AiopgDatabaseOperation(
-                    """
-                    CREATE TABLE IF NOT EXISTS aggregate_transaction (
+                    f"""
+                    CREATE TABLE IF NOT EXISTS {self.build_table_name()} (
                         uuid UUID PRIMARY KEY,
                         destination_uuid UUID NOT NULL,
                         status TRANSACTION_STATUS NOT NULL,
@@ -76,7 +86,7 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
                         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                     );
                     """,
-                    lock="aggregate_transaction",
+                    lock=self.build_table_name(),
                 ),
             ]
         )
@@ -107,8 +117,8 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
         }
 
         return AiopgDatabaseOperation(
-            """
-            INSERT INTO aggregate_transaction AS t (uuid, destination_uuid, status, event_offset)
+            f"""
+            INSERT INTO {self.build_table_name()} AS t (uuid, destination_uuid, status, event_offset)
             VALUES (%(uuid)s, %(destination_uuid)s, %(status)s, %(event_offset)s)
             ON CONFLICT (uuid)
             DO
@@ -130,10 +140,10 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
         self,
         uuid: Optional[UUID] = None,
         uuid_ne: Optional[UUID] = None,
-        uuid_in: Optional[tuple[UUID]] = None,
+        uuid_in: Optional[Iterable[UUID]] = None,
         destination_uuid: Optional[UUID] = None,
         status: Optional[str] = None,
-        status_in: Optional[tuple[str]] = None,
+        status_in: Optional[Iterable[str]] = None,
         event_offset: Optional[int] = None,
         event_offset_lt: Optional[int] = None,
         event_offset_gt: Optional[int] = None,
@@ -167,6 +177,11 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
         :param kwargs: Additional named arguments.
         :return: A ``DatabaseOperation`` instance.
         """
+        if uuid_in is not None:
+            uuid_in = tuple(uuid_in)
+
+        if status_in is not None:
+            status_in = tuple(status_in)
 
         conditions = list()
 
@@ -203,9 +218,9 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
         if updated_at_ge is not None:
             conditions.append("updated_at >= %(updated_at_ge)s")
 
-        select_all = """
+        select_all = f"""
         SELECT uuid, status, event_offset, destination_uuid, updated_at
-        FROM aggregate_transaction
+        FROM {self.build_table_name()}
         """.strip()
 
         if not conditions:

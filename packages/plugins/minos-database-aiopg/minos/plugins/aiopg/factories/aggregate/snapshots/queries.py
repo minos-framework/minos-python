@@ -4,6 +4,7 @@ from __future__ import (
 
 from typing import (
     Any,
+    Iterable,
     Optional,
 )
 from uuid import (
@@ -64,15 +65,21 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
-        transaction_uuids: tuple[UUID, ...] = (NULL_UUID,),
+        transaction_uuids: Iterable[UUID, ...] = (NULL_UUID,),
         exclude_deleted: bool = False,
+        table_name: Optional[str] = None,
     ):
+        if not isinstance(transaction_uuids, tuple):
+            transaction_uuids = tuple(transaction_uuids)
+        if table_name is None:
+            table_name = "snapshot"
         self.name = name
         self.condition = condition
         self.ordering = ordering
         self.limit = limit
         self.transaction_uuids = transaction_uuids
         self.exclude_deleted = exclude_deleted
+        self.table_name = table_name
         self._parameters = None
 
     def build(self) -> tuple[Composable, dict[str, Any]]:
@@ -116,7 +123,9 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
             self._parameters[name] = transaction_uuid
 
             from_query_parts.append(
-                self._SELECT_TRANSACTION_CHUNK.format(index=Literal(index), transaction_uuid=Placeholder(name))
+                self._SELECT_TRANSACTION_CHUNK.format(
+                    index=Literal(index), transaction_uuid=Placeholder(name), table_name=Identifier(self.table_name)
+                )
             )
 
         from_query = SQL(" UNION ALL ").join(from_query_parts)
@@ -264,7 +273,7 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
 
     _SELECT_TRANSACTION_CHUNK = SQL(
         "SELECT {index} AS transaction_index, * "
-        "FROM snapshot "
+        "FROM {table_name} "
         "WHERE name = %(name)s AND transaction_uuid = {transaction_uuid} "
     )
 

@@ -15,6 +15,7 @@ from uuid import (
 from psycopg2.sql import (
     SQL,
     Composable,
+    Identifier,
     Literal,
     Placeholder,
 )
@@ -39,6 +40,13 @@ from ...operations import (
 # noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic
 class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
     """Aiopg Event Database Operation Factory class."""
+
+    def build_table_name(self) -> str:
+        """Get the table name.
+
+        :return: A ``str`` value.
+        """
+        return "aggregate_event"
 
     def build_create_table(self) -> DatabaseOperation:
         """Build the database operation to create the event table.
@@ -68,11 +76,11 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
                     $$
                     LANGUAGE plpgsql;
                     """,
-                    lock="aggregate_event",
+                    lock=self.build_table_name(),
                 ),
                 AiopgDatabaseOperation(
-                    """
-                    CREATE TABLE IF NOT EXISTS aggregate_event (
+                    f"""
+                    CREATE TABLE IF NOT EXISTS {self.build_table_name()} (
                         id BIGSERIAL PRIMARY KEY,
                         action ACTION_TYPE NOT NULL,
                         uuid UUID NOT NULL,
@@ -84,14 +92,14 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
                         UNIQUE (uuid, version, transaction_uuid)
                     );
                     """,
-                    lock="aggregate_event",
+                    lock=self.build_table_name(),
                 ),
             ]
         )
 
     def build_submit_row(
         self,
-        transaction_uuids: tuple[UUID],
+        transaction_uuids: Iterable[UUID],
         uuid: UUID,
         action: Action,
         name: str,
@@ -118,7 +126,7 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         """
         insert_values = SQL(
             """
-            INSERT INTO aggregate_event (id, action, uuid, name, version, data, created_at, transaction_uuid)
+            INSERT INTO {table_name} (id, action, uuid, name, version, data, created_at, transaction_uuid)
             VALUES (
                 default,
                 %(action)s,
@@ -151,7 +159,7 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
 
         from_sql, from_parameters = self._build_submit_from(transaction_uuids)
 
-        query = insert_values.format(from_parts=from_sql)
+        query = insert_values.format(from_parts=from_sql, table_name=Identifier(self.build_table_name()))
         parameters = from_parameters | insert_parameters
 
         return AiopgDatabaseOperation(query, parameters, lock)
@@ -160,7 +168,7 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         select_transaction = SQL(
             """
             SELECT {index} AS transaction_index, uuid, MAX(version) AS version
-            FROM aggregate_event
+            FROM {table_name}
             WHERE uuid = %(uuid)s AND transaction_uuid = {transaction_uuid}
             GROUP BY uuid
             """
@@ -171,7 +179,13 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
             name = f"transaction_uuid_{index}"
             parameters[name] = transaction_uuid
 
-            from_query_parts.append(select_transaction.format(index=Literal(index), transaction_uuid=Placeholder(name)))
+            from_query_parts.append(
+                select_transaction.format(
+                    index=Literal(index),
+                    transaction_uuid=Placeholder(name),
+                    table_name=Identifier(self.build_table_name()),
+                ),
+            )
 
         query = SQL(" UNION ALL ").join(from_query_parts)
         return query, parameters
@@ -193,7 +207,7 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         id_ge: Optional[int] = None,
         transaction_uuid: Optional[UUID] = None,
         transaction_uuid_ne: Optional[UUID] = None,
-        transaction_uuid_in: Optional[tuple[UUID, ...]] = None,
+        transaction_uuid_in: Optional[Iterable[UUID, ...]] = None,
         **kwargs,
     ) -> DatabaseOperation:
         """Build the database operation to select rows.
@@ -216,10 +230,12 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
 
         :return: A ``DatabaseOperation`` instance.
         """
+        if transaction_uuid_in is not None:
+            transaction_uuid_in = tuple(transaction_uuid_in)
 
-        _select_all = """
+        _select_all = f"""
             SELECT uuid, name, version, data, id, action, created_at, transaction_uuid
-            FROM aggregate_event
+            FROM {self.build_table_name()}
             """
 
         conditions = list()
@@ -284,7 +300,7 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
 
         :return: A ``DatabaseOperation`` instance.
         """
-        return AiopgDatabaseOperation("SELECT MAX(id) FROM aggregate_event;".strip())
+        return AiopgDatabaseOperation(f"SELECT MAX(id) FROM {self.build_table_name()};".strip())
 
 
 AiopgDatabaseClient.register_factory(EventDatabaseOperationFactory, AiopgEventDatabaseOperationFactory)

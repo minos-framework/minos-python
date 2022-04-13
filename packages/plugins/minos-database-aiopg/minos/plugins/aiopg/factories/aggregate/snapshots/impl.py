@@ -39,6 +39,20 @@ from .queries import (
 class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
     """Aiopg Snapshot Database Operation Factory class."""
 
+    def build_table_name(self) -> str:
+        """Get the table name.
+
+        :return: A ``str`` value.
+        """
+        return "snapshot"
+
+    def build_offset_table_name(self) -> str:
+        """Get the offset table name.
+
+        :return: A ``str`` value.
+        """
+        return "snapshot_aux_offset"
+
     def build_create_table(self) -> DatabaseOperation:
         """Build the database operation to create the snapshot table.
 
@@ -51,8 +65,8 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
                     lock="uuid-ossp",
                 ),
                 AiopgDatabaseOperation(
-                    """
-                    CREATE TABLE IF NOT EXISTS snapshot (
+                    f"""
+                    CREATE TABLE IF NOT EXISTS {self.build_table_name()} (
                         uuid UUID NOT NULL,
                         name TEXT NOT NULL,
                         version INT NOT NULL,
@@ -64,17 +78,17 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
                         PRIMARY KEY (uuid, transaction_uuid)
                     );
                     """,
-                    lock="snapshot",
+                    lock=self.build_table_name(),
                 ),
                 AiopgDatabaseOperation(
-                    """
-                    CREATE TABLE IF NOT EXISTS snapshot_aux_offset (
+                    f"""
+                    CREATE TABLE IF NOT EXISTS {self.build_offset_table_name()} (
                         id bool PRIMARY KEY DEFAULT TRUE,
                         value BIGINT NOT NULL,
                         CONSTRAINT id_uni CHECK (id)
                     );
                     """,
-                    lock="snapshot_aux_offset",
+                    lock=self.build_offset_table_name(),
                 ),
             ]
         )
@@ -86,8 +100,8 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         :return: A ``DatabaseOperation`` instance.
         """
         return AiopgDatabaseOperation(
-            """
-            DELETE FROM snapshot
+            f"""
+            DELETE FROM {self.build_table_name()}
             WHERE transaction_uuid IN %(transaction_uuids)s;
             """,
             {"transaction_uuids": tuple(transaction_uuids)},
@@ -118,8 +132,10 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         """
 
         return AiopgDatabaseOperation(
-            """
-            INSERT INTO snapshot (uuid, name, version, schema, data, created_at, updated_at, transaction_uuid)
+            f"""
+            INSERT INTO {self.build_table_name()} (
+                uuid, name, version, schema, data, created_at, updated_at, transaction_uuid
+            )
             VALUES (
                 %(uuid)s,
                 %(name)s,
@@ -153,7 +169,7 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         condition: _Condition,
         ordering: Optional[_Ordering],
         limit: Optional[int],
-        transaction_uuids: tuple[UUID, ...],
+        transaction_uuids: Iterable[UUID],
         exclude_deleted: bool,
     ) -> DatabaseOperation:
         """Build the query database operation.
@@ -172,7 +188,13 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         :return: A ``DatabaseOperation`` instance.
         """
         builder = AiopgSnapshotQueryDatabaseOperationBuilder(
-            name, condition, ordering, limit, transaction_uuids, exclude_deleted
+            name=name,
+            condition=condition,
+            ordering=ordering,
+            limit=limit,
+            transaction_uuids=transaction_uuids,
+            exclude_deleted=exclude_deleted,
+            table_name=self.build_table_name(),
         )
         query, parameters = builder.build()
 
@@ -185,14 +207,17 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         :return: A ``DatabaseOperation`` instance.
         """
         return AiopgDatabaseOperation(
-            """
-            INSERT INTO snapshot_aux_offset (id, value)
+            f"""
+            INSERT INTO {self.build_offset_table_name()} (id, value)
             VALUES (TRUE, %(value)s)
             ON CONFLICT (id)
-            DO UPDATE SET value = GREATEST(%(value)s, (SELECT value FROM snapshot_aux_offset WHERE id = TRUE));
+            DO UPDATE SET value = GREATEST(
+                %(value)s,
+                (SELECT value FROM {self.build_offset_table_name()} WHERE id = TRUE)
+            );
             """.strip(),
             {"value": value},
-            lock="insert_snapshot_aux_offset",
+            lock=f"insert_{self.build_offset_table_name()}",
         )
 
     def build_get_offset(self) -> DatabaseOperation:
@@ -201,9 +226,9 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         :return: A ``DatabaseOperation`` instance.
         """
         return AiopgDatabaseOperation(
-            """
+            f"""
             SELECT value
-            FROM snapshot_aux_offset
+            FROM {self.build_offset_table_name()}
             WHERE id = TRUE;
             """
         )

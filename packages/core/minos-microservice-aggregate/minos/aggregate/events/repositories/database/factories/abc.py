@@ -2,6 +2,7 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from collections.abc import Iterable
 from datetime import (
     datetime,
 )
@@ -35,7 +36,7 @@ class EventDatabaseOperationFactory(DatabaseOperationFactory, ABC):
     @abstractmethod
     def build_submit_row(
         self,
-        transaction_uuids: tuple[UUID],
+        transaction_uuids: Iterable[UUID],
         uuid: UUID,
         action: Action,
         name: str,
