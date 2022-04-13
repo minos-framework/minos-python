@@ -9,6 +9,7 @@ from minos.common import (
     MinosImportException,
 )
 from minos.networks import (
+    DiscoveryClient,
     DiscoveryConnector,
     InMemoryDiscoveryClient,
     MinosInvalidDiscoveryClient,
@@ -35,6 +36,17 @@ class TestDiscoveryConnector(NetworksTestCase):
         self.assertEqual("192.168.1.32", connector.host)
         self.assertEqual(8080, connector.port)
 
+    def test_from_config(self):
+        connector = DiscoveryConnector.from_config(self.config)
+        expected = [
+            {"url": "/order", "method": "DELETE"},
+            {"url": "/order", "method": "GET", "foo": "bar"},
+            {"url": "/ticket", "method": "POST", "foo": "bar"},
+        ]
+
+        self.assertEqual(expected, connector.endpoints)
+        self.assertIsInstance(connector.client, DiscoveryClient)
+
     def test_config_minos_client_does_not_exist(self):
         config = Config(self.get_config_file_path(), minos_discovery_client="wrong-client")
         with self.assertRaises(MinosImportException):
@@ -59,8 +71,8 @@ class TestDiscoveryConnector(NetworksTestCase):
             "Order",
             [
                 {"url": "/order", "method": "DELETE"},
-                {"url": "/order", "method": "GET"},
-                {"url": "/ticket", "method": "POST"},
+                {"url": "/order", "method": "GET", "foo": "bar"},
+                {"url": "/ticket", "method": "POST", "foo": "bar"},
             ],
         )
         self.assertEqual(expected, mock.call_args)

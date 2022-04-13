@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-discovery-kong"
-version = "0.1.0a1"
+version = "0.7.0.dev1"
 description = "The minos-kong plugin offer an interface that permit integrate Minos Microservice with Kong API Gateway"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
@@ -32,8 +32,8 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.6.0"
-minos-microservice-networks = "^0.6.0"
+minos-microservice-common = { version ="^0.7.0*", allow-prereleases = true }
+minos-microservice-networks = { version ="^0.7.0*", allow-prereleases = true }
 httpx = "^0.22.0"
 
 [tool.poetry.dev-dependencies]
