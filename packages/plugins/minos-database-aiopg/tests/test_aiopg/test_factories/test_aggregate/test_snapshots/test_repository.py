@@ -6,9 +6,6 @@ from minos.aggregate import (
 from minos.aggregate.testing import (
     SnapshotRepositoryTestCase,
 )
-from minos.aggregate.testing.snapshot_repository import (
-    Car,
-)
 from minos.plugins.aiopg import (
     AiopgDatabaseClient,
     AiopgDatabaseOperation,
@@ -46,9 +43,9 @@ class TestDatabaseSnapshotRepository(AiopgTestCase, SnapshotRepositoryTestCase):
 
     async def test_is_synced(self):
         await self.populate()
-        self.assertFalse(await self.snapshot_repository.is_synced(Car))
+        self.assertFalse(await self.snapshot_repository.is_synced(SnapshotRepositoryTestCase.Car))
         await self.snapshot_repository.synchronize()
-        self.assertTrue(await self.snapshot_repository.is_synced(Car))
+        self.assertTrue(await self.snapshot_repository.is_synced(SnapshotRepositoryTestCase.Car))
 
 
 if __name__ == "__main__":

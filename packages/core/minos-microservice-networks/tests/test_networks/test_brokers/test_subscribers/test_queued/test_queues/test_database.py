@@ -12,19 +12,21 @@ from unittest.mock import (
 
 from minos.common.testing import (
     DatabaseMinosTestCase,
+    MockedDatabaseClient,
 )
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerSubscriberQueue,
-    BrokerSubscriberQueueDatabaseOperationFactory,
     DatabaseBrokerQueue,
     DatabaseBrokerSubscriberQueue,
     DatabaseBrokerSubscriberQueueBuilder,
 )
+from minos.networks.testing import (
+    MockedBrokerSubscriberQueueDatabaseOperationFactory,
+)
 from tests.utils import (
     FakeAsyncIterator,
-    FakeDatabaseClient,
     NetworksTestCase,
 )
 
@@ -36,13 +38,13 @@ class TestDatabaseBrokerSubscriberQueue(NetworksTestCase, DatabaseMinosTestCase)
     async def test_operation_factory(self):
         queue = DatabaseBrokerSubscriberQueue.from_config(self.config, topics={"foo", "bar"})
 
-        self.assertIsInstance(queue.operation_factory, BrokerSubscriberQueueDatabaseOperationFactory)
+        self.assertIsInstance(queue.operation_factory, MockedBrokerSubscriberQueueDatabaseOperationFactory)
 
     async def test_enqueue(self):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
 
         with patch.object(
-            FakeDatabaseClient,
+            MockedDatabaseClient,
             "fetch_all",
             side_effect=chain(
                 [FakeAsyncIterator([(0,)]), FakeAsyncIterator([(1, message.avro_bytes)])],
@@ -60,7 +62,7 @@ class TestDatabaseBrokerSubscriberQueue(NetworksTestCase, DatabaseMinosTestCase)
         ]
 
         with patch.object(
-            FakeDatabaseClient,
+            MockedDatabaseClient,
             "fetch_all",
             side_effect=[
                 FakeAsyncIterator(
@@ -84,7 +86,7 @@ class TestDatabaseBrokerSubscriberQueue(NetworksTestCase, DatabaseMinosTestCase)
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
         with patch.object(
-            FakeDatabaseClient,
+            MockedDatabaseClient,
             "fetch_all",
             side_effect=[
                 FakeAsyncIterator([(0,)]),

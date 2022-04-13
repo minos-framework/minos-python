@@ -2,39 +2,27 @@ from __future__ import (
     annotations,
 )
 
-from collections.abc import (
-    AsyncIterator,
-    Iterable,
-)
 from pathlib import (
     Path,
-)
-from typing import (
-    Any,
-    Optional,
 )
 
 from minos.common import (
     BuildableMixin,
     Builder,
-    DatabaseClient,
-    DatabaseOperation,
     Injectable,
     Lock,
-    LockDatabaseOperationFactory,
     LockPool,
-    ManagementDatabaseOperationFactory,
     Port,
-)
-from minos.common.testing import (
-    MinosTestCase,
+    testing,
 )
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "config" / "v2.yml"
 
 
-class CommonTestCase(MinosTestCase):
+class CommonTestCase(testing.MinosTestCase):
+    testing_module = testing
+
     def get_config_file_path(self) -> Path:
         return CONFIG_FILE_PATH
 
@@ -79,71 +67,6 @@ class FakeAsyncIterator:
             return next(self.iter)
         except StopIteration:
             raise StopAsyncIteration
-
-
-class FakeDatabaseClient(DatabaseClient):
-    """For testing purposes"""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.kwargs = kwargs
-        self._response = tuple()
-
-    async def _is_valid(self, **kwargs) -> bool:
-        """For testing purposes"""
-        return True
-
-    async def _reset(self, **kwargs) -> None:
-        """For testing purposes"""
-        self._response = tuple()
-
-    async def _execute(self, operation: FakeDatabaseOperation) -> None:
-        """For testing purposes"""
-        self._response = operation.response
-
-    async def _fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
-        """For testing purposes"""
-        for value in self._response:
-            yield value
-
-
-class FakeLockDatabaseOperationFactory(LockDatabaseOperationFactory):
-    """For testing purposes"""
-
-    def build_acquire(self, hashed_key: int) -> DatabaseOperation:
-        """For testing purposes"""
-        return FakeDatabaseOperation("acquire")
-
-    def build_release(self, hashed_key: int) -> DatabaseOperation:
-        """For testing purposes"""
-        return FakeDatabaseOperation("release")
-
-
-FakeDatabaseClient.set_factory(LockDatabaseOperationFactory, FakeLockDatabaseOperationFactory)
-
-
-class FakeManagementDatabaseOperationFactory(ManagementDatabaseOperationFactory):
-    """For testing purposes"""
-
-    def build_create(self, database: str) -> DatabaseOperation:
-        """For testing purposes"""
-        return FakeDatabaseOperation("create")
-
-    def build_delete(self, database: str) -> DatabaseOperation:
-        """For testing purposes"""
-        return FakeDatabaseOperation("delete")
-
-
-FakeDatabaseClient.set_factory(ManagementDatabaseOperationFactory, FakeManagementDatabaseOperationFactory)
-
-
-class FakeDatabaseOperation(DatabaseOperation):
-    """For testing purposes"""
-
-    def __init__(self, content: str, response: Optional[Iterable[Any]] = tuple(), *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.content = content
-        self.response = tuple(response)
 
 
 class FakeLock(Lock):

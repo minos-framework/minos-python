@@ -1,9 +1,12 @@
-from .event_repository import (
+from .events import (
     EventRepositoryTestCase,
+    MockedEventDatabaseOperationFactory,
 )
-from .snapshot_repository import (
+from .snapshots import (
+    MockedSnapshotDatabaseOperationFactory,
     SnapshotRepositoryTestCase,
 )
-from .transaction_repository import (
+from .transactions import (
+    MockedTransactionDatabaseOperationFactory,
     TransactionRepositoryTestCase,
 )

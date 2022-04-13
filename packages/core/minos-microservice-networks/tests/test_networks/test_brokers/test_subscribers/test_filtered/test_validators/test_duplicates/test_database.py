@@ -8,16 +8,18 @@ from minos.common import (
 )
 from minos.common.testing import (
     DatabaseMinosTestCase,
+    MockedDatabaseClient,
 )
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
-    BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     BrokerSubscriberValidator,
     DatabaseBrokerSubscriberDuplicateValidator,
 )
+from minos.networks.testing import (
+    MockedBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
+)
 from tests.utils import (
-    FakeDatabaseClient,
     NetworksTestCase,
 )
 
@@ -29,14 +31,18 @@ class TestDatabaseBrokerSubscriberDuplicateValidator(NetworksTestCase, DatabaseM
     async def test_operation_factory(self):
         validator = DatabaseBrokerSubscriberDuplicateValidator.from_config(self.config)
 
-        self.assertIsInstance(validator.operation_factory, BrokerSubscriberDuplicateValidatorDatabaseOperationFactory)
+        self.assertIsInstance(
+            validator.operation_factory, MockedBrokerSubscriberDuplicateValidatorDatabaseOperationFactory
+        )
 
     async def test_is_valid(self):
         one = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
         two = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
         three = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
 
-        with patch.object(FakeDatabaseClient, "execute", side_effect=[None, None, None, IntegrityException(""), None]):
+        with patch.object(
+            MockedDatabaseClient, "execute", side_effect=[None, None, None, IntegrityException(""), None]
+        ):
             async with DatabaseBrokerSubscriberDuplicateValidator.from_config(self.config) as validator:
                 self.assertTrue(await validator.is_valid(one))
                 self.assertTrue(await validator.is_valid(two))

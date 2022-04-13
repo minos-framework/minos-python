@@ -15,11 +15,11 @@ from minos.common import (
 )
 from minos.common.testing import (
     DatabaseMinosTestCase,
+    MockedDatabaseClient,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
     CommonTestCase,
-    FakeDatabaseClient,
 )
 
 
@@ -44,7 +44,7 @@ class TestDatabaseClientPool(CommonTestCase, DatabaseMinosTestCase):
     def test_from_config(self):
         pool = DatabaseClientPool.from_config(self.config, key="event")
         self.assertIsInstance(pool.client_builder, DatabaseClientBuilder)
-        self.assertEqual(FakeDatabaseClient, pool.client_builder.instance_cls)
+        self.assertEqual(MockedDatabaseClient, pool.client_builder.instance_cls)
 
     def test_from_config_client_builder(self):
         config = Config(CONFIG_FILE_PATH, databases_default_client=classname(DatabaseClientBuilder))
@@ -72,15 +72,15 @@ class TestDatabaseClientPool(CommonTestCase, DatabaseMinosTestCase):
                 self.assertNotEqual(c1, c2)
 
     async def test_acquire_with_reset(self):
-        with patch.object(FakeDatabaseClient, "reset") as reset_mock:
+        with patch.object(MockedDatabaseClient, "reset") as reset_mock:
             async with self.pool.acquire():
                 self.assertEqual(0, reset_mock.call_count)
         self.assertEqual(1, reset_mock.call_count)
 
     async def test_acquire_with_raises(self):
-        with patch.object(FakeDatabaseClient, "setup", side_effect=[ConnectionException(""), None]):
+        with patch.object(MockedDatabaseClient, "setup", side_effect=[ConnectionException(""), None]):
             async with self.pool.acquire() as client:
-                self.assertIsInstance(client, FakeDatabaseClient)
+                self.assertIsInstance(client, MockedDatabaseClient)
 
 
 class TestDatabaseLockPool(CommonTestCase, DatabaseMinosTestCase):

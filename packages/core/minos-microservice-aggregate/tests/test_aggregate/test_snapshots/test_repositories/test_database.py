@@ -16,9 +16,6 @@ from minos.aggregate import (
 from minos.aggregate.testing import (
     SnapshotRepositoryTestCase,
 )
-from minos.aggregate.testing.snapshot_repository import (
-    Car,
-)
 from minos.common import (
     DatabaseClient,
     NotProvidedException,
@@ -48,8 +45,8 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
         self.event_repository.select = MagicMock(side_effect=[FakeAsyncIterator([1]), FakeAsyncIterator([])])
 
         with patch.object(DatabaseClient, "fetch_one", return_value=(0,)):
-            self.assertFalse(await self.snapshot_repository.is_synced(Car))
-            self.assertTrue(await self.snapshot_repository.is_synced(Car))
+            self.assertFalse(await self.snapshot_repository.is_synced(SnapshotRepositoryTestCase.Car))
+            self.assertTrue(await self.snapshot_repository.is_synced(SnapshotRepositoryTestCase.Car))
 
     def build_snapshot_repository(self) -> SnapshotRepository:
         return DatabaseSnapshotRepository.from_config(self.config)
@@ -82,7 +79,9 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                         FakeAsyncIterator(
                             [
                                 tuple(
-                                    SnapshotEntry.from_root_entity(Car(3, "blue", uuid=self.uuid_1, version=1))
+                                    SnapshotEntry.from_root_entity(
+                                        SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_1, version=1)
+                                    )
                                     .as_raw()
                                     .values()
                                 )
@@ -100,9 +99,15 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
 
     async def test_dispatch(self):
         entries = [
-            SnapshotEntry(self.uuid_1, classname(Car), 4, created_at=current_datetime(), updated_at=current_datetime()),
+            SnapshotEntry(
+                self.uuid_1,
+                classname(SnapshotRepositoryTestCase.Car),
+                4,
+                created_at=current_datetime(),
+                updated_at=current_datetime(),
+            ),
             SnapshotEntry.from_root_entity(
-                Car(
+                SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
                     uuid=self.uuid_2,
@@ -112,7 +117,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 )
             ),
             SnapshotEntry.from_root_entity(
-                Car(
+                SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
                     uuid=self.uuid_3,
@@ -132,9 +137,15 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
 
     async def test_dispatch_first_transaction(self):
         entries = [
-            SnapshotEntry(self.uuid_1, classname(Car), 4, created_at=current_datetime(), updated_at=current_datetime()),
+            SnapshotEntry(
+                self.uuid_1,
+                classname(SnapshotRepositoryTestCase.Car),
+                4,
+                created_at=current_datetime(),
+                updated_at=current_datetime(),
+            ),
             SnapshotEntry.from_root_entity(
-                Car(
+                SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
                     uuid=self.uuid_2,
@@ -144,7 +155,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 )
             ),
             SnapshotEntry.from_root_entity(
-                Car(
+                SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
                     uuid=self.uuid_3,
@@ -164,10 +175,22 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
 
     async def test_dispatch_second_transaction(self):
         entries = [
-            SnapshotEntry(self.uuid_1, classname(Car), 4, created_at=current_datetime(), updated_at=current_datetime()),
-            SnapshotEntry(self.uuid_2, classname(Car), 4, created_at=current_datetime(), updated_at=current_datetime()),
+            SnapshotEntry(
+                self.uuid_1,
+                classname(SnapshotRepositoryTestCase.Car),
+                4,
+                created_at=current_datetime(),
+                updated_at=current_datetime(),
+            ),
+            SnapshotEntry(
+                self.uuid_2,
+                classname(SnapshotRepositoryTestCase.Car),
+                4,
+                created_at=current_datetime(),
+                updated_at=current_datetime(),
+            ),
             SnapshotEntry.from_root_entity(
-                Car(
+                SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
                     uuid=self.uuid_3,
@@ -187,9 +210,15 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
 
     async def test_dispatch_third_transaction(self):
         entries = [
-            SnapshotEntry(self.uuid_1, classname(Car), 4, created_at=current_datetime(), updated_at=current_datetime()),
+            SnapshotEntry(
+                self.uuid_1,
+                classname(SnapshotRepositoryTestCase.Car),
+                4,
+                created_at=current_datetime(),
+                updated_at=current_datetime(),
+            ),
             SnapshotEntry.from_root_entity(
-                Car(
+                SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
                     uuid=self.uuid_2,
@@ -199,7 +228,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 )
             ),
             SnapshotEntry.from_root_entity(
-                Car(
+                SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
                     uuid=self.uuid_3,
@@ -221,10 +250,10 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
         entries = [
             SnapshotEntry(
                 uuid=self.uuid_1,
-                name=classname(Car),
+                name=classname(SnapshotRepositoryTestCase.Car),
                 version=3,
-                schema=Car.avro_schema,
-                data=Car(3, "blue", uuid=self.uuid_1, version=1).avro_data,
+                schema=SnapshotRepositoryTestCase.Car.avro_schema,
+                data=SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_1, version=1).avro_data,
                 created_at=current_datetime(),
                 updated_at=current_datetime(),
             )
@@ -247,7 +276,9 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                     FakeAsyncIterator(
                         [
                             tuple(
-                                SnapshotEntry.from_root_entity(Car(3, "blue", uuid=self.uuid_1, version=5))
+                                SnapshotEntry.from_root_entity(
+                                    SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_1, version=5)
+                                )
                                 .as_raw()
                                 .values()
                             )
@@ -286,8 +317,8 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
 
     async def test_find_by_uuid(self):
         entities = [
-            Car(3, "blue", uuid=self.uuid_2, version=2),
-            Car(3, "blue", uuid=self.uuid_3, version=1),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_2, version=2),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_3, version=1),
         ]
         with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
             with patch.object(
@@ -301,8 +332,8 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
 
     async def test_find_with_transaction(self):
         entities = [
-            Car(3, "blue", uuid=self.uuid_2, version=4),
-            Car(3, "blue", uuid=self.uuid_3, version=1),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_2, version=4),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_3, version=1),
         ]
         with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
             with patch.object(
@@ -315,7 +346,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 await super().test_find_with_transaction()
 
     async def test_find_with_transaction_delete(self):
-        entities = [Car(3, "blue", uuid=self.uuid_3, version=1)]
+        entities = [SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_3, version=1)]
         with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
             with patch.object(
                 DatabaseClient,
@@ -328,8 +359,8 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
 
     async def test_find_with_transaction_reverted(self):
         entities = [
-            Car(3, "blue", uuid=self.uuid_2, version=2),
-            Car(3, "blue", uuid=self.uuid_3, version=1),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_2, version=2),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_3, version=1),
         ]
         with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
             with patch.object(
@@ -343,8 +374,8 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
 
     async def test_find_streaming_true(self):
         entities = [
-            Car(3, "blue", uuid=self.uuid_2, version=2),
-            Car(3, "blue", uuid=self.uuid_3, version=1),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_2, version=2),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_3, version=1),
         ]
         with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
             with patch.object(
@@ -358,8 +389,8 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
 
     async def test_find_with_duplicates(self):
         entities = [
-            Car(3, "blue", uuid=self.uuid_2, version=2),
-            Car(3, "blue", uuid=self.uuid_3, version=1),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_2, version=2),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_3, version=1),
         ]
         with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
             with patch.object(
@@ -385,7 +416,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
 
     async def test_get(self):
         entities = [
-            Car(3, "blue", uuid=self.uuid_2, version=2),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_2, version=2),
         ]
         with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
             with patch.object(
@@ -398,7 +429,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 await super().test_get()
 
     async def test_get_with_transaction(self):
-        entities = [Car(3, "blue", uuid=self.uuid_2, version=4)]
+        entities = [SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_2, version=4)]
         with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
             with patch.object(
                 DatabaseClient,
@@ -415,7 +446,15 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 side_effect=[
-                    FakeAsyncIterator([tuple(SnapshotEntry(self.uuid_1, classname(Car), 1).as_raw().values())]),
+                    FakeAsyncIterator(
+                        [
+                            tuple(
+                                SnapshotEntry(self.uuid_1, classname(SnapshotRepositoryTestCase.Car), 1)
+                                .as_raw()
+                                .values()
+                            )
+                        ]
+                    ),
                     FakeAsyncIterator([]),
                 ],
             ):
@@ -427,15 +466,15 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry(self.uuid_1, classname(Car), 1).as_raw().values())]
+                    [tuple(SnapshotEntry(self.uuid_1, classname(SnapshotRepositoryTestCase.Car), 1).as_raw().values())]
                 ),
             ):
                 await super().test_get_with_transaction_raises()
 
     async def test_find(self):
         entities = [
-            Car(3, "blue", uuid=self.uuid_2, version=2),
-            Car(3, "blue", uuid=self.uuid_3, version=1),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_2, version=2),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_3, version=1),
         ]
         with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
             with patch.object(
@@ -449,8 +488,8 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
 
     async def test_find_all(self):
         entities = [
-            Car(3, "blue", uuid=self.uuid_2, version=2),
-            Car(3, "blue", uuid=self.uuid_3, version=1),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_2, version=2),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_3, version=1),
         ]
         with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
             with patch.object(

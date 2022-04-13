@@ -4,8 +4,8 @@ from minos.common import (
     DatabaseLock,
     Lock,
 )
-from tests.utils import (
-    FakeDatabaseClient,
+from minos.common.testing import (
+    MockedDatabaseClient,
 )
 
 
@@ -14,22 +14,22 @@ class TestDatabaseLock(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(issubclass(DatabaseLock, Lock))
 
     async def test_client(self):
-        client = FakeDatabaseClient()
+        client = MockedDatabaseClient()
         lock = DatabaseLock(client, "foo")
         self.assertEqual(client, lock.client)
 
     async def test_key(self):
-        client = FakeDatabaseClient()
+        client = MockedDatabaseClient()
         lock = DatabaseLock(client, "foo")
         self.assertEqual("foo", lock.key)
 
     async def test_key_raises(self):
-        client = FakeDatabaseClient()
+        client = MockedDatabaseClient()
         with self.assertRaises(ValueError):
             DatabaseLock(client, [])
 
     async def test_hashed_key(self):
-        client = FakeDatabaseClient()
+        client = MockedDatabaseClient()
         lock = DatabaseLock(client, "foo")
         self.assertEqual(hash("foo"), lock.hashed_key)
 

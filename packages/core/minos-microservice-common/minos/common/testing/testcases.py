@@ -20,19 +20,19 @@ from uuid import (
     uuid4,
 )
 
-from .config import (
+from ..config import (
     Config,
 )
-from .database import (
+from ..database import (
     DatabaseClient,
     DatabaseClientPool,
     ManagementDatabaseOperationFactory,
 )
-from .injections import (
+from ..injections import (
     DependencyInjector,
     InjectableMixin,
 )
-from .pools import (
+from ..pools import (
     PoolFactory,
 )
 

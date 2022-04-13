@@ -16,7 +16,7 @@ rest:
     host: localhost
     port: 8080
 repository:
-    client: tests.utils.FakeDatabaseClient
+    client: minos.common.testing.MockedDatabaseClient
     database: order_db
     user: minos
     password: min0s

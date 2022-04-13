@@ -16,6 +16,7 @@ from minos.common import (
 )
 from minos.common.testing import (
     DatabaseMinosTestCase,
+    MockedDatabaseClient,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -23,10 +24,11 @@ from minos.networks import (
     BrokerQueue,
     DatabaseBrokerQueue,
 )
+from minos.networks.testing import (
+    MockedBrokerQueueDatabaseOperationFactory,
+)
 from tests.utils import (
     FakeAsyncIterator,
-    FakeBrokerQueueDatabaseOperationFactory,
-    FakeDatabaseClient,
     NetworksTestCase,
 )
 
@@ -34,7 +36,7 @@ from tests.utils import (
 class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.operation_factory = FakeBrokerQueueDatabaseOperationFactory()
+        self.operation_factory = MockedBrokerQueueDatabaseOperationFactory()
 
     def test_is_subclass(self):
         self.assertTrue(issubclass(DatabaseBrokerQueue, (BrokerQueue, DatabaseMixin)))
@@ -55,7 +57,7 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
 
         with patch.object(
-            FakeDatabaseClient,
+            MockedDatabaseClient,
             "fetch_all",
             side_effect=chain(
                 [FakeAsyncIterator([(0,)]), FakeAsyncIterator([(1, message.avro_bytes)])],
@@ -78,7 +80,7 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
         await queue.enqueue(messages[1])
 
         with patch.object(
-            FakeDatabaseClient,
+            MockedDatabaseClient,
             "fetch_all",
             side_effect=chain(
                 [
@@ -104,7 +106,7 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
         ]
 
         with patch.object(
-            FakeDatabaseClient,
+            MockedDatabaseClient,
             "fetch_all",
             return_value=FakeAsyncIterator([[1, messages[0].avro_bytes], [2, bytes()], [3, messages[1].avro_bytes]]),
         ):
@@ -123,7 +125,7 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
         ]
 
         with patch.object(
-            FakeDatabaseClient,
+            MockedDatabaseClient,
             "fetch_all",
             side_effect=chain(
                 [
@@ -155,7 +157,7 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
         ]
 
         with patch.object(
-            FakeDatabaseClient,
+            MockedDatabaseClient,
             "fetch_all",
             side_effect=chain(
                 [
