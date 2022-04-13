@@ -48,7 +48,7 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         """
         return "aggregate_event"
 
-    def build_create_table(self) -> DatabaseOperation:
+    def build_create(self) -> DatabaseOperation:
         """Build the database operation to create the event table.
 
         :return: A ``DatabaseOperation`` instance.s
@@ -97,7 +97,7 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
             ]
         )
 
-    def build_submit_row(
+    def build_submit(
         self,
         transaction_uuids: Iterable[UUID],
         uuid: UUID,
@@ -191,7 +191,7 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         return query, parameters
 
     # noinspection PyShadowingBuiltins
-    def build_select_rows(
+    def build_query(
         self,
         uuid: Optional[UUID] = None,
         name: Optional[str] = None,
@@ -295,7 +295,7 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
             },
         )
 
-    def build_select_max_id(self) -> DatabaseOperation:
+    def build_query_offset(self) -> DatabaseOperation:
         """Build the database operation to get the maximum identifier.
 
         :return: A ``DatabaseOperation`` instance.

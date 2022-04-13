@@ -41,7 +41,7 @@ class DatabaseEventRepository(DatabaseMixin[EventDatabaseOperationFactory], Even
 
         :return: This method does not return anything.
         """
-        operation = self.operation_factory.build_create_table()
+        operation = self.operation_factory.build_create()
         await self.submit_query(operation)
 
     async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
@@ -69,15 +69,15 @@ class DatabaseEventRepository(DatabaseMixin[EventDatabaseOperationFactory], Even
         else:
             transaction_uuids = (NULL_UUID,)
 
-        return self.operation_factory.build_submit_row(transaction_uuids=transaction_uuids, **entry.as_raw(), lock=lock)
+        return self.operation_factory.build_submit(transaction_uuids=transaction_uuids, **entry.as_raw(), lock=lock)
 
     async def _select(self, streaming_mode: Optional[bool] = None, **kwargs) -> AsyncIterator[EventEntry]:
-        operation = self.operation_factory.build_select_rows(**kwargs)
+        operation = self.operation_factory.build_query(**kwargs)
         async for row in self.submit_query_and_iter(operation, streaming_mode=streaming_mode):
             yield EventEntry(*row)
 
     @property
     async def _offset(self) -> int:
-        operation = self.operation_factory.build_select_max_id()
+        operation = self.operation_factory.build_query_offset()
         row = await self.submit_query_and_fetchone(operation)
         return row[0] or 0

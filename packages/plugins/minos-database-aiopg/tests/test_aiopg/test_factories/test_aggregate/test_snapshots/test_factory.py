@@ -31,19 +31,19 @@ class TestAiopgSnapshotDatabaseOperationFactory(unittest.TestCase):
     def test_build_offset_table_name(self):
         self.assertEqual("snapshot_aux_offset", self.factory.build_offset_table_name())
 
-    def test_build_create_table(self):
-        operation = self.factory.build_create_table()
+    def test_build_create(self):
+        operation = self.factory.build_create()
         self.assertIsInstance(operation, ComposedDatabaseOperation)
         self.assertEqual(3, len(operation.operations))
         for sub in operation.operations:
             self.assertIsInstance(sub, AiopgDatabaseOperation)
 
-    def test_build_delete_by_transactions(self):
-        operation = self.factory.build_delete_by_transactions({uuid4(), uuid4()})
+    def test_build_build_delete(self):
+        operation = self.factory.build_delete({uuid4(), uuid4()})
         self.assertIsInstance(operation, AiopgDatabaseOperation)
 
-    def test_build_insert(self):
-        operation = self.factory.build_insert(
+    def test_build_submit(self):
+        operation = self.factory.build_submit(
             uuid=uuid4(),
             name="Foo",
             version=34243,
@@ -66,12 +66,12 @@ class TestAiopgSnapshotDatabaseOperationFactory(unittest.TestCase):
         )
         self.assertIsInstance(operation, AiopgDatabaseOperation)
 
-    def test_build_store_offset(self):
-        operation = self.factory.build_store_offset(56)
+    def test_build_submit_offset(self):
+        operation = self.factory.build_submit_offset(56)
         self.assertIsInstance(operation, AiopgDatabaseOperation)
 
-    def test_build_get_offset(self):
-        operation = self.factory.build_get_offset()
+    def test_build_query_offset(self):
+        operation = self.factory.build_query_offset()
         self.assertIsInstance(operation, AiopgDatabaseOperation)
 
 

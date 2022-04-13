@@ -37,9 +37,7 @@ class AiopgBrokerSubscriberQueueDatabaseOperationFactory(
         """
         return "broker_subscriber_queue"
 
-    def build_count_not_processed(
-        self, retry: int, topics: Iterable[str] = tuple(), *args, **kwargs
-    ) -> DatabaseOperation:
+    def build_count(self, retry: int, topics: Iterable[str] = tuple(), *args, **kwargs) -> DatabaseOperation:
         """Build the "count not processed" query.
 
         :return:
@@ -52,7 +50,7 @@ class AiopgBrokerSubscriberQueueDatabaseOperationFactory(
             {"retry": retry, "topics": tuple(topics)},
         )
 
-    def build_select_not_processed(
+    def build_query(
         self, retry: int, records: int, topics: Iterable[str] = tuple(), *args, **kwargs
     ) -> DatabaseOperation:
         """Build the "select not processed" query.

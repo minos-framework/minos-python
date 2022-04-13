@@ -166,17 +166,17 @@ FakeDatabaseClient.register_factory(ManagementDatabaseOperationFactory, FakeMana
 class FakeTransactionDatabaseOperationFactory(TransactionDatabaseOperationFactory):
     """For testing purposes."""
 
-    def build_create_table(self) -> DatabaseOperation:
+    def build_create(self) -> DatabaseOperation:
         """For testing purposes."""
         return FakeDatabaseOperation("create")
 
-    def build_submit_row(
+    def build_submit(
         self, uuid: UUID, destination_uuid: UUID, status: TransactionStatus, event_offset: int, **kwargs
     ) -> DatabaseOperation:
         """For testing purposes."""
         return FakeDatabaseOperation("submit")
 
-    def build_select_rows(
+    def build_query(
         self,
         uuid: Optional[UUID] = None,
         uuid_ne: Optional[UUID] = None,
@@ -206,11 +206,11 @@ FakeDatabaseClient.register_factory(TransactionDatabaseOperationFactory, FakeTra
 class FakeEventDatabaseOperationFactory(EventDatabaseOperationFactory):
     """For testing purposes."""
 
-    def build_create_table(self) -> DatabaseOperation:
+    def build_create(self) -> DatabaseOperation:
         """For testing purposes."""
         return FakeDatabaseOperation("create")
 
-    def build_submit_row(
+    def build_submit(
         self,
         transaction_uuids: tuple[UUID],
         uuid: UUID,
@@ -226,7 +226,7 @@ class FakeEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         """For testing purposes."""
         return FakeDatabaseOperation("submit")
 
-    def build_select_rows(
+    def build_query(
         self,
         uuid: Optional[UUID] = None,
         name: Optional[str] = None,
@@ -248,7 +248,7 @@ class FakeEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         """For testing purposes."""
         return FakeDatabaseOperation("select_rows")
 
-    def build_select_max_id(self) -> DatabaseOperation:
+    def build_query_offset(self) -> DatabaseOperation:
         """For testing purposes."""
         return FakeDatabaseOperation("select_max_id")
 
@@ -259,15 +259,15 @@ FakeDatabaseClient.register_factory(EventDatabaseOperationFactory, FakeEventData
 class FakeSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
     """For testing purposes."""
 
-    def build_create_table(self) -> DatabaseOperation:
+    def build_create(self) -> DatabaseOperation:
         """For testing purposes."""
         return FakeDatabaseOperation("create")
 
-    def build_delete_by_transactions(self, transaction_uuids: Iterable[UUID]) -> DatabaseOperation:
+    def build_delete(self, transaction_uuids: Iterable[UUID]) -> DatabaseOperation:
         """For testing purposes."""
         return FakeDatabaseOperation("delete")
 
-    def build_insert(
+    def build_submit(
         self,
         uuid: UUID,
         name: str,
@@ -293,11 +293,11 @@ class FakeSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         """For testing purposes."""
         return FakeDatabaseOperation("query")
 
-    def build_store_offset(self, value: int) -> DatabaseOperation:
+    def build_submit_offset(self, value: int) -> DatabaseOperation:
         """For testing purposes."""
         return FakeDatabaseOperation("store_offset")
 
-    def build_get_offset(self) -> DatabaseOperation:
+    def build_query_offset(self) -> DatabaseOperation:
         """For testing purposes."""
         return FakeDatabaseOperation("get_offset")
 

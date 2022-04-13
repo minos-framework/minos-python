@@ -20,7 +20,7 @@ class BrokerSubscriberQueueDatabaseOperationFactory(BrokerQueueDatabaseOperation
     """Broker Subscriber Queue Database Operation Factory class."""
 
     @abstractmethod
-    def build_count_not_processed(
+    def build_count(
         self,
         retry: int,
         topics: Iterable[str] = tuple(),
@@ -33,7 +33,7 @@ class BrokerSubscriberQueueDatabaseOperationFactory(BrokerQueueDatabaseOperation
         """
 
     @abstractmethod
-    def build_select_not_processed(
+    def build_query(
         self,
         retry: int,
         records: int,

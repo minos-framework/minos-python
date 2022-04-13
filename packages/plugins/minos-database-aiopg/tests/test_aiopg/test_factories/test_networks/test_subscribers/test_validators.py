@@ -30,15 +30,15 @@ class TestAiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory(unitte
     def test_build_table_name(self):
         self.assertEqual("broker_subscriber_processed_messages", self.factory.build_table_name())
 
-    def test_build_create_table(self):
-        operation = self.factory.build_create_table()
+    def test_build_create(self):
+        operation = self.factory.build_create()
         self.assertIsInstance(operation, ComposedDatabaseOperation)
         self.assertEqual(2, len(operation.operations))
         for sub in operation.operations:
             self.assertIsInstance(sub, AiopgDatabaseOperation)
 
-    def test_build_insert_row(self):
-        operation = self.factory.build_insert_row("foo", uuid4())
+    def test_build_submit(self):
+        operation = self.factory.build_submit("foo", uuid4())
         self.assertIsInstance(operation, AiopgDatabaseOperation)
 
 

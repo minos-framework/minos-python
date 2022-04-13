@@ -34,7 +34,7 @@ class AiopgBrokerQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFacto
         """
         raise NotImplementedError
 
-    def build_create_table(self) -> DatabaseOperation:
+    def build_create(self) -> DatabaseOperation:
         """Build the "create table" query.
 
         :return: A ``SQL`` instance.
@@ -53,7 +53,7 @@ class AiopgBrokerQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFacto
             lock=self.build_table_name(),
         )
 
-    def build_update_not_processed(self, id_: int) -> DatabaseOperation:
+    def build_mark_processed(self, id_: int) -> DatabaseOperation:
         """Build the "update not processed" query.
 
         :return: A ``SQL`` instance.
@@ -66,7 +66,7 @@ class AiopgBrokerQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFacto
             {"id": id_},
         )
 
-    def build_delete_processed(self, id_: int) -> DatabaseOperation:
+    def build_delete(self, id_: int) -> DatabaseOperation:
         """Build the "delete processed" query.
 
         :return: A ``SQL`` instance.
@@ -86,7 +86,7 @@ class AiopgBrokerQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFacto
             {"ids": tuple(ids)},
         )
 
-    def build_count_not_processed(self, retry: int, *args, **kwargs) -> DatabaseOperation:
+    def build_count(self, retry: int, *args, **kwargs) -> DatabaseOperation:
         """Build the "count not processed" query.
 
         :return:
@@ -99,7 +99,7 @@ class AiopgBrokerQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFacto
             {"retry": retry},
         )
 
-    def build_insert(self, topic: str, data: bytes) -> DatabaseOperation:
+    def build_submit(self, topic: str, data: bytes) -> DatabaseOperation:
         """Build the "insert" query.
 
         :return: A ``SQL`` instance.
@@ -109,7 +109,7 @@ class AiopgBrokerQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFacto
             {"topic": topic, "data": data},
         )
 
-    def build_select_not_processed(self, retry: int, records: int, *args, **kwargs) -> DatabaseOperation:
+    def build_query(self, retry: int, records: int, *args, **kwargs) -> DatabaseOperation:
         """Build the "select not processed" query.
 
         :return: A ``SQL`` instance.

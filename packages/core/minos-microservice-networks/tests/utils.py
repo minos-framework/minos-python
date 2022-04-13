@@ -127,15 +127,15 @@ FakeDatabaseClient.register_factory(ManagementDatabaseOperationFactory, FakeMana
 class FakeBrokerQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactory):
     """For testing purposes."""
 
-    def build_create_table(self) -> DatabaseOperation:
+    def build_create(self) -> DatabaseOperation:
         """For testing purposes"""
         return FakeDatabaseOperation("create_queue_table")
 
-    def build_update_not_processed(self, id_: int) -> DatabaseOperation:
+    def build_mark_processed(self, id_: int) -> DatabaseOperation:
         """For testing purposes"""
         return FakeDatabaseOperation("update_not_processed")
 
-    def build_delete_processed(self, id_: int) -> DatabaseOperation:
+    def build_delete(self, id_: int) -> DatabaseOperation:
         """For testing purposes"""
         return FakeDatabaseOperation("delete_processed")
 
@@ -143,15 +143,15 @@ class FakeBrokerQueueDatabaseOperationFactory(BrokerQueueDatabaseOperationFactor
         """For testing purposes"""
         return FakeDatabaseOperation("mark_processing")
 
-    def build_count_not_processed(self, retry: int, *args, **kwargs) -> DatabaseOperation:
+    def build_count(self, retry: int, *args, **kwargs) -> DatabaseOperation:
         """For testing purposes"""
         return FakeDatabaseOperation("count_not_processed")
 
-    def build_insert(self, topic: str, data: bytes) -> DatabaseOperation:
+    def build_submit(self, topic: str, data: bytes) -> DatabaseOperation:
         """For testing purposes"""
         return FakeDatabaseOperation("insert")
 
-    def build_select_not_processed(self, retry: int, records: int, *args, **kwargs) -> DatabaseOperation:
+    def build_query(self, retry: int, records: int, *args, **kwargs) -> DatabaseOperation:
         """For testing purposes"""
         return FakeDatabaseOperation("select_not_processed")
 
@@ -172,13 +172,13 @@ class FakeBrokerSubscriberQueueDatabaseOperationFactory(
 ):
     """For testing purposes"""
 
-    def build_count_not_processed(
+    def build_count(
         self, retry: int, topics: Iterable[str] = tuple(), *args, **kwargs
     ) -> DatabaseOperation:
         """For testing purposes"""
         return FakeDatabaseOperation("count_not_processed")
 
-    def build_select_not_processed(
+    def build_query(
         self, retry: int, records: int, topics: Iterable[str] = tuple(), *args, **kwargs
     ) -> DatabaseOperation:
         """For testing purposes"""
@@ -195,11 +195,11 @@ class FakeBrokerSubscriberDuplicateValidatorDatabaseOperationFactory(
 ):
     """For testing purposes"""
 
-    def build_create_table(self) -> DatabaseOperation:
+    def build_create(self) -> DatabaseOperation:
         """For testing purposes"""
         return FakeDatabaseOperation("create_table")
 
-    def build_insert_row(self, topic: str, uuid: UUID) -> DatabaseOperation:
+    def build_submit(self, topic: str, uuid: UUID) -> DatabaseOperation:
         """For testing purposes"""
         return FakeDatabaseOperation("insert_row")
 

@@ -53,7 +53,7 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         """
         return "snapshot_aux_offset"
 
-    def build_create_table(self) -> DatabaseOperation:
+    def build_create(self) -> DatabaseOperation:
         """Build the database operation to create the snapshot table.
 
         :return: A ``DatabaseOperation`` instance.
@@ -93,7 +93,7 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
             ]
         )
 
-    def build_delete_by_transactions(self, transaction_uuids: Iterable[UUID]) -> DatabaseOperation:
+    def build_delete(self, transaction_uuids: Iterable[UUID]) -> DatabaseOperation:
         """Build the database operation to delete rows by transaction identifiers.
 
         :param transaction_uuids: The transaction identifiers.
@@ -107,7 +107,7 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
             {"transaction_uuids": tuple(transaction_uuids)},
         )
 
-    def build_insert(
+    def build_submit(
         self,
         uuid: UUID,
         name: str,
@@ -200,7 +200,7 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
 
         return AiopgDatabaseOperation(query, parameters)
 
-    def build_store_offset(self, value: int) -> DatabaseOperation:
+    def build_submit_offset(self, value: int) -> DatabaseOperation:
         """Build the database operation to store the offset.
 
         :param value: The value to be stored as the new offset.
@@ -220,7 +220,7 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
             lock=f"insert_{self.build_offset_table_name()}",
         )
 
-    def build_get_offset(self) -> DatabaseOperation:
+    def build_query_offset(self) -> DatabaseOperation:
         """Build the database operation to get the current offset.
 
         :return: A ``DatabaseOperation`` instance.

@@ -17,14 +17,14 @@ class BrokerSubscriberDuplicateValidatorDatabaseOperationFactory(DatabaseOperati
     """Broker Subscriber Duplicate Validator Database Operation Factory class."""
 
     @abstractmethod
-    def build_create_table(self) -> DatabaseOperation:
+    def build_create(self) -> DatabaseOperation:
         """Build the "create table" query.
 
         :return: A ``SQL`` instance.
         """
 
     @abstractmethod
-    def build_insert_row(self, topic: str, uuid: UUID) -> DatabaseOperation:
+    def build_submit(self, topic: str, uuid: UUID) -> DatabaseOperation:
         """Build the "insert row" query.
 
         :return: A ``SQL`` instance.

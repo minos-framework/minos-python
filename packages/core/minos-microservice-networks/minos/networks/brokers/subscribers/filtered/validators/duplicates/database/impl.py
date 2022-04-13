@@ -32,11 +32,11 @@ class DatabaseBrokerSubscriberDuplicateValidator(
         await self._create_table()
 
     async def _create_table(self) -> None:
-        operation = self.operation_factory.build_create_table()
+        operation = self.operation_factory.build_create()
         await self.submit_query(operation)
 
     async def _is_unique(self, topic: str, uuid: UUID) -> bool:
-        operation = self.operation_factory.build_insert_row(topic, uuid)
+        operation = self.operation_factory.build_submit(topic, uuid)
         try:
             await self.submit_query(operation)
             return True

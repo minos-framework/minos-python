@@ -27,15 +27,15 @@ class TestAiopgEventDatabaseOperationFactory(unittest.TestCase):
     def test_build_table_name(self):
         self.assertEqual("aggregate_event", self.factory.build_table_name())
 
-    def test_build_create_table(self):
-        operation = self.factory.build_create_table()
+    def test_build_create(self):
+        operation = self.factory.build_create()
         self.assertIsInstance(operation, ComposedDatabaseOperation)
         self.assertEqual(3, len(operation.operations))
         for sub in operation.operations:
             self.assertIsInstance(sub, AiopgDatabaseOperation)
 
-    def test_build_submit_row(self):
-        operation = self.factory.build_submit_row(
+    def test_build_submit(self):
+        operation = self.factory.build_submit(
             transaction_uuids=[uuid4(), uuid4()],
             uuid=uuid4(),
             action=Action.CREATE,
@@ -48,8 +48,8 @@ class TestAiopgEventDatabaseOperationFactory(unittest.TestCase):
         )
         self.assertIsInstance(operation, AiopgDatabaseOperation)
 
-    def test_build_select_rows(self):
-        operation = self.factory.build_select_rows(
+    def test_build_query(self):
+        operation = self.factory.build_query(
             uuid=uuid4(),
             name="Foo",
             version=423453,
@@ -67,8 +67,8 @@ class TestAiopgEventDatabaseOperationFactory(unittest.TestCase):
         )
         self.assertIsInstance(operation, AiopgDatabaseOperation)
 
-    def test_build_select_max_id(self):
-        operation = self.factory.build_select_max_id()
+    def test_build_query_offset(self):
+        operation = self.factory.build_query_offset()
         self.assertIsInstance(operation, AiopgDatabaseOperation)
 
 

@@ -88,7 +88,7 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         return cls(database_key=None, **kwargs)
 
     async def _setup(self) -> None:
-        operation = self.operation_factory.build_create_table()
+        operation = self.operation_factory.build_create()
         await self.submit_query(operation)
 
     async def _destroy(self) -> None:
@@ -149,7 +149,7 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         await self._store_offset(offset)
 
     async def _load_offset(self) -> int:
-        operation = self.operation_factory.build_get_offset()
+        operation = self.operation_factory.build_query_offset()
         # noinspection PyBroadException
         try:
             raw = await self.submit_query_and_fetchone(operation)
@@ -158,7 +158,7 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
             return 0
 
     async def _store_offset(self, offset: int) -> None:
-        operation = self.operation_factory.build_store_offset(offset)
+        operation = self.operation_factory.build_submit_offset(offset)
         await self.submit_query(operation)
 
     async def _dispatch_one(self, event_entry: EventEntry, **kwargs) -> SnapshotEntry:
@@ -211,7 +211,7 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         return snapshot_entry.build(**kwargs)
 
     async def _submit_entry(self, snapshot_entry: SnapshotEntry) -> SnapshotEntry:
-        operation = self.operation_factory.build_insert(**snapshot_entry.as_raw())
+        operation = self.operation_factory.build_submit(**snapshot_entry.as_raw())
         response = await self.submit_query_and_fetchone(operation)
 
         snapshot_entry.created_at, snapshot_entry.updated_at = response
@@ -224,5 +224,5 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         )
         transaction_uuids = {transaction.uuid async for transaction in iterable}
         if len(transaction_uuids):
-            operation = self.operation_factory.build_delete_by_transactions(transaction_uuids)
+            operation = self.operation_factory.build_delete(transaction_uuids)
             await self.submit_query(operation)

@@ -25,12 +25,12 @@ class TestAiopgBrokerSubscriberQueueDatabaseOperationFactory(unittest.TestCase):
     def test_build_table_name(self):
         self.assertEqual("broker_subscriber_queue", self.factory.build_table_name())
 
-    def test_build_count_not_processed(self):
-        operation = self.factory.build_count_not_processed(retry=3, topics={"foo", "bar"})
+    def test_build_build_count(self):
+        operation = self.factory.build_count(retry=3, topics={"foo", "bar"})
         self.assertIsInstance(operation, AiopgDatabaseOperation)
 
-    def test_build_select_not_processed(self):
-        operation = self.factory.build_select_not_processed(retry=3, records=100, topics={"foo", "bar"})
+    def test_build_build_query(self):
+        operation = self.factory.build_query(retry=3, records=100, topics={"foo", "bar"})
         self.assertIsInstance(operation, AiopgDatabaseOperation)
 
 

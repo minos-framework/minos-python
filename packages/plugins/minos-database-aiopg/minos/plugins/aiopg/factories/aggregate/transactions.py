@@ -43,7 +43,7 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
         """
         return "aggregate_transaction"
 
-    def build_create_table(self) -> DatabaseOperation:
+    def build_create(self) -> DatabaseOperation:
         """Build the database operation to create the snapshot table.
 
         :return: A ``DatabaseOperation`` instance.
@@ -91,7 +91,7 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
             ]
         )
 
-    def build_submit_row(
+    def build_submit(
         self,
         uuid: UUID,
         destination_uuid: UUID,
@@ -136,7 +136,7 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
             lock=uuid.int & (1 << 32) - 1,
         )
 
-    def build_select_rows(
+    def build_query(
         self,
         uuid: Optional[UUID] = None,
         uuid_ne: Optional[UUID] = None,

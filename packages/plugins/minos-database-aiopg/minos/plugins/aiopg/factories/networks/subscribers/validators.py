@@ -36,7 +36,7 @@ class AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory(
         """
         return "broker_subscriber_processed_messages"
 
-    def build_create_table(self) -> DatabaseOperation:
+    def build_create(self) -> DatabaseOperation:
         """Build the "create table" query.
 
         :return: A ``SQL`` instance.
@@ -61,7 +61,7 @@ class AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory(
             ]
         )
 
-    def build_insert_row(self, topic: str, uuid: UUID) -> DatabaseOperation:
+    def build_submit(self, topic: str, uuid: UUID) -> DatabaseOperation:
         """Build the "insert row" query.
 
         :return: A ``SQL`` instance.
