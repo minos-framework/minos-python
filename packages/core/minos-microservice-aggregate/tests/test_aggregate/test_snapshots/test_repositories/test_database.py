@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import (
+    MagicMock,
     patch,
 )
 
@@ -16,6 +17,7 @@ from minos.aggregate.testing.snapshot_repository import (
 )
 from minos.common import (
     DatabaseClient,
+    NotProvidedException,
     classname,
     current_datetime,
 )
@@ -27,6 +29,26 @@ from tests.utils import (
 
 class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCase):
     __test__ = True
+
+    def test_constructor_raises(self):
+        with self.assertRaises(NotProvidedException):
+            # noinspection PyTypeChecker
+            DatabaseSnapshotRepository(event_repository=None)
+
+        with self.assertRaises(NotProvidedException):
+            # noinspection PyTypeChecker
+            DatabaseSnapshotRepository(transaction_repository=None)
+
+    async def test_is_synced(self):
+        self.event_repository.select = MagicMock(side_effect=[FakeAsyncIterator([1]), FakeAsyncIterator([])])
+
+        with patch.object(
+            DatabaseClient,
+            "fetch_one",
+            return_value=(0,)
+        ):
+            self.assertFalse(await self.snapshot_repository.is_synced(Car))
+            self.assertTrue(await self.snapshot_repository.is_synced(Car))
 
     def build_snapshot_repository(self) -> SnapshotRepository:
         return DatabaseSnapshotRepository.from_config(self.config)
