@@ -12,7 +12,8 @@ from ..abc import (
 class HttpEnrouteDecorator(EnrouteDecorator):
     """Http Enroute Decorator class."""
 
-    def __init__(self, path: Optional[str] = None, method: Optional[str] = None, url: Optional[str] = None):
+    def __init__(self, path: Optional[str] = None, method: Optional[str] = None, url: Optional[str] = None, **kwargs):
+        super().__init__(**kwargs)
         if path is None and url is not None:
             warnings.warn("The 'url' argument has been deprecated. 'path' must be used.", DeprecationWarning)
             path = url
