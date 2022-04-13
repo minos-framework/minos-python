@@ -1,4 +1,8 @@
 import unittest
+from itertools import (
+    chain,
+    cycle,
+)
 from unittest.mock import (
     MagicMock,
     patch,
@@ -42,11 +46,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
     async def test_is_synced(self):
         self.event_repository.select = MagicMock(side_effect=[FakeAsyncIterator([1]), FakeAsyncIterator([])])
 
-        with patch.object(
-            DatabaseClient,
-            "fetch_one",
-            return_value=(0,)
-        ):
+        with patch.object(DatabaseClient, "fetch_one", return_value=(0,)):
             self.assertFalse(await self.snapshot_repository.is_synced(Car))
             self.assertTrue(await self.snapshot_repository.is_synced(Car))
 
@@ -72,7 +72,29 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 (current_datetime(), current_datetime()),
             ],
         ):
-            with patch.object(DatabaseClient, "fetch_all", return_value=FakeAsyncIterator([])):
+            with patch.object(
+                DatabaseClient,
+                "fetch_all",
+                side_effect=chain(
+                    [
+                        FakeAsyncIterator([]),
+                        FakeAsyncIterator(
+                            [
+                                tuple(
+                                    SnapshotEntry.from_root_entity(Car(3, "blue", uuid=self.uuid_1, version=1))
+                                    .as_raw()
+                                    .values()
+                                )
+                            ]
+                        ),
+                    ],
+                    cycle(
+                        [
+                            FakeAsyncIterator([]),
+                        ]
+                    ),
+                ),
+            ):
                 await super().synchronize()
 
     async def test_dispatch(self):
@@ -213,7 +235,6 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 StopAsyncIteration,
                 (current_datetime(), current_datetime()),
                 (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
                 (9999,),
             ],
         ):
@@ -222,7 +243,15 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 "fetch_all",
                 side_effect=[
                     FakeAsyncIterator([]),
-                    FakeAsyncIterator([]),
+                    FakeAsyncIterator(
+                        [
+                            tuple(
+                                SnapshotEntry.from_root_entity(Car(3, "blue", uuid=self.uuid_1, version=5))
+                                .as_raw()
+                                .values()
+                            )
+                        ]
+                    ),
                     FakeAsyncIterator([]),
                     FakeAsyncIterator([tuple(entry.as_raw().values()) for entry in entries]),
                 ],
