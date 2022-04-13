@@ -1,9 +1,10 @@
 from .clients import (
+    ConnectionException,
     DatabaseClient,
     DatabaseClientBuilder,
     DatabaseClientException,
     IntegrityException,
-    UnableToConnectException,
+    ProgrammingException,
 )
 from .locks import (
     DatabaseLock,

@@ -32,6 +32,9 @@ from ..operations import (
     DatabaseOperation,
     DatabaseOperationFactory,
 )
+from .exceptions import (
+    ProgrammingException,
+)
 
 if TYPE_CHECKING:
     from ..locks import (
@@ -137,7 +140,10 @@ class DatabaseClient(ABC, BuildableMixin):
 
         :return: This method does not return anything.
         """
-        return await self.fetch_all().__anext__()
+        try:
+            return await self.fetch_all().__anext__()
+        except StopAsyncIteration:
+            raise ProgrammingException("There are not any value to be fetched.")
 
     def fetch_all(self) -> AsyncIterator[Any]:
         """Fetch all values with an asynchronous iterator.

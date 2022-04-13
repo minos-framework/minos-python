@@ -10,6 +10,7 @@ from typing import (
 from minos.common import (
     Config,
     DatabaseMixin,
+    ProgrammingException,
 )
 
 from ....exceptions import (
@@ -44,7 +45,7 @@ class DatabaseTransactionRepository(DatabaseMixin[TransactionDatabaseOperationFa
 
         try:
             updated_at = await self.submit_query_and_fetchone(operation)
-        except StopAsyncIteration:
+        except ProgrammingException:
             raise TransactionRepositoryConflictException(
                 f"{transaction!r} status is invalid respect to the previous one."
             )

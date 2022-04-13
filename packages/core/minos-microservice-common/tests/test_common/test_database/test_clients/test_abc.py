@@ -22,6 +22,7 @@ from minos.common import (
     DatabaseOperation,
     DatabaseOperationFactory,
     LockDatabaseOperationFactory,
+    ProgrammingException,
 )
 from tests.utils import (
     CommonTestCase,
@@ -196,6 +197,14 @@ class TestDatabaseClient(CommonTestCase):
         self.assertEqual("one", await client.fetch_one())
 
         self.assertEqual([call()], mock.call_args_list)
+
+    async def test_fetch_one_raises(self):
+        mock = MagicMock(return_value=FakeAsyncIterator([]))
+        client = _DatabaseClient()
+        client._fetch_all = mock
+
+        with self.assertRaises(ProgrammingException):
+            await client.fetch_one()
 
     def test_set_factory(self):
         expected = {

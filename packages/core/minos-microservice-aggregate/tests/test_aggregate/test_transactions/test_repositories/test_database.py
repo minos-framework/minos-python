@@ -6,7 +6,6 @@ from unittest.mock import (
 from minos.aggregate import (
     DatabaseTransactionRepository,
     TransactionRepository,
-    TransactionRepositoryConflictException,
     TransactionStatus,
 )
 from minos.aggregate.testing import (
@@ -14,6 +13,7 @@ from minos.aggregate.testing import (
 )
 from minos.common import (
     DatabaseClient,
+    ProgrammingException,
     current_datetime,
 )
 from tests.utils import (
@@ -48,10 +48,10 @@ class TestDatabaseTransactionRepository(AggregateTestCase, TransactionRepository
             "fetch_one",
             side_effect=[
                 (current_datetime(),),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
             ],
         ):
             await super().test_submit_pending_raises()
@@ -62,10 +62,10 @@ class TestDatabaseTransactionRepository(AggregateTestCase, TransactionRepository
             "fetch_one",
             side_effect=[
                 (current_datetime(),),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
             ],
         ):
             await super().test_submit_reserving_raises()
@@ -76,9 +76,9 @@ class TestDatabaseTransactionRepository(AggregateTestCase, TransactionRepository
             "fetch_one",
             side_effect=[
                 (current_datetime(),),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
             ],
         ):
             await super().test_submit_reserved_raises()
@@ -89,12 +89,12 @@ class TestDatabaseTransactionRepository(AggregateTestCase, TransactionRepository
             "fetch_one",
             side_effect=[
                 (current_datetime(),),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
             ],
         ):
             await super().test_submit_committing_raises()
@@ -105,9 +105,12 @@ class TestDatabaseTransactionRepository(AggregateTestCase, TransactionRepository
             "fetch_one",
             side_effect=[
                 (current_datetime(),),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
             ],
         ):
             await super().test_submit_committed_raises()
@@ -118,12 +121,12 @@ class TestDatabaseTransactionRepository(AggregateTestCase, TransactionRepository
             "fetch_one",
             side_effect=[
                 (current_datetime(),),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
-                TransactionRepositoryConflictException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
+                ProgrammingException(""),
             ],
         ):
             await super().test_submit_rejected_raises()

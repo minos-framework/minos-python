@@ -16,9 +16,10 @@ from psycopg2 import (
 )
 
 from minos.common import (
+    ConnectionException,
     DatabaseOperation,
     IntegrityException,
-    UnableToConnectException,
+    ProgrammingException,
 )
 from minos.plugins.aiopg import (
     AiopgDatabaseClient,
@@ -79,7 +80,7 @@ class TestAiopgDatabaseClient(AiopgTestCase):
 
     async def test_connection_raises(self):
         with patch.object(aiopg, "connect", new_callable=PropertyMock, side_effect=OperationalError):
-            with self.assertRaises(UnableToConnectException):
+            with self.assertRaises(ConnectionException):
                 async with AiopgDatabaseClient.from_config(self.config):
                     pass
 
@@ -129,6 +130,11 @@ class TestAiopgDatabaseClient(AiopgTestCase):
             await client.execute(self.operation)
             observed = await client.fetch_one()
         self.assertIsInstance(observed, tuple)
+
+    async def test_fetch_one_raises(self):
+        async with AiopgDatabaseClient.from_config(self.config) as client:
+            with self.assertRaises(ProgrammingException):
+                await client.fetch_one()
 
     async def test_fetch_all(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:

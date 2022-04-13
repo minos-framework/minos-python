@@ -26,9 +26,9 @@ from ..pools import (
     Pool,
 )
 from .clients import (
+    ConnectionException,
     DatabaseClient,
     DatabaseClientBuilder,
-    UnableToConnectException,
 )
 from .locks import (
     DatabaseLock,
@@ -66,7 +66,7 @@ class DatabaseClientPool(Pool[DatabaseClient]):
 
         try:
             await instance.setup()
-        except UnableToConnectException:
+        except ConnectionException:
             await sleep(0.1)
             return None
 

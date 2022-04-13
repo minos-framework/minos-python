@@ -19,6 +19,7 @@ from minos.common import (
     DatabaseMixin,
     Inject,
     NotProvidedException,
+    ProgrammingException,
     import_module,
 )
 
@@ -152,10 +153,10 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         operation = self.operation_factory.build_query_offset()
         # noinspection PyBroadException
         try:
-            raw = await self.submit_query_and_fetchone(operation)
-            return raw[0]
-        except Exception:
+            row = await self.submit_query_and_fetchone(operation)
+        except ProgrammingException:
             return 0
+        return row[0]
 
     async def _store_offset(self, offset: int) -> None:
         operation = self.operation_factory.build_submit_offset(offset)

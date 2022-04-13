@@ -18,12 +18,14 @@ from aiopg import (
 from psycopg2 import (
     IntegrityError,
     OperationalError,
+    ProgrammingError,
 )
 
 from minos.common import (
+    ConnectionException,
     DatabaseClient,
     IntegrityException,
-    UnableToConnectException,
+    ProgrammingException,
 )
 
 from .operations import (
@@ -85,7 +87,7 @@ class AiopgDatabaseClient(DatabaseClient):
         except OperationalError as exc:
             msg = f"There was an {exc!r} while trying to get a database connection."
             logger.warning(msg)
-            raise UnableToConnectException(msg)
+            raise ConnectionException(msg)
 
         logger.debug(f"Created {self.database!r} database connection identified by {id(self._connection)}!")
 
@@ -113,9 +115,11 @@ class AiopgDatabaseClient(DatabaseClient):
     # noinspection PyUnusedLocal
     async def _fetch_all(self) -> AsyncIterator[tuple]:
         await self._create_cursor()
-
-        async for row in self._cursor:
-            yield row
+        try:
+            async for row in self._cursor:
+                yield row
+        except ProgrammingError as exc:
+            raise ProgrammingException(str(exc))
 
     # noinspection PyUnusedLocal
     async def _execute(self, operation: AiopgDatabaseOperation) -> None:

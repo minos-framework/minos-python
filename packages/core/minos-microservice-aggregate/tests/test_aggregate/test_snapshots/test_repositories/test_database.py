@@ -22,6 +22,7 @@ from minos.aggregate.testing.snapshot_repository import (
 from minos.common import (
     DatabaseClient,
     NotProvidedException,
+    ProgrammingException,
     classname,
     current_datetime,
 )
@@ -58,7 +59,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             DatabaseClient,
             "fetch_one",
             side_effect=[
-                StopAsyncIteration,
+                ProgrammingException(""),
                 (current_datetime(), current_datetime()),
                 (current_datetime(), current_datetime()),
                 (current_datetime(), current_datetime()),
@@ -232,7 +233,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             DatabaseClient,
             "fetch_one",
             side_effect=[
-                StopAsyncIteration,
+                ProgrammingException(""),
                 (current_datetime(), current_datetime()),
                 (current_datetime(), current_datetime()),
                 (9999,),

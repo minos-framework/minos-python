@@ -15,6 +15,7 @@ from .config import (
 )
 from .database import (
     ComposedDatabaseOperation,
+    ConnectionException,
     DatabaseClient,
     DatabaseClientBuilder,
     DatabaseClientException,
@@ -27,7 +28,7 @@ from .database import (
     IntegrityException,
     LockDatabaseOperationFactory,
     ManagementDatabaseOperationFactory,
-    UnableToConnectException,
+    ProgrammingException,
 )
 from .datetime import (
     NULL_DATETIME,

@@ -3,7 +3,8 @@ from .abc import (
     DatabaseClientBuilder,
 )
 from .exceptions import (
+    ConnectionException,
     DatabaseClientException,
     IntegrityException,
-    UnableToConnectException,
+    ProgrammingException,
 )

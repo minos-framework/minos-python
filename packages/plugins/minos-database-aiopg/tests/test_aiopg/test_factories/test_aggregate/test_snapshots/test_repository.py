@@ -19,7 +19,7 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestDatabaseSnapshotRepositoryWriter(AiopgTestCase, SnapshotRepositoryTestCase):
+class TestDatabaseSnapshotRepository(AiopgTestCase, SnapshotRepositoryTestCase):
     __test__ = True
 
     def build_snapshot_repository(self):

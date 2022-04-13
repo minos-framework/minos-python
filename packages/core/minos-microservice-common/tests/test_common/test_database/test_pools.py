@@ -5,12 +5,12 @@ from unittest.mock import (
 
 from minos.common import (
     Config,
+    ConnectionException,
     DatabaseClient,
     DatabaseClientBuilder,
     DatabaseClientPool,
     DatabaseLock,
     DatabaseLockPool,
-    UnableToConnectException,
     classname,
 )
 from minos.common.testing import (
@@ -78,7 +78,7 @@ class TestDatabaseClientPool(CommonTestCase, DatabaseMinosTestCase):
         self.assertEqual(1, reset_mock.call_count)
 
     async def test_acquire_with_raises(self):
-        with patch.object(FakeDatabaseClient, "setup", side_effect=[UnableToConnectException(""), None]):
+        with patch.object(FakeDatabaseClient, "setup", side_effect=[ConnectionException(""), None]):
             async with self.pool.acquire() as client:
                 self.assertIsInstance(client, FakeDatabaseClient)
 
