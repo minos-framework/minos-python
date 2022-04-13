@@ -52,7 +52,7 @@ from minos.common import (
     Lock,
     LockDatabaseOperationFactory,
     LockPool,
-    ManageDatabaseOperationFactory,
+    ManagementDatabaseOperationFactory,
     PoolFactory,
 )
 from minos.common.testing import (
@@ -148,7 +148,7 @@ class FakeLockDatabaseOperationFactory(LockDatabaseOperationFactory):
 FakeDatabaseClient.register_factory(LockDatabaseOperationFactory, FakeLockDatabaseOperationFactory)
 
 
-class FakeManageDatabaseOperationFactory(ManageDatabaseOperationFactory):
+class FakeManagementDatabaseOperationFactory(ManagementDatabaseOperationFactory):
     """For testing purposes"""
 
     def build_create(self, database: str) -> DatabaseOperation:
@@ -160,7 +160,7 @@ class FakeManageDatabaseOperationFactory(ManageDatabaseOperationFactory):
         return FakeDatabaseOperation("delete")
 
 
-FakeDatabaseClient.register_factory(ManageDatabaseOperationFactory, FakeManageDatabaseOperationFactory)
+FakeDatabaseClient.register_factory(ManagementDatabaseOperationFactory, FakeManagementDatabaseOperationFactory)
 
 
 class FakeTransactionDatabaseOperationFactory(TransactionDatabaseOperationFactory):

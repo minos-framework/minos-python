@@ -9,8 +9,8 @@ from ..operations import (
 )
 
 
-class ManageDatabaseOperationFactory(DatabaseOperationFactory, ABC):
-    """Manage Database Operation Factory base class."""
+class ManagementDatabaseOperationFactory(DatabaseOperationFactory, ABC):
+    """Management Database Operation Factory base class."""
 
     @abstractmethod
     def build_create(self, database: str) -> DatabaseOperation:

@@ -8,7 +8,7 @@ from .factories import (
     AiopgBrokerSubscriberQueueDatabaseOperationFactory,
     AiopgEventDatabaseOperationFactory,
     AiopgLockDatabaseOperationFactory,
-    AiopgManageDatabaseOperationFactory,
+    AiopgManagementDatabaseOperationFactory,
     AiopgSnapshotDatabaseOperationFactory,
     AiopgSnapshotQueryDatabaseOperationBuilder,
     AiopgTransactionDatabaseOperationFactory,

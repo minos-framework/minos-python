@@ -1,6 +1,6 @@
 from minos.common import (
     DatabaseOperation,
-    ManageDatabaseOperationFactory,
+    ManagementDatabaseOperationFactory,
 )
 
 from ...clients import (
@@ -12,7 +12,7 @@ from ...operations import (
 
 
 # noinspection SqlNoDataSourceInspection
-class AiopgManageDatabaseOperationFactory(ManageDatabaseOperationFactory):
+class AiopgManagementDatabaseOperationFactory(ManagementDatabaseOperationFactory):
     """Aiopg Manage Database Operation Factory class."""
 
     def build_create(self, database: str) -> DatabaseOperation:
@@ -32,4 +32,4 @@ class AiopgManageDatabaseOperationFactory(ManageDatabaseOperationFactory):
         return AiopgDatabaseOperation(f"DROP DATABASE IF EXISTS {database};")
 
 
-AiopgDatabaseClient.register_factory(ManageDatabaseOperationFactory, AiopgManageDatabaseOperationFactory)
+AiopgDatabaseClient.register_factory(ManagementDatabaseOperationFactory, AiopgManagementDatabaseOperationFactory)

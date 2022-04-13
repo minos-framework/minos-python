@@ -26,7 +26,7 @@ from .database import (
     DatabaseOperationFactory,
     IntegrityException,
     LockDatabaseOperationFactory,
-    ManageDatabaseOperationFactory,
+    ManagementDatabaseOperationFactory,
     UnableToConnectException,
 )
 from .datetime import (

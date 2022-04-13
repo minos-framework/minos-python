@@ -1,6 +1,6 @@
 from .locks import (
     AiopgLockDatabaseOperationFactory,
 )
-from .manage import (
-    AiopgManageDatabaseOperationFactory,
+from .managemens import (
+    AiopgManagementDatabaseOperationFactory,
 )

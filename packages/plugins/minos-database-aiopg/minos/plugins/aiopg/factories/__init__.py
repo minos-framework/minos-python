@@ -6,7 +6,7 @@ from .aggregate import (
 )
 from .common import (
     AiopgLockDatabaseOperationFactory,
-    AiopgManageDatabaseOperationFactory,
+    AiopgManagementDatabaseOperationFactory,
 )
 from .networks import (
     AiopgBrokerPublisherQueueDatabaseOperationFactory,

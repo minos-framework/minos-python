@@ -9,8 +9,8 @@ from .locks import (
     DatabaseLock,
     LockDatabaseOperationFactory,
 )
-from .manage import (
-    ManageDatabaseOperationFactory,
+from .managements import (
+    ManagementDatabaseOperationFactory,
 )
 from .mixins import (
     DatabaseMixin,

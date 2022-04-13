@@ -26,7 +26,7 @@ from .config import (
 from .database import (
     DatabaseClient,
     DatabaseClientPool,
-    ManageDatabaseOperationFactory,
+    ManagementDatabaseOperationFactory,
 )
 from .injections import (
     DependencyInjector,
@@ -113,10 +113,10 @@ class DatabaseMinosTestCase(MinosTestCase, ABC):
         await self._drop_database(test)
 
         async with self.get_client() as client:
-            operation = client.get_factory(ManageDatabaseOperationFactory).build_create(test["database"])
+            operation = client.get_factory(ManagementDatabaseOperationFactory).build_create(test["database"])
             await client.execute(operation)
 
     async def _drop_database(self, test: dict[str, Any]) -> None:
         async with self.get_client() as client:
-            operation = client.get_factory(ManageDatabaseOperationFactory).build_delete(test["database"])
+            operation = client.get_factory(ManagementDatabaseOperationFactory).build_delete(test["database"])
             await client.execute(operation)

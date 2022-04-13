@@ -23,7 +23,7 @@ from minos.common import (
     DatabaseClient,
     DatabaseOperation,
     LockDatabaseOperationFactory,
-    ManageDatabaseOperationFactory,
+    ManagementDatabaseOperationFactory,
 )
 from minos.cqrs import (
     CommandService,
@@ -121,7 +121,7 @@ class FakeLockDatabaseOperationFactory(LockDatabaseOperationFactory):
 FakeDatabaseClient.register_factory(LockDatabaseOperationFactory, FakeLockDatabaseOperationFactory)
 
 
-class FakeManageDatabaseOperationFactory(ManageDatabaseOperationFactory):
+class FakeManagementDatabaseOperationFactory(ManagementDatabaseOperationFactory):
     """For testing purposes"""
 
     def build_create(self, database: str) -> DatabaseOperation:
@@ -133,4 +133,4 @@ class FakeManageDatabaseOperationFactory(ManageDatabaseOperationFactory):
         return FakeDatabaseOperation("delete")
 
 
-FakeDatabaseClient.register_factory(ManageDatabaseOperationFactory, FakeManageDatabaseOperationFactory)
+FakeDatabaseClient.register_factory(ManagementDatabaseOperationFactory, FakeManagementDatabaseOperationFactory)
