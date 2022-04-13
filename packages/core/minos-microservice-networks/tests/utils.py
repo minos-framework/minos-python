@@ -172,9 +172,7 @@ class FakeBrokerSubscriberQueueDatabaseOperationFactory(
 ):
     """For testing purposes"""
 
-    def build_count(
-        self, retry: int, topics: Iterable[str] = tuple(), *args, **kwargs
-    ) -> DatabaseOperation:
+    def build_count(self, retry: int, topics: Iterable[str] = tuple(), *args, **kwargs) -> DatabaseOperation:
         """For testing purposes"""
         return FakeDatabaseOperation("count_not_processed")
 
