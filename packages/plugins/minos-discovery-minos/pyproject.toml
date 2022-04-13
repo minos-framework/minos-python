@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-discovery-minos"
-version = "0.6.0"
+version = "0.7.0.dev1"
 description = "The minos-discovery plugin of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
@@ -31,8 +31,8 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.6.0"
-minos-microservice-networks = "^0.6.0"
+minos-microservice-common = { version ="^0.7.0*", allow-prereleases = true }
+minos-microservice-networks = { version ="^0.7.0*", allow-prereleases = true }
 aiohttp = "^3.8.1"
 
 [tool.poetry.dev-dependencies]
