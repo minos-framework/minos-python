@@ -10,6 +10,7 @@ from typing import (
 )
 from unittest.mock import (
     MagicMock,
+    patch,
 )
 
 from aiomisc import (
@@ -17,8 +18,10 @@ from aiomisc import (
 )
 
 from minos.common import (
+    MinosConfigException,
     MinosPool,
     Pool,
+    PoolException,
     PoolFactory,
     SetupMixin,
 )
@@ -55,9 +58,14 @@ class TestPoolFactory(CommonTestCase):
         self.assertEqual(lock_a, self.factory.get_pool("lock", "a"))
         self.assertEqual(lock_b, self.factory.get_pool("lock", "b"))
 
-    def test_get_pool_raises(self):
-        with self.assertRaises(ValueError):
+    def test_get_pool_cls_raises(self):
+        with self.assertRaises(PoolException):
             self.factory.get_pool("something")
+
+    def test_get_pool_identifier_raises(self):
+        with patch.object(SetupMixin, "from_config", side_effect=MinosConfigException("")):
+            with self.assertRaises(PoolException):
+                self.factory.get_pool("database")
 
 
 class TestPool(unittest.IsolatedAsyncioTestCase):

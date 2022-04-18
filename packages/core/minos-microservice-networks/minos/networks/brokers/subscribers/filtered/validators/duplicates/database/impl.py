@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from typing import (
+    Optional,
+)
 from uuid import (
     UUID,
 )
@@ -26,6 +29,11 @@ class DatabaseBrokerSubscriberDuplicateValidator(
     DatabaseMixin[BrokerSubscriberDuplicateValidatorDatabaseOperationFactory],
 ):
     """Database Broker Subscriber Duplicate Detector class."""
+
+    def __init__(self, *args, database_key: Optional[tuple[str]] = None, **kwargs):
+        if database_key is None:
+            database_key = ("broker",)
+        super().__init__(*args, database_key=database_key, **kwargs)
 
     async def _setup(self) -> None:
         await super()._setup()

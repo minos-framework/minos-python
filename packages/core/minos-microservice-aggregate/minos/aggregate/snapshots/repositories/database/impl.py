@@ -15,7 +15,6 @@ from uuid import (
 
 from minos.common import (
     NULL_UUID,
-    Config,
     DatabaseMixin,
     Inject,
     NotProvidedException,
@@ -71,9 +70,12 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         *args,
         event_repository: EventRepository,
         transaction_repository: TransactionRepository,
+        database_key: Optional[tuple[str]] = None,
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
+        if database_key is None:
+            database_key = ("aggregate", "snapshot")
+        super().__init__(*args, database_key=database_key, **kwargs)
 
         if event_repository is None:
             raise NotProvidedException("An event repository instance is required.")
@@ -83,10 +85,6 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
 
         self._event_repository = event_repository
         self._transaction_repository = transaction_repository
-
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> DatabaseSnapshotRepository:
-        return cls(database_key=None, **kwargs)
 
     async def _setup(self) -> None:
         operation = self.operation_factory.build_create()

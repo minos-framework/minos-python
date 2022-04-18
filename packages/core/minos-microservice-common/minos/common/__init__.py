@@ -113,6 +113,7 @@ from .object import (
 from .pools import (
     MinosPool,
     Pool,
+    PoolException,
     PoolFactory,
 )
 from .ports import (

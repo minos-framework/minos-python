@@ -9,7 +9,6 @@ from typing import (
 
 from minos.common import (
     NULL_UUID,
-    Config,
     DatabaseMixin,
     DatabaseOperation,
     IntegrityException,
@@ -32,9 +31,10 @@ from .factories import (
 class DatabaseEventRepository(DatabaseMixin[EventDatabaseOperationFactory], EventRepository):
     """Database-based implementation of the event repository class."""
 
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> Optional[EventRepository]:
-        return super()._from_config(config, database_key=None, **kwargs)
+    def __init__(self, *args, database_key: Optional[tuple[str]] = None, **kwargs):
+        if database_key is None:
+            database_key = ("aggregate", "event")
+        super().__init__(*args, database_key=database_key, **kwargs)
 
     async def _setup(self):
         """Setup miscellaneous repository things.

@@ -1,3 +1,6 @@
+from contextlib import (
+    suppress,
+)
 from typing import (
     AsyncIterator,
     Generic,
@@ -14,6 +17,7 @@ from ..injections import (
     Inject,
 )
 from ..pools import (
+    PoolException,
     PoolFactory,
 )
 from ..setup import (
@@ -39,15 +43,16 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
         self,
         database_pool: Optional[DatabaseClientPool] = None,
         pool_factory: Optional[PoolFactory] = None,
-        database_key: Optional[str] = None,
+        database_key: Optional[tuple[str]] = None,
         operation_factory: Optional[GenericDatabaseOperationFactory] = None,
         operation_factory_cls: Optional[type[GenericDatabaseOperationFactory]] = None,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs, pool_factory=pool_factory)
+
         if database_pool is None and pool_factory is not None:
-            database_pool = pool_factory.get_pool(type_="database", identifier=database_key)
+            database_pool = self._get_pool_from_factory(pool_factory, database_key)
 
         if not isinstance(database_pool, DatabaseClientPool):
             raise NotProvidedException(f"A {DatabaseClientPool!r} instance is required. Obtained: {database_pool}")
@@ -61,6 +66,17 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
                 operation_factory = self.database_client_cls.get_factory(operation_factory_cls)
 
         self._operation_factory = operation_factory
+
+    @staticmethod
+    def _get_pool_from_factory(pool_factory: PoolFactory, database_key: Optional[tuple[str]]):
+        if database_key is None:
+            database_key = tuple()
+
+        for identifier in database_key:
+            with suppress(PoolException):
+                return pool_factory.get_pool(type_="database", identifier=identifier)
+
+        return pool_factory.get_pool(type_="database")
 
     @property
     def operation_factory(self) -> Optional[GenericDatabaseOperationFactory]:

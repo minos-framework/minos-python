@@ -8,7 +8,6 @@ from typing import (
 )
 
 from minos.common import (
-    Config,
     DatabaseMixin,
     ProgrammingException,
 )
@@ -30,9 +29,10 @@ from .factories import (
 class DatabaseTransactionRepository(DatabaseMixin[TransactionDatabaseOperationFactory], TransactionRepository):
     """Database Transaction Repository class."""
 
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> DatabaseTransactionRepository:
-        return super()._from_config(config, database_key=None, **kwargs)
+    def __init__(self, *args, database_key: Optional[tuple[str]] = None, **kwargs):
+        if database_key is None:
+            database_key = ("aggregate", "transaction")
+        super().__init__(*args, database_key=database_key, **kwargs)
 
     async def _setup(self):
         operation = self.operation_factory.build_create()

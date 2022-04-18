@@ -65,9 +65,12 @@ class DatabaseBrokerQueue(
         *args,
         retry: Optional[int] = None,
         records: Optional[int] = None,
+        database_key: Optional[tuple[str]] = None,
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
+        if database_key is None:
+            database_key = ("broker",)
+        super().__init__(*args, database_key=database_key, **kwargs)
 
         if retry is None:
             retry = 2

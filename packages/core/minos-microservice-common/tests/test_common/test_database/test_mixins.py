@@ -33,6 +33,13 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
         # noinspection PyUnresolvedReferences
         self.assertEqual(pool_factory.get_pool("database"), database.database_pool)
 
+    async def test_constructor_with_pool_factory_and_database_key(self):
+        pool_factory = PoolFactory(self.config, {"database": DatabaseClientPool})
+        # noinspection PyTypeChecker
+        database = DatabaseMixin(pool_factory=pool_factory, database_key=("query", "unknown"))
+        # noinspection PyUnresolvedReferences
+        self.assertEqual(pool_factory.get_pool("database", "query"), database.database_pool)
+
     async def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):
             # noinspection PyArgumentEqualDefault
