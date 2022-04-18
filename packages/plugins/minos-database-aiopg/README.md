@@ -22,9 +22,28 @@ Install the dependency:
 pip install minos-database-aiopg
 ```
 
-Modify `config.yml` file:
+Set the database client on the `config.yml` file:
 
-[TODO]
+```yaml
+...
+databases:
+  default:
+    client: minos.plugins.aiopg.AiopgDatabaseClient
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+  query:
+    client: minos.plugins.aiopg.AiopgDatabaseClient
+    database: order_query_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+  ...
+...
+```
 
 ## Documentation
 
