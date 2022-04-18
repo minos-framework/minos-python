@@ -44,6 +44,13 @@ repos:
                 files: ^packages/plugins/minos-broker-kafka/
                 language: system
 
+            -   id: minos-database-aiopg-check
+                pass_filenames: false
+                entry: make --directory=packages/plugins/minos-database-aiopg check
+                name: Check minos-database-aiopg
+                files: ^packages/plugins/minos-database-aiopg/
+                language: system
+
             -   id: minos-discovery-minos-check
                 pass_filenames: false
                 entry: make --directory=packages/plugins/minos-discovery-minos check

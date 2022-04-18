@@ -29,6 +29,10 @@ from aiomisc.pool import (
 from .config import (
     Config,
 )
+from .exceptions import (
+    MinosConfigException,
+    MinosException,
+)
 from .injections import (
     Injectable,
 )
@@ -87,7 +91,10 @@ class PoolFactory(SetupMixin):
     def _create_pool(self, type_: str, **kwargs) -> Pool:
         # noinspection PyTypeChecker
         pool_cls = self._get_pool_cls(type_)
-        pool = pool_cls.from_config(self._config, **kwargs)
+        try:
+            pool = pool_cls.from_config(self._config, **kwargs)
+        except MinosConfigException:
+            raise PoolException("The pool could not be built.")
         return pool
 
     def _get_pool_cls(self, type_: str) -> type[Pool]:
@@ -97,19 +104,23 @@ class PoolFactory(SetupMixin):
             pool_cls = self._config.get_pools().get("types", dict()).get(type_)
 
         if pool_cls is None:
-            raise ValueError(
+            raise PoolException(
                 f"There is not any provided {type!r} to build pools that matches the given type: {type_!r}"
             )
 
         return pool_cls
 
 
-class Pool(SetupMixin, PoolBase, Generic[P], ABC):
+class _PoolBase(PoolBase, ABC):
+    def __init__(self, *args, maxsize: int = 10, recycle: Optional[int] = 300, **kwargs):
+        super().__init__(maxsize=maxsize, recycle=recycle)
+
+
+class Pool(SetupMixin, _PoolBase, Generic[P], ABC):
     """Base class for Pool implementations in minos"""
 
     def __init__(self, *args, maxsize: int = 10, recycle: Optional[int] = 300, already_setup: bool = True, **kwargs):
-        SetupMixin.__init__(self, *args, already_setup=already_setup, **kwargs)
-        PoolBase.__init__(self, maxsize=maxsize, recycle=recycle)
+        super().__init__(*args, maxsize=maxsize, recycle=recycle, already_setup=already_setup, **kwargs)
 
     # noinspection PyUnresolvedReferences
     async def __acquire(self) -> Any:  # pragma: no cover
@@ -171,3 +182,7 @@ class MinosPool(Pool, Generic[P], ABC):
     def __init__(self, *args, **kwargs):
         warnings.warn(f"{MinosPool!r} has been deprecated. Use {Pool} instead.", DeprecationWarning)
         super().__init__(*args, **kwargs)
+
+
+class PoolException(MinosException):
+    """Exception to be raised when some problem related with a pool happens."""

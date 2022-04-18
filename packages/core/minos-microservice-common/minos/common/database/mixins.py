@@ -1,3 +1,6 @@
+from contextlib import (
+    suppress,
+)
 from typing import (
     AsyncIterator,
     Generic,
@@ -14,6 +17,7 @@ from ..injections import (
     Inject,
 )
 from ..pools import (
+    PoolException,
     PoolFactory,
 )
 from ..setup import (
@@ -39,15 +43,16 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
         self,
         database_pool: Optional[DatabaseClientPool] = None,
         pool_factory: Optional[PoolFactory] = None,
-        database_key: Optional[str] = None,
+        database_key: Optional[tuple[str]] = None,
         operation_factory: Optional[GenericDatabaseOperationFactory] = None,
         operation_factory_cls: Optional[type[GenericDatabaseOperationFactory]] = None,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs, pool_factory=pool_factory)
+
         if database_pool is None and pool_factory is not None:
-            database_pool = pool_factory.get_pool(type_="database", identifier=database_key)
+            database_pool = self._get_pool_from_factory(pool_factory, database_key)
 
         if not isinstance(database_pool, DatabaseClientPool):
             raise NotProvidedException(f"A {DatabaseClientPool!r} instance is required. Obtained: {database_pool}")
@@ -62,8 +67,19 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
 
         self._operation_factory = operation_factory
 
+    @staticmethod
+    def _get_pool_from_factory(pool_factory: PoolFactory, database_key: Optional[tuple[str]]):
+        if database_key is None:
+            database_key = tuple()
+
+        for identifier in database_key:
+            with suppress(PoolException):
+                return pool_factory.get_pool(type_="database", identifier=identifier)
+
+        return pool_factory.get_pool(type_="database")
+
     @property
-    def operation_factory(self) -> Optional[GenericDatabaseOperationFactory]:
+    def database_operation_factory(self) -> Optional[GenericDatabaseOperationFactory]:
         """Get the operation factory if any.
 
         :return: A ``OperationFactory`` if it has been set or ``None`` otherwise.
@@ -85,8 +101,8 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
                 raise TypeError(f"{type(self)!r} must contain a {DatabaseOperationFactory!r} as generic value.")
         return operation_factory_cls
 
-    async def submit_query_and_fetchone(self, operation: DatabaseOperation) -> tuple:
-        """Submit a SQL query and gets the first response.
+    async def execute_on_database_and_fetch_one(self, operation: DatabaseOperation) -> tuple:
+        """Submit an Operation and get the first response.
 
         :param operation: The operation to be executed.
         :return: This method does not return anything.
@@ -96,10 +112,10 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
             return await client.fetch_one()
 
     # noinspection PyUnusedLocal
-    async def submit_query_and_iter(
+    async def execute_on_database_and_fetch_all(
         self, operation: DatabaseOperation, streaming_mode: Optional[bool] = None
     ) -> AsyncIterator[tuple]:
-        """Submit a SQL query and return an asynchronous iterator.
+        """Submit an Operation and return an asynchronous iterator.
 
         :param operation: The operation to be executed.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
@@ -123,8 +139,8 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
             yield value
 
     # noinspection PyUnusedLocal
-    async def submit_query(self, operation: DatabaseOperation) -> None:
-        """Submit a SQL query.
+    async def execute_on_database(self, operation: DatabaseOperation) -> None:
+        """Submit an Operation.
 
         :param operation: The operation to be executed.
         :return: This method does not return anything.

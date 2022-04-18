@@ -2,7 +2,6 @@ from .abc import (
     BrokerSubscriberDuplicateValidator,
 )
 from .database import (
-    AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     DatabaseBrokerSubscriberDuplicateValidator,
     DatabaseBrokerSubscriberDuplicateValidatorBuilder,

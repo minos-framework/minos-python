@@ -6,7 +6,7 @@ serializer:
   client: tests.utils.FakeSerializer
 databases:
   default:
-    client: minos.common.AiopgDatabaseClient
+    client: minos.common.testing.MockedDatabaseClient
     database: order_db
     user: minos
     password: min0s
@@ -15,6 +15,7 @@ databases:
   saga:
     path: "./order.lmdb"
   query:
+    client: minos.common.testing.MockedDatabaseClient
     database: order_query_db
     user: minos
     password: min0s

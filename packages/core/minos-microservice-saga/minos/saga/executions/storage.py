@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from contextlib import (
+    suppress,
+)
 from typing import (
     Type,
     Union,
@@ -12,6 +15,7 @@ from uuid import (
 
 from minos.common import (
     Config,
+    MinosConfigException,
     MinosJsonBinaryProtocol,
     MinosStorage,
     MinosStorageLmdb,
@@ -46,7 +50,9 @@ class SagaExecutionStorage:
         :param kwargs: Additional named arguments.
         :return: A new ``SagaExecutionStorage`` instance.
         """
-        return cls(**(config.get_database_by_name("saga") | kwargs))
+        with suppress(MinosConfigException):
+            kwargs |= config.get_database_by_name("saga")
+        return cls(**kwargs)
 
     def store(self, execution: SagaExecution) -> None:
         """Store an execution.

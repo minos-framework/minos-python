@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 from pathlib import (
     Path,
 )
@@ -9,16 +13,16 @@ from minos.common import (
     Lock,
     LockPool,
     Port,
-)
-from minos.common.testing import (
-    MinosTestCase,
+    testing,
 )
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "config" / "v2.yml"
 
 
-class CommonTestCase(MinosTestCase):
+class CommonTestCase(testing.MinosTestCase):
+    testing_module = testing
+
     def get_config_file_path(self) -> Path:
         return CONFIG_FILE_PATH
 

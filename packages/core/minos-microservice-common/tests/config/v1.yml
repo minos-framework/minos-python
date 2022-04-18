@@ -19,7 +19,7 @@ service:
         - tests.utils.FakeSagaManager
         - tests.utils.FakeCustomInjection
 repository:
-    client: minos.common.AiopgDatabaseClient
+    client: minos.common.testing.MockedDatabaseClient
     database: order_db
     user: minos
     password: min0s

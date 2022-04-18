@@ -2,7 +2,6 @@ from .clients import (
     BrokerClient,
 )
 from .collections import (
-    AiopgBrokerQueueDatabaseOperationFactory,
     BrokerQueue,
     BrokerQueueDatabaseOperationFactory,
     DatabaseBrokerQueue,
@@ -33,7 +32,6 @@ from .pools import (
     BrokerClientPool,
 )
 from .publishers import (
-    AiopgBrokerPublisherQueueDatabaseOperationFactory,
     BrokerPublisher,
     BrokerPublisherBuilder,
     BrokerPublisherQueue,
@@ -44,8 +42,6 @@ from .publishers import (
     QueuedBrokerPublisher,
 )
 from .subscribers import (
-    AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
-    AiopgBrokerSubscriberQueueDatabaseOperationFactory,
     BrokerSubscriber,
     BrokerSubscriberBuilder,
     BrokerSubscriberDuplicateValidator,

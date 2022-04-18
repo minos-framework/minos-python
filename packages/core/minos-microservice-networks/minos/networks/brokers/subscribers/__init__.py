@@ -3,7 +3,6 @@ from .abc import (
     BrokerSubscriberBuilder,
 )
 from .filtered import (
-    AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     BrokerSubscriberDuplicateValidator,
     BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     BrokerSubscriberValidator,
@@ -17,7 +16,6 @@ from .memory import (
     InMemoryBrokerSubscriberBuilder,
 )
 from .queued import (
-    AiopgBrokerSubscriberQueueDatabaseOperationFactory,
     BrokerSubscriberQueue,
     BrokerSubscriberQueueBuilder,
     BrokerSubscriberQueueDatabaseOperationFactory,

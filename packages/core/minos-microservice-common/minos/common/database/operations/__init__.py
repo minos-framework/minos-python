@@ -3,6 +3,3 @@ from .abc import (
     DatabaseOperation,
     DatabaseOperationFactory,
 )
-from .aiopg import (
-    AiopgDatabaseOperation,
-)

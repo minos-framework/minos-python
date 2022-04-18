@@ -3,7 +3,6 @@ from .impl import (
     QueuedBrokerSubscriberBuilder,
 )
 from .queues import (
-    AiopgBrokerSubscriberQueueDatabaseOperationFactory,
     BrokerSubscriberQueue,
     BrokerSubscriberQueueBuilder,
     BrokerSubscriberQueueDatabaseOperationFactory,

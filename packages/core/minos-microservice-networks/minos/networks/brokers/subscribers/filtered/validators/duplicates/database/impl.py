@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from typing import (
+    Optional,
+)
 from uuid import (
     UUID,
 )
@@ -27,18 +30,23 @@ class DatabaseBrokerSubscriberDuplicateValidator(
 ):
     """Database Broker Subscriber Duplicate Detector class."""
 
+    def __init__(self, *args, database_key: Optional[tuple[str]] = None, **kwargs):
+        if database_key is None:
+            database_key = ("broker",)
+        super().__init__(*args, database_key=database_key, **kwargs)
+
     async def _setup(self) -> None:
         await super()._setup()
         await self._create_table()
 
     async def _create_table(self) -> None:
-        operation = self.operation_factory.build_create_table()
-        await self.submit_query(operation)
+        operation = self.database_operation_factory.build_create()
+        await self.execute_on_database(operation)
 
     async def _is_unique(self, topic: str, uuid: UUID) -> bool:
-        operation = self.operation_factory.build_insert_row(topic, uuid)
+        operation = self.database_operation_factory.build_submit(topic, uuid)
         try:
-            await self.submit_query(operation)
+            await self.execute_on_database(operation)
             return True
         except IntegrityException:
             return False

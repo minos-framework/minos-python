@@ -1,9 +1,6 @@
 import unittest
 
 from minos.common import (
-    AiopgDatabaseClient,
-    AiopgDatabaseOperation,
-    AiopgLockDatabaseOperationFactory,
     DatabaseClientPool,
     DatabaseMixin,
     LockDatabaseOperationFactory,
@@ -12,6 +9,9 @@ from minos.common import (
 )
 from minos.common.testing import (
     DatabaseMinosTestCase,
+    MockedDatabaseClient,
+    MockedDatabaseOperation,
+    MockedLockDatabaseOperationFactory,
 )
 from tests.utils import (
     CommonTestCase,
@@ -22,6 +22,7 @@ from tests.utils import (
 class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
     def test_constructor(self):
         pool = DatabaseClientPool.from_config(self.config)
+        # noinspection PyTypeChecker
         database = DatabaseMixin(pool)
         self.assertEqual(pool, database.database_pool)
 
@@ -31,6 +32,13 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
         database = DatabaseMixin(pool_factory=pool_factory)
         # noinspection PyUnresolvedReferences
         self.assertEqual(pool_factory.get_pool("database"), database.database_pool)
+
+    async def test_constructor_with_pool_factory_and_database_key(self):
+        pool_factory = PoolFactory(self.config, {"database": DatabaseClientPool})
+        # noinspection PyTypeChecker
+        database = DatabaseMixin(pool_factory=pool_factory, database_key=("query", "unknown"))
+        # noinspection PyUnresolvedReferences
+        self.assertEqual(pool_factory.get_pool("database", "query"), database.database_pool)
 
     async def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):
@@ -42,24 +50,24 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
             self.assertIsInstance(database.database_pool, DatabaseClientPool)
 
     async def test_operation_factory(self):
-        operation_factory = AiopgLockDatabaseOperationFactory()
+        operation_factory = MockedLockDatabaseOperationFactory()
         mixin = DatabaseMixin(operation_factory=operation_factory)
-        self.assertEqual(operation_factory, mixin.operation_factory)
+        self.assertEqual(operation_factory, mixin.database_operation_factory)
 
     async def test_operation_factory_from_cls_init(self):
         mixin = DatabaseMixin(operation_factory_cls=LockDatabaseOperationFactory)
-        self.assertIsInstance(mixin.operation_factory, AiopgLockDatabaseOperationFactory)
+        self.assertIsInstance(mixin.database_operation_factory, MockedLockDatabaseOperationFactory)
 
     async def test_operation_factory_from_cls_generic(self):
         class _DatabaseMixin(DatabaseMixin[LockDatabaseOperationFactory]):
             """For testing purposes."""
 
         mixin = _DatabaseMixin()
-        self.assertIsInstance(mixin.operation_factory, AiopgLockDatabaseOperationFactory)
+        self.assertIsInstance(mixin.database_operation_factory, MockedLockDatabaseOperationFactory)
 
     async def test_operation_factory_none(self):
         mixin = DatabaseMixin()
-        self.assertEqual(None, mixin.operation_factory)
+        self.assertEqual(None, mixin.database_operation_factory)
 
     async def test_operation_factory_from_cls_generic_raises(self):
         class _DatabaseMixin(DatabaseMixin[int]):
@@ -68,76 +76,76 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
         with self.assertRaises(TypeError):
             _DatabaseMixin()
 
-    async def test_submit_query(self):
-        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")
-        op2 = AiopgDatabaseOperation("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
+    async def test_execute_on_database(self):
+        op1 = MockedDatabaseOperation("create_table")
+        op2 = MockedDatabaseOperation("check_exist", [(True,)])
 
         async with DatabaseMixin() as database:
-            await database.submit_query(op1)
+            await database.execute_on_database(op1)
 
-        async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
+        async with MockedDatabaseClient(**self.config.get_default_database()) as client:
             await client.execute(op2)
             self.assertTrue((await client.fetch_one())[0])
 
-    async def test_submit_query_locked(self):
-        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);", lock=1234)
-        op2 = AiopgDatabaseOperation("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
+    async def test_execute_on_database_locked(self):
+        op1 = MockedDatabaseOperation("create_table", lock=1234)
+        op2 = MockedDatabaseOperation("check_exist", [(True,)])
 
         async with DatabaseMixin() as database:
-            await database.submit_query(op1)
+            await database.execute_on_database(op1)
 
-        async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
+        async with MockedDatabaseClient(**self.config.get_default_database()) as client:
             await client.execute(op2)
             self.assertTrue((await client.fetch_one())[0])
 
-    async def test_submit_query_and_fetchone(self):
-        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")
-        op2 = AiopgDatabaseOperation("INSERT INTO foo (id) VALUES (3), (4), (5);")
-        op3 = AiopgDatabaseOperation("SELECT * FROM foo;")
+    async def test_execute_on_database_and_fetch_one(self):
+        op1 = MockedDatabaseOperation("create_table")
+        op2 = MockedDatabaseOperation("insert")
+        op3 = MockedDatabaseOperation("select", [(3,), (4,), (5,)])
 
         async with DatabaseMixin() as database:
-            await database.submit_query(op1)
-            await database.submit_query(op2)
+            await database.execute_on_database(op1)
+            await database.execute_on_database(op2)
 
-            observed = await database.submit_query_and_fetchone(op3)
+            observed = await database.execute_on_database_and_fetch_one(op3)
 
         self.assertEqual((3,), observed)
 
-    async def test_submit_query_and_iter(self):
-        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")
-        op2 = AiopgDatabaseOperation("INSERT INTO foo (id) VALUES (3), (4), (5);")
-        op3 = AiopgDatabaseOperation("SELECT * FROM foo;")
+    async def test_execute_on_database_and_fetch_all(self):
+        op1 = MockedDatabaseOperation("create_table")
+        op2 = MockedDatabaseOperation("insert")
+        op3 = MockedDatabaseOperation("select", [(3,), (4,), (5,)])
 
         async with DatabaseMixin() as database:
-            await database.submit_query(op1)
-            await database.submit_query(op2)
-            observed = [v async for v in database.submit_query_and_iter(op3)]
+            await database.execute_on_database(op1)
+            await database.execute_on_database(op2)
+            observed = [v async for v in database.execute_on_database_and_fetch_all(op3)]
 
         self.assertEqual([(3,), (4,), (5,)], observed)
 
-    async def test_submit_query_and_iter_streaming_mode_true(self):
-        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);")
-        op2 = AiopgDatabaseOperation("INSERT INTO foo (id) VALUES (3), (4), (5);")
-        op3 = AiopgDatabaseOperation("SELECT * FROM foo;")
+    async def test_execute_on_database_and_fetch_all_streaming_mode_true(self):
+        op1 = MockedDatabaseOperation("create_table")
+        op2 = MockedDatabaseOperation("insert")
+        op3 = MockedDatabaseOperation("select", [(3,), (4,), (5,)])
 
         async with DatabaseMixin() as database:
-            await database.submit_query(op1)
-            await database.submit_query(op2)
+            await database.execute_on_database(op1)
+            await database.execute_on_database(op2)
 
-            observed = [v async for v in database.submit_query_and_iter(op3, streaming_mode=True)]
+            observed = [v async for v in database.execute_on_database_and_fetch_all(op3, streaming_mode=True)]
 
         self.assertEqual([(3,), (4,), (5,)], observed)
 
-    async def test_submit_query_and_iter_locked(self):
-        op1 = AiopgDatabaseOperation("CREATE TABLE foo (id INT NOT NULL);", lock=1234)
-        op2 = AiopgDatabaseOperation("INSERT INTO foo (id) VALUES (3), (4), (5);")
-        op3 = AiopgDatabaseOperation("SELECT * FROM foo;")
+    async def test_execute_on_database_and_fetch_all_locked(self):
+        op1 = MockedDatabaseOperation("create_table", lock=1234)
+        op2 = MockedDatabaseOperation("insert")
+        op3 = MockedDatabaseOperation("select", [(3,), (4,), (5,)])
 
         async with DatabaseMixin() as database:
-            await database.submit_query(op1)
-            await database.submit_query(op2)
+            await database.execute_on_database(op1)
+            await database.execute_on_database(op2)
 
-            observed = [v async for v in database.submit_query_and_iter(op3)]
+            observed = [v async for v in database.execute_on_database_and_fetch_all(op3)]
 
         self.assertEqual([(3,), (4,), (5,)], observed)
 

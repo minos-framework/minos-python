@@ -1,25 +1,22 @@
 from .clients import (
-    AiopgDatabaseClient,
+    ConnectionException,
     DatabaseClient,
     DatabaseClientBuilder,
     DatabaseClientException,
     IntegrityException,
-    UnableToConnectException,
+    ProgrammingException,
 )
 from .locks import (
-    AiopgLockDatabaseOperationFactory,
     DatabaseLock,
     LockDatabaseOperationFactory,
 )
-from .manage import (
-    AiopgManageDatabaseOperationFactory,
-    ManageDatabaseOperationFactory,
+from .managements import (
+    ManagementDatabaseOperationFactory,
 )
 from .mixins import (
     DatabaseMixin,
 )
 from .operations import (
-    AiopgDatabaseOperation,
     ComposedDatabaseOperation,
     DatabaseOperation,
     DatabaseOperationFactory,

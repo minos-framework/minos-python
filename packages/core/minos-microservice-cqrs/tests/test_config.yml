@@ -8,7 +8,7 @@ broker:
     host: localhost
     port: 9092
     queue:
-        client: minos.common.AiopgDatabaseClient
+        client: minos.common.testing.MockedDatabaseClient
         database: order_db
         user: minos
         password: min0s
@@ -17,14 +17,14 @@ broker:
         records: 10
         retry: 2
 repository:
-    client: minos.common.AiopgDatabaseClient
+    client: minos.common.testing.MockedDatabaseClient
     database: order_db
     user: minos
     password: min0s
     host: localhost
     port: 5432
 snapshot:
-    client: minos.common.AiopgDatabaseClient
+    client: minos.common.testing.MockedDatabaseClient
     database: order_db
     user: minos
     password: min0s

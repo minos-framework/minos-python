@@ -2,7 +2,6 @@ from .abc import (
     BrokerQueue,
 )
 from .database import (
-    AiopgBrokerQueueDatabaseOperationFactory,
     BrokerQueueDatabaseOperationFactory,
     DatabaseBrokerQueue,
     DatabaseBrokerQueueBuilder,

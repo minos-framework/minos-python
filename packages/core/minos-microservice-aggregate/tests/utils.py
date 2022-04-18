@@ -27,6 +27,7 @@ from minos.aggregate import (
     RootEntity,
     ValueObject,
     ValueObjectSet,
+    testing,
 )
 from minos.common import (
     DatabaseClientPool,
@@ -48,6 +49,8 @@ CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
 
 class AggregateTestCase(MinosTestCase, ABC):
+    testing_module = testing
+
     def get_config_file_path(self):
         return CONFIG_FILE_PATH
 

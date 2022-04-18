@@ -32,6 +32,9 @@ from ..operations import (
     DatabaseOperation,
     DatabaseOperationFactory,
 )
+from .exceptions import (
+    ProgrammingException,
+)
 
 if TYPE_CHECKING:
     from ..locks import (
@@ -66,6 +69,10 @@ class DatabaseClient(ABC, BuildableMixin):
     @abstractmethod
     async def _is_valid(self, **kwargs) -> bool:
         raise NotImplementedError
+
+    async def _destroy(self) -> None:
+        await self.reset()
+        await super()._destroy()
 
     async def reset(self, **kwargs) -> None:
         """Reset the current instance status.
@@ -133,7 +140,10 @@ class DatabaseClient(ABC, BuildableMixin):
 
         :return: This method does not return anything.
         """
-        return await self.fetch_all().__anext__()
+        try:
+            return await self.fetch_all().__anext__()
+        except StopAsyncIteration:
+            raise ProgrammingException("There are not any value to be fetched.")
 
     def fetch_all(self) -> AsyncIterator[Any]:
         """Fetch all values with an asynchronous iterator.
@@ -147,7 +157,7 @@ class DatabaseClient(ABC, BuildableMixin):
         raise NotImplementedError
 
     @classmethod
-    def register_factory(cls, base: type[DatabaseOperationFactory], impl: type[DatabaseOperationFactory]) -> None:
+    def set_factory(cls, base: type[DatabaseOperationFactory], impl: type[DatabaseOperationFactory]) -> None:
         """Register an operation factory implementation for an operation factory interface.
 
         :param base: The operation factory interface.

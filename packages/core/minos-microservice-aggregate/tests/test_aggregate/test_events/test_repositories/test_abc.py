@@ -35,6 +35,7 @@ from minos.common import (
     NULL_UUID,
     NotProvidedException,
     SetupMixin,
+    classname,
     current_datetime,
 )
 from minos.networks import (
@@ -42,6 +43,7 @@ from minos.networks import (
 )
 from tests.utils import (
     AggregateTestCase,
+    Car,
     FakeAsyncIterator,
     FakeLock,
 )
@@ -465,17 +467,16 @@ class TestEventRepository(AggregateTestCase):
         self.event_repository._select = mock
 
         uuid = uuid4()
-        name = "path.to.Product"
 
         transaction_uuid = uuid4()
-        iterable = self.event_repository.select(uuid=uuid, name=name, id_gt=56, transaction_uuid=transaction_uuid)
+        iterable = self.event_repository.select(uuid=uuid, name=Car, id_gt=56, transaction_uuid=transaction_uuid)
         observed = [a async for a in iterable]
         self.assertEqual(list(range(5)), observed)
 
         self.assertEqual(1, mock.call_count)
         args = call(
             uuid=uuid,
-            name=name,
+            name=classname(Car),
             version=None,
             version_lt=None,
             version_gt=None,

@@ -32,19 +32,15 @@ class TransactionDatabaseOperationFactory(DatabaseOperationFactory, ABC):
     """Transaction Database Operation Factory base class."""
 
     @abstractmethod
-    def build_create_table(self) -> DatabaseOperation:
+    def build_create(self) -> DatabaseOperation:
         """Build the database operation to create the snapshot table.
 
         :return: A ``DatabaseOperation`` instance.
         """
 
     @abstractmethod
-    def build_submit_row(
-        self,
-        uuid: UUID,
-        destination_uuid: UUID,
-        status: TransactionStatus,
-        event_offset: int,
+    def build_submit(
+        self, uuid: UUID, destination_uuid: UUID, status: TransactionStatus, event_offset: int, **kwargs
     ) -> DatabaseOperation:
         """Build the database operation to submit a row.
 
@@ -52,11 +48,12 @@ class TransactionDatabaseOperationFactory(DatabaseOperationFactory, ABC):
         :param destination_uuid: The identifier of the destination transaction.
         :param status: The status of the transaction.
         :param event_offset: The event offset of the transaction.
+        :param kwargs: Additional named arguments.
         :return: A ``DatabaseOperation`` instance.
         """
 
     @abstractmethod
-    def build_select_rows(
+    def build_query(
         self,
         uuid: Optional[UUID] = None,
         uuid_ne: Optional[UUID] = None,

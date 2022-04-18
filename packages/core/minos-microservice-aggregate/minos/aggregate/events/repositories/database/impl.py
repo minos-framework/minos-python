@@ -9,7 +9,6 @@ from typing import (
 
 from minos.common import (
     NULL_UUID,
-    Config,
     DatabaseMixin,
     DatabaseOperation,
     IntegrityException,
@@ -32,23 +31,24 @@ from .factories import (
 class DatabaseEventRepository(DatabaseMixin[EventDatabaseOperationFactory], EventRepository):
     """Database-based implementation of the event repository class."""
 
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> Optional[EventRepository]:
-        return super()._from_config(config, database_key=None, **kwargs)
+    def __init__(self, *args, database_key: Optional[tuple[str]] = None, **kwargs):
+        if database_key is None:
+            database_key = ("aggregate", "event")
+        super().__init__(*args, database_key=database_key, **kwargs)
 
     async def _setup(self):
         """Setup miscellaneous repository things.
 
         :return: This method does not return anything.
         """
-        operation = self.operation_factory.build_create_table()
-        await self.submit_query(operation)
+        operation = self.database_operation_factory.build_create()
+        await self.execute_on_database(operation)
 
     async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
         operation = await self._build_submit_operation(entry)
 
         try:
-            response = await self.submit_query_and_fetchone(operation)
+            response = await self.execute_on_database_and_fetch_one(operation)
         except IntegrityException:
             raise EventRepositoryConflictException(
                 f"{entry!r} could not be submitted due to a key (uuid, version, transaction) collision",
@@ -69,15 +69,17 @@ class DatabaseEventRepository(DatabaseMixin[EventDatabaseOperationFactory], Even
         else:
             transaction_uuids = (NULL_UUID,)
 
-        return self.operation_factory.build_submit_row(transaction_uuids=transaction_uuids, **entry.as_raw(), lock=lock)
+        return self.database_operation_factory.build_submit(
+            transaction_uuids=transaction_uuids, **entry.as_raw(), lock=lock
+        )
 
     async def _select(self, streaming_mode: Optional[bool] = None, **kwargs) -> AsyncIterator[EventEntry]:
-        operation = self.operation_factory.build_select_rows(**kwargs)
-        async for row in self.submit_query_and_iter(operation, streaming_mode=streaming_mode):
+        operation = self.database_operation_factory.build_query(**kwargs)
+        async for row in self.execute_on_database_and_fetch_all(operation, streaming_mode=streaming_mode):
             yield EventEntry(*row)
 
     @property
     async def _offset(self) -> int:
-        operation = self.operation_factory.build_select_max_id()
-        row = await self.submit_query_and_fetchone(operation)
+        operation = self.database_operation_factory.build_query_offset()
+        row = await self.execute_on_database_and_fetch_one(operation)
         return row[0] or 0

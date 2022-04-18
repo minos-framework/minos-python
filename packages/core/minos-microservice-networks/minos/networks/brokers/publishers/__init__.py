@@ -6,7 +6,6 @@ from .memory import (
     InMemoryBrokerPublisher,
 )
 from .queued import (
-    AiopgBrokerPublisherQueueDatabaseOperationFactory,
     BrokerPublisherQueue,
     BrokerPublisherQueueDatabaseOperationFactory,
     DatabaseBrokerPublisherQueue,

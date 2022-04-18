@@ -2,6 +2,9 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from collections.abc import (
+    Iterable,
+)
 from datetime import (
     datetime,
 )
@@ -26,16 +29,16 @@ class EventDatabaseOperationFactory(DatabaseOperationFactory, ABC):
     """Event Database Operation Factory base class."""
 
     @abstractmethod
-    def build_create_table(self) -> DatabaseOperation:
+    def build_create(self) -> DatabaseOperation:
         """Build the database operation to create the event table.
 
         :return: A ``DatabaseOperation`` instance.s
         """
 
     @abstractmethod
-    def build_submit_row(
+    def build_submit(
         self,
-        transaction_uuids: tuple[UUID],
+        transaction_uuids: Iterable[UUID],
         uuid: UUID,
         action: Action,
         name: str,
@@ -63,7 +66,7 @@ class EventDatabaseOperationFactory(DatabaseOperationFactory, ABC):
 
     # noinspection PyShadowingBuiltins
     @abstractmethod
-    def build_select_rows(
+    def build_query(
         self,
         uuid: Optional[UUID] = None,
         name: Optional[str] = None,
@@ -104,7 +107,7 @@ class EventDatabaseOperationFactory(DatabaseOperationFactory, ABC):
         """
 
     @abstractmethod
-    def build_select_max_id(self) -> DatabaseOperation:
+    def build_query_offset(self) -> DatabaseOperation:
         """Build the database operation to get the maximum identifier.
 
         :return: A ``DatabaseOperation`` instance.

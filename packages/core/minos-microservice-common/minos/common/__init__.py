@@ -14,11 +14,8 @@ from .config import (
     MinosConfig,
 )
 from .database import (
-    AiopgDatabaseClient,
-    AiopgDatabaseOperation,
-    AiopgLockDatabaseOperationFactory,
-    AiopgManageDatabaseOperationFactory,
     ComposedDatabaseOperation,
+    ConnectionException,
     DatabaseClient,
     DatabaseClientBuilder,
     DatabaseClientException,
@@ -30,8 +27,8 @@ from .database import (
     DatabaseOperationFactory,
     IntegrityException,
     LockDatabaseOperationFactory,
-    ManageDatabaseOperationFactory,
-    UnableToConnectException,
+    ManagementDatabaseOperationFactory,
+    ProgrammingException,
 )
 from .datetime import (
     NULL_DATETIME,
@@ -107,6 +104,7 @@ from .model import (
     SchemaEncoder,
     TypeHintBuilder,
     TypeHintComparator,
+    TypeHintParser,
     is_model_type,
 )
 from .object import (
@@ -115,6 +113,7 @@ from .object import (
 from .pools import (
     MinosPool,
     Pool,
+    PoolException,
     PoolFactory,
 )
 from .ports import (
