@@ -13,6 +13,7 @@ minos-microservice-aggregate = { path = "packages/core/minos-microservice-aggreg
 minos-microservice-saga = { path = "packages/core/minos-microservice-saga", develop = true }
 minos-microservice-cqrs = { path = "packages/core/minos-microservice-cqrs", develop = true }
 minos-broker-kafka = { path = "packages/plugins/minos-broker-kafka", develop = true }
+minos-database-aiopg = { path = "packages/plugins/minos-database-aiopg", develop = true }
 minos-discovery-minos = { path = "packages/plugins/minos-discovery-minos", develop = true }
 minos-discovery-kong = { path = "packages/plugins/minos-discovery-kong", develop = true }
 minos-broker-rabbitmq = { path = "packages/plugins/minos-broker-rabbitmq", develop = true }
