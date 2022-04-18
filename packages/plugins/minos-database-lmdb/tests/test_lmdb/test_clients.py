@@ -11,8 +11,6 @@ from minos.common import (
 from minos.plugins.lmdb import (
     LmdbDatabaseClient,
     LmdbDatabaseOperation,
-)
-from minos.plugins.lmdb.operations import (
     LmdbDatabaseOperationType,
 )
 from tests.utils import (

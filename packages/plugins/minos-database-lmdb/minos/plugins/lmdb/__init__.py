@@ -12,4 +12,5 @@ from .factories import (
 )
 from .operations import (
     LmdbDatabaseOperation,
+    LmdbDatabaseOperationType,
 )
