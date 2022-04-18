@@ -1,9 +1,14 @@
+from __future__ import (
+    annotations,
+)
+
 import logging
 import warnings
 from abc import (
     ABC,
 )
 from asyncio import (
+    gather,
     sleep,
 )
 from typing import (
@@ -20,6 +25,12 @@ from aiomisc.pool import (
     ContextManager,
 )
 
+from .config import (
+    Config,
+)
+from .injections import (
+    Injectable,
+)
 from .setup import (
     SetupMixin,
 )
@@ -27,6 +38,69 @@ from .setup import (
 logger = logging.getLogger(__name__)
 
 P = TypeVar("P")
+
+
+@Injectable("pool_factory")
+class PoolFactory(SetupMixin):
+    """Pool Factory class."""
+
+    _pools: dict[str, Pool]
+
+    def __init__(self, config: Config, default_classes: dict[str, type[Pool]] = None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if default_classes is None:
+            default_classes = dict()
+
+        self._config = config
+        self._default_classes = default_classes
+        self._pools = dict()
+
+    @classmethod
+    def _from_config(cls, config: Config, **kwargs) -> PoolFactory:
+        return cls(config, **kwargs)
+
+    async def _destroy(self) -> None:
+        await self._destroy_pools()
+        await super()._destroy()
+
+    async def _destroy_pools(self):
+        logger.debug("Destroying pools...")
+        futures = (pool.destroy() for pool in self._pools.values())
+        await gather(*futures)
+        logger.debug("Destroyed pools!")
+
+    def get_pool(self, type_: str, key: Optional[str] = None, **kwargs) -> Pool:
+        """Get a pool from the factory.
+
+        :param type_: The type of the pool.
+        :param key:  An optional key that identifies the pool.
+        :param kwargs: Additional named arguments.
+        :return: A ``Pool`` instance.
+        """
+        if key is None:
+            key = type_
+        if key not in self._pools:
+            self._pools[key] = self._create_pool(type_, key=key, **kwargs)
+        return self._pools[key]
+
+    def _create_pool(self, type_: str, **kwargs) -> Pool:
+        # noinspection PyTypeChecker
+        pool_cls = self._get_pool_cls(type_)
+        pool = pool_cls.from_config(self._config, **kwargs)
+        return pool
+
+    def _get_pool_cls(self, type_: str) -> type[Pool]:
+        pool_cls = self._default_classes.get(type_)
+
+        if pool_cls is None:
+            pool_cls = self._config.get_pools().get("types", dict()).get(type_)
+
+        if pool_cls is None:
+            raise ValueError(
+                f"There is not any provided {type!r} to build pools that matches the given type: {type_!r}"
+            )
+
+        return pool_cls
 
 
 class Pool(SetupMixin, PoolBase, Generic[P], ABC):
@@ -77,6 +151,7 @@ class Pool(SetupMixin, PoolBase, Generic[P], ABC):
             logger.info("Waiting for instances releasing...")
             while len(self._used):
                 await sleep(0.1)
+            logger.info("Released instances!")
 
         await self.close()
 

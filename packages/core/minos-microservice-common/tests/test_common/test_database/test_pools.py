@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from unittest.mock import (
     PropertyMock,
     patch,
@@ -13,7 +14,9 @@ from psycopg2 import (
 )
 
 from minos.common import (
-    PostgreSqlLock,
+    DatabaseClientPool,
+    DatabaseLock,
+    DatabaseLockPool,
     PostgreSqlLockPool,
     PostgreSqlPool,
 )
@@ -21,19 +24,17 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    CommonTestCase,
 )
 
 
-class TestPostgreSqlPool(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestDatabaseClientPool(CommonTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.pool = PostgreSqlPool.from_config(self.config)
+        self.pool = DatabaseClientPool.from_config(self.config)
 
     def test_constructor(self):
-        pool = PostgreSqlPool("foo")
+        pool = DatabaseClientPool("foo")
         self.assertEqual("foo", pool.database)
         self.assertEqual("postgres", pool.user)
         self.assertEqual("", pool.password)
@@ -82,12 +83,21 @@ class TestPostgreSqlPool(PostgresAsyncTestCase):
                 self.assertIsInstance(connection, Connection)
 
 
-class TestPostgreSqlLockPool(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
+class TestPostgreSqlPool(CommonTestCase, PostgresAsyncTestCase):
+    def test_is_subclass(self):
+        self.assertTrue(issubclass(PostgreSqlPool, DatabaseClientPool))
 
+    def test_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            pool = PostgreSqlPool.from_config(self.config)
+            self.assertIsInstance(pool, DatabaseClientPool)
+
+
+class TestDatabaseLockPool(CommonTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.pool = PostgreSqlLockPool.from_config(self.config)
+        self.pool = DatabaseLockPool.from_config(self.config)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -99,8 +109,19 @@ class TestPostgreSqlLockPool(PostgresAsyncTestCase):
 
     async def test_acquire(self):
         async with self.pool.acquire("foo") as lock:
-            self.assertIsInstance(lock, PostgreSqlLock)
+            self.assertIsInstance(lock, DatabaseLock)
             self.assertEqual("foo", lock.key)
+
+
+class TestPostgreSqlLockPool(CommonTestCase, PostgresAsyncTestCase):
+    def test_is_subclass(self):
+        self.assertTrue(issubclass(PostgreSqlLockPool, DatabaseLockPool))
+
+    def test_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            pool = PostgreSqlLockPool.from_config(self.config)
+            self.assertIsInstance(pool, DatabaseLockPool)
 
 
 if __name__ == "__main__":

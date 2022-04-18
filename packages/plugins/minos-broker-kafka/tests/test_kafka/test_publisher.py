@@ -14,6 +14,9 @@ from kafka.errors import (
 from minos.common import (
     Config,
 )
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
 from minos.networks import (
     BrokerMessage,
     BrokerMessageV1,
@@ -151,7 +154,9 @@ class TestKafkaBrokerPublisherBuilder(unittest.TestCase):
         self.assertEqual(common_config["port"], publisher.port)
 
 
-class TestPostgreSqlQueuedKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
+class TestPostgreSqlQueuedKafkaBrokerPublisher(PostgresAsyncTestCase):
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
+
     def test_from_config(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)

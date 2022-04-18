@@ -14,6 +14,10 @@ from .config import (
     MinosConfig,
 )
 from .database import (
+    DatabaseClientPool,
+    DatabaseLock,
+    DatabaseLockPool,
+    DatabaseMixin,
     PostgreSqlLock,
     PostgreSqlLockPool,
     PostgreSqlMinosDatabase,
@@ -101,6 +105,7 @@ from .object import (
 from .pools import (
     MinosPool,
     Pool,
+    PoolFactory,
 )
 from .ports import (
     Port,

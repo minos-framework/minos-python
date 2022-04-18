@@ -20,6 +20,7 @@ from minos.common.testing import (
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
+    CommonTestCase,
     FakeEntrypoint,
     FakeLoop,
 )
@@ -39,9 +40,7 @@ class FooPort(Port):
         """For testing purposes."""
 
 
-class TestEntrypointLauncher(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestEntrypointLauncher(CommonTestCase, PostgresAsyncTestCase):
     def setUp(self):
         super().setUp()
         self.injections = list()
@@ -60,7 +59,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         launcher = EntrypointLauncher.from_config(self.config)
         self.assertIsInstance(launcher, EntrypointLauncher)
         self.assertEqual(self.config, launcher.config)
-        self.assertEqual(12, len(launcher.injections))
+        self.assertEqual(len(self.config.get_injections()), len(launcher.injections))
 
         for injection in launcher.injections.values():
             self.assertIsInstance(injection, InjectableMixin)

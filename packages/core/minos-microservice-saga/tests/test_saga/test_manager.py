@@ -38,11 +38,11 @@ from tests.utils import (
     DB_PATH,
     DELETE_ORDER,
     Foo,
-    MinosTestCase,
+    SagaTestCase,
 )
 
 
-class TestSagaManager(MinosTestCase):
+class TestSagaManager(SagaTestCase):
     DB_PATH = DB_PATH
 
     async def asyncSetUp(self) -> None:
@@ -79,9 +79,9 @@ class TestSagaManager(MinosTestCase):
         self.assertIsInstance(self.manager.storage, SagaExecutionStorage)
         self.assertIsInstance(self.manager, SagaManager)
 
-    def test_constructor_without_handler(self):
+    def test_constructor_without_broker(self):
         with self.assertRaises(NotProvidedException):
-            SagaManager.from_config(self.config, broker_pool=None)
+            SagaManager.from_config(self.config, broker_pool=None, pool_factory=None)
 
     async def test_context_manager(self):
         async with self.manager as saga_manager:

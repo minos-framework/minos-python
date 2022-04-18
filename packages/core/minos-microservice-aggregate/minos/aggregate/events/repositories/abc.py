@@ -29,6 +29,7 @@ from minos.common import (
     Lock,
     LockPool,
     NotProvidedException,
+    PoolFactory,
     SetupMixin,
 )
 from minos.networks import (
@@ -74,11 +75,15 @@ class EventRepository(ABC, SetupMixin):
         self,
         broker_publisher: BrokerPublisher,
         transaction_repository: TransactionRepository,
-        lock_pool: LockPool,
+        lock_pool: Optional[LockPool] = None,
+        pool_factory: Optional[PoolFactory] = None,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+
+        if lock_pool is None and pool_factory is not None:
+            lock_pool = pool_factory.get_pool("lock")
 
         if broker_publisher is None:
             raise NotProvidedException("A broker instance is required.")

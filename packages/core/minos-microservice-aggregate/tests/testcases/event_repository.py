@@ -29,11 +29,11 @@ from minos.common import (
     current_datetime,
 )
 from tests.utils import (
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 
-class EventRepositoryTestCase(MinosTestCase):
+class EventRepositoryTestCase(AggregateTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.uuid = uuid4()

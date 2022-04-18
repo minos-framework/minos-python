@@ -19,7 +19,7 @@ from psycopg2.sql import (
 from minos.common import (
     Builder,
     Config,
-    PostgreSqlMinosDatabase,
+    DatabaseMixin,
 )
 
 from .abc import (
@@ -27,7 +27,7 @@ from .abc import (
 )
 
 
-class PostgreSqlBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateValidator, PostgreSqlMinosDatabase):
+class PostgreSqlBrokerSubscriberDuplicateValidator(BrokerSubscriberDuplicateValidator, DatabaseMixin):
     """PostgreSql Broker Subscriber Duplicate Detector class."""
 
     def __init__(

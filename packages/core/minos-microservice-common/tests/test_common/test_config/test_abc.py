@@ -18,7 +18,7 @@ from minos.common import (
     MinosConfigException,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    BASE_PATH,
 )
 
 
@@ -69,7 +69,8 @@ class _Config(Config):
 class TestConfig(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.config = _Config(CONFIG_FILE_PATH)
+        self.file_path = BASE_PATH / "config" / "v1.yml"
+        self.config = _Config(self.file_path)
 
     def test_is_subclass(self):
         self.assertTrue(issubclass(Config, InjectableMixin))
@@ -78,10 +79,10 @@ class TestConfig(unittest.TestCase):
         self.assertTrue("config", _Config.get_injectable_name())
 
     def test_file_path(self):
-        self.assertEqual(CONFIG_FILE_PATH, self.config.file_path)
+        self.assertEqual(self.file_path, self.config.file_path)
 
     def test_file_path_from_str(self):
-        self.assertEqual(CONFIG_FILE_PATH, _Config(str(CONFIG_FILE_PATH)).file_path)
+        self.assertEqual(self.file_path, _Config(str(self.file_path)).file_path)
 
     def test_file_raises(self):
         with self.assertRaises(MinosConfigException):
@@ -215,7 +216,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual([call()], mock.call_args_list)
 
     def test_new(self):
-        config = Config(CONFIG_FILE_PATH)
+        config = Config(self.file_path)
         self.assertIsInstance(config, ConfigV1)
 
     def test_new_raises(self):
@@ -224,13 +225,17 @@ class TestConfig(unittest.TestCase):
 
 
 class TestMinosConfig(unittest.TestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.file_path = BASE_PATH / "config" / "v1.yml"
+
     def test_is_subclass(self):
         self.assertTrue(issubclass(MinosConfig, Config))
 
     def test_warnings(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
-            config = MinosConfig(CONFIG_FILE_PATH)
+            config = MinosConfig(self.file_path)
             self.assertIsInstance(config, Config)
 
 

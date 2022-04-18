@@ -1,8 +1,4 @@
 import unittest
-from itertools import (
-    chain,
-    cycle,
-)
 from unittest.mock import (
     patch,
 )
@@ -11,6 +7,7 @@ from minos.common import (
     Config,
     ConfigV2,
     MinosConfigException,
+    PoolFactory,
 )
 from tests.utils import (
     BASE_PATH,
@@ -60,9 +57,7 @@ class TestConfigV2(unittest.TestCase):
 
     def test_injections(self):
         expected = [
-            FakeLockPool,
-            FakeDatabasePool,
-            FakeBrokerClientPool,
+            PoolFactory,
             FakeHttpConnector,
             FakeBrokerPublisher,
             FakeBrokerSubscriberBuilder(FakeBrokerSubscriber),
@@ -80,8 +75,7 @@ class TestConfigV2(unittest.TestCase):
             self.assertEqual(list(), self.config.get_injections())
 
     def test_injections_not_injectable(self):
-        side_effect = chain([{"client": "builtins.int"}], cycle([MinosConfigException("")]))
-        with patch.object(ConfigV2, "get_by_key", side_effect=side_effect):
+        with patch.object(ConfigV2, "_get_pools", return_value={"factory": int}):
             with self.assertRaises(MinosConfigException):
                 self.config.get_injections()
 
@@ -145,9 +139,12 @@ class TestConfigV2(unittest.TestCase):
 
     def test_pools(self):
         expected = {
-            "broker": FakeBrokerClientPool,
-            "database": FakeDatabasePool,
-            "lock": FakeLockPool,
+            "factory": PoolFactory,
+            "types": {
+                "broker": FakeBrokerClientPool,
+                "database": FakeDatabasePool,
+                "lock": FakeLockPool,
+            },
         }
         self.assertEqual(expected, self.config.get_pools())
 

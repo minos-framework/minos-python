@@ -19,22 +19,45 @@ from aiomisc import (
 from minos.common import (
     MinosPool,
     Pool,
+    PoolFactory,
     SetupMixin,
+)
+from tests.utils import (
+    CommonTestCase,
+    FakeLockPool,
 )
 
 
-class _Pool(Pool):
-    def __init__(self):
-        super().__init__()
-        self.create_instance_call_count = 0
-        self.destroy_instance_call_count = 0
+class TestPoolFactory(CommonTestCase):
+    def setUp(self):
+        super().setUp()
+        self.factory = PoolFactory(self.config, {"lock": FakeLockPool})
 
-    async def _create_instance(self):
-        self.create_instance_call_count += 1
-        return "foo"
+    def test_from_config(self):
+        self.assertIsInstance(PoolFactory.from_config(self.config), PoolFactory)
 
-    async def _destroy_instance(self, instance: t.Any) -> None:
-        self.destroy_instance_call_count += 1
+    async def asyncTearDown(self):
+        await self.factory.destroy()
+        await super().asyncTearDown()
+
+    def test_get_pool(self):
+        lock = self.factory.get_pool("lock")
+        self.assertIsInstance(lock, FakeLockPool)
+        self.assertEqual(lock, self.factory.get_pool("lock"))
+
+    def test_get_pool_with_key(self):
+        lock_a = self.factory.get_pool("lock", "a")
+        lock_b = self.factory.get_pool("lock", "b")
+        self.assertIsInstance(lock_a, FakeLockPool)
+        self.assertIsInstance(lock_b, FakeLockPool)
+
+        self.assertNotEqual(lock_a, lock_b)
+        self.assertEqual(lock_a, self.factory.get_pool("lock", "a"))
+        self.assertEqual(lock_b, self.factory.get_pool("lock", "b"))
+
+    def test_get_pool_raises(self):
+        with self.assertRaises(ValueError):
+            self.factory.get_pool("something")
 
 
 class TestPool(unittest.IsolatedAsyncioTestCase):
@@ -68,6 +91,20 @@ class TestPool(unittest.IsolatedAsyncioTestCase):
             await gather(_fn1(pool), _fn2(pool))
 
         self.assertEqual(1, pool_mock.call_count)
+
+
+class _Pool(Pool):
+    def __init__(self):
+        super().__init__()
+        self.create_instance_call_count = 0
+        self.destroy_instance_call_count = 0
+
+    async def _create_instance(self):
+        self.create_instance_call_count += 1
+        return "foo"
+
+    async def _destroy_instance(self, instance: t.Any) -> None:
+        self.destroy_instance_call_count += 1
 
 
 class TestMinosPool(unittest.IsolatedAsyncioTestCase):

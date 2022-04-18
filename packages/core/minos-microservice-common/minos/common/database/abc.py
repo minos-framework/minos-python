@@ -1,3 +1,4 @@
+import warnings
 from collections.abc import (
     Hashable,
 )
@@ -15,88 +16,51 @@ from aiopg import (
     Cursor,
 )
 
+from ..exceptions import (
+    NotProvidedException,
+)
 from ..injections import (
     Inject,
+)
+from ..pools import (
+    PoolFactory,
 )
 from ..setup import (
     SetupMixin,
 )
 from .locks import (
-    PostgreSqlLock,
+    DatabaseLock,
 )
 from .pools import (
+    DatabaseClientPool,
     PostgreSqlPool,
 )
 
 
-class PostgreSqlMinosDatabase(SetupMixin):
+class DatabaseMixin(SetupMixin):
     """PostgreSql Minos Database base class."""
 
+    @Inject()
     def __init__(
         self,
-        database: str,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
-        user: Optional[str] = None,
-        password: Optional[str] = None,
+        database_pool: Optional[DatabaseClientPool] = None,
+        pool_factory: Optional[PoolFactory] = None,
+        postgresql_pool: Optional[PostgreSqlPool] = None,
         *args,
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
-        self._database = database
-        self._host = host
-        self._port = port
-        self._user = user
-        self._password = password
+        super().__init__(*args, **kwargs, pool_factory=pool_factory)
+        if database_pool is None and pool_factory is not None:
+            database_pool = pool_factory.get_pool("database")
 
-        self._pool = None
-        self._owned_pool = False
+        if database_pool is None and postgresql_pool is not None:
+            warnings.warn("'postgresql_pool' argument has been deprecated", DeprecationWarning)
+            database_pool = postgresql_pool
 
-    @property
-    def database(self) -> str:
-        """Get the database's database.
+        if not isinstance(database_pool, DatabaseClientPool):
+            raise NotProvidedException(f"A {DatabaseClientPool!r} instance is required. Obtained: {database_pool}")
 
-        :return: A ``str`` value.
-        """
-        return self.pool.database
-
-    @property
-    def host(self) -> str:
-        """Get the database's host.
-
-        :return: A ``str`` value.
-        """
-        return self.pool.host
-
-    @property
-    def port(self) -> int:
-        """Get the database's port.
-
-        :return: An ``int`` value.
-        """
-        return self.pool.port
-
-    @property
-    def user(self) -> str:
-        """Get the database's user.
-
-        :return: A ``str`` value.
-        """
-        return self.pool.user
-
-    @property
-    def password(self) -> str:
-        """Get the database's password.
-
-        :return: A ``str`` value.
-        """
-        return self.pool.password
-
-    async def _destroy(self) -> None:
-        if self._owned_pool:
-            await self._pool.destroy()
-            self._pool = None
-            self._owned_pool = False
+        self._pool = database_pool
 
     async def submit_query_and_fetchone(self, *args, **kwargs) -> tuple:
         """Submit a SQL query and gets the first response.
@@ -179,7 +143,7 @@ class PostgreSqlMinosDatabase(SetupMixin):
         :param kwargs: Additional named arguments.
         :return: A Cursor wrapped into an asynchronous context manager.
         """
-        lock = PostgreSqlLock(self.pool.acquire(), key, *args, **kwargs)
+        lock = DatabaseLock(self.pool.acquire(), key, *args, **kwargs)
 
         async def _fn_enter():
             await lock.__aenter__()
@@ -212,21 +176,19 @@ class PostgreSqlMinosDatabase(SetupMixin):
         return ContextManager(_fn_enter, _fn_exit)
 
     @property
-    def pool(self) -> PostgreSqlPool:
+    def pool(self) -> DatabaseClientPool:
         """Get the connections pool.
 
         :return: A ``Pool`` object.
         """
-        if self._pool is None:
-            self._pool, self._owned_pool = self._build_pool()
         return self._pool
 
-    @Inject()
-    def _build_pool(self, pool: PostgreSqlPool = None) -> tuple[PostgreSqlPool, bool]:
-        if pool is not None:
-            return pool, False
 
-        pool = PostgreSqlPool(
-            host=self._host, port=self._port, database=self._database, user=self._user, password=self._password
+class PostgreSqlMinosDatabase(DatabaseMixin):
+    """PostgreSql Minos Database class."""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            f"{PostgreSqlMinosDatabase!r} has been deprecated. Use {DatabaseMixin} instead.", DeprecationWarning
         )
-        return pool, True
+        super().__init__(*args, **kwargs)

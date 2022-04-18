@@ -24,12 +24,12 @@ from minos.common import (
     NotProvidedException,
 )
 from tests.utils import (
+    AggregateTestCase,
     Car,
-    MinosTestCase,
 )
 
 
-class TestInMemorySnapshotRepository(MinosTestCase):
+class TestInMemorySnapshotRepository(AggregateTestCase):
     def setUp(self) -> None:
         super().setUp()
 

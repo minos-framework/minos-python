@@ -2,7 +2,6 @@ from __future__ import (
     annotations,
 )
 
-import unittest
 from abc import (
     ABC,
 )
@@ -30,9 +29,13 @@ from minos.aggregate import (
     ValueObjectSet,
 )
 from minos.common import (
-    DependencyInjector,
+    DatabaseClientPool,
     Lock,
     LockPool,
+    PoolFactory,
+)
+from minos.common.testing import (
+    MinosTestCase,
 )
 from minos.networks import (
     BrokerClientPool,
@@ -44,50 +47,34 @@ BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
 
-class MinosTestCase(unittest.IsolatedAsyncioTestCase, ABC):
-    def setUp(self) -> None:
-        super().setUp()
-        self.broker_pool = BrokerClientPool.from_config(CONFIG_FILE_PATH)
-        self.broker_publisher = InMemoryBrokerPublisher()
-        self.broker_subscriber_builder = InMemoryBrokerSubscriberBuilder()
-        self.lock_pool = FakeLockPool()
-        self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
-        self.event_repository = InMemoryEventRepository(
-            broker_publisher=self.broker_publisher,
-            transaction_repository=self.transaction_repository,
-            lock_pool=self.lock_pool,
+class AggregateTestCase(MinosTestCase, ABC):
+    def get_config_file_path(self):
+        return CONFIG_FILE_PATH
+
+    def get_injections(self):
+        pool_factory = PoolFactory.from_config(
+            self.config,
+            default_classes={"broker": BrokerClientPool, "lock": FakeLockPool, "database": DatabaseClientPool},
         )
-        self.snapshot_repository = InMemorySnapshotRepository(
-            event_repository=self.event_repository, transaction_repository=self.transaction_repository
+        broker_publisher = InMemoryBrokerPublisher()
+        broker_subscriber_builder = InMemoryBrokerSubscriberBuilder()
+        transaction_repository = InMemoryTransactionRepository(lock_pool=pool_factory.get_pool("lock"))
+        event_repository = InMemoryEventRepository(
+            broker_publisher=broker_publisher,
+            transaction_repository=transaction_repository,
+            lock_pool=pool_factory.get_pool("lock"),
         )
-
-        self.injector = DependencyInjector(
-            None,
-            [
-                self.broker_pool,
-                self.broker_publisher,
-                self.broker_subscriber_builder,
-                self.lock_pool,
-                self.transaction_repository,
-                self.event_repository,
-                self.snapshot_repository,
-            ],
+        snapshot_repository = InMemorySnapshotRepository(
+            event_repository=event_repository, transaction_repository=transaction_repository
         )
-        self.injector.wire_injections()
-
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-
-        await self.injector.setup_injections()
-
-    async def asyncTearDown(self):
-        await self.injector.destroy_injections()
-
-        await super().asyncTearDown()
-
-    def tearDown(self) -> None:
-        self.injector.unwire_injections()
-        super().tearDown()
+        return [
+            pool_factory,
+            broker_publisher,
+            broker_subscriber_builder,
+            transaction_repository,
+            event_repository,
+            snapshot_repository,
+        ]
 
 
 class FakeAsyncIterator:

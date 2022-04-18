@@ -31,8 +31,8 @@ from minos.networks import (
     Response,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
     FakeModel,
+    NetworksTestCase,
 )
 
 
@@ -58,9 +58,7 @@ class _Cls:
         raise ValueError
 
 
-class TestBrokerDispatcher(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestBrokerDispatcher(NetworksTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 

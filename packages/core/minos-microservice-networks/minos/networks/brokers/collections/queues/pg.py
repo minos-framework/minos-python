@@ -37,7 +37,7 @@ from psycopg2.sql import (
 from minos.common import (
     Builder,
     Config,
-    PostgreSqlMinosDatabase,
+    DatabaseMixin,
 )
 
 from ....utils import (
@@ -53,7 +53,7 @@ from .abc import (
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlBrokerQueue(BrokerQueue, PostgreSqlMinosDatabase):
+class PostgreSqlBrokerQueue(BrokerQueue, DatabaseMixin):
     """PostgreSql Broker Queue class."""
 
     _queue: PriorityQueue[_Entry]

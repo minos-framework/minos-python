@@ -15,7 +15,7 @@ from uuid import (
 
 from minos.common import (
     Config,
-    PostgreSqlMinosDatabase,
+    DatabaseMixin,
 )
 
 from ...exceptions import (
@@ -29,12 +29,12 @@ from .abc import (
 )
 
 
-class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionRepository):
+class PostgreSqlTransactionRepository(DatabaseMixin, TransactionRepository):
     """PostgreSql Transaction Repository class."""
 
     @classmethod
-    def _from_config(cls, *args, config: Config, **kwargs) -> Optional[PostgreSqlTransactionRepository]:
-        return cls(*args, **config.get_database_by_name("transaction"), **kwargs)
+    def _from_config(cls, config: Config, **kwargs) -> Optional[PostgreSqlTransactionRepository]:
+        return super()._from_config(config, **config.get_database_by_name("transaction"), **kwargs)
 
     async def _setup(self):
         await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";', lock="uuid-ossp")

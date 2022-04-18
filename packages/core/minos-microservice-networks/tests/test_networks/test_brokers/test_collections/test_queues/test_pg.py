@@ -8,7 +8,7 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    PostgreSqlMinosDatabase,
+    DatabaseMixin,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -23,7 +23,7 @@ from minos.networks.brokers.collections import (
     PostgreSqlBrokerQueueQueryFactory,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    NetworksTestCase,
 )
 
 
@@ -33,19 +33,17 @@ class _PostgreSqlBrokerQueueQueryFactory(PostgreSqlBrokerQueueQueryFactory):
         return "test_table"
 
 
-class TestPostgreSqlBrokerQueue(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestPostgreSqlBrokerQueue(NetworksTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.query_factory = _PostgreSqlBrokerQueueQueryFactory()
 
     def test_is_subclass(self):
-        self.assertTrue(issubclass(PostgreSqlBrokerQueue, (BrokerQueue, PostgreSqlMinosDatabase)))
+        self.assertTrue(issubclass(PostgreSqlBrokerQueue, (BrokerQueue, DatabaseMixin)))
 
     def test_constructor(self):
-        queue = PostgreSqlBrokerQueue("foo_db", query_factory=self.query_factory)
-        self.assertEqual("foo_db", queue.database)
+        queue = PostgreSqlBrokerQueue(query_factory=self.query_factory)
+        self.assertEqual(self.pool_factory.get_pool("database"), queue.pool)
         self.assertEqual(self.query_factory, queue.query_factory)
         self.assertEqual(2, queue.retry)
         self.assertEqual(1000, queue.records)

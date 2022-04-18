@@ -9,16 +9,14 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    AggregateTestCase,
 )
 
 
-class TestPostgreSqlSnapshotSetup(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestPostgreSqlSnapshotSetup(AggregateTestCase, PostgresAsyncTestCase):
     async def test_setup_snapshot_table(self):
         async with PostgreSqlSnapshotSetup.from_config(self.config):
-            async with aiopg.connect(**self.snapshot_db) as connection:
+            async with aiopg.connect(**self.config.get_default_database()) as connection:
                 async with connection.cursor() as cursor:
                     await cursor.execute(
                         "SELECT EXISTS (SELECT FROM pg_tables "
@@ -29,7 +27,7 @@ class TestPostgreSqlSnapshotSetup(PostgresAsyncTestCase):
 
     async def test_setup_snapshot_aux_offset_table(self):
         async with PostgreSqlSnapshotSetup.from_config(self.config):
-            async with aiopg.connect(**self.snapshot_db) as connection:
+            async with aiopg.connect(**self.config.get_default_database()) as connection:
                 async with connection.cursor() as cursor:
                     await cursor.execute(
                         "SELECT EXISTS (SELECT FROM pg_tables WHERE "

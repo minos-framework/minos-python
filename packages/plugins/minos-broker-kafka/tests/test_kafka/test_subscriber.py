@@ -22,6 +22,9 @@ from kafka.errors import (
 from minos.common import (
     Config,
 )
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
@@ -250,9 +253,8 @@ class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
         self.assertEqual(common_config["port"], subscriber.port)
 
 
-class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
-    def setUp(self) -> None:
-        self.config = Config(CONFIG_FILE_PATH)
+class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(PostgresAsyncTestCase):
+    CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
     def test_build(self):
         with warnings.catch_warnings():

@@ -41,9 +41,9 @@ from minos.networks import (
     BrokerMessageV1,
 )
 from tests.utils import (
+    AggregateTestCase,
     FakeAsyncIterator,
     FakeLock,
-    MinosTestCase,
 )
 
 
@@ -62,7 +62,7 @@ class _EventRepository(EventRepository):
         return 0
 
 
-class TestEventRepository(MinosTestCase):
+class TestEventRepository(AggregateTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.event_repository = _EventRepository()
@@ -78,7 +78,7 @@ class TestEventRepository(MinosTestCase):
         repository = _EventRepository()
         self.assertEqual(self.broker_publisher, repository._broker_publisher)
         self.assertEqual(self.transaction_repository, repository._transaction_repository)
-        self.assertEqual(self.lock_pool, repository._lock_pool)
+        self.assertEqual(self.pool_factory.get_pool("lock"), repository._lock_pool)
 
     async def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):
@@ -88,8 +88,8 @@ class TestEventRepository(MinosTestCase):
             # noinspection PyTypeChecker
             _EventRepository(transaction_repository=None)
         with self.assertRaises(NotProvidedException):
-            # noinspection PyTypeChecker
-            _EventRepository(lock_pool=None)
+            # noinspection PyArgumentEqualDefault
+            _EventRepository(lock_pool=None, pool_factory=None)
 
     def test_transaction(self):
         uuid = uuid4()
@@ -455,7 +455,7 @@ class TestEventRepository(MinosTestCase):
         expected = FakeLock()
         mock = MagicMock(return_value=expected)
 
-        self.lock_pool.acquire = mock
+        self.pool_factory.get_pool("lock").acquire = mock
 
         self.assertEqual(expected, self.event_repository.write_lock())
         self.assertEqual([call("aggregate_event_write_lock")], mock.call_args_list)

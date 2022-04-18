@@ -1,3 +1,6 @@
+from abc import (
+    ABC,
+)
 from datetime import (
     timedelta,
 )
@@ -16,6 +19,9 @@ from typing import (
 from minos.common import (
     DeclarativeModel,
 )
+from minos.common.testing import (
+    MinosTestCase,
+)
 from minos.networks import (
     EnrouteDecorator,
     HttpConnector,
@@ -27,6 +33,11 @@ from minos.networks import (
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+
+
+class NetworksTestCase(MinosTestCase, ABC):
+    def get_config_file_path(self):
+        return CONFIG_FILE_PATH
 
 
 @total_ordering

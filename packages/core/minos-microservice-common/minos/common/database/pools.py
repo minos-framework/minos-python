@@ -1,4 +1,5 @@
 import logging
+import warnings
 from asyncio import (
     sleep,
 )
@@ -30,15 +31,14 @@ from ..pools import (
     Pool,
 )
 from .locks import (
-    PostgreSqlLock,
+    DatabaseLock,
 )
 
 logger = logging.getLogger(__name__)
 
 
-@Injectable("postgresql_pool")
-class PostgreSqlPool(Pool[ContextManager]):
-    """Postgres Pool class."""
+class DatabaseClientPool(Pool[ContextManager]):
+    """Database Client Pool class."""
 
     def __init__(
         self,
@@ -102,13 +102,32 @@ class PostgreSqlPool(Pool[ContextManager]):
         return not instance.closed
 
 
-class PostgreSqlLockPool(LockPool, PostgreSqlPool):
-    """Postgres Locking Pool class."""
+@Injectable("postgresql_pool")
+class PostgreSqlPool(DatabaseClientPool):
+    """PostgreSql Pool class."""
 
-    def acquire(self, key: Hashable, *args, **kwargs) -> PostgreSqlLock:
+    def __init__(self, *args, **kwargs):
+        warnings.warn(f"{PostgreSqlPool!r} has been deprecated. Use {DatabaseClientPool} instead.", DeprecationWarning)
+        super().__init__(*args, **kwargs)
+
+
+class DatabaseLockPool(LockPool, DatabaseClientPool):
+    """Database Lock Pool class."""
+
+    def acquire(self, key: Hashable, *args, **kwargs) -> DatabaseLock:
         """Acquire a new lock.
 
         :param key: The key to be used for locking.
         :return: A ``PostgreSqlLock`` instance.
         """
-        return PostgreSqlLock(super().acquire(), key, *args, **kwargs)
+        return DatabaseLock(super().acquire(), key, *args, **kwargs)
+
+
+class PostgreSqlLockPool(DatabaseLockPool):
+    """PostgreSql Lock Pool class"""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            f"{PostgreSqlLockPool!r} has been deprecated. Use {PostgreSqlLockPool} instead.", DeprecationWarning
+        )
+        super().__init__(*args, **kwargs)

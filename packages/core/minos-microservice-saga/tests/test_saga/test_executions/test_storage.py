@@ -14,11 +14,11 @@ from tests.utils import (
     ADD_ORDER,
     DB_PATH,
     Foo,
-    MinosTestCase,
+    SagaTestCase,
 )
 
 
-class TestSagaExecutionStorage(MinosTestCase):
+class TestSagaExecutionStorage(SagaTestCase):
     DB_PATH = DB_PATH
 
     async def asyncSetUp(self) -> None:

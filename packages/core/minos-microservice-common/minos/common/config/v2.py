@@ -51,7 +51,7 @@ class ConfigV2(Config):
         partial_ans = list()
 
         with suppress(MinosConfigException):
-            partial_ans.extend(self._get_pools().values())
+            partial_ans.append(self._get_pools().get("factory"))
 
         with suppress(MinosConfigException):
             partial_ans.append(self._get_interfaces().get("http").get("connector"))
@@ -149,13 +149,20 @@ class ConfigV2(Config):
 
     def _get_pools(self) -> dict[str, type]:
         try:
-            data = self.get_by_key("pools")
+            types = self.get_by_key("pools")
         except MinosConfigException:
-            data = dict()
+            return dict()
 
-        data = {name: import_module(classname) for name, classname in data.items()}
+        types = {name: import_module(classname) for name, classname in types.items()}
 
-        return data
+        from ..pools import (
+            PoolFactory,
+        )
+
+        return {
+            "factory": PoolFactory,
+            "types": types,
+        }
 
     def _get_routers(self) -> list[type]:
         try:
