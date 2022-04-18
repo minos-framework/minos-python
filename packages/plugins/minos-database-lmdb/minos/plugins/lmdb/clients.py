@@ -18,8 +18,8 @@ from lmdb import (
 from minos.common import (
     DatabaseClient,
     DatabaseOperation,
-    MinosAvroDatabaseProtocol,
     MinosBinaryProtocol,
+    MinosJsonBinaryProtocol,
 )
 
 from .operations import (
@@ -38,7 +38,7 @@ class LmdbDatabaseClient(DatabaseClient):
         path: Optional[Union[str, Path]] = None,
         max_tables: int = 100,
         map_size: int = int(1e9),
-        protocol: type[MinosBinaryProtocol] = MinosAvroDatabaseProtocol,
+        protocol: type[MinosBinaryProtocol] = MinosJsonBinaryProtocol,
         *args,
         **kwargs,
     ):

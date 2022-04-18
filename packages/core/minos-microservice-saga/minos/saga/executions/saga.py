@@ -93,6 +93,8 @@ class SagaExecution:
         if isinstance(raw, cls):
             return raw
 
+        raw = raw.copy()
+
         current = raw | kwargs
         current["definition"] = Saga.from_raw(current["definition"])
         current["status"] = SagaStatus.from_raw(current["status"])

@@ -34,6 +34,7 @@ from minos.saga import (
     SagaContext,
     SagaRequest,
     SagaResponse,
+    testing,
 )
 
 BASE_PATH = Path(__file__).parent
@@ -42,6 +43,8 @@ DB_PATH = BASE_PATH / "test_db.lmdb"
 
 
 class SagaTestCase(MinosTestCase):
+    testing_module = testing
+
     def get_config_file_path(self):
         return CONFIG_FILE_PATH
 
