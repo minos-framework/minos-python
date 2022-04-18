@@ -1,0 +1,5 @@
+version: 2
+databases:
+  foobar:
+    client: minos.plugins.lmdb.LmdbDatabaseClient
+    path: "./foobar.lmdb"
