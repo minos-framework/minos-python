@@ -190,7 +190,8 @@ class SnapshotRepository(ABC, SetupMixin):
             performed to the global snapshot.
         :param exclude_deleted: If ``True``, deleted ``RootEntity`` entries are included, otherwise deleted
             ``RootEntity`` entries are filtered.
-        :param synchronize: TODO
+        :param synchronize: If ``True`` a synchronization is performed before processing the query, otherwise the query
+            is performed without any synchronization step.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``RootEntity`` instances.
         """

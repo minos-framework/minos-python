@@ -14,9 +14,6 @@ from cached_property import (
     cached_property,
 )
 
-from .injections import (
-    Injectable,
-)
 from .pools import (
     Pool,
 )
@@ -65,6 +62,5 @@ class Lock(ABC):
         return self.key
 
 
-@Injectable("lock_pool")
 class LockPool(Pool[Lock], ABC):
     """Lock Pool class."""
