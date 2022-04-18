@@ -5,11 +5,8 @@ from __future__ import (
 import logging
 from collections.abc import (
     AsyncIterator,
-    Hashable,
 )
 from typing import (
-    TYPE_CHECKING,
-    Any,
     Optional,
 )
 
@@ -23,6 +20,9 @@ from psycopg2 import (
     OperationalError,
 )
 
+from ..operations import (
+    AiopgDatabaseOperation,
+)
 from .abc import (
     DatabaseClient,
 )
@@ -30,11 +30,6 @@ from .exceptions import (
     IntegrityException,
     UnableToConnectException,
 )
-
-if TYPE_CHECKING:
-    from ..locks import (
-        DatabaseLock,
-    )
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +39,6 @@ class AiopgDatabaseClient(DatabaseClient):
 
     _connection: Optional[Connection]
     _cursor: Optional[Cursor]
-    _lock: Optional[DatabaseLock]
 
     def __init__(
         self,
@@ -74,8 +68,6 @@ class AiopgDatabaseClient(DatabaseClient):
         self._password = password
 
         self._connection = None
-
-        self._lock = None
         self._cursor = None
 
     async def _setup(self) -> None:
@@ -121,67 +113,32 @@ class AiopgDatabaseClient(DatabaseClient):
         await self._destroy_cursor(**kwargs)
 
     # noinspection PyUnusedLocal
-    async def _fetch_all(
-        self,
-        *args,
-        timeout: Optional[float] = None,
-        lock: Optional[int] = None,
-        **kwargs,
-    ) -> AsyncIterator[tuple]:
+    async def _fetch_all(self) -> AsyncIterator[tuple]:
         await self._create_cursor()
 
         async for row in self._cursor:
             yield row
 
     # noinspection PyUnusedLocal
-    async def _execute(
-        self, operation: Any, parameters: Any = None, *, timeout: Optional[float] = None, lock: Any = None, **kwargs
-    ) -> None:
-        await self._create_cursor(lock=lock)
+    async def _execute(self, operation: AiopgDatabaseOperation) -> None:
+        if not isinstance(operation, AiopgDatabaseOperation):
+            raise ValueError(f"The operation must be a {AiopgDatabaseOperation!r} instance. Obtained: {operation!r}")
+
+        await self._create_cursor()
         try:
-            await self._cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
+            await self._cursor.execute(operation=operation.query, parameters=operation.parameters)
         except IntegrityError as exc:
             raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
 
-    async def _create_cursor(self, *args, lock: Optional[Hashable] = None, **kwargs):
+    async def _create_cursor(self):
         if self._cursor is None:
-            self._cursor = await self._connection.cursor(*args, **kwargs)
-
-        if lock is not None:
-            await self._create_lock(lock)
+            self._cursor = await self._connection.cursor()
 
     async def _destroy_cursor(self, **kwargs):
-        await self._destroy_lock()
         if self._cursor is not None:
             if not self._cursor.closed:
                 self._cursor.close()
             self._cursor = None
-
-    async def _create_lock(self, lock: Hashable, *args, **kwargs):
-        if self._lock is not None and self._lock.key == lock:
-            return
-        await self._destroy_lock()
-
-        from ..locks import (
-            DatabaseLock,
-        )
-
-        self._lock = DatabaseLock(self, lock, *args, **kwargs)
-        await self._lock.acquire()
-
-    async def _destroy_lock(self):
-        if self._lock is not None:
-            logger.debug(f"Destroying {self.lock!r}...")
-            await self._lock.release()
-            self._lock = None
-
-    @property
-    def lock(self) -> Optional[DatabaseLock]:
-        """Get the lock.
-
-        :return: A ``DatabaseLock`` instance.
-        """
-        return self._lock
 
     @property
     def cursor(self) -> Optional[Cursor]:

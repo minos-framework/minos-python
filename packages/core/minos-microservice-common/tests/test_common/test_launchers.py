@@ -16,7 +16,7 @@ from minos.common import (
     classname,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -40,7 +40,7 @@ class FooPort(Port):
         """For testing purposes."""
 
 
-class TestEntrypointLauncher(CommonTestCase, PostgresAsyncTestCase):
+class TestEntrypointLauncher(CommonTestCase, DatabaseMinosTestCase):
     def setUp(self):
         super().setUp()
         self.injections = list()

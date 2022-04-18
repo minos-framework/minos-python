@@ -1,21 +1,19 @@
 import unittest
-import warnings
 
 from minos.common import (
     AiopgDatabaseClient,
     DatabaseLock,
     Lock,
-    PostgreSqlLock,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     CommonTestCase,
 )
 
 
-class TestDatabaseLock(CommonTestCase, PostgresAsyncTestCase):
+class TestDatabaseLock(CommonTestCase, DatabaseMinosTestCase):
     def test_base(self):
         self.assertTrue(issubclass(DatabaseLock, Lock))
 
@@ -38,19 +36,6 @@ class TestDatabaseLock(CommonTestCase, PostgresAsyncTestCase):
         client = AiopgDatabaseClient(**self.config.get_default_database())
         lock = DatabaseLock(client, "foo")
         self.assertEqual(hash("foo"), lock.hashed_key)
-
-
-class TestPostgreSqlLock(CommonTestCase, PostgresAsyncTestCase):
-    def test_is_subclass(self):
-        self.assertTrue(issubclass(PostgreSqlLock, DatabaseLock))
-
-    async def test_warnings(self):
-        client = AiopgDatabaseClient(**self.config.get_default_database())
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            lock = PostgreSqlLock(client, "foo")
-            self.assertIsInstance(lock, DatabaseLock)
 
 
 if __name__ == "__main__":

@@ -5,8 +5,8 @@ from minos.common import (
     DependencyInjector,
 )
 from minos.common.testing import (
+    DatabaseMinosTestCase,
     MinosTestCase,
-    PostgresAsyncTestCase,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -29,11 +29,11 @@ class MyMinosTestCase(MinosTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
 
-class TestPostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
+class TestMyDatabaseMinosTestCase(unittest.IsolatedAsyncioTestCase):
     pass
 
 
-class MyPostgresAsyncTestCase(PostgresAsyncTestCase):
+class MyDatabaseMinosTestCase(DatabaseMinosTestCase):
     CONFIG_FILE_PATH = CONFIG_FILE_PATH
 
 

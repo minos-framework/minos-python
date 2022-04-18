@@ -12,7 +12,7 @@ from minos.common import (
     NotProvidedException,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
@@ -58,7 +58,7 @@ class _Cls:
         raise ValueError
 
 
-class TestBrokerDispatcher(NetworksTestCase, PostgresAsyncTestCase):
+class TestBrokerDispatcher(NetworksTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
 

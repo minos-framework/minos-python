@@ -4,7 +4,7 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    PostgreSqlTransactionRepository,
+    DatabaseTransactionRepository,
     TransactionEntry,
     TransactionRepository,
     TransactionRepositoryConflictException,
@@ -12,10 +12,11 @@ from minos.aggregate import (
 )
 from minos.common import (
     AiopgDatabaseClient,
+    AiopgDatabaseOperation,
     DatabaseClientPool,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     AggregateTestCase,
@@ -23,11 +24,11 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseTransactionRepository(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.transaction_repository = PostgreSqlTransactionRepository()
+        self.transaction_repository = DatabaseTransactionRepository()
 
         self.uuid = uuid4()
 
@@ -40,23 +41,24 @@ class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCa
         await super().asyncTearDown()
 
     async def test_subclass(self) -> None:
-        self.assertTrue(issubclass(PostgreSqlTransactionRepository, TransactionRepository))
+        self.assertTrue(issubclass(DatabaseTransactionRepository, TransactionRepository))
 
     def test_constructor(self):
         pool = DatabaseClientPool.from_config(self.config)
-        repository = PostgreSqlTransactionRepository(pool)
-        self.assertIsInstance(repository, PostgreSqlTransactionRepository)
-        self.assertEqual(pool, repository.pool)
+        repository = DatabaseTransactionRepository(pool)
+        self.assertIsInstance(repository, DatabaseTransactionRepository)
+        self.assertEqual(pool, repository.database_pool)
 
     def test_from_config(self):
-        repository = PostgreSqlTransactionRepository.from_config(self.config)
-        self.assertIsInstance(repository.pool, DatabaseClientPool)
+        repository = DatabaseTransactionRepository.from_config(self.config)
+        self.assertIsInstance(repository.database_pool, DatabaseClientPool)
 
     async def test_setup(self):
         async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
-            await client.execute(
+            operation = AiopgDatabaseOperation(
                 "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_transaction');"
             )
+            await client.execute(operation)
             response = (await client.fetch_one())[0]
         self.assertTrue(response)
 
@@ -144,7 +146,7 @@ class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCa
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
 
 
-class TestPostgreSqlTransactionRepositorySelect(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseTransactionRepositorySelect(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.uuid_1 = uuid4()
@@ -153,7 +155,7 @@ class TestPostgreSqlTransactionRepositorySelect(AggregateTestCase, PostgresAsync
         self.uuid_4 = uuid4()
         self.uuid_5 = uuid4()
 
-        self.transaction_repository = PostgreSqlTransactionRepository()
+        self.transaction_repository = DatabaseTransactionRepository()
 
         self.entries = [
             TransactionEntry(self.uuid_1, TransactionStatus.PENDING, 12),

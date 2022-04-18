@@ -1,5 +1,4 @@
 import unittest
-import warnings
 from unittest.mock import (
     AsyncMock,
 )
@@ -14,22 +13,15 @@ from kafka.errors import (
 from minos.common import (
     Config,
 )
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
 from minos.networks import (
     BrokerMessage,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerPublisher,
-    InMemoryBrokerPublisherQueue,
-    PostgreSqlBrokerPublisherQueue,
 )
 from minos.plugins.kafka import (
-    InMemoryQueuedKafkaBrokerPublisher,
     KafkaBrokerPublisher,
     KafkaBrokerPublisherBuilder,
-    PostgreSqlQueuedKafkaBrokerPublisher,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -152,28 +144,6 @@ class TestKafkaBrokerPublisherBuilder(unittest.TestCase):
         self.assertIsInstance(publisher, KafkaBrokerPublisher)
         self.assertEqual(common_config["host"], publisher.host)
         self.assertEqual(common_config["port"], publisher.port)
-
-
-class TestPostgreSqlQueuedKafkaBrokerPublisher(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
-    def test_from_config(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            publisher = PostgreSqlQueuedKafkaBrokerPublisher.from_config(CONFIG_FILE_PATH)
-        self.assertIsInstance(publisher, PostgreSqlQueuedKafkaBrokerPublisher)
-        self.assertIsInstance(publisher.impl, KafkaBrokerPublisher)
-        self.assertIsInstance(publisher.queue, PostgreSqlBrokerPublisherQueue)
-
-
-class TestInMemoryQueuedKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
-    def test_from_config(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            publisher = InMemoryQueuedKafkaBrokerPublisher.from_config(CONFIG_FILE_PATH)
-        self.assertIsInstance(publisher, InMemoryQueuedKafkaBrokerPublisher)
-        self.assertIsInstance(publisher.impl, KafkaBrokerPublisher)
-        self.assertIsInstance(publisher.queue, InMemoryBrokerPublisherQueue)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 import unittest
 from abc import (
     ABC,
@@ -21,7 +25,9 @@ from .config import (
 )
 from .database import (
     AiopgDatabaseClient,
+    DatabaseClient,
     DatabaseClientPool,
+    ManageDatabaseOperationFactory,
 )
 from .injections import (
     DependencyInjector,
@@ -70,13 +76,15 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase, ABC):
         raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
 
 
-# noinspection SqlNoDataSourceInspection
-class PostgresAsyncTestCase(MinosTestCase, ABC):
+class DatabaseMinosTestCase(MinosTestCase, ABC):
     def setUp(self):
         self.base_config = Config(self.get_config_file_path())
         self._uuid = uuid4()
         self._test_db = {"database": f"test_db_{self._uuid.hex}"}
         super().setUp()
+
+    def get_client(self) -> DatabaseClient:
+        return AiopgDatabaseClient.from_config(self.base_config)
 
     def get_config(self) -> Config:
         config = Config(self.get_config_file_path())
@@ -93,22 +101,21 @@ class PostgresAsyncTestCase(MinosTestCase, ABC):
         return [PoolFactory.from_config(self.config, default_classes={"database": DatabaseClientPool})]
 
     async def asyncSetUp(self):
-        await self._create_database(self.base_config.get_default_database(), self._test_db)
+        await self._create_database(self._test_db)
         await super().asyncSetUp()
 
     async def asyncTearDown(self):
         await super().asyncTearDown()
-        await self._drop_database(self.base_config.get_default_database(), self._test_db)
+        await self._drop_database(self._test_db)
 
-    async def _create_database(self, meta: dict[str, Any], test: dict[str, Any]) -> None:
-        await self._drop_database(meta, test)
+    async def _create_database(self, test: dict[str, Any]) -> None:
+        await self._drop_database(test)
 
-        async with AiopgDatabaseClient(**meta) as client:
-            template = "CREATE DATABASE {database} WITH OWNER = {user};"
-            await client.execute(template.format(**(meta | test)))
+        async with self.get_client() as client:
+            operation = client.get_factory(ManageDatabaseOperationFactory).build_create(test["database"])
+            await client.execute(operation)
 
-    @staticmethod
-    async def _drop_database(meta: dict[str, Any], test: dict[str, Any]) -> None:
-        async with AiopgDatabaseClient(**meta) as client:
-            template = "DROP DATABASE IF EXISTS {database}"
-            await client.execute(template.format(**(meta | test)))
+    async def _drop_database(self, test: dict[str, Any]) -> None:
+        async with self.get_client() as client:
+            operation = client.get_factory(ManageDatabaseOperationFactory).build_delete(test["database"])
+            await client.execute(operation)

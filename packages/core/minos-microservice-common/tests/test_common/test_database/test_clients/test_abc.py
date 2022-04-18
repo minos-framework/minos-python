@@ -15,8 +15,11 @@ from unittest.mock import (
 from minos.common import (
     AiopgDatabaseClient,
     BuildableMixin,
+    ComposedDatabaseOperation,
     DatabaseClient,
     DatabaseClientBuilder,
+    DatabaseOperation,
+    DatabaseOperationFactory,
 )
 from tests.utils import (
     CommonTestCase,
@@ -38,6 +41,18 @@ class _DatabaseClient(DatabaseClient):
 
     def _fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
         """For testing purposes."""
+
+
+class _DatabaseOperation(DatabaseOperation):
+    """For testing purposes."""
+
+
+class _DatabaseOperationFactory(DatabaseOperationFactory):
+    """For testing purposes."""
+
+
+class _DatabaseOperationFactoryImpl(_DatabaseOperationFactory):
+    """For testing purposes."""
 
 
 class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
@@ -73,10 +88,25 @@ class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
         mock = AsyncMock()
         client = _DatabaseClient()
         client._execute = mock
+        operation = _DatabaseOperation()
+        await client.execute(operation)
 
-        await client.execute("foo")
+        self.assertEqual([call(operation)], mock.call_args_list)
 
-        self.assertEqual([call("foo")], mock.call_args_list)
+    async def test_execute_composed(self):
+        mock = AsyncMock()
+        client = _DatabaseClient()
+        client._execute = mock
+        composed = ComposedDatabaseOperation([_DatabaseOperation(), _DatabaseOperation()])
+        await client.execute(composed)
+
+        self.assertEqual([call(composed.operations[0]), call(composed.operations[1])], mock.call_args_list)
+
+    async def test_execute_raises_unsupported(self):
+        client = _DatabaseClient()
+        with self.assertRaises(ValueError):
+            # noinspection PyTypeChecker
+            await client.execute("wrong!")
 
     async def test_fetch_all(self):
         mock = MagicMock(return_value=FakeAsyncIterator(["one", "two"]))
@@ -95,6 +125,36 @@ class TestDatabaseClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("one", await client.fetch_one())
 
         self.assertEqual([call()], mock.call_args_list)
+
+    def test_register_factory(self):
+        try:
+            _DatabaseClient.register_factory(_DatabaseOperationFactory, _DatabaseOperationFactoryImpl)
+
+            self.assertEqual({_DatabaseOperationFactory: _DatabaseOperationFactoryImpl}, _DatabaseClient._factories)
+        finally:
+            _DatabaseClient._factories.clear()
+
+    def test_register_factory_raises(self):
+        with self.assertRaises(ValueError):
+            # noinspection PyTypeChecker
+            _DatabaseClient.register_factory(object, DatabaseOperationFactory)
+
+        with self.assertRaises(ValueError):
+            _DatabaseClient.register_factory(_DatabaseOperationFactoryImpl, _DatabaseOperationFactory)
+
+    def test_get_factory(self):
+        try:
+            _DatabaseClient._factories = {_DatabaseOperationFactory: _DatabaseOperationFactoryImpl}
+            self.assertIsInstance(
+                _DatabaseClient.get_factory(_DatabaseOperationFactory),
+                _DatabaseOperationFactoryImpl,
+            )
+        finally:
+            _DatabaseClient._factories.clear()
+
+    def test_get_factory_raises(self):
+        with self.assertRaises(ValueError):
+            _DatabaseClient.get_factory(_DatabaseOperationFactory),
 
 
 class TestDatabaseClientBuilder(CommonTestCase):

@@ -1,10 +1,11 @@
 from .abc import (
     BrokerPublisherQueue,
 )
+from .database import (
+    AiopgBrokerPublisherQueueDatabaseOperationFactory,
+    BrokerPublisherQueueDatabaseOperationFactory,
+    DatabaseBrokerPublisherQueue,
+)
 from .memory import (
     InMemoryBrokerPublisherQueue,
-)
-from .pg import (
-    PostgreSqlBrokerPublisherQueue,
-    PostgreSqlBrokerPublisherQueueQueryFactory,
 )

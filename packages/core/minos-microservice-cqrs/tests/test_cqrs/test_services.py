@@ -12,7 +12,7 @@ from minos.common import (
     PoolFactory,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.cqrs import (
     MinosIllegalHandlingException,
@@ -32,7 +32,7 @@ from tests.utils import (
 )
 
 
-class TestService(PostgresAsyncTestCase):
+class TestService(DatabaseMinosTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -67,7 +67,7 @@ class TestService(PostgresAsyncTestCase):
             self.assertEqual(1, mock.call_count)
 
 
-class TestQueryService(PostgresAsyncTestCase):
+class TestQueryService(DatabaseMinosTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -94,7 +94,7 @@ class TestQueryService(PostgresAsyncTestCase):
         self.assertEqual(expected, observed)
 
 
-class TestCommandService(PostgresAsyncTestCase):
+class TestCommandService(DatabaseMinosTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:

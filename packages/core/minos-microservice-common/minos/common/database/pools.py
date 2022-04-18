@@ -1,5 +1,4 @@
 import logging
-import warnings
 from asyncio import (
     sleep,
 )
@@ -27,7 +26,6 @@ from ..pools import (
     Pool,
 )
 from .clients import (
-    AiopgDatabaseClient,
     DatabaseClient,
     DatabaseClientBuilder,
     UnableToConnectException,
@@ -39,6 +37,7 @@ from .locks import (
 logger = logging.getLogger(__name__)
 
 
+@Injectable("database_pool")
 class DatabaseClientPool(Pool[DatabaseClient]):
     """Database Client Pool class."""
 
@@ -49,9 +48,15 @@ class DatabaseClientPool(Pool[DatabaseClient]):
 
     @classmethod
     def _from_config(cls, config: Config, identifier: Optional[str] = None, **kwargs):
-        client_cls = config.get_database_by_name(identifier).get("client", AiopgDatabaseClient)
-        # noinspection PyTypeChecker
-        base_builder: DatabaseClientBuilder = client_cls.get_builder()
+        base_builder = config.get_database_by_name(identifier).get("client")
+
+        if base_builder is None:
+            raise ValueError(f"{base_builder!r} is not a {DatabaseClientBuilder!r} instance.")
+        elif issubclass(base_builder, DatabaseClient):
+            base_builder = base_builder.get_builder()
+        elif issubclass(base_builder, DatabaseClientBuilder):
+            base_builder = base_builder()
+
         client_builder = base_builder.with_name(identifier).with_config(config)
 
         return cls(client_builder=client_builder, **kwargs)
@@ -83,6 +88,14 @@ class DatabaseClientPool(Pool[DatabaseClient]):
         await instance.reset()
 
     @property
+    def client_cls(self) -> type[DatabaseClient]:
+        """Get the instance's class.
+
+        :return: A ``type`` instance that is subclass of ``DatabaseClient``.
+        """
+        return self.client_builder.instance_cls
+
+    @property
     def client_builder(self) -> DatabaseClientBuilder:
         """Get the client builder class.
 
@@ -91,25 +104,16 @@ class DatabaseClientPool(Pool[DatabaseClient]):
         return self._client_builder
 
 
-@Injectable("postgresql_pool")
-class PostgreSqlPool(DatabaseClientPool):
-    """PostgreSql Pool class."""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(f"{PostgreSqlPool!r} has been deprecated. Use {DatabaseClientPool} instead.", DeprecationWarning)
-        super().__init__(*args, **kwargs)
-
-
-class DatabaseLockPool(DatabaseClientPool, LockPool):
+class DatabaseLockPool(LockPool, DatabaseClientPool):
     """Database Lock Pool class."""
 
     def acquire(self, key: Hashable, *args, **kwargs) -> DatabaseLock:
         """Acquire a new lock.
 
         :param key: The key to be used for locking.
-        :return: A ``PostgreSqlLock`` instance.
+        :return: A ``DatabaseLock`` instance.
         """
-        acquired = super().acquire()
+        acquired = super(DatabaseClientPool, self).acquire()
 
         async def _fn_enter():
             client = await acquired.__aenter__()
@@ -121,13 +125,3 @@ class DatabaseLockPool(DatabaseClientPool, LockPool):
 
         # noinspection PyTypeChecker
         return ContextManager(_fn_enter, _fn_exit)
-
-
-class PostgreSqlLockPool(DatabaseLockPool):
-    """PostgreSql Lock Pool class"""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            f"{PostgreSqlLockPool!r} has been deprecated. Use {PostgreSqlLockPool} instead.", DeprecationWarning
-        )
-        super().__init__(*args, **kwargs)

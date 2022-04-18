@@ -67,4 +67,4 @@ class Lock(ABC):
 
 @Injectable("lock_pool")
 class LockPool(Pool[Lock], ABC):
-    """Postgres Locking Pool class."""
+    """Lock Pool class."""

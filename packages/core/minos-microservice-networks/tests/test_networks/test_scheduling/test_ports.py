@@ -8,7 +8,7 @@ from minos.common import (
     Port,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.networks import (
     PeriodicPort,
@@ -20,7 +20,7 @@ from tests.utils import (
 )
 
 
-class TestPeriodicPort(NetworksTestCase, PostgresAsyncTestCase):
+class TestPeriodicPort(NetworksTestCase, DatabaseMinosTestCase):
     def test_is_instance(self):
         service = PeriodicPort(config=self.config)
         self.assertIsInstance(service, Port)

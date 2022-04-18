@@ -29,14 +29,16 @@ from .entities import (
     RootEntity,
 )
 from .events import (
+    AiopgEventDatabaseOperationFactory,
+    DatabaseEventRepository,
     Event,
+    EventDatabaseOperationFactory,
     EventEntry,
     EventRepository,
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
     InMemoryEventRepository,
-    PostgreSqlEventRepository,
 )
 from .exceptions import (
     AggregateException,
@@ -57,20 +59,24 @@ from .queries import (
     Ordering,
 )
 from .snapshots import (
+    AiopgSnapshotDatabaseOperationFactory,
+    AiopgSnapshotQueryDatabaseOperationBuilder,
+    DatabaseSnapshotReader,
+    DatabaseSnapshotRepository,
+    DatabaseSnapshotSetup,
+    DatabaseSnapshotWriter,
     InMemorySnapshotRepository,
-    PostgreSqlSnapshotQueryBuilder,
-    PostgreSqlSnapshotReader,
-    PostgreSqlSnapshotRepository,
-    PostgreSqlSnapshotSetup,
-    PostgreSqlSnapshotWriter,
+    SnapshotDatabaseOperationFactory,
     SnapshotEntry,
     SnapshotRepository,
     SnapshotService,
 )
 from .transactions import (
     TRANSACTION_CONTEXT_VAR,
+    AiopgTransactionDatabaseOperationFactory,
+    DatabaseTransactionRepository,
     InMemoryTransactionRepository,
-    PostgreSqlTransactionRepository,
+    TransactionDatabaseOperationFactory,
     TransactionEntry,
     TransactionRepository,
     TransactionService,

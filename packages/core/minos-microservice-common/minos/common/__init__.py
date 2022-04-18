@@ -15,6 +15,10 @@ from .config import (
 )
 from .database import (
     AiopgDatabaseClient,
+    AiopgDatabaseOperation,
+    AiopgLockDatabaseOperationFactory,
+    AiopgManageDatabaseOperationFactory,
+    ComposedDatabaseOperation,
     DatabaseClient,
     DatabaseClientBuilder,
     DatabaseClientException,
@@ -22,11 +26,11 @@ from .database import (
     DatabaseLock,
     DatabaseLockPool,
     DatabaseMixin,
+    DatabaseOperation,
+    DatabaseOperationFactory,
     IntegrityException,
-    PostgreSqlLock,
-    PostgreSqlLockPool,
-    PostgreSqlMinosDatabase,
-    PostgreSqlPool,
+    LockDatabaseOperationFactory,
+    ManageDatabaseOperationFactory,
     UnableToConnectException,
 )
 from .datetime import (

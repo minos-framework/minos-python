@@ -17,12 +17,14 @@ from psycopg2 import (
 
 from minos.common import (
     AiopgDatabaseClient,
+    AiopgDatabaseOperation,
     DatabaseLock,
+    DatabaseOperation,
     IntegrityException,
     UnableToConnectException,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     CommonTestCase,
@@ -30,10 +32,10 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestAiopgDatabaseClient(CommonTestCase, PostgresAsyncTestCase):
+class TestAiopgDatabaseClient(CommonTestCase, DatabaseMinosTestCase):
     def setUp(self):
         super().setUp()
-        self.sql = "SELECT * FROM information_schema.tables"
+        self.operation = AiopgDatabaseOperation("SELECT * FROM information_schema.tables")
 
     def test_constructor(self):
         client = AiopgDatabaseClient("foo")
@@ -88,7 +90,7 @@ class TestAiopgDatabaseClient(CommonTestCase, PostgresAsyncTestCase):
         self.assertIsNone(client.cursor)
         async with client:
             self.assertIsNone(client.cursor)
-            await client.execute("SELECT * FROM information_schema.tables")
+            await client.execute(self.operation)
             self.assertIsInstance(client.cursor, Cursor)
 
         self.assertIsNone(client.cursor)
@@ -96,24 +98,26 @@ class TestAiopgDatabaseClient(CommonTestCase, PostgresAsyncTestCase):
     async def test_cursor_reset(self):
         client = AiopgDatabaseClient.from_config(self.config)
         async with client:
-            await client.execute("SELECT * FROM information_schema.tables")
+            await client.execute(self.operation)
             self.assertIsInstance(client.cursor, Cursor)
             await client.reset()
             self.assertIsNone(client.cursor)
 
     async def test_lock(self):
+        op1 = AiopgDatabaseOperation("SELECT * FROM information_schema.tables", lock="foo")
         client = AiopgDatabaseClient.from_config(self.config)
         self.assertIsNone(client.lock)
         async with client:
             self.assertIsNone(client.lock)
-            await client.execute(self.sql, lock="foo")
+            await client.execute(op1)
             self.assertIsInstance(client.lock, DatabaseLock)
 
         self.assertIsNone(client.lock)
 
     async def test_lock_reset(self):
+        op1 = AiopgDatabaseOperation("SELECT * FROM information_schema.tables", lock="foo")
         async with AiopgDatabaseClient.from_config(self.config) as client:
-            await client.execute(self.sql, lock="foo")
+            await client.execute(op1)
             self.assertIsInstance(client.lock, DatabaseLock)
             await client.reset()
             self.assertIsNone(client.lock)
@@ -121,17 +125,18 @@ class TestAiopgDatabaseClient(CommonTestCase, PostgresAsyncTestCase):
     async def test_execute(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
             with patch.object(Cursor, "execute") as execute_mock:
-                await client.execute(self.sql)
+                await client.execute(self.operation)
         self.assertEqual(
-            [call(operation=self.sql, parameters=None, timeout=None)],
+            [call(operation=self.operation.query, parameters=self.operation.parameters)],
             execute_mock.call_args_list,
         )
 
     async def test_execute_with_lock(self):
+        op1 = AiopgDatabaseOperation("SELECT * FROM information_schema.tables", lock="foo")
         with patch.object(DatabaseLock, "acquire") as enter_lock_mock:
             with patch.object(DatabaseLock, "release") as exit_lock_mock:
                 async with AiopgDatabaseClient.from_config(self.config) as client:
-                    await client.execute(self.sql, lock="foo")
+                    await client.execute(op1)
                     self.assertEqual(1, enter_lock_mock.call_count)
                     self.assertEqual(0, exit_lock_mock.call_count)
                     enter_lock_mock.reset_mock()
@@ -140,35 +145,45 @@ class TestAiopgDatabaseClient(CommonTestCase, PostgresAsyncTestCase):
             self.assertEqual(1, exit_lock_mock.call_count)
 
     async def test_execute_with_lock_multiple(self):
+        op1 = AiopgDatabaseOperation("SELECT * FROM information_schema.tables", lock="foo")
+        op2 = AiopgDatabaseOperation("SELECT * FROM information_schema.tables", lock="bar")
         async with AiopgDatabaseClient.from_config(self.config) as client:
             self.assertIsNone(client.lock)
 
-            await client.execute(self.sql, lock="foo")
+            await client.execute(op1)
             foo_lock = client.lock
             self.assertIsInstance(foo_lock, DatabaseLock)
 
-            await client.execute(self.sql, lock="foo")
+            await client.execute(op1)
             self.assertEqual(foo_lock, client.lock)
 
-            await client.execute(self.sql, lock="bar")
+            await client.execute(op2)
             self.assertNotEqual(foo_lock, client.lock)
             self.assertIsInstance(client.lock, DatabaseLock)
+
+    async def test_execute_raises_unsupported(self):
+        class _DatabaseOperation(DatabaseOperation):
+            """For testing purposes."""
+
+        async with AiopgDatabaseClient.from_config(self.config) as client:
+            with self.assertRaises(ValueError):
+                await client.execute(_DatabaseOperation())
 
     async def test_execute_raises_integrity(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
             with patch.object(Cursor, "execute", side_effect=IntegrityError):
                 with self.assertRaises(IntegrityException):
-                    await client.execute(self.sql)
+                    await client.execute(self.operation)
 
     async def test_fetch_one(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
-            await client.execute(self.sql)
+            await client.execute(self.operation)
             observed = await client.fetch_one()
         self.assertIsInstance(observed, tuple)
 
     async def test_fetch_all(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
-            await client.execute(self.sql)
+            await client.execute(self.operation)
             observed = [value async for value in client.fetch_all()]
 
         self.assertGreater(len(observed), 0)

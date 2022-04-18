@@ -9,14 +9,14 @@ from uuid import (
 from minos.aggregate import (
     AlreadyDeletedException,
     Condition,
+    DatabaseSnapshotReader,
+    DatabaseSnapshotSetup,
+    DatabaseSnapshotWriter,
     EventEntry,
     FieldDiff,
     FieldDiffContainer,
     NotFoundException,
     Ordering,
-    PostgreSqlSnapshotReader,
-    PostgreSqlSnapshotSetup,
-    PostgreSqlSnapshotWriter,
     SnapshotEntry,
     TransactionEntry,
     TransactionStatus,
@@ -25,7 +25,7 @@ from minos.common import (
     DatabaseClientPool,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
     AggregateTestCase,
@@ -33,7 +33,7 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlSnapshotReader(AggregateTestCase, PostgresAsyncTestCase):
+class TestDatabaseSnapshotReader(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
 
@@ -45,7 +45,7 @@ class TestPostgreSqlSnapshotReader(AggregateTestCase, PostgresAsyncTestCase):
         self.transaction_2 = uuid4()
         self.transaction_3 = uuid4()
 
-        self.reader = PostgreSqlSnapshotReader.from_config(self.config)
+        self.reader = DatabaseSnapshotReader.from_config(self.config)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -89,15 +89,15 @@ class TestPostgreSqlSnapshotReader(AggregateTestCase, PostgresAsyncTestCase):
         await self.transaction_repository.submit(
             TransactionEntry(self.transaction_3, TransactionStatus.REJECTED, await self.event_repository.offset)
         )
-        async with PostgreSqlSnapshotWriter.from_config(self.config, reader=self.reader) as writer:
+        async with DatabaseSnapshotWriter.from_config(self.config, reader=self.reader) as writer:
             await writer.dispatch()
 
     def test_type(self):
-        self.assertTrue(issubclass(PostgreSqlSnapshotReader, PostgreSqlSnapshotSetup))
+        self.assertTrue(issubclass(DatabaseSnapshotReader, DatabaseSnapshotSetup))
 
     def test_from_config(self):
-        reader = PostgreSqlSnapshotReader.from_config(self.config)
-        self.assertIsInstance(reader.pool, DatabaseClientPool)
+        reader = DatabaseSnapshotReader.from_config(self.config)
+        self.assertIsInstance(reader.database_pool, DatabaseClientPool)
 
     async def test_find_by_uuid(self):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])

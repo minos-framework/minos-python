@@ -1,7 +1,3 @@
-from .abc import (
-    DatabaseMixin,
-    PostgreSqlMinosDatabase,
-)
 from .clients import (
     AiopgDatabaseClient,
     DatabaseClient,
@@ -11,12 +7,24 @@ from .clients import (
     UnableToConnectException,
 )
 from .locks import (
+    AiopgLockDatabaseOperationFactory,
     DatabaseLock,
-    PostgreSqlLock,
+    LockDatabaseOperationFactory,
+)
+from .manage import (
+    AiopgManageDatabaseOperationFactory,
+    ManageDatabaseOperationFactory,
+)
+from .mixins import (
+    DatabaseMixin,
+)
+from .operations import (
+    AiopgDatabaseOperation,
+    ComposedDatabaseOperation,
+    DatabaseOperation,
+    DatabaseOperationFactory,
 )
 from .pools import (
     DatabaseClientPool,
     DatabaseLockPool,
-    PostgreSqlLockPool,
-    PostgreSqlPool,
 )
