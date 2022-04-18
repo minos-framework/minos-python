@@ -29,7 +29,7 @@ from .operations import (
 
 
 class LmdbDatabaseClient(DatabaseClient):
-    """TODO"""
+    """Lmdb Database Client class."""
 
     _environment: Optional[Environment]
 

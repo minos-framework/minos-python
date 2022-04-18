@@ -12,7 +12,7 @@ from minos.common import (
 
 
 class LmdbDatabaseOperationType(str, Enum):
-    """TODO"""
+    """Lmdb Database Operation Type class."""
 
     CREATE = "create"
     READ = "read"
@@ -21,7 +21,7 @@ class LmdbDatabaseOperationType(str, Enum):
 
 
 class LmdbDatabaseOperation(DatabaseOperation):
-    """TODO"""
+    """Lmdb Database Operation class."""
 
     def __init__(
         self, type_: LmdbDatabaseOperationType, table: str, key: str, value: Optional[Any] = None, *args, **kwargs

@@ -19,7 +19,7 @@ from ..saga import (
 
 
 class SagaExecutionRepository(SetupMixin, ABC):
-    """TODO"""
+    """Saga Execution Repository class."""
 
     async def store(self, execution: SagaExecution) -> None:
         """Store an execution.
