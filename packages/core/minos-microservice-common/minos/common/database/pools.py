@@ -16,9 +16,6 @@ from aiomisc.pool import (
 from ..config import (
     Config,
 )
-from ..injections import (
-    Injectable,
-)
 from ..locks import (
     LockPool,
 )
@@ -37,7 +34,6 @@ from .locks import (
 logger = logging.getLogger(__name__)
 
 
-@Injectable("database_pool")
 class DatabaseClientPool(Pool[DatabaseClient]):
     """Database Client Pool class."""
 
@@ -49,7 +45,6 @@ class DatabaseClientPool(Pool[DatabaseClient]):
     @classmethod
     def _from_config(cls, config: Config, identifier: Optional[str] = None, **kwargs):
         base_builder = config.get_database_by_name(identifier).get("client")
-
         if base_builder is None:
             raise ValueError(f"{base_builder!r} is not a {DatabaseClientBuilder!r} instance.")
         elif issubclass(base_builder, DatabaseClient):

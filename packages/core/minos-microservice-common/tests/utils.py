@@ -12,6 +12,7 @@ from minos.common import (
     Injectable,
     Lock,
     LockPool,
+    Pool,
     Port,
     testing,
 )
@@ -163,13 +164,11 @@ class FakeBrokerSubscriberBuilder(Builder[FakeBrokerSubscriber]):
 FakeBrokerSubscriber.set_builder(FakeBrokerSubscriberBuilder)
 
 
-@Injectable("database_pool")
-class FakeDatabasePool:
+class FakeDatabasePool(Pool):
     """For testing purposes."""
 
 
-@Injectable("broker_pool")
-class FakeBrokerClientPool:
+class FakeBrokerClientPool(Pool):
     """For testing purposes."""
 
 
