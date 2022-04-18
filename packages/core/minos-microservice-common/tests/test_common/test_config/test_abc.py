@@ -147,7 +147,8 @@ class TestConfig(unittest.TestCase):
         mock = MagicMock(return_value={"default": "foo"})
         self.config._get_databases = mock
 
-        self.assertEqual("foo", self.config.get_database_by_name("unknown"))
+        with self.assertRaises(MinosConfigException):
+            self.config.get_database_by_name("unknown")
 
         self.assertEqual([call()], mock.call_args_list)
 

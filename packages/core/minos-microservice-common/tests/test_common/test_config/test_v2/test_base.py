@@ -191,15 +191,6 @@ class TestConfigV2(unittest.TestCase):
         self.assertEqual("localhost", database_config["host"])
         self.assertEqual(5432, database_config["port"])
 
-    def test_database_event(self):
-        config = ConfigV2(self.file_path, with_environment=False)
-        database_config = config.get_database_by_name("event")
-        self.assertEqual("order_db", database_config["database"])
-        self.assertEqual("minos", database_config["user"])
-        self.assertEqual("min0s", database_config["password"])
-        self.assertEqual("localhost", database_config["host"])
-        self.assertEqual(5432, database_config["port"])
-
     def test_database_query(self):
         config = ConfigV2(self.file_path, with_environment=False)
         query_database = config.get_database_by_name("query")
@@ -208,24 +199,6 @@ class TestConfigV2(unittest.TestCase):
         self.assertEqual("min0s", query_database["password"])
         self.assertEqual("localhost", query_database["host"])
         self.assertEqual(5432, query_database["port"])
-
-    def test_database_snapshot(self):
-        config = ConfigV2(self.file_path, with_environment=False)
-        snapshot = config.get_database_by_name("snapshot")
-        self.assertEqual("order_db", snapshot["database"])
-        self.assertEqual("minos", snapshot["user"])
-        self.assertEqual("min0s", snapshot["password"])
-        self.assertEqual("localhost", snapshot["host"])
-        self.assertEqual(5432, snapshot["port"])
-
-    def test_database_broker(self):
-        config = ConfigV2(self.file_path, with_environment=False)
-        snapshot = config.get_database_by_name("broker")
-        self.assertEqual("order_db", snapshot["database"])
-        self.assertEqual("minos", snapshot["user"])
-        self.assertEqual("min0s", snapshot["password"])
-        self.assertEqual("localhost", snapshot["host"])
-        self.assertEqual(5432, snapshot["port"])
 
     def test_database_saga(self):
         config = ConfigV2(self.file_path, with_environment=False)
