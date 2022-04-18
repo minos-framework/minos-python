@@ -85,8 +85,11 @@ class FakeLock(Lock):
             key = "fake"
         super().__init__(key, *args, **kwargs)
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        return
+    async def acquire(self) -> None:
+        """For testing purposes."""
+
+    async def release(self):
+        """For testing purposes."""
 
 
 class FakeLockPool(LockPool):

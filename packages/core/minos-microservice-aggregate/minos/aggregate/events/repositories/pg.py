@@ -10,9 +10,6 @@ from uuid import (
     UUID,
 )
 
-from psycopg2 import (
-    IntegrityError,
-)
 from psycopg2.sql import (
     SQL,
     Composable,
@@ -24,6 +21,7 @@ from minos.common import (
     NULL_UUID,
     Config,
     DatabaseMixin,
+    IntegrityException,
 )
 
 from ...exceptions import (
@@ -42,7 +40,7 @@ class PostgreSqlEventRepository(DatabaseMixin, EventRepository):
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> Optional[EventRepository]:
-        return super()._from_config(config, **config.get_database_by_name("event"), **kwargs)
+        return super()._from_config(config, database_key=None, **kwargs)
 
     async def _setup(self):
         """Setup miscellaneous repository thing.
@@ -65,7 +63,7 @@ class PostgreSqlEventRepository(DatabaseMixin, EventRepository):
 
         try:
             response = await self.submit_query_and_fetchone(query, params, lock=lock)
-        except IntegrityError:
+        except IntegrityException:
             raise EventRepositoryConflictException(
                 f"{entry!r} could not be submitted due to a key (uuid, version, transaction) collision",
                 await self.offset,

@@ -1,9 +1,8 @@
 import unittest
 import warnings
 
-import aiopg
-
 from minos.common import (
+    AiopgDatabaseClient,
     DatabaseClientPool,
     DatabaseMixin,
     NotProvidedException,
@@ -19,7 +18,7 @@ from tests.utils import (
 )
 
 
-# noinspection SqlNoDataSourceInspection
+# noinspection SqlNoDataSourceInspection,SqlResolve
 class TestDatabaseMixin(CommonTestCase, PostgresAsyncTestCase):
     def test_constructor(self):
         pool = DatabaseClientPool.from_config(self.config)
@@ -55,19 +54,17 @@ class TestDatabaseMixin(CommonTestCase, PostgresAsyncTestCase):
         async with DatabaseMixin() as database:
             await database.submit_query("CREATE TABLE foo (id INT NOT NULL);")
 
-        async with aiopg.connect(**self.config.get_default_database()) as connection:
-            async with connection.cursor() as cursor:
-                await cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
-                self.assertTrue((await cursor.fetchone())[0])
+        async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
+            await client.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
+            self.assertTrue((await client.fetch_one())[0])
 
     async def test_submit_query_locked(self):
         async with DatabaseMixin() as database:
             await database.submit_query("CREATE TABLE foo (id INT NOT NULL);", lock=1234)
 
-        async with aiopg.connect(**self.config.get_default_database()) as connection:
-            async with connection.cursor() as cursor:
-                await cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
-                self.assertTrue((await cursor.fetchone())[0])
+        async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
+            await client.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'foo');")
+            self.assertTrue((await client.fetch_one())[0])
 
     async def test_submit_query_and_fetchone(self):
         async with DatabaseMixin() as database:

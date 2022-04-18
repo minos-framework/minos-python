@@ -282,6 +282,8 @@ class ConfigV1(Config):
         data = self.get_by_key(prefix)
         data.pop("records", None)
         data.pop("retry", None)
+        if "client" in data:
+            data["client"] = import_module(data["client"])
         return data
 
     def _get_discovery(self) -> dict[str, Any]:

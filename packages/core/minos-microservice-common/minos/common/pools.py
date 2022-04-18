@@ -13,6 +13,7 @@ from asyncio import (
 )
 from typing import (
     Any,
+    AsyncContextManager,
     Generic,
     Optional,
     TypeVar,
@@ -44,7 +45,7 @@ P = TypeVar("P")
 class PoolFactory(SetupMixin):
     """Pool Factory class."""
 
-    _pools: dict[str, Pool]
+    _pools: dict[tuple[str, ...], Pool]
 
     def __init__(self, config: Config, default_classes: dict[str, type[Pool]] = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -69,18 +70,18 @@ class PoolFactory(SetupMixin):
         await gather(*futures)
         logger.debug("Destroyed pools!")
 
-    def get_pool(self, type_: str, key: Optional[str] = None, **kwargs) -> Pool:
+    def get_pool(self, type_: str, identifier: Optional[str] = None, **kwargs) -> Pool:
         """Get a pool from the factory.
 
         :param type_: The type of the pool.
-        :param key:  An optional key that identifies the pool.
+        :param identifier:  An optional key that identifies the pool.
         :param kwargs: Additional named arguments.
         :return: A ``Pool`` instance.
         """
-        if key is None:
-            key = type_
+        key = (type_, identifier)
         if key not in self._pools:
-            self._pools[key] = self._create_pool(type_, key=key, **kwargs)
+            logger.debug(f"Creating the {key!r} pool...")
+            self._pools[key] = self._create_pool(type_, identifier=identifier, **kwargs)
         return self._pools[key]
 
     def _create_pool(self, type_: str, **kwargs) -> Pool:
@@ -107,7 +108,8 @@ class Pool(SetupMixin, PoolBase, Generic[P], ABC):
     """Base class for Pool implementations in minos"""
 
     def __init__(self, *args, maxsize: int = 10, recycle: Optional[int] = 300, already_setup: bool = True, **kwargs):
-        super().__init__(*args, maxsize=maxsize, recycle=recycle, already_setup=already_setup, **kwargs)
+        SetupMixin.__init__(self, *args, already_setup=already_setup, **kwargs)
+        PoolBase.__init__(self, maxsize=maxsize, recycle=recycle)
 
     # noinspection PyUnresolvedReferences
     async def __acquire(self) -> Any:  # pragma: no cover
@@ -133,10 +135,11 @@ class Pool(SetupMixin, PoolBase, Generic[P], ABC):
 
     # noinspection PyUnresolvedReferences
     async def __release(self, instance: Any) -> Any:  # pragma: no cover
+        await self._release_instance(instance)
         await self._PoolBase__release(instance)
         logger.debug(f"Released instance: {instance!r}")
 
-    def acquire(self, *args, **kwargs) -> P:
+    def acquire(self, *args, **kwargs) -> AsyncContextManager[P]:
         """Acquire a new instance wrapped on an asynchronous context manager.
 
         :param args: Additional positional arguments.
@@ -157,6 +160,9 @@ class Pool(SetupMixin, PoolBase, Generic[P], ABC):
 
     async def _check_instance(self, instance: P) -> bool:
         return True
+
+    async def _release_instance(self, instance: P) -> None:
+        pass
 
 
 class MinosPool(Pool, Generic[P], ABC):

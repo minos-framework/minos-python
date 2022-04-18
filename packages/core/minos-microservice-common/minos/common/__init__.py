@@ -14,14 +14,20 @@ from .config import (
     MinosConfig,
 )
 from .database import (
+    AiopgDatabaseClient,
+    DatabaseClient,
+    DatabaseClientBuilder,
+    DatabaseClientException,
     DatabaseClientPool,
     DatabaseLock,
     DatabaseLockPool,
     DatabaseMixin,
+    IntegrityException,
     PostgreSqlLock,
     PostgreSqlLockPool,
     PostgreSqlMinosDatabase,
     PostgreSqlPool,
+    UnableToConnectException,
 )
 from .datetime import (
     NULL_DATETIME,

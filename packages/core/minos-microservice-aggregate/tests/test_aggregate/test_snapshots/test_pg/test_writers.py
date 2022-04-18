@@ -26,6 +26,7 @@ from minos.aggregate import (
     TransactionStatus,
 )
 from minos.common import (
+    DatabaseClientPool,
     NotProvidedException,
     current_datetime,
 )
@@ -101,8 +102,7 @@ class TestPostgreSqlSnapshotWriter(AggregateTestCase, PostgresAsyncTestCase):
         self.assertTrue(issubclass(PostgreSqlSnapshotWriter, PostgreSqlSnapshotSetup))
 
     def test_from_config(self):
-        snapshot_config = self.config.get_database_by_name("snapshot")
-        self.assertEqual(snapshot_config["database"], self.writer.pool.database)
+        self.assertIsInstance(self.writer.pool, DatabaseClientPool)
 
     def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):

@@ -1,12 +1,11 @@
 import unittest
 
-import aiopg
-
 from minos.aggregate import (
     EventRepository,
     PostgreSqlEventRepository,
 )
 from minos.common import (
+    AiopgDatabaseClient,
     DatabaseClientPool,
 )
 from minos.common.testing import (
@@ -18,6 +17,7 @@ from tests.testcases import (
 )
 
 
+# noinspection SqlNoDataSourceInspection
 class TestPostgreSqlEventRepositorySubmit(EventRepositorySubmitTestCase, PostgresAsyncTestCase):
     __test__ = True
 
@@ -30,20 +30,18 @@ class TestPostgreSqlEventRepositorySubmit(EventRepositorySubmitTestCase, Postgre
         pool = DatabaseClientPool.from_config(self.config)
         repository = PostgreSqlEventRepository(pool)
         self.assertIsInstance(repository, PostgreSqlEventRepository)
-        self.assertEqual(pool, repository.pool)
+        self.assertIsInstance(repository.pool, DatabaseClientPool)
 
     def test_from_config(self):
         repository = PostgreSqlEventRepository.from_config(self.config)
-        repository_config = self.config.get_database_by_name("event")
-        self.assertEqual(repository_config["database"], repository.pool.database)
+        self.assertIsInstance(repository.pool, DatabaseClientPool)
 
     async def test_setup(self):
-        async with aiopg.connect(**self.config.get_default_database()) as connection:
-            async with connection.cursor() as cursor:
-                await cursor.execute(
-                    "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_event');"
-                )
-                response = (await cursor.fetchone())[0]
+        async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
+            await client.execute(
+                "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_event');"
+            )
+            response = (await client.fetch_one())[0]
         self.assertTrue(response)
 
 

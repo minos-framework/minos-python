@@ -8,6 +8,7 @@ from unittest.mock import (
 )
 
 from minos.common import (
+    AiopgDatabaseClient,
     DatabaseMixin,
 )
 from minos.common.testing import (
@@ -23,6 +24,7 @@ from minos.networks.brokers.collections import (
     PostgreSqlBrokerQueueQueryFactory,
 )
 from tests.utils import (
+    FakeAsyncIterator,
     NetworksTestCase,
 )
 
@@ -85,9 +87,10 @@ class TestPostgreSqlBrokerQueue(NetworksTestCase, PostgresAsyncTestCase):
             BrokerMessageV1("bar", BrokerMessageV1Payload("foo")),
         ]
 
-        with patch(
-            "aiopg.Cursor.fetchall",
-            return_value=[[1, messages[0].avro_bytes], [2, bytes()], [3, messages[1].avro_bytes]],
+        with patch.object(
+            AiopgDatabaseClient,
+            "fetch_all",
+            return_value=FakeAsyncIterator([[1, messages[0].avro_bytes], [2, bytes()], [3, messages[1].avro_bytes]]),
         ):
             async with PostgreSqlBrokerQueue.from_config(self.config, query_factory=self.query_factory) as queue:
                 queue._get_count = AsyncMock(side_effect=[3, 0])

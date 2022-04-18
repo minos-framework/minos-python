@@ -4,12 +4,10 @@ from __future__ import (
 
 from abc import (
     ABC,
+    abstractmethod,
 )
 from collections.abc import (
     Hashable,
-)
-from contextlib import (
-    AbstractAsyncContextManager,
 )
 
 from cached_property import (
@@ -24,7 +22,7 @@ from .pools import (
 )
 
 
-class Lock(AbstractAsyncContextManager):
+class Lock(ABC):
     """Lock base class."""
 
     key: Hashable
@@ -34,6 +32,27 @@ class Lock(AbstractAsyncContextManager):
             raise ValueError(f"The key must be hashable. Obtained: {key!r} ({type(key)})")
 
         self.key = key
+
+    async def __aenter__(self) -> Lock:
+        await self.acquire()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.release()
+
+    @abstractmethod
+    async def acquire(self) -> None:
+        """Acquire the lock.
+
+        :return: This method does not return anything.
+        """
+
+    @abstractmethod
+    async def release(self):
+        """Release the lock.
+
+        :return: This method does not return anything.
+        """
 
     @cached_property
     def hashed_key(self) -> int:

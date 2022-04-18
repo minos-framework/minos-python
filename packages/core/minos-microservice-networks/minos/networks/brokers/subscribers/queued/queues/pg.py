@@ -8,12 +8,13 @@ from typing import (
     Optional,
 )
 
-from aiopg import (
-    Cursor,
-)
 from psycopg2.sql import (
     SQL,
     Identifier,
+)
+
+from minos.common import (
+    DatabaseClient,
 )
 
 from ....collections import (
@@ -45,29 +46,30 @@ class PostgreSqlBrokerSubscriberQueue(PostgreSqlBrokerQueue, BrokerSubscriberQue
     async def _notify_enqueued(self, message: BrokerMessage) -> None:
         await self.submit_query(self._query_factory.build_notify().format(Identifier(message.topic)))
 
-    async def _listen_entries(self, cursor: Cursor) -> None:
+    async def _listen_entries(self, client: DatabaseClient) -> None:
         for topic in self.topics:
-            await cursor.execute(self._query_factory.build_listen().format(Identifier(topic)))
+            await client.execute(self._query_factory.build_listen().format(Identifier(topic)))
 
-    async def _unlisten_entries(self, cursor: Cursor) -> None:
-        if not cursor.closed:
+    async def _unlisten_entries(self, client: DatabaseClient) -> None:
+        if not client.already_destroyed:
             for topic in self.topics:
-                await cursor.execute(self._query_factory.build_unlisten().format(Identifier(topic)))
+                await client.execute(self._query_factory.build_unlisten().format(Identifier(topic)))
 
-    async def _get_count(self, cursor: Cursor) -> int:
+    async def _get_count(self, client: DatabaseClient) -> int:
         # noinspection PyTypeChecker
-        await cursor.execute(self._query_factory.build_count_not_processed(), (self._retry, tuple(self.topics)))
-        count = (await cursor.fetchone())[0]
+        await client.execute(self._query_factory.build_count_not_processed(), (self._retry, tuple(self.topics)))
+        count = (await client.fetch_one())[0]
         return count
 
-    async def _dequeue_rows(self, cursor: Cursor) -> list[Any]:
+    async def _dequeue_rows(self, client: DatabaseClient) -> list[Any]:
         # noinspection PyTypeChecker
-        await cursor.execute(
+        await client.execute(
             self._query_factory.build_select_not_processed(), (self._retry, tuple(self.topics), self._records)
         )
-        return await cursor.fetchall()
+        return [row async for row in client.fetch_all()]
 
 
+# noinspection SqlNoDataSourceInspection,SqlResolve
 class PostgreSqlBrokerSubscriberQueueQueryFactory(PostgreSqlBrokerQueueQueryFactory):
     """PostgreSql Broker Subscriber Queue Query Factory class."""
 

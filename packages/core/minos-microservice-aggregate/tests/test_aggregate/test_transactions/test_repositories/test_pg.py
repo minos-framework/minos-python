@@ -3,8 +3,6 @@ from uuid import (
     uuid4,
 )
 
-import aiopg
-
 from minos.aggregate import (
     PostgreSqlTransactionRepository,
     TransactionEntry,
@@ -13,6 +11,7 @@ from minos.aggregate import (
     TransactionStatus,
 )
 from minos.common import (
+    AiopgDatabaseClient,
     DatabaseClientPool,
 )
 from minos.common.testing import (
@@ -23,6 +22,7 @@ from tests.utils import (
 )
 
 
+# noinspection SqlNoDataSourceInspection
 class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -50,16 +50,14 @@ class TestPostgreSqlTransactionRepository(AggregateTestCase, PostgresAsyncTestCa
 
     def test_from_config(self):
         repository = PostgreSqlTransactionRepository.from_config(self.config)
-        repository_config = self.config.get_database_by_name("event")
-        self.assertEqual(repository_config["database"], repository.pool.database)
+        self.assertIsInstance(repository.pool, DatabaseClientPool)
 
     async def test_setup(self):
-        async with aiopg.connect(**self.config.get_default_database()) as connection:
-            async with connection.cursor() as cursor:
-                await cursor.execute(
-                    "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_transaction');"
-                )
-                response = (await cursor.fetchone())[0]
+        async with AiopgDatabaseClient(**self.config.get_default_database()) as client:
+            await client.execute(
+                "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_transaction');"
+            )
+            response = (await client.fetch_one())[0]
         self.assertTrue(response)
 
     async def test_submit(self):
