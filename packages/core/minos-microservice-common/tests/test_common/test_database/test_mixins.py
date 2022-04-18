@@ -52,22 +52,22 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
     async def test_operation_factory(self):
         operation_factory = MockedLockDatabaseOperationFactory()
         mixin = DatabaseMixin(operation_factory=operation_factory)
-        self.assertEqual(operation_factory, mixin.operation_factory)
+        self.assertEqual(operation_factory, mixin.database_operation_factory)
 
     async def test_operation_factory_from_cls_init(self):
         mixin = DatabaseMixin(operation_factory_cls=LockDatabaseOperationFactory)
-        self.assertIsInstance(mixin.operation_factory, MockedLockDatabaseOperationFactory)
+        self.assertIsInstance(mixin.database_operation_factory, MockedLockDatabaseOperationFactory)
 
     async def test_operation_factory_from_cls_generic(self):
         class _DatabaseMixin(DatabaseMixin[LockDatabaseOperationFactory]):
             """For testing purposes."""
 
         mixin = _DatabaseMixin()
-        self.assertIsInstance(mixin.operation_factory, MockedLockDatabaseOperationFactory)
+        self.assertIsInstance(mixin.database_operation_factory, MockedLockDatabaseOperationFactory)
 
     async def test_operation_factory_none(self):
         mixin = DatabaseMixin()
-        self.assertEqual(None, mixin.operation_factory)
+        self.assertEqual(None, mixin.database_operation_factory)
 
     async def test_operation_factory_from_cls_generic_raises(self):
         class _DatabaseMixin(DatabaseMixin[int]):
@@ -76,76 +76,76 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
         with self.assertRaises(TypeError):
             _DatabaseMixin()
 
-    async def test_submit_query(self):
+    async def test_execute_on_database(self):
         op1 = MockedDatabaseOperation("create_table")
         op2 = MockedDatabaseOperation("check_exist", [(True,)])
 
         async with DatabaseMixin() as database:
-            await database.submit_query(op1)
+            await database.execute_on_database(op1)
 
         async with MockedDatabaseClient(**self.config.get_default_database()) as client:
             await client.execute(op2)
             self.assertTrue((await client.fetch_one())[0])
 
-    async def test_submit_query_locked(self):
+    async def test_execute_on_database_locked(self):
         op1 = MockedDatabaseOperation("create_table", lock=1234)
         op2 = MockedDatabaseOperation("check_exist", [(True,)])
 
         async with DatabaseMixin() as database:
-            await database.submit_query(op1)
+            await database.execute_on_database(op1)
 
         async with MockedDatabaseClient(**self.config.get_default_database()) as client:
             await client.execute(op2)
             self.assertTrue((await client.fetch_one())[0])
 
-    async def test_submit_query_and_fetchone(self):
+    async def test_execute_on_database_and_fetch_one(self):
         op1 = MockedDatabaseOperation("create_table")
         op2 = MockedDatabaseOperation("insert")
         op3 = MockedDatabaseOperation("select", [(3,), (4,), (5,)])
 
         async with DatabaseMixin() as database:
-            await database.submit_query(op1)
-            await database.submit_query(op2)
+            await database.execute_on_database(op1)
+            await database.execute_on_database(op2)
 
-            observed = await database.submit_query_and_fetchone(op3)
+            observed = await database.execute_on_database_and_fetch_one(op3)
 
         self.assertEqual((3,), observed)
 
-    async def test_submit_query_and_iter(self):
+    async def test_execute_on_database_and_fetch_all(self):
         op1 = MockedDatabaseOperation("create_table")
         op2 = MockedDatabaseOperation("insert")
         op3 = MockedDatabaseOperation("select", [(3,), (4,), (5,)])
 
         async with DatabaseMixin() as database:
-            await database.submit_query(op1)
-            await database.submit_query(op2)
-            observed = [v async for v in database.submit_query_and_iter(op3)]
+            await database.execute_on_database(op1)
+            await database.execute_on_database(op2)
+            observed = [v async for v in database.execute_on_database_and_fetch_all(op3)]
 
         self.assertEqual([(3,), (4,), (5,)], observed)
 
-    async def test_submit_query_and_iter_streaming_mode_true(self):
+    async def test_execute_on_database_and_fetch_all_streaming_mode_true(self):
         op1 = MockedDatabaseOperation("create_table")
         op2 = MockedDatabaseOperation("insert")
         op3 = MockedDatabaseOperation("select", [(3,), (4,), (5,)])
 
         async with DatabaseMixin() as database:
-            await database.submit_query(op1)
-            await database.submit_query(op2)
+            await database.execute_on_database(op1)
+            await database.execute_on_database(op2)
 
-            observed = [v async for v in database.submit_query_and_iter(op3, streaming_mode=True)]
+            observed = [v async for v in database.execute_on_database_and_fetch_all(op3, streaming_mode=True)]
 
         self.assertEqual([(3,), (4,), (5,)], observed)
 
-    async def test_submit_query_and_iter_locked(self):
+    async def test_execute_on_database_and_fetch_all_locked(self):
         op1 = MockedDatabaseOperation("create_table", lock=1234)
         op2 = MockedDatabaseOperation("insert")
         op3 = MockedDatabaseOperation("select", [(3,), (4,), (5,)])
 
         async with DatabaseMixin() as database:
-            await database.submit_query(op1)
-            await database.submit_query(op2)
+            await database.execute_on_database(op1)
+            await database.execute_on_database(op2)
 
-            observed = [v async for v in database.submit_query_and_iter(op3)]
+            observed = [v async for v in database.execute_on_database_and_fetch_all(op3)]
 
         self.assertEqual([(3,), (4,), (5,)], observed)
 

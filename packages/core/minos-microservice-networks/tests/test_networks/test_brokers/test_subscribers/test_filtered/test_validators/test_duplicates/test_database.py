@@ -32,7 +32,7 @@ class TestDatabaseBrokerSubscriberDuplicateValidator(NetworksTestCase, DatabaseM
         validator = DatabaseBrokerSubscriberDuplicateValidator.from_config(self.config)
 
         self.assertIsInstance(
-            validator.operation_factory, MockedBrokerSubscriberDuplicateValidatorDatabaseOperationFactory
+            validator.database_operation_factory, MockedBrokerSubscriberDuplicateValidatorDatabaseOperationFactory
         )
 
     async def test_is_valid(self):

@@ -120,8 +120,8 @@ class DatabaseBrokerQueue(
         await super()._destroy()
 
     async def _create_table(self) -> None:
-        operation = self.operation_factory.build_create()
-        await self.submit_query(operation)
+        operation = self.database_operation_factory.build_create()
+        await self.execute_on_database(operation)
 
     async def _start_run(self) -> None:
         if self._run_task is None:
@@ -142,13 +142,13 @@ class DatabaseBrokerQueue(
                 entry = self._queue.get_nowait()
             except QueueEmpty:
                 break
-            operation = self.operation_factory.build_mark_processed(entry.id_)
-            await self.submit_query(operation)
+            operation = self.database_operation_factory.build_mark_processed(entry.id_)
+            await self.execute_on_database(operation)
             self._queue.task_done()
 
     async def _enqueue(self, message: BrokerMessage) -> None:
-        operation = self.operation_factory.build_submit(message.topic, message.avro_bytes)
-        await self.submit_query(operation)
+        operation = self.database_operation_factory.build_submit(message.topic, message.avro_bytes)
+        await self.execute_on_database(operation)
         await self._notify_enqueued(message)
 
     # noinspection PyUnusedLocal
@@ -166,12 +166,12 @@ class DatabaseBrokerQueue(
                     logger.warning(
                         f"There was a problem while trying to deserialize the entry with {entry.id_!r} id: {exc}"
                     )
-                    operation = self.operation_factory.build_mark_processed(entry.id_)
-                    await self.submit_query(operation)
+                    operation = self.database_operation_factory.build_mark_processed(entry.id_)
+                    await self.execute_on_database(operation)
                     continue
 
-                operation = self.operation_factory.build_delete(entry.id_)
-                await self.submit_query(operation)
+                operation = self.database_operation_factory.build_delete(entry.id_)
+                await self.execute_on_database(operation)
                 return message
             finally:
                 self._queue.task_done()
@@ -195,8 +195,8 @@ class DatabaseBrokerQueue(
 
     async def _get_count(self) -> int:
         # noinspection PyTypeChecker
-        operation = self.operation_factory.build_count(self.retry)
-        row = await self.submit_query_and_fetchone(operation)
+        operation = self.database_operation_factory.build_count(self.retry)
+        row = await self.execute_on_database_and_fetch_one(operation)
         count = row[0]
         return count
 
@@ -210,14 +210,14 @@ class DatabaseBrokerQueue(
             entries = [_Entry(*row) for row in rows]
 
             ids = tuple(entry.id_ for entry in entries)
-            operation = self.operation_factory.build_mark_processing(ids)
+            operation = self.database_operation_factory.build_mark_processing(ids)
             await client.execute(operation)
 
         for entry in entries:
             await self._queue.put(entry)
 
     async def _dequeue_rows(self, client: DatabaseClient) -> list[Any]:
-        operation = self.operation_factory.build_query(self._retry, self._records)
+        operation = self.database_operation_factory.build_query(self._retry, self._records)
         await client.execute(operation)
         return [row async for row in client.fetch_all()]
 

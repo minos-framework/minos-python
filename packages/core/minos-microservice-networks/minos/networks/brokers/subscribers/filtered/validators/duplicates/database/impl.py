@@ -40,13 +40,13 @@ class DatabaseBrokerSubscriberDuplicateValidator(
         await self._create_table()
 
     async def _create_table(self) -> None:
-        operation = self.operation_factory.build_create()
-        await self.submit_query(operation)
+        operation = self.database_operation_factory.build_create()
+        await self.execute_on_database(operation)
 
     async def _is_unique(self, topic: str, uuid: UUID) -> bool:
-        operation = self.operation_factory.build_submit(topic, uuid)
+        operation = self.database_operation_factory.build_submit(topic, uuid)
         try:
-            await self.submit_query(operation)
+            await self.execute_on_database(operation)
             return True
         except IntegrityException:
             return False

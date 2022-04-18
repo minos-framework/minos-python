@@ -79,7 +79,7 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
         return pool_factory.get_pool(type_="database")
 
     @property
-    def operation_factory(self) -> Optional[GenericDatabaseOperationFactory]:
+    def database_operation_factory(self) -> Optional[GenericDatabaseOperationFactory]:
         """Get the operation factory if any.
 
         :return: A ``OperationFactory`` if it has been set or ``None`` otherwise.
@@ -101,8 +101,8 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
                 raise TypeError(f"{type(self)!r} must contain a {DatabaseOperationFactory!r} as generic value.")
         return operation_factory_cls
 
-    async def submit_query_and_fetchone(self, operation: DatabaseOperation) -> tuple:
-        """Submit a SQL query and gets the first response.
+    async def execute_on_database_and_fetch_one(self, operation: DatabaseOperation) -> tuple:
+        """Submit an Operation and get the first response.
 
         :param operation: The operation to be executed.
         :return: This method does not return anything.
@@ -112,10 +112,10 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
             return await client.fetch_one()
 
     # noinspection PyUnusedLocal
-    async def submit_query_and_iter(
+    async def execute_on_database_and_fetch_all(
         self, operation: DatabaseOperation, streaming_mode: Optional[bool] = None
     ) -> AsyncIterator[tuple]:
-        """Submit a SQL query and return an asynchronous iterator.
+        """Submit an Operation and return an asynchronous iterator.
 
         :param operation: The operation to be executed.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
@@ -139,8 +139,8 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
             yield value
 
     # noinspection PyUnusedLocal
-    async def submit_query(self, operation: DatabaseOperation) -> None:
-        """Submit a SQL query.
+    async def execute_on_database(self, operation: DatabaseOperation) -> None:
+        """Submit an Operation.
 
         :param operation: The operation to be executed.
         :return: This method does not return anything.

@@ -87,8 +87,8 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         self._transaction_repository = transaction_repository
 
     async def _setup(self) -> None:
-        operation = self.operation_factory.build_create()
-        await self.submit_query(operation)
+        operation = self.database_operation_factory.build_create()
+        await self.execute_on_database(operation)
 
     async def _destroy(self) -> None:
         await super()._destroy()
@@ -110,11 +110,11 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         else:
             transaction_uuids = await transaction.uuids
 
-        operation = self.operation_factory.build_query(
+        operation = self.database_operation_factory.build_query(
             name, condition, ordering, limit, transaction_uuids, exclude_deleted
         )
 
-        async for row in self.submit_query_and_iter(operation, streaming_mode=streaming_mode):
+        async for row in self.execute_on_database_and_fetch_all(operation, streaming_mode=streaming_mode):
             yield SnapshotEntry(*row)
 
     async def is_synced(self, name: str, **kwargs) -> bool:
@@ -148,17 +148,17 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         await self._store_offset(offset)
 
     async def _load_offset(self) -> int:
-        operation = self.operation_factory.build_query_offset()
+        operation = self.database_operation_factory.build_query_offset()
         # noinspection PyBroadException
         try:
-            row = await self.submit_query_and_fetchone(operation)
+            row = await self.execute_on_database_and_fetch_one(operation)
         except ProgrammingException:
             return 0
         return row[0]
 
     async def _store_offset(self, offset: int) -> None:
-        operation = self.operation_factory.build_submit_offset(offset)
-        await self.submit_query(operation)
+        operation = self.database_operation_factory.build_submit_offset(offset)
+        await self.execute_on_database(operation)
 
     async def _dispatch_one(self, event_entry: EventEntry, **kwargs) -> SnapshotEntry:
         if event_entry.action.is_delete:
@@ -210,8 +210,8 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         return snapshot_entry.build(**kwargs)
 
     async def _submit_entry(self, snapshot_entry: SnapshotEntry) -> SnapshotEntry:
-        operation = self.operation_factory.build_submit(**snapshot_entry.as_raw())
-        response = await self.submit_query_and_fetchone(operation)
+        operation = self.database_operation_factory.build_submit(**snapshot_entry.as_raw())
+        response = await self.execute_on_database_and_fetch_one(operation)
 
         snapshot_entry.created_at, snapshot_entry.updated_at = response
 
@@ -223,5 +223,5 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         )
         transaction_uuids = {transaction.uuid async for transaction in iterable}
         if len(transaction_uuids):
-            operation = self.operation_factory.build_delete(transaction_uuids)
-            await self.submit_query(operation)
+            operation = self.database_operation_factory.build_delete(transaction_uuids)
+            await self.execute_on_database(operation)

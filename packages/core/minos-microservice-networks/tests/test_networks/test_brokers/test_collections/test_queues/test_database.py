@@ -44,14 +44,14 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
     def test_constructor(self):
         queue = DatabaseBrokerQueue(operation_factory=self.operation_factory)
         self.assertEqual(self.pool_factory.get_pool("database"), queue.database_pool)
-        self.assertEqual(self.operation_factory, queue.operation_factory)
+        self.assertEqual(self.operation_factory, queue.database_operation_factory)
         self.assertEqual(2, queue.retry)
         self.assertEqual(1000, queue.records)
 
     async def test_operation_factory(self):
         queue = DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory)
 
-        self.assertEqual(self.operation_factory, queue.operation_factory)
+        self.assertEqual(self.operation_factory, queue.database_operation_factory)
 
     async def test_enqueue(self):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))

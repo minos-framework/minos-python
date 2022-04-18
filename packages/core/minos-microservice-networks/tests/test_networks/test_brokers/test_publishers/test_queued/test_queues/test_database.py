@@ -21,7 +21,7 @@ class TestDatabaseBrokerPublisherQueue(NetworksTestCase, DatabaseMinosTestCase):
     async def test_operation_factory(self):
         queue = DatabaseBrokerPublisherQueue.from_config(self.config)
 
-        self.assertIsInstance(queue.operation_factory, BrokerPublisherQueueDatabaseOperationFactory)
+        self.assertIsInstance(queue.database_operation_factory, BrokerPublisherQueueDatabaseOperationFactory)
 
 
 if __name__ == "__main__":

@@ -38,7 +38,7 @@ class TestDatabaseBrokerSubscriberQueue(NetworksTestCase, DatabaseMinosTestCase)
     async def test_operation_factory(self):
         queue = DatabaseBrokerSubscriberQueue.from_config(self.config, topics={"foo", "bar"})
 
-        self.assertIsInstance(queue.operation_factory, MockedBrokerSubscriberQueueDatabaseOperationFactory)
+        self.assertIsInstance(queue.database_operation_factory, MockedBrokerSubscriberQueueDatabaseOperationFactory)
 
     async def test_enqueue(self):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))

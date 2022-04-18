@@ -35,16 +35,16 @@ class DatabaseTransactionRepository(DatabaseMixin[TransactionDatabaseOperationFa
         super().__init__(*args, database_key=database_key, **kwargs)
 
     async def _setup(self):
-        operation = self.operation_factory.build_create()
-        await self.submit_query(operation)
+        operation = self.database_operation_factory.build_create()
+        await self.execute_on_database(operation)
 
     async def _submit(self, transaction: TransactionEntry) -> TransactionEntry:
-        operation = self.operation_factory.build_submit(
+        operation = self.database_operation_factory.build_submit(
             **transaction.as_raw(),
         )
 
         try:
-            updated_at = await self.submit_query_and_fetchone(operation)
+            updated_at = await self.execute_on_database_and_fetch_one(operation)
         except ProgrammingException:
             raise TransactionRepositoryConflictException(
                 f"{transaction!r} status is invalid respect to the previous one."
@@ -53,6 +53,6 @@ class DatabaseTransactionRepository(DatabaseMixin[TransactionDatabaseOperationFa
         return transaction
 
     async def _select(self, streaming_mode: Optional[bool] = None, **kwargs) -> AsyncIterator[TransactionEntry]:
-        operation = self.operation_factory.build_query(**kwargs)
-        async for row in self.submit_query_and_iter(operation, streaming_mode=streaming_mode):
+        operation = self.database_operation_factory.build_query(**kwargs)
+        async for row in self.execute_on_database_and_fetch_all(operation, streaming_mode=streaming_mode):
             yield TransactionEntry(*row, transaction_repository=self)
