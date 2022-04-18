@@ -45,8 +45,9 @@ from .exceptions import (
     SagaPausedExecutionStepException,
 )
 from .executions import (
+    DatabaseSagaExecutionRepository,
     SagaExecution,
-    SagaExecutionStorage,
+    SagaExecutionRepository,
     SagaStatus,
 )
 from .messages import (
@@ -66,7 +67,7 @@ class SagaManager(SetupMixin):
     @Inject()
     def __init__(
         self,
-        storage: SagaExecutionStorage,
+        storage: SagaExecutionRepository,
         broker_pool: Optional[BrokerClientPool] = None,
         pool_factory: Optional[PoolFactory] = None,
         *args,
@@ -92,8 +93,16 @@ class SagaManager(SetupMixin):
         :param kwargs: Additional named arguments.
         :return: A new ``SagaManager`` instance.
         """
-        storage = SagaExecutionStorage.from_config(config, **kwargs)
+        storage = DatabaseSagaExecutionRepository.from_config(config, **kwargs)
         return cls(storage=storage, **kwargs)
+
+    async def _setup(self) -> None:
+        await super()._setup()
+        await self.storage.setup()
+
+    async def _destroy(self) -> None:
+        await self.storage.destroy()
+        await super()._destroy()
 
     async def run(
         self,
@@ -161,7 +170,7 @@ class SagaManager(SetupMixin):
         return await self._run(execution, **kwargs)
 
     async def _load_and_run(self, response: SagaResponse, **kwargs) -> Union[UUID, SagaExecution]:
-        execution = self.storage.load(response.uuid)
+        execution = await self.storage.load(response.uuid)
         return await self._run(execution, response=response, **kwargs)
 
     async def _run(
@@ -178,7 +187,7 @@ class SagaManager(SetupMixin):
             else:
                 await self._run_with_pause_on_memory(execution, **kwargs)
         except SagaFailedExecutionException as exc:
-            self.storage.store(execution)
+            await self.storage.store(execution)
             if raise_on_error:
                 raise exc
             logger.exception(f"The execution identified by {execution.uuid!s} failed")
@@ -194,7 +203,7 @@ class SagaManager(SetupMixin):
                 headers["related_services"] = ",".join(related_services)
 
         if execution.status == SagaStatus.Finished:
-            self.storage.delete(execution)
+            await self.storage.delete(execution)
 
         if return_execution:
             return execution
@@ -207,7 +216,7 @@ class SagaManager(SetupMixin):
             if autocommit:
                 await execution.commit(**kwargs)
         except SagaPausedExecutionStepException:
-            self.storage.store(execution)
+            await self.storage.store(execution)
         except SagaFailedExecutionException as exc:
             if autocommit:
                 await execution.reject(**kwargs)
@@ -225,7 +234,7 @@ class SagaManager(SetupMixin):
                         await execution.execute(response=response, autocommit=False, **kwargs)
                     except SagaPausedExecutionStepException:
                         response = await self._get_response(broker, execution, **kwargs)
-                    self.storage.store(execution)
+                    await self.storage.store(execution)
             if autocommit:
                 await execution.commit(**kwargs)
         except SagaFailedExecutionException as exc:

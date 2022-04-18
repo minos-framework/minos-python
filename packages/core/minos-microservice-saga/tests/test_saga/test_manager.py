@@ -27,7 +27,7 @@ from minos.saga import (
     SagaContext,
     SagaExecution,
     SagaExecutionNotFoundException,
-    SagaExecutionStorage,
+    SagaExecutionRepository,
     SagaFailedExecutionException,
     SagaManager,
     SagaResponse,
@@ -76,7 +76,7 @@ class TestSagaManager(SagaTestCase):
         super().tearDown()
 
     def test_constructor(self):
-        self.assertIsInstance(self.manager.storage, SagaExecutionStorage)
+        self.assertIsInstance(self.manager.storage, SagaExecutionRepository)
         self.assertIsInstance(self.manager, SagaManager)
 
     def test_constructor_without_broker(self):
@@ -103,7 +103,7 @@ class TestSagaManager(SagaTestCase):
 
         self.assertEqual(SagaStatus.Finished, execution.status)
         with self.assertRaises(SagaExecutionNotFoundException):
-            self.manager.storage.load(execution.uuid)
+            await self.manager.storage.load(execution.uuid)
 
         observed = self.broker_publisher.messages
         expected = self._build_expected_messages(observed)
@@ -181,7 +181,7 @@ class TestSagaManager(SagaTestCase):
             self.assertEqual(SagaStatus.Finished, execution.status)
 
         with self.assertRaises(SagaExecutionNotFoundException):
-            self.manager.storage.load(self.uuid)
+            await self.manager.storage.load(self.uuid)
 
         observed = self.broker_publisher.messages
         expected = self._build_expected_messages(observed)
@@ -232,7 +232,7 @@ class TestSagaManager(SagaTestCase):
 
     async def test_run_with_pause_on_disk_returning_uuid(self):
         uuid = await self.manager.run(ADD_ORDER, return_execution=False, pause_on_disk=True)
-        execution = self.manager.storage.load(uuid)
+        execution = await self.manager.storage.load(uuid)
         self.assertIsInstance(execution, SagaExecution)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
