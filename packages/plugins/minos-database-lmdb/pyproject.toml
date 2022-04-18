@@ -38,6 +38,8 @@ lmdb = "^1.2.1"
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../../core/minos-microservice-common", develop = true }
 minos-microservice-saga = { path = "../../core/minos-microservice-saga", develop = true }
+minos-microservice-networks = { path = "../../core/minos-microservice-networks", develop = true }
+minos-microservice-aggregate = { path = "../../core/minos-microservice-aggregate", develop = true }
 black = "^22.3"
 isort = "^5.8.0"
 pytest = "^7.0.1"

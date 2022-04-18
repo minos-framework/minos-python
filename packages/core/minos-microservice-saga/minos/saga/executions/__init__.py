@@ -1,6 +1,9 @@
 from .commit import (
     TransactionCommitter,
 )
+from .database import (
+    SagaExecutionDatabaseOperationFactory,
+)
 from .executors import (
     Executor,
     LocalExecutor,

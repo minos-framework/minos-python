@@ -53,6 +53,7 @@ from .executions import (
     RequestExecutor,
     ResponseExecutor,
     SagaExecution,
+    SagaExecutionDatabaseOperationFactory,
     SagaExecutionStorage,
     SagaStatus,
     SagaStepExecution,
