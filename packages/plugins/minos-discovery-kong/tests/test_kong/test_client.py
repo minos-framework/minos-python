@@ -195,7 +195,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(201 == response.status_code)
         resp = response.json()
 
-        token = await self.kong.get_jwt_token(key=resp['key'], secret=resp['secret'])
+        token = await self.kong.get_jwt_token(key=resp["key"], secret=resp["secret"])
 
         self.assertGreater(len(token), 50)
 
@@ -213,8 +213,12 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         resp = response.json()
 
         current = datetime.now(tz=utc)
-        token = await self.kong.get_jwt_token(key=resp['key'], secret=resp['secret'],
-                                              exp=current + timedelta(minutes=10), nbf=current + timedelta(minutes=9))
+        token = await self.kong.get_jwt_token(
+            key=resp["key"],
+            secret=resp["secret"],
+            exp=current + timedelta(minutes=10),
+            nbf=current + timedelta(minutes=9),
+        )
 
         self.assertGreater(len(token), 50)
 
