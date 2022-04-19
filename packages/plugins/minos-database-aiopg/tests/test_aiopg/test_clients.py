@@ -13,6 +13,7 @@ from aiopg import (
 from psycopg2 import (
     IntegrityError,
     OperationalError,
+    ProgrammingError,
 )
 
 from minos.common import (
@@ -30,7 +31,7 @@ from tests.utils import (
 )
 
 
-# noinspection SqlNoDataSourceInspection
+# noinspection SqlNoDataSourceInspection,SqlDialectInspection
 class TestAiopgDatabaseClient(AiopgTestCase):
     def setUp(self):
         super().setUp()
@@ -79,10 +80,14 @@ class TestAiopgDatabaseClient(AiopgTestCase):
         self.assertIsNone(client.connection)
 
     async def test_connection_raises(self):
-        with patch.object(aiopg, "connect", new_callable=PropertyMock, side_effect=OperationalError):
-            with self.assertRaises(ConnectionException):
-                async with AiopgDatabaseClient.from_config(self.config):
-                    pass
+        async with AiopgDatabaseClient.from_config(self.config) as c1:
+
+            async def _fn():
+                return c1.connection
+
+            with patch.object(aiopg, "connect", new_callable=PropertyMock, side_effect=(OperationalError, _fn())):
+                async with AiopgDatabaseClient.from_config(self.config) as c2:
+                    self.assertEqual(c1.connection, c2.connection)
 
     async def test_cursor(self):
         client = AiopgDatabaseClient.from_config(self.config)
@@ -125,16 +130,36 @@ class TestAiopgDatabaseClient(AiopgTestCase):
                 with self.assertRaises(IntegrityException):
                     await client.execute(self.operation)
 
+    async def test_execute_raises_operational(self):
+        async with AiopgDatabaseClient.from_config(self.config) as client:
+            with patch.object(Cursor, "execute", side_effect=OperationalError):
+                with self.assertRaises(ConnectionException):
+                    await client.execute(self.operation)
+
     async def test_fetch_one(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
             await client.execute(self.operation)
             observed = await client.fetch_one()
         self.assertIsInstance(observed, tuple)
 
-    async def test_fetch_one_raises(self):
+    async def test_fetch_one_raises_programming_empty(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
             with self.assertRaises(ProgrammingException):
                 await client.fetch_one()
+
+    async def test_fetch_one_raises_programming(self):
+        async with AiopgDatabaseClient.from_config(self.config) as client:
+            await client.execute(self.operation)
+            with patch.object(Cursor, "fetchone", side_effect=ProgrammingError):
+                with self.assertRaises(ProgrammingException):
+                    await client.fetch_one()
+
+    async def test_fetch_one_raises_operational(self):
+        async with AiopgDatabaseClient.from_config(self.config) as client:
+            await client.execute(self.operation)
+            with patch.object(Cursor, "fetchone", side_effect=OperationalError):
+                with self.assertRaises(ConnectionException):
+                    await client.fetch_one()
 
     async def test_fetch_all(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
