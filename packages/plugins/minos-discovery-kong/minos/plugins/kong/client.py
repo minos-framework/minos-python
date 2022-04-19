@@ -28,13 +28,15 @@ from minos.common import (
 class KongClient(ABC, SetupMixin):
     """Kong Client class."""
 
-    def __init__(self, protocol: str = "http", host: str = None, port: str = None, token_expiration_sec: int = 60 * 5,
+    def __init__(self, protocol: str = "http", host: str = None, port: str = None, token_expiration_sec: int = None,
                  **kwargs):
         super().__init__(**kwargs)
         if host is None:
             host = "localhost"
         if port is None:
             port = 8001
+        if token_expiration_sec is None:
+            token_expiration_sec = 60 * 5
 
         self.route = f"{protocol}://{host}:{port}"
         self.token_expiration_sec = token_expiration_sec
