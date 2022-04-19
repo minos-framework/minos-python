@@ -1,10 +1,18 @@
 import os
 import unittest
+from datetime import (
+    datetime,
+    timedelta,
+)
 from uuid import (
     uuid4,
 )
 
 import httpx
+import jwt
+from pytz import (
+    utc,
+)
 
 from minos.plugins.kong import (
     KongClient,
@@ -13,11 +21,6 @@ from minos.plugins.kong import (
 from tests.utils import (
     TEST_HOST,
 )
-from datetime import datetime
-from datetime import timedelta
-
-import jwt
-from pytz import utc
 
 PROTOCOL = "http"
 

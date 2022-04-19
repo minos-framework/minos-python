@@ -1,21 +1,28 @@
 from __future__ import (
     annotations,
 )
-from abc import ABC
+
+from abc import (
+    ABC,
+)
+from datetime import (
+    datetime,
+    timedelta,
+)
 from uuid import (
     UUID,
 )
 
 import httpx as httpx
-from datetime import datetime
-from datetime import timedelta
-
 import jwt
-from minos.common import (
-    SetupMixin,
-    Config,
+from pytz import (
+    utc,
 )
-from pytz import utc
+
+from minos.common import (
+    Config,
+    SetupMixin,
+)
 
 
 class KongClient:  # (ABC, SetupMixin):
