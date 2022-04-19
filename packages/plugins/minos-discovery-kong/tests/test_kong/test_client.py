@@ -1,23 +1,29 @@
 import os
 import unittest
+from datetime import (
+    datetime,
+    timedelta,
+)
 from uuid import (
     uuid4,
 )
 
 import httpx
+from pytz import (
+    utc,
+)
 
+from minos.common import (
+    Config,
+)
 from minos.plugins.kong import (
     KongClient,
     KongDiscoveryClient,
 )
 from tests.utils import (
+    CONFIG_FILE_PATH,
     TEST_HOST,
 )
-from datetime import datetime
-from datetime import timedelta
-
-import jwt
-from pytz import utc
 
 PROTOCOL = "http"
 
@@ -28,7 +34,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
 
     def setUp(self) -> None:
         self.client = KongDiscoveryClient(self.KONG_HOST, self.KONG_PORT, circuit_breaker_time=0.1)
-        self.kong = KongClient(self.client.route)
+        self.kong = KongClient()
 
     @staticmethod
     def generate_underscore_uuid():
@@ -195,7 +201,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(201 == response.status_code)
         resp = response.json()
 
-        token = await self.kong.get_jwt_token(key=resp['key'], secret=resp['secret'])
+        token = await self.kong.get_jwt_token(key=resp["key"], secret=resp["secret"])
 
         self.assertGreater(len(token), 50)
 
@@ -213,10 +219,35 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         resp = response.json()
 
         current = datetime.now(tz=utc)
-        token = await self.kong.get_jwt_token(key=resp['key'], secret=resp['secret'],
-                                              exp=current + timedelta(minutes=10), nbf=current + timedelta(minutes=9))
+        token = await self.kong.get_jwt_token(
+            key=resp["key"],
+            secret=resp["secret"],
+            exp=current + timedelta(minutes=10),
+            nbf=current + timedelta(minutes=9),
+        )
 
         self.assertGreater(len(token), 50)
+
+
+class TestKongClientFromConfig(unittest.IsolatedAsyncioTestCase):
+    KONG_HOST = os.getenv("KONG_HOST", "localhost")
+    KONG_PORT = os.getenv("KONG_PORT", 8001)
+
+    def setUp(self) -> None:
+        config = Config(CONFIG_FILE_PATH)
+        self.kong = KongClient.from_config(config=config)
+
+    @staticmethod
+    def generate_underscore_uuid():
+        name = str(uuid4())
+        return name.replace("-", "_")
+
+    async def test_create_consumer(self):
+        user_uuid = uuid4()
+        user_name = self.generate_underscore_uuid()
+        response = await self.kong.create_consumer(username=user_name, user=user_uuid, tags=[])
+
+        self.assertTrue(201 == response.status_code)
 
 
 if __name__ == "__main__":

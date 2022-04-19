@@ -41,6 +41,7 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
         host: Optional[str] = None,
         port: Optional[int] = None,
         circuit_breaker_exceptions: Iterable[type] = tuple(),
+        client: KongClient = None,
         **kwargs,
     ):
         if host is None:
@@ -50,7 +51,11 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
         super().__init__(
             host, port, circuit_breaker_exceptions=(httpx.HTTPStatusError, *circuit_breaker_exceptions), **kwargs
         )
-        self.kong = KongClient(self.route)
+
+        if client is None:
+            client = KongClient()
+
+        self.client = client
 
         self.auth_type = None
         if "auth_type" in kwargs:
@@ -66,8 +71,9 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
                 auth_type = config.get_by_key("discovery.auth-type")
             except Exception:
                 auth_type = None
+        client = KongClient.from_config(config)
 
-        return super()._from_config(config, auth_type=auth_type, **kwargs)
+        return super()._from_config(config, auth_type=auth_type, client=client, **kwargs)
 
     async def subscribe(
         self, host: str, port: int, name: str, endpoints: list[dict[str, str]], *args, **kwargs
@@ -83,13 +89,13 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
         :return: This method does not return anything.
         """
 
-        fnsr = partial(self.kong.register_service, self.route, name, host, port)
+        fnsr = partial(self.client.register_service, self.route, name, host, port)
         response_service = await self.with_circuit_breaker(fnsr)  # register a service
         if response_service.status_code == 409:  # service already exist
             # if service already exist, delete and add again
-            fn_delete = partial(self.kong.delete_service, self.route, name)
+            fn_delete = partial(self.client.delete_service, self.route, name)
             await self.with_circuit_breaker(fn_delete)  # delete the service
-            fnsr = partial(self.kong.register_service, self.route, name, host, port)
+            fnsr = partial(self.client.register_service, self.route, name, host, port)
             response_service = await self.with_circuit_breaker(fnsr)  # send the servie subscription again
 
         content_service = response_service.json()  # get the servie information like the id
@@ -98,7 +104,7 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
             endpointClass = Endpoint(endpoint["url"])
 
             fn = partial(
-                self.kong.create_route,
+                self.client.create_route,
                 self.route,
                 ["http"],
                 [endpoint["method"]],
@@ -111,15 +117,15 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
 
             if "authenticated" in endpoint and self.auth_type:
                 if self.auth_type == "basic-auth":
-                    fn = partial(self.kong.activate_basic_auth_plugin_on_route, route_id=resp["id"])
+                    fn = partial(self.client.activate_basic_auth_plugin_on_route, route_id=resp["id"])
                     await self.with_circuit_breaker(fn)
                 elif self.auth_type == "jwt":
-                    fn = partial(self.kong.activate_jwt_plugin_on_route, route_id=resp["id"])
+                    fn = partial(self.client.activate_jwt_plugin_on_route, route_id=resp["id"])
                     await self.with_circuit_breaker(fn)
 
             if "authorized_groups" in endpoint:
                 fn = partial(
-                    self.kong.activate_acl_plugin_on_route, route_id=resp["id"], allow=endpoint["authorized_groups"]
+                    self.client.activate_acl_plugin_on_route, route_id=resp["id"], allow=endpoint["authorized_groups"]
                 )
                 await self.with_circuit_breaker(fn)
 
@@ -133,6 +139,6 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        fn = partial(self.kong.delete_service, self.route, name)
+        fn = partial(self.client.delete_service, self.route, name)
         response = await self.with_circuit_breaker(fn)
         return response
