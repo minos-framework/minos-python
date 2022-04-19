@@ -10,6 +10,9 @@ from collections.abc import (
     AsyncIterator,
     Iterable,
 )
+from functools import (
+    partial,
+)
 from typing import (
     Optional,
 )
@@ -92,15 +95,20 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
 
     async def _setup(self) -> None:
         await super()._setup()
-        await self._create_connection()
+        await self.recreate()
 
     async def _destroy(self) -> None:
         await super()._destroy()
-        await self._close_connection()
+        await self.close()
 
-    async def _create_connection(self):
+    async def recreate(self) -> None:
+        """Recreate the database connection.
+
+        :return: This method does not return anything.
+        """
+        await self.close()
+
         self._connection = await self.with_circuit_breaker(self._connect)
-
         logger.debug(f"Created {self.database!r} database connection identified by {id(self._connection)}!")
 
     async def _connect(self) -> Connection:
@@ -113,13 +121,23 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
             password=self.password,
         )
 
-    async def _close_connection(self):
-        if await self.is_valid():
-            await self._connection.close()
-        self._connection = None
-        logger.debug(f"Destroyed {self.database!r} database connection identified by {id(self._connection)}!")
+    async def close(self) -> None:
+        """Close database connection.
 
-    async def _is_valid(self) -> bool:
+        :return: This method does not return anything.
+        """
+        if await self.is_connected():
+            await self._connection.close()
+
+        if self._connection is not None:
+            logger.debug(f"Destroyed {self.database!r} database connection identified by {id(self._connection)}!")
+            self._connection = None
+
+    async def is_connected(self) -> bool:
+        """Check if the client is connected.
+
+        :return: ``True`` if it is connected or ``False`` otherwise.
+        """
         if self._connection is None:
             return False
 
@@ -154,19 +172,18 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
         if not isinstance(operation, AiopgDatabaseOperation):
             raise ValueError(f"The operation must be a {AiopgDatabaseOperation!r} instance. Obtained: {operation!r}")
 
-        await self._create_cursor()
+        fn = partial(self._execute_cursor, operation=operation.query, parameters=operation.parameters)
         try:
-            await self._cursor.execute(operation=operation.query, parameters=operation.parameters)
+            await self.with_circuit_breaker(fn)
         except IntegrityError as exc:
             raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
-        except OperationalError as exc:
-            msg = f"There was an {exc!r} while trying to connect to the database."
-            logger.warning(msg)
-            raise ConnectionException(msg)
 
-    async def _create_cursor(self):
-        if self._cursor is None:
-            self._cursor = await self._connection.cursor(timeout=self._cursor_timeout)
+    async def _execute_cursor(self, operation: str, parameters: dict):
+        if not await self.is_connected():
+            await self.recreate()
+
+        self._cursor = await self._connection.cursor(timeout=self._cursor_timeout)
+        await self._cursor.execute(operation=operation, parameters=parameters)
 
     async def _destroy_cursor(self, **kwargs):
         if self._cursor is not None:

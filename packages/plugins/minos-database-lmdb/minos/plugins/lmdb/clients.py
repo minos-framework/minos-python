@@ -73,9 +73,6 @@ class LmdbDatabaseClient(DatabaseClient):
         if self._environment is not None:
             self._environment.close()
 
-    async def _is_valid(self, **kwargs) -> bool:
-        return True
-
     async def _reset(self, **kwargs) -> None:
         self._prefetched = None
         self._environment.sync()

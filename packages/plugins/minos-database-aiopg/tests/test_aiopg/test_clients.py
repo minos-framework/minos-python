@@ -54,23 +54,27 @@ class TestAiopgDatabaseClient(AiopgTestCase):
         self.assertEqual(default_database["host"], client.host)
         self.assertEqual(default_database["port"], client.port)
 
-    async def test_is_valid_true(self):
+    async def test_is_valid(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
             self.assertTrue(await client.is_valid())
 
-    async def test_is_valid_false_not_setup(self):
-        client = AiopgDatabaseClient.from_config(self.config)
-        self.assertFalse(await client.is_valid())
+    async def test_is_connected_true(self):
+        async with AiopgDatabaseClient.from_config(self.config) as client:
+            self.assertTrue(await client.is_connected())
 
-    async def test_is_valid_false_operational_error(self):
+    async def test_is_connected_false_not_setup(self):
+        client = AiopgDatabaseClient.from_config(self.config)
+        self.assertFalse(await client.is_connected())
+
+    async def test_is_connected_false_operational_error(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
             with patch.object(Connection, "isolation_level", new_callable=PropertyMock, side_effect=OperationalError):
-                self.assertFalse(await client.is_valid())
+                self.assertFalse(await client.is_connected())
 
-    async def test_is_valid_false_closed(self):
+    async def test_is_connected_false_closed(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
             with patch.object(Connection, "closed", new_callable=PropertyMock, return_valud=False):
-                self.assertFalse(await client.is_valid())
+                self.assertFalse(await client.is_connected())
 
     async def test_connection(self):
         client = AiopgDatabaseClient.from_config(self.config)
@@ -79,7 +83,7 @@ class TestAiopgDatabaseClient(AiopgTestCase):
             self.assertIsInstance(client.connection, Connection)
         self.assertIsNone(client.connection)
 
-    async def test_connection_raises(self):
+    async def test_connection_with_circuit_breaker(self):
         async with AiopgDatabaseClient.from_config(self.config) as c1:
 
             async def _fn():
@@ -88,6 +92,18 @@ class TestAiopgDatabaseClient(AiopgTestCase):
             with patch.object(aiopg, "connect", new_callable=PropertyMock, side_effect=(OperationalError, _fn())):
                 async with AiopgDatabaseClient.from_config(self.config) as c2:
                     self.assertEqual(c1.connection, c2.connection)
+
+    async def test_connection_recreate(self):
+        async with AiopgDatabaseClient.from_config(self.config) as client:
+            c1 = client.connection
+            self.assertIsInstance(c1, Connection)
+
+            await client.recreate()
+
+            c2 = client.connection
+            self.assertIsInstance(c2, Connection)
+
+            self.assertNotEqual(c1, c2)
 
     async def test_cursor(self):
         client = AiopgDatabaseClient.from_config(self.config)
@@ -116,6 +132,14 @@ class TestAiopgDatabaseClient(AiopgTestCase):
             execute_mock.call_args_list,
         )
 
+    async def test_execute_disconnected(self):
+        async with AiopgDatabaseClient.from_config(self.config) as client:
+            await client.close()
+            self.assertFalse(await client.is_connected())
+
+            await client.execute(self.operation)
+            self.assertTrue(await client.is_connected())
+
     async def test_execute_raises_unsupported(self):
         class _DatabaseOperation(DatabaseOperation):
             """For testing purposes."""
@@ -132,9 +156,16 @@ class TestAiopgDatabaseClient(AiopgTestCase):
 
     async def test_execute_raises_operational(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
-            with patch.object(Cursor, "execute", side_effect=OperationalError):
-                with self.assertRaises(ConnectionException):
-                    await client.execute(self.operation)
+            with patch.object(Cursor, "execute", side_effect=(OperationalError, None)) as mock:
+                await client.execute(self.operation)
+
+        self.assertEqual(
+            [
+                call(operation=self.operation.query, parameters=self.operation.parameters),
+                call(operation=self.operation.query, parameters=self.operation.parameters),
+            ],
+            mock.call_args_list,
+        )
 
     async def test_fetch_one(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
