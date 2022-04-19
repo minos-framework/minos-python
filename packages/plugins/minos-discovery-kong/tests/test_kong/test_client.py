@@ -233,10 +233,11 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
     async def test_token_decode(self):
         res = await self.kong.decode_token(
             "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ5ZTBRdURsNG03UW1qbnpFR0pJaUVyQnZieFBqSXM3VyIsImV4cCI6MTY1"
-            "MDM2NzE0NywibmJmIjoxNjUwMzY3MDI3fQ.SDH5Zq1mUSU0GkCyC_kF81_uoiF45u62Hgwnuv4wl5U")
-        self.assertIn('iss', res)
-        self.assertIn('exp', res)
-        self.assertIn('nbf', res)
+            "MDM2NzE0NywibmJmIjoxNjUwMzY3MDI3fQ.SDH5Zq1mUSU0GkCyC_kF81_uoiF45u62Hgwnuv4wl5U"
+        )
+        self.assertIn("iss", res)
+        self.assertIn("exp", res)
+        self.assertIn("nbf", res)
 
     async def test_get_token_by_id(self):
         user_uuid = uuid4()
@@ -255,12 +256,12 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
 
         self.assertGreater(len(token), 50)
 
-        response = await self.kong.get_jwt_by_id(resp['id'])
+        response = await self.kong.get_jwt_by_id(resp["id"])
         self.assertTrue(200 == response.status_code)
         resp = response.json()
 
-        self.assertIn('key', resp)
-        self.assertIn('secret', resp)
+        self.assertIn("key", resp)
+        self.assertIn("secret", resp)
 
     async def test_get_consumer_jwts(self):
         user_uuid = uuid4()
@@ -278,7 +279,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(200 == response.status_code)
         resp = response.json()
 
-        self.assertEqual(len(resp['data']), 1)
+        self.assertEqual(len(resp["data"]), 1)
 
 
 class TestKongClientFromConfig(unittest.IsolatedAsyncioTestCase):

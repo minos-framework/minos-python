@@ -87,9 +87,27 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
             5660,
             name,
             [
-                {"url": "/", "method": "GET", "authenticated": True, "authorized_groups": ["super_admin", "admin"], "regex_priority": 0},
-                {"url": "/foo", "method": "POST", "authenticated": True, "authorized_groups": ["super_admin", "admin"], "regex_priority": 0},
-                {"url": "/bar", "method": "GET", "authenticated": True, "authorized_groups": ["super_admin", "admin"], "regex_priority": 0},
+                {
+                    "url": "/",
+                    "method": "GET",
+                    "authenticated": True,
+                    "authorized_groups": ["super_admin", "admin"],
+                    "regex_priority": 0,
+                },
+                {
+                    "url": "/foo",
+                    "method": "POST",
+                    "authenticated": True,
+                    "authorized_groups": ["super_admin", "admin"],
+                    "regex_priority": 0,
+                },
+                {
+                    "url": "/bar",
+                    "method": "GET",
+                    "authenticated": True,
+                    "authorized_groups": ["super_admin", "admin"],
+                    "regex_priority": 0,
+                },
             ],
         )
         self.assertTrue(201 == response.status_code)
