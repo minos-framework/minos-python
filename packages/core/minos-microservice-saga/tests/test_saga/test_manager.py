@@ -14,7 +14,10 @@ from uuid import (
 )
 
 from minos.common import (
+    DatabaseClient,
+    DatabaseClientPool,
     NotProvidedException,
+    ProgrammingException,
 )
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
@@ -27,11 +30,14 @@ from minos.saga import (
     SagaContext,
     SagaExecution,
     SagaExecutionNotFoundException,
-    SagaExecutionStorage,
+    SagaExecutionRepository,
     SagaFailedExecutionException,
     SagaManager,
     SagaResponse,
     SagaStatus,
+)
+from minos.saga.testing import (
+    MockedSagaExecutionDatabaseOperationFactory,
 )
 from tests.utils import (
     ADD_ORDER,
@@ -76,12 +82,13 @@ class TestSagaManager(SagaTestCase):
         super().tearDown()
 
     def test_constructor(self):
-        self.assertIsInstance(self.manager.storage, SagaExecutionStorage)
+        self.assertIsInstance(self.manager.storage, SagaExecutionRepository)
         self.assertIsInstance(self.manager, SagaManager)
 
     def test_constructor_without_broker(self):
+        database_pool = DatabaseClientPool.from_config(self.config, identifier="saga")
         with self.assertRaises(NotProvidedException):
-            SagaManager.from_config(self.config, broker_pool=None, pool_factory=None)
+            SagaManager.from_config(self.config, broker_pool=None, pool_factory=None, database_pool=database_pool)
 
     async def test_context_manager(self):
         async with self.manager as saga_manager:
@@ -103,7 +110,8 @@ class TestSagaManager(SagaTestCase):
 
         self.assertEqual(SagaStatus.Finished, execution.status)
         with self.assertRaises(SagaExecutionNotFoundException):
-            self.manager.storage.load(execution.uuid)
+            with patch.object(DatabaseClient, "fetch_one", side_effect=[ProgrammingException("")]):
+                await self.manager.storage.load(execution.uuid)
 
         observed = self.broker_publisher.messages
         expected = self._build_expected_messages(observed)
@@ -173,15 +181,18 @@ class TestSagaManager(SagaTestCase):
             self.assertEqual(SagaStatus.Paused, execution.status)
 
             response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
-            execution = await self.manager.run(response=response, pause_on_disk=True)
+            with patch.object(DatabaseClient, "fetch_one", side_effect=[execution.raw]):
+                execution = await self.manager.run(response=response, pause_on_disk=True)
             self.assertEqual(SagaStatus.Paused, execution.status)
 
             response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
-            execution = await self.manager.run(response=response, pause_on_disk=True)
+            with patch.object(DatabaseClient, "fetch_one", side_effect=[execution.raw]):
+                execution = await self.manager.run(response=response, pause_on_disk=True)
             self.assertEqual(SagaStatus.Finished, execution.status)
 
         with self.assertRaises(SagaExecutionNotFoundException):
-            self.manager.storage.load(self.uuid)
+            with patch.object(DatabaseClient, "fetch_one", side_effect=[ProgrammingException("")]):
+                await self.manager.storage.load(self.uuid)
 
         observed = self.broker_publisher.messages
         expected = self._build_expected_messages(observed)
@@ -194,13 +205,15 @@ class TestSagaManager(SagaTestCase):
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
-        execution = await self.manager.run(response=response, pause_on_disk=True)
+        with patch.object(DatabaseClient, "fetch_one", side_effect=[execution.raw]):
+            execution = await self.manager.run(response=response, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
 
         with patch("minos.saga.SagaExecution.commit") as commit_mock:
-            execution = await self.manager.run(response=response, pause_on_disk=True, autocommit=False)
+            with patch.object(DatabaseClient, "fetch_one", side_effect=[execution.raw]):
+                execution = await self.manager.run(response=response, pause_on_disk=True, autocommit=False)
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(0, commit_mock.call_count)
 
@@ -220,19 +233,27 @@ class TestSagaManager(SagaTestCase):
         request_headers = {"related_services": "one"}
         REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
         response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
-        execution = await self.manager.run(response=response, pause_on_disk=True)
+        with patch.object(DatabaseClient, "fetch_one", side_effect=[execution.raw]):
+            execution = await self.manager.run(response=response, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
         self.assertEqual({"foo", "one", "order"}, set(request_headers["related_services"].split(",")))
 
         request_headers = {"related_services": "one"}
         REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
         response = SagaResponse([Foo("foo")], {"foo", "bar"}, uuid=execution.uuid)
-        await self.manager.run(response=response, pause_on_disk=True)
+        with patch.object(DatabaseClient, "fetch_one", side_effect=[execution.raw]):
+            await self.manager.run(response=response, pause_on_disk=True)
         self.assertEqual({"foo", "bar", "one", "order"}, set(request_headers["related_services"].split(",")))
 
     async def test_run_with_pause_on_disk_returning_uuid(self):
-        uuid = await self.manager.run(ADD_ORDER, return_execution=False, pause_on_disk=True)
-        execution = self.manager.storage.load(uuid)
+        with patch.object(
+            MockedSagaExecutionDatabaseOperationFactory,
+            "build_store",
+            side_effect=MockedSagaExecutionDatabaseOperationFactory().build_store,
+        ) as mock:
+            uuid = await self.manager.run(ADD_ORDER, return_execution=False, pause_on_disk=True)
+        with patch.object(DatabaseClient, "fetch_one", side_effect=[mock.call_args.kwargs]):
+            execution = await self.manager.storage.load(uuid)
         self.assertIsInstance(execution, SagaExecution)
         self.assertEqual(SagaStatus.Paused, execution.status)
 

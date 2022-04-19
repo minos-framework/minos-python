@@ -133,10 +133,6 @@ from .setup import (
     MinosSetup,
     SetupMixin,
 )
-from .storage import (
-    MinosStorage,
-    MinosStorageLmdb,
-)
 from .uuid import (
     NULL_UUID,
     UUID_REGEX,

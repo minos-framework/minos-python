@@ -51,6 +51,13 @@ repos:
                 files: ^packages/plugins/minos-database-aiopg/
                 language: system
 
+            -   id: minos-database-lmdb-check
+                pass_filenames: false
+                entry: make --directory=packages/plugins/minos-database-lmdb check
+                name: Check minos-database-lmdb
+                files: ^packages/plugins/minos-database-lmdb/
+                language: system
+
             -   id: minos-discovery-minos-check
                 pass_filenames: false
                 entry: make --directory=packages/plugins/minos-discovery-minos check

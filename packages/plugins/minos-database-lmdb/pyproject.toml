@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "minos-microservice-common"
-version = "0.7.0.dev1"
-description = "The common core of the Minos Framework"
+name = "minos-database-lmdb"
+version = "0.0.0"
+description = "The lmdb plugin of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
-homepage = "https://www.minos.run"
+homepage = "https://www.minos.run/"
 authors = ["Minos Framework Devs <hey@minos.run>"]
 license = "MIT"
 classifiers = [
@@ -31,15 +31,15 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-aiomisc = ">=14.0.3,<15.8.0"
-fastavro = "^1.4.0"
-orjson = "^3.5.2"
-PyYAML = ">=5.4.1,<7.0.0"
-dependency-injector = "^4.32.2"
-cached-property = "^1.5.2"
-uvloop = "^0.16.0"
+minos-microservice-common = { version ="^0.7.0*", allow-prereleases = true }
+minos-microservice-saga = { version ="^0.7.0*", allow-prereleases = true }
+lmdb = "^1.2.1"
 
 [tool.poetry.dev-dependencies]
+minos-microservice-common = { path = "../../core/minos-microservice-common", develop = true }
+minos-microservice-saga = { path = "../../core/minos-microservice-saga", develop = true }
+minos-microservice-networks = { path = "../../core/minos-microservice-networks", develop = true }
+minos-microservice-aggregate = { path = "../../core/minos-microservice-aggregate", develop = true }
 black = "^22.3"
 isort = "^5.8.0"
 pytest = "^7.0.1"

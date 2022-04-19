@@ -46,6 +46,7 @@ from .exceptions import (
 )
 from .executions import (
     ConditionalSagaStepExecution,
+    DatabaseSagaExecutionRepository,
     Executor,
     LocalExecutor,
     LocalSagaStepExecution,
@@ -53,7 +54,8 @@ from .executions import (
     RequestExecutor,
     ResponseExecutor,
     SagaExecution,
-    SagaExecutionStorage,
+    SagaExecutionDatabaseOperationFactory,
+    SagaExecutionRepository,
     SagaStatus,
     SagaStepExecution,
     SagaStepStatus,
