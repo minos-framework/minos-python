@@ -90,6 +90,7 @@ class KongClient(ABC, SetupMixin):
         methods: list[str],
         paths: list[str],
         service: str,
+        regex_priority: int,
         strip_path: bool = False,
     ):
         url = f"{endpoint}/routes"
@@ -98,6 +99,7 @@ class KongClient(ABC, SetupMixin):
             "methods": methods,
             "paths": paths,
             "service": {"id": service},
+            "regex_priority": regex_priority,
             "strip_path": strip_path,
         }
 
@@ -180,7 +182,7 @@ class KongClient(ABC, SetupMixin):
             resp = await client.post(f"{self.route}/routes/{route_id}/plugins", json=payload)
             return resp
 
-    async def get_jwt_token(
+    async def generate_jwt_token(
         self, key: str, secret: str, algorithm: str = "HS256", exp: datetime = None, nbf: datetime = None
     ) -> str:
         payload = {"iss": key, "exp": exp, "nbf": nbf}
@@ -194,3 +196,17 @@ class KongClient(ABC, SetupMixin):
             payload["nbf"] = current
 
         return jwt.encode(payload, secret, algorithm=algorithm)
+
+    @staticmethod
+    async def decode_token(token: str, algorithm: str = "HS256"):
+        return jwt.decode(token, options={"verify_signature": False}, algorithms=[algorithm])
+
+    async def get_jwt_by_id(self, id: str):
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{self.route}/jwts/{id}")
+            return resp
+
+    async def get_consumer_jwts(self, consumer: str):
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{self.route}/consumers/{consumer}/jwt")
+            return resp

@@ -151,6 +151,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
             methods=["GET"],
             paths=["/foo"],
             service=res["id"],
+            regex_priority=2,
             strip_path=False,
         )
 
@@ -178,6 +179,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
             methods=["GET"],
             paths=["/foo"],
             service=res["id"],
+            regex_priority=0,
             strip_path=False,
         )
 
@@ -201,7 +203,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(201 == response.status_code)
         resp = response.json()
 
-        token = await self.kong.get_jwt_token(key=resp["key"], secret=resp["secret"])
+        token = await self.kong.generate_jwt_token(key=resp["key"], secret=resp["secret"])
 
         self.assertGreater(len(token), 50)
 
@@ -219,7 +221,7 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         resp = response.json()
 
         current = datetime.now(tz=utc)
-        token = await self.kong.get_jwt_token(
+        token = await self.kong.generate_jwt_token(
             key=resp["key"],
             secret=resp["secret"],
             exp=current + timedelta(minutes=10),
@@ -227,6 +229,56 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertGreater(len(token), 50)
+
+    async def test_token_decode(self):
+        res = await self.kong.decode_token(
+            "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ5ZTBRdURsNG03UW1qbnpFR0pJaUVyQnZieFBqSXM3VyIsImV4cCI6MTY1"
+            "MDM2NzE0NywibmJmIjoxNjUwMzY3MDI3fQ.SDH5Zq1mUSU0GkCyC_kF81_uoiF45u62Hgwnuv4wl5U")
+        self.assertIn('iss', res)
+        self.assertIn('exp', res)
+        self.assertIn('nbf', res)
+
+    async def test_get_token_by_id(self):
+        user_uuid = uuid4()
+        user_name = self.generate_underscore_uuid()
+        response = await self.kong.create_consumer(username=user_name, user=user_uuid, tags=[])
+
+        self.assertTrue(201 == response.status_code)
+        resp = response.json()
+
+        response = await self.kong.add_jwt_to_consumer(consumer=resp["id"])
+
+        self.assertTrue(201 == response.status_code)
+        resp = response.json()
+
+        token = await self.kong.generate_jwt_token(key=resp["key"], secret=resp["secret"])
+
+        self.assertGreater(len(token), 50)
+
+        response = await self.kong.get_jwt_by_id(resp['id'])
+        self.assertTrue(200 == response.status_code)
+        resp = response.json()
+
+        self.assertIn('key', resp)
+        self.assertIn('secret', resp)
+
+    async def test_get_consumer_jwts(self):
+        user_uuid = uuid4()
+        user_name = self.generate_underscore_uuid()
+        response = await self.kong.create_consumer(username=user_name, user=user_uuid, tags=[])
+
+        self.assertTrue(201 == response.status_code)
+        resp = response.json()
+        consumer_id = resp["id"]
+        response = await self.kong.add_jwt_to_consumer(consumer=resp["id"])
+
+        self.assertTrue(201 == response.status_code)
+
+        response = await self.kong.get_consumer_jwts(consumer_id)
+        self.assertTrue(200 == response.status_code)
+        resp = response.json()
+
+        self.assertEqual(len(resp['data']), 1)
 
 
 class TestKongClientFromConfig(unittest.IsolatedAsyncioTestCase):

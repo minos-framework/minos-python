@@ -103,6 +103,10 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
         for endpoint in endpoints:
             endpointClass = Endpoint(endpoint["url"])
 
+            regex_priority = 0
+            if "regex_priority" in endpoint:
+                regex_priority = endpoint["regex_priority"]
+
             fn = partial(
                 self.client.create_route,
                 self.route,
@@ -110,6 +114,7 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
                 [endpoint["method"]],
                 [endpointClass.path_as_str],
                 content_service["id"],
+                regex_priority,
                 False,
             )
             response = await self.with_circuit_breaker(fn)  # send the route request
