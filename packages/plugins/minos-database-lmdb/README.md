@@ -27,9 +27,9 @@ Set the database client on the `config.yml` file:
 ```yaml
 ...
 databases:
-  foobar:
+  saga:
     client: minos.plugins.lmdb.LmdbDatabaseClient
-    path: "./foobar.lmdb"
+    path: "./saga.lmdb"
   ...
 ...
 ```
