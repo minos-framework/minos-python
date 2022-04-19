@@ -13,6 +13,11 @@ from minos.plugins.kong import (
 from tests.utils import (
     TEST_HOST,
 )
+from datetime import datetime
+from datetime import timedelta
+
+import jwt
+from pytz import utc
 
 PROTOCOL = "http"
 
@@ -176,6 +181,42 @@ class TestKongDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         response = await self.kong.activate_jwt_plugin_on_route(route_id=res["id"])
 
         self.assertTrue(201 == response.status_code)
+
+    async def test_jwt_token_generation(self):
+        user_uuid = uuid4()
+        user_name = self.generate_underscore_uuid()
+        response = await self.kong.create_consumer(username=user_name, user=user_uuid, tags=[])
+
+        self.assertTrue(201 == response.status_code)
+        resp = response.json()
+
+        response = await self.kong.add_jwt_to_consumer(consumer=resp["id"])
+
+        self.assertTrue(201 == response.status_code)
+        resp = response.json()
+
+        token = await self.kong.get_jwt_token(key=resp['key'], secret=resp['secret'])
+
+        self.assertGreater(len(token), 50)
+
+    async def test_jwt_token_generation_with_expiration(self):
+        user_uuid = uuid4()
+        user_name = self.generate_underscore_uuid()
+        response = await self.kong.create_consumer(username=user_name, user=user_uuid, tags=[])
+
+        self.assertTrue(201 == response.status_code)
+        resp = response.json()
+
+        response = await self.kong.add_jwt_to_consumer(consumer=resp["id"])
+
+        self.assertTrue(201 == response.status_code)
+        resp = response.json()
+
+        current = datetime.now(tz=utc)
+        token = await self.kong.get_jwt_token(key=resp['key'], secret=resp['secret'],
+                                              exp=current + timedelta(minutes=10), nbf=current + timedelta(minutes=9))
+
+        self.assertGreater(len(token), 50)
 
 
 if __name__ == "__main__":

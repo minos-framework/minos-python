@@ -1,15 +1,37 @@
+from __future__ import (
+    annotations,
+)
+from abc import ABC
 from uuid import (
     UUID,
 )
 
 import httpx as httpx
+from datetime import datetime
+from datetime import timedelta
+
+import jwt
+from minos.common import (
+    SetupMixin,
+    Config,
+)
+from pytz import utc
 
 
-class KongClient:
+class KongClient: #(ABC, SetupMixin):
     """Kong Client class."""
 
-    def __init__(self, route):
-        self.route = route
+    def __init__(self, route: str, **kwargs): #def __init__(self, host: str, port: str, token_expiration_minutes: int, **kwargs):
+        super().__init__(**kwargs)
+        self.route = route #f"http://{host}:{port}"
+        #self.token_expiration_minutes = token_expiration_minutes
+
+    # @classmethod
+    # def _from_config(cls, config: Config, **kwargs) -> KongClient:
+    #     discovery_config = config.get_discovery()
+    #
+    #     token_expiration = discovery_config.get("token-exp-minutes")
+    #     return cls(token_expiration=token_expiration, **kwargs)
 
     @staticmethod
     async def register_service(
@@ -130,8 +152,23 @@ class KongClient:
             return resp
 
     async def activate_jwt_plugin_on_route(self, route_id: str):
-        payload = {"name": "jwt", "config": {"secret_is_base64": False, "run_on_preflight": True}}
+        payload = {"name": "jwt",
+                   "config": {"secret_is_base64": False, "run_on_preflight": True, "claims_to_verify": ["exp", "nbf"]}}
 
         async with httpx.AsyncClient() as client:
             resp = await client.post(f"{self.route}/routes/{route_id}/plugins", json=payload)
             return resp
+
+    async def get_jwt_token(self, key: str, secret: str, algorithm: str = 'HS256', exp: datetime = None, nbf: datetime = None) -> str:
+        payload = {"iss": key, "exp": exp, "nbf": nbf}
+
+        current = datetime.now(tz=utc)
+
+        if not exp:
+            #payload["exp"] = current + timedelta(minutes=self.token_expiration_minutes)
+            payload["exp"] = current + timedelta(minutes=120)
+
+        if not nbf:
+            payload["nbf"] = current
+
+        return jwt.encode(payload, secret, algorithm=algorithm)
