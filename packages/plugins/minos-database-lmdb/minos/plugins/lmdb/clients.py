@@ -27,6 +27,8 @@ from .operations import (
     LmdbDatabaseOperationType,
 )
 
+not_found_sentinel = object()
+
 
 class LmdbDatabaseClient(DatabaseClient):
     """Lmdb Database Client class."""
@@ -52,7 +54,7 @@ class LmdbDatabaseClient(DatabaseClient):
         self._protocol = protocol
         self._tables = {}
 
-        self._prefetched = None
+        self._prefetched = not_found_sentinel
 
         self._environment = None
 
@@ -79,8 +81,10 @@ class LmdbDatabaseClient(DatabaseClient):
         self._environment.sync()
 
     async def _fetch_all(self, *args, **kwargs) -> Any:
+        if self._prefetched is not_found_sentinel:
+            return
         prefetched = self._prefetched
-        self._prefetched = None
+        self._prefetched = not_found_sentinel
         yield prefetched
 
     async def _execute(self, operation: DatabaseOperation) -> None:
@@ -109,11 +113,9 @@ class LmdbDatabaseClient(DatabaseClient):
     def _read(self, table: str, key: str, **kwargs):
         table = self._get_table(table)
         with self._environment.begin(db=table) as transaction:
-            value_binary = transaction.get(key.encode())
-            if value_binary is not None:
-                value = self._protocol.decode(value_binary)
-            else:
-                value = None
+            value = transaction.get(key.encode(), default=not_found_sentinel)
+            if value is not not_found_sentinel:
+                value = self._protocol.decode(value)
 
         self._prefetched = value
 

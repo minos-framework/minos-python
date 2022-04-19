@@ -1,8 +1,11 @@
+from collections.abc import (
+    AsyncIterator,
+)
 from contextlib import (
     suppress,
 )
 from typing import (
-    AsyncIterator,
+    Any,
     Generic,
     Optional,
     TypeVar,
@@ -101,7 +104,7 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
                 raise TypeError(f"{type(self)!r} must contain a {DatabaseOperationFactory!r} as generic value.")
         return operation_factory_cls
 
-    async def execute_on_database_and_fetch_one(self, operation: DatabaseOperation) -> tuple:
+    async def execute_on_database_and_fetch_one(self, operation: DatabaseOperation) -> Any:
         """Submit an Operation and get the first response.
 
         :param operation: The operation to be executed.

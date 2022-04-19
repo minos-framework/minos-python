@@ -7,6 +7,7 @@ from pathlib import (
 from minos.common import (
     DatabaseClient,
     DatabaseOperation,
+    ProgrammingException,
 )
 from minos.plugins.lmdb import (
     LmdbDatabaseClient,
@@ -146,7 +147,8 @@ class TestLmdbDatabaseClient(unittest.IsolatedAsyncioTestCase):
             self.assertEqual("Text Second Value", await client.fetch_one())
 
             await client.execute(read_op_2)
-            self.assertEqual(None, await client.fetch_one())
+            with self.assertRaises(ProgrammingException):
+                self.assertEqual(None, await client.fetch_one())
 
     async def test_execute_update(self):
         create_op = LmdbDatabaseOperation(LmdbDatabaseOperationType.CREATE, "TestOne", "first", "Text Value")

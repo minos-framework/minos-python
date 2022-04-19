@@ -25,7 +25,6 @@ class TestLmdbSagaExecutionDatabaseOperationFactory(unittest.TestCase):
         self.assertEqual(LmdbDatabaseOperationType.CREATE, operation.type_)
 
     def test_build_load(self):
-        pass
         factory = LmdbSagaExecutionDatabaseOperationFactory()
 
         operation = factory.build_load(uuid4())

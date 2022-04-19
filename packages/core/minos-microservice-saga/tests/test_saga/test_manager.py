@@ -17,6 +17,7 @@ from minos.common import (
     DatabaseClient,
     DatabaseClientPool,
     NotProvidedException,
+    ProgrammingException,
 )
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
@@ -109,7 +110,7 @@ class TestSagaManager(SagaTestCase):
 
         self.assertEqual(SagaStatus.Finished, execution.status)
         with self.assertRaises(SagaExecutionNotFoundException):
-            with patch.object(DatabaseClient, "fetch_one", side_effect=[None]):
+            with patch.object(DatabaseClient, "fetch_one", side_effect=[ProgrammingException("")]):
                 await self.manager.storage.load(execution.uuid)
 
         observed = self.broker_publisher.messages
@@ -190,7 +191,7 @@ class TestSagaManager(SagaTestCase):
             self.assertEqual(SagaStatus.Finished, execution.status)
 
         with self.assertRaises(SagaExecutionNotFoundException):
-            with patch.object(DatabaseClient, "fetch_one", side_effect=[None]):
+            with patch.object(DatabaseClient, "fetch_one", side_effect=[ProgrammingException("")]):
                 await self.manager.storage.load(self.uuid)
 
         observed = self.broker_publisher.messages

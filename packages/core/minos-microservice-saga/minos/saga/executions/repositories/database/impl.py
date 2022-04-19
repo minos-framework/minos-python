@@ -11,6 +11,7 @@ from uuid import (
 
 from minos.common import (
     DatabaseMixin,
+    ProgrammingException,
 )
 
 from ....exceptions import (
@@ -46,8 +47,9 @@ class DatabaseSagaExecutionRepository(SagaExecutionRepository, DatabaseMixin[Sag
     async def _load(self, uuid: UUID) -> SagaExecution:
         operation = self.database_operation_factory.build_load(uuid)
 
-        value = await self.execute_on_database_and_fetch_one(operation)
-        if value is None:
+        try:
+            value = await self.execute_on_database_and_fetch_one(operation)
+        except ProgrammingException:
             raise SagaExecutionNotFoundException(f"The execution identified by {uuid} was not found.")
         execution = SagaExecution.from_raw(value)
         return execution
