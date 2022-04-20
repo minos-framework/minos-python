@@ -38,7 +38,7 @@ class TestDatabaseTransactionRepository(AggregateTestCase, TransactionRepository
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator([(self.uuid, TransactionStatus.PENDING, 34)]),
+                return_value=FakeAsyncIterator([(self.uuid, TransactionStatus.PENDING)]),
             ):
                 await super().test_submit()
 
@@ -212,55 +212,6 @@ class TestDatabaseTransactionRepository(AggregateTestCase, TransactionRepository
             ),
         ):
             await super().test_select_status_in()
-
-    async def test_select_event_offset(self):
-        with patch.object(
-            DatabaseClient,
-            "fetch_all",
-            return_value=FakeAsyncIterator([tuple(entry.as_raw().values()) for entry in [self.entries[1]]]),
-        ):
-            await super().test_select_event_offset()
-
-    async def test_select_event_offset_lt(self):
-        with patch.object(
-            DatabaseClient,
-            "fetch_all",
-            return_value=FakeAsyncIterator([tuple(entry.as_raw().values()) for entry in [self.entries[0]]]),
-        ):
-            await super().test_select_event_offset_lt()
-
-    async def test_select_event_offset_gt(self):
-        with patch.object(
-            DatabaseClient,
-            "fetch_all",
-            return_value=FakeAsyncIterator(
-                [tuple(entry.as_raw().values()) for entry in [self.entries[2], self.entries[3], self.entries[4]]]
-            ),
-        ):
-            await super().test_select_event_offset_gt()
-
-    async def test_select_event_offset_le(self):
-        with patch.object(
-            DatabaseClient,
-            "fetch_all",
-            return_value=FakeAsyncIterator(
-                [tuple(entry.as_raw().values()) for entry in [self.entries[0], self.entries[1]]]
-            ),
-        ):
-            await super().test_select_event_offset_le()
-
-    async def test_select_event_offset_ge(self):
-        with patch.object(
-            DatabaseClient,
-            "fetch_all",
-            return_value=FakeAsyncIterator(
-                [
-                    tuple(entry.as_raw().values())
-                    for entry in [self.entries[1], self.entries[2], self.entries[3], self.entries[4]]
-                ]
-            ),
-        ):
-            await super().test_select_event_offset_ge()
 
     async def test_select_updated_at(self):
         with patch.object(

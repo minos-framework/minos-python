@@ -39,7 +39,6 @@ class TestAiopgTransactionDatabaseOperationFactory(unittest.TestCase):
             uuid=uuid4(),
             destination_uuid=uuid4(),
             status=TransactionStatus.COMMITTED,
-            event_offset=234234,
         )
         self.assertIsInstance(operation, AiopgDatabaseOperation)
 
@@ -51,11 +50,6 @@ class TestAiopgTransactionDatabaseOperationFactory(unittest.TestCase):
             destination_uuid=uuid4(),
             status=TransactionStatus.COMMITTED,
             status_in={TransactionStatus.REJECTED, TransactionStatus.RESERVED},
-            event_offset=234,
-            event_offset_lt=24342,
-            event_offset_gt=3424,
-            event_offset_le=2342,
-            event_offset_ge=234342,
             updated_at=current_datetime(),
             updated_at_lt=current_datetime(),
             updated_at_gt=current_datetime(),

@@ -82,7 +82,6 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
                         uuid UUID PRIMARY KEY,
                         destination_uuid UUID NOT NULL,
                         status TRANSACTION_STATUS NOT NULL,
-                        event_offset INTEGER,
                         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                     );
                     """,
@@ -96,7 +95,6 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
         uuid: UUID,
         destination_uuid: UUID,
         status: TransactionStatus,
-        event_offset: int,
         **kwargs,
     ) -> DatabaseOperation:
         """Build the database operation to submit a row.
@@ -104,7 +102,6 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
         :param uuid: The identifier of the transaction.
         :param destination_uuid: The identifier of the destination transaction.
         :param status: The status of the transaction.
-        :param event_offset: The event offset of the transaction.
         :param kwargs: Additional named arguments.
         :return: A ``DatabaseOperation`` instance.
         """
@@ -113,16 +110,15 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
             "uuid": uuid,
             "destination_uuid": destination_uuid,
             "status": status,
-            "event_offset": event_offset,
         }
 
         return AiopgDatabaseOperation(
             f"""
-            INSERT INTO {self.build_table_name()} AS t (uuid, destination_uuid, status, event_offset)
-            VALUES (%(uuid)s, %(destination_uuid)s, %(status)s, %(event_offset)s)
+            INSERT INTO {self.build_table_name()} AS t (uuid, destination_uuid, status)
+            VALUES (%(uuid)s, %(destination_uuid)s, %(status)s)
             ON CONFLICT (uuid)
             DO
-               UPDATE SET status = %(status)s, event_offset = %(event_offset)s, updated_at = NOW()
+               UPDATE SET status = %(status)s, updated_at = NOW()
             WHERE (t.destination_uuid = %(destination_uuid)s)
               AND (NOT (t.status = 'pending' AND %(status)s NOT IN ('pending', 'reserving', 'rejected')))
               AND (NOT (t.status = 'reserving' AND %(status)s NOT IN ('reserved', 'rejected')))
@@ -144,11 +140,6 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
         destination_uuid: Optional[UUID] = None,
         status: Optional[str] = None,
         status_in: Optional[Iterable[str]] = None,
-        event_offset: Optional[int] = None,
-        event_offset_lt: Optional[int] = None,
-        event_offset_gt: Optional[int] = None,
-        event_offset_le: Optional[int] = None,
-        event_offset_ge: Optional[int] = None,
         updated_at: Optional[datetime] = None,
         updated_at_lt: Optional[datetime] = None,
         updated_at_gt: Optional[datetime] = None,
@@ -164,11 +155,6 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
         :param destination_uuid: Destination Transaction identifier equal to the given value.
         :param status: Transaction status equal to the given value.
         :param status_in: Transaction status within the given values
-        :param event_offset: Event offset equal to the given value.
-        :param event_offset_lt: Event Offset lower than the given value
-        :param event_offset_gt: Event Offset greater than the given value
-        :param event_offset_le: Event Offset lower or equal to the given value
-        :param event_offset_ge: Event Offset greater or equal to the given value
         :param updated_at: Updated at equal to the given value.
         :param updated_at_lt: Updated at lower than the given value.
         :param updated_at_gt: Updated at greater than the given value.
@@ -197,16 +183,6 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
             conditions.append("status = %(status)s")
         if status_in is not None:
             conditions.append("status IN %(status_in)s")
-        if event_offset is not None:
-            conditions.append("event_offset = %(event_offset)s")
-        if event_offset_lt is not None:
-            conditions.append("event_offset < %(event_offset_lt)s")
-        if event_offset_gt is not None:
-            conditions.append("event_offset > %(event_offset_gt)s")
-        if event_offset_le is not None:
-            conditions.append("event_offset <= %(event_offset_le)s")
-        if event_offset_ge is not None:
-            conditions.append("event_offset >= %(event_offset_ge)s")
         if updated_at is not None:
             conditions.append("updated_at = %(updated_at)s")
         if updated_at_lt is not None:
@@ -219,15 +195,15 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
             conditions.append("updated_at >= %(updated_at_ge)s")
 
         select_all = f"""
-        SELECT uuid, status, event_offset, destination_uuid, updated_at
+        SELECT uuid, status, destination_uuid, updated_at
         FROM {self.build_table_name()}
         """.strip()
 
         if not conditions:
-            return AiopgDatabaseOperation(f"{select_all} ORDER BY event_offset;")
+            return AiopgDatabaseOperation(f"{select_all} ORDER BY updated_at;")
 
         return AiopgDatabaseOperation(
-            f"{select_all} WHERE {' AND '.join(conditions)} ORDER BY event_offset;",
+            f"{select_all} WHERE {' AND '.join(conditions)} ORDER BY updated_at;",
             {
                 "uuid": uuid,
                 "uuid_ne": uuid_ne,
@@ -235,11 +211,6 @@ class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFacto
                 "destination_uuid": destination_uuid,
                 "status": status,
                 "status_in": status_in,
-                "event_offset": event_offset,
-                "event_offset_lt": event_offset_lt,
-                "event_offset_gt": event_offset_gt,
-                "event_offset_le": event_offset_le,
-                "event_offset_ge": event_offset_ge,
                 "updated_at": updated_at,
                 "updated_at_lt": updated_at_lt,
                 "updated_at_gt": updated_at_gt,
