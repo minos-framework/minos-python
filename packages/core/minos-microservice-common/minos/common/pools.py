@@ -112,15 +112,15 @@ class PoolFactory(SetupMixin):
 
 
 class _PoolBase(PoolBase, ABC):
-    def __init__(self, *args, maxsize: int = 10, recycle: Optional[int] = 300, **kwargs):
+    def __init__(self, *args, maxsize: int = 10, recycle: Optional[int] = None, **kwargs):
         super().__init__(maxsize=maxsize, recycle=recycle)
 
 
 class Pool(SetupMixin, _PoolBase, Generic[P], ABC):
     """Base class for Pool implementations in minos"""
 
-    def __init__(self, *args, maxsize: int = 10, recycle: Optional[int] = 300, already_setup: bool = True, **kwargs):
-        super().__init__(*args, maxsize=maxsize, recycle=recycle, already_setup=already_setup, **kwargs)
+    def __init__(self, *args, already_setup: bool = True, **kwargs):
+        super().__init__(*args, already_setup=already_setup, **kwargs)
 
     # noinspection PyUnresolvedReferences
     async def __acquire(self) -> Any:  # pragma: no cover

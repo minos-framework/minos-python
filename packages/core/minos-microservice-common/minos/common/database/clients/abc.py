@@ -66,9 +66,8 @@ class DatabaseClient(ABC, BuildableMixin):
         """
         return await self._is_valid(**kwargs)
 
-    @abstractmethod
     async def _is_valid(self, **kwargs) -> bool:
-        raise NotImplementedError
+        return True
 
     async def _destroy(self) -> None:
         await self.reset()

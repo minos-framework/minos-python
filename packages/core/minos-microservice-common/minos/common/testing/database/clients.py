@@ -21,10 +21,6 @@ class MockedDatabaseClient(DatabaseClient):
         self.kwargs = kwargs
         self._response = tuple()
 
-    async def _is_valid(self, **kwargs) -> bool:
-        """For testing purposes"""
-        return True
-
     async def _reset(self, **kwargs) -> None:
         """For testing purposes"""
         self._response = tuple()

@@ -33,9 +33,6 @@ from tests.utils import (
 class _DatabaseClient(DatabaseClient):
     """For testing purposes."""
 
-    async def _is_valid(self, **kwargs) -> bool:
-        """For testing purposes."""
-
     async def _reset(self, **kwargs) -> None:
         """For testing purposes."""
 
@@ -76,7 +73,7 @@ _DatabaseClient.set_factory(LockDatabaseOperationFactory, _LockDatabaseOperation
 class TestDatabaseClient(CommonTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(DatabaseClient, (ABC, BuildableMixin)))
-        expected = {"_is_valid", "_execute", "_fetch_all", "_reset"}
+        expected = {"_execute", "_fetch_all", "_reset"}
         # noinspection PyUnresolvedReferences
         self.assertEqual(expected, DatabaseClient.__abstractmethods__)
 

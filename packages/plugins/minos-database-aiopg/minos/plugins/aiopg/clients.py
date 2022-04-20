@@ -3,8 +3,15 @@ from __future__ import (
 )
 
 import logging
+from asyncio import (
+    TimeoutError,
+)
 from collections.abc import (
     AsyncIterator,
+    Iterable,
+)
+from functools import (
+    partial,
 )
 from typing import (
     Optional,
@@ -22,6 +29,7 @@ from psycopg2 import (
 )
 
 from minos.common import (
+    CircuitBreakerMixin,
     ConnectionException,
     DatabaseClient,
     IntegrityException,
@@ -35,7 +43,7 @@ from .operations import (
 logger = logging.getLogger(__name__)
 
 
-class AiopgDatabaseClient(DatabaseClient):
+class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
     """Aiopg Database Client class."""
 
     _connection: Optional[Connection]
@@ -48,10 +56,17 @@ class AiopgDatabaseClient(DatabaseClient):
         port: Optional[int] = None,
         user: Optional[str] = None,
         password: Optional[str] = None,
+        circuit_breaker_exceptions: Iterable[type] = tuple(),
+        connection_timeout: Optional[float] = None,
+        cursor_timeout: Optional[float] = None,
         *args,
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            *args,
+            **kwargs,
+            circuit_breaker_exceptions=(ConnectionException, *circuit_breaker_exceptions),
+        )
 
         if host is None:
             host = "localhost"
@@ -61,6 +76,10 @@ class AiopgDatabaseClient(DatabaseClient):
             user = "postgres"
         if password is None:
             password = ""
+        if connection_timeout is None:
+            connection_timeout = 1
+        if cursor_timeout is None:
+            cursor_timeout = 60
 
         self._database = database
         self._host = host
@@ -68,36 +87,60 @@ class AiopgDatabaseClient(DatabaseClient):
         self._user = user
         self._password = password
 
+        self._connection_timeout = connection_timeout
+        self._cursor_timeout = cursor_timeout
+
         self._connection = None
         self._cursor = None
 
     async def _setup(self) -> None:
         await super()._setup()
-        await self._create_connection()
+        await self.recreate()
 
     async def _destroy(self) -> None:
         await super()._destroy()
-        await self._close_connection()
+        await self.close()
 
-    async def _create_connection(self):
-        try:
-            self._connection = await aiopg.connect(
-                host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password
-            )
-        except OperationalError as exc:
-            msg = f"There was an {exc!r} while trying to get a database connection."
-            logger.warning(msg)
-            raise ConnectionException(msg)
+    async def recreate(self) -> None:
+        """Recreate the database connection.
 
+        :return: This method does not return anything.
+        """
+        await self.close()
+
+        self._connection = await self.with_circuit_breaker(self._connect)
         logger.debug(f"Created {self.database!r} database connection identified by {id(self._connection)}!")
 
-    async def _close_connection(self):
-        if self._connection is not None and not self._connection.closed:
-            await self._connection.close()
-        self._connection = None
-        logger.debug(f"Destroyed {self.database!r} database connection identified by {id(self._connection)}!")
+    async def _connect(self) -> Connection:
+        try:
+            return await aiopg.connect(
+                timeout=self._connection_timeout,
+                host=self.host,
+                port=self.port,
+                dbname=self.database,
+                user=self.user,
+                password=self.password,
+            )
+        except (OperationalError, TimeoutError) as exc:
+            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
 
-    async def _is_valid(self) -> bool:
+    async def close(self) -> None:
+        """Close database connection.
+
+        :return: This method does not return anything.
+        """
+        if await self.is_connected():
+            await self._connection.close()
+
+        if self._connection is not None:
+            logger.debug(f"Destroyed {self.database!r} database connection identified by {id(self._connection)}!")
+            self._connection = None
+
+    async def is_connected(self) -> bool:
+        """Check if the client is connected.
+
+        :return: ``True`` if it is connected or ``False`` otherwise.
+        """
         if self._connection is None:
             return False
 
@@ -114,27 +157,36 @@ class AiopgDatabaseClient(DatabaseClient):
 
     # noinspection PyUnusedLocal
     async def _fetch_all(self) -> AsyncIterator[tuple]:
-        await self._create_cursor()
+        if self._cursor is None:
+            raise ProgrammingException("An operation must be executed before fetching any value.")
+
         try:
             async for row in self._cursor:
                 yield row
         except ProgrammingError as exc:
             raise ProgrammingException(str(exc))
+        except OperationalError as exc:
+            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
 
     # noinspection PyUnusedLocal
     async def _execute(self, operation: AiopgDatabaseOperation) -> None:
         if not isinstance(operation, AiopgDatabaseOperation):
             raise ValueError(f"The operation must be a {AiopgDatabaseOperation!r} instance. Obtained: {operation!r}")
 
-        await self._create_cursor()
+        fn = partial(self._execute_cursor, operation=operation.query, parameters=operation.parameters)
+        await self.with_circuit_breaker(fn)
+
+    async def _execute_cursor(self, operation: str, parameters: dict):
+        if not await self.is_connected():
+            await self.recreate()
+
+        self._cursor = await self._connection.cursor(timeout=self._cursor_timeout)
         try:
-            await self._cursor.execute(operation=operation.query, parameters=operation.parameters)
+            await self._cursor.execute(operation=operation, parameters=parameters)
+        except OperationalError as exc:
+            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
         except IntegrityError as exc:
             raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
-
-    async def _create_cursor(self):
-        if self._cursor is None:
-            self._cursor = await self._connection.cursor()
 
     async def _destroy_cursor(self, **kwargs):
         if self._cursor is not None:
