@@ -78,6 +78,18 @@ Example:
     async def foo(self, request: Request) -> Response:
        ...
 ```
+## Route path
+It is important to know that it is best to define routes with a regular expression when it is an id, uuid or similar. This is to avoid collisions with similar routes.
+Instead of using:
+```python
+@enroute.rest.command("/users/{uuid}", "POST")
+```
+Use:
+```python
+import re
+UUID_REGEX = re.compile(r"\w{8}-\w{4}-\w{4}-\w{4}-\w{12}")
+@enroute.rest.command(f"/users/{{uuid:{UUID_REGEX.pattern}}}", "POST")
+```
 
 ## Authentication
 
@@ -116,6 +128,74 @@ discovery:
   token-exp-minutes: 60
   port: 8001
 ...
+```
+
+### JWT Token creation & refresh
+Example on how to create and refresh token. You need to store in database or similar the secret and key returned form kong in order to refresh existing token.
+```python
+from minos.common import (
+    UUID_REGEX,
+    NotProvidedException,
+    Config,
+    Inject,
+)
+from minos.cqrs import (
+    CommandService,
+)
+from minos.networks import (
+    Request,
+    Response,
+    enroute,
+)
+
+from ..aggregates import (
+    User,
+)
+from minos.plugins.kong import KongClient
+
+class UserCommandService(CommandService):
+    """UserCommandService class."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.kong = self._get_kong_client()
+
+    @staticmethod
+    @Inject()
+    def _get_kong_client(config: Config) -> KongClient:
+        """Get the service name."""
+        if config is None:
+            raise NotProvidedException("The config object must be provided.")
+        return KongClient.from_config(config)
+
+    @enroute.rest.command(f"/users/{{uuid:{UUID_REGEX.pattern}}}/jwt", "POST", authenticated=True,
+                          authorized_groups=["admin"], regex_priority=3)
+    @enroute.broker.command("GetUserJWT")
+    async def create_user_jwt(self, request: Request) -> Response:
+        params = await request.params()
+        uuid = params["uuid"]
+        user = await User.get(uuid)
+
+        if user.uuid == request.user:
+            token = await self.add_jwt_to_consumer(request.headers.get("X-Consumer-ID"))
+            return Response({"token": token})
+        else:
+            return Response(status=404)
+
+    async def add_jwt_to_consumer(self, consumer: str):
+        resp = await self.kong.add_jwt_to_consumer(consumer=consumer)
+        res = resp.json()
+        self.key = res['key']
+        self.secret = res['secret']
+        token = await self.kong.generate_jwt_token(key=self.key, secret=self.secret)
+        return token
+
+    @enroute.rest.command(f"/users/{{uuid:{UUID_REGEX.pattern}}}/refresh-jwt", "POST", authenticated=True,
+                          authorized_groups=["admin"], regex_priority=3)
+    @enroute.broker.command("RefreshJWT")
+    async def refresh_jwt(self, request: Request) -> Response:
+        token = await self.kong.generate_jwt_token(key=self.key, secret=self.secret)
+        return Response({"token": token})
 ```
 
 For the route to be authenticated with the method specified above, a parameter called `authenticated` must be passed:
