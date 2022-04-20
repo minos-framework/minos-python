@@ -63,6 +63,22 @@ services:
           - NODE_ENV=production
 ```
 
+## Decorators
+Decorator `@enroute` can support next params:
+ - `path` - route url path.
+ - `method` - HTTP method.
+ - `authenticated` (Optional) - True if route need authentication.
+ - `authorized_groups` (Optional) - Groups which can access to specified route (they must exist in Kong).
+ - `regex_priority` (Optional) - A number used to choose which route resolves a given request when several routes match it using regexes simultaneously. When two routes match the path and have the same regex_priority, the older one (lowest created_at) is used. Note that the priority for non-regex routes is different (longer non-regex routes are matched before shorter ones). Defaults to 0.
+
+Example:
+```python
+    @enroute.rest.command(f"/users/{{uuid:{UUID_REGEX.pattern}}}/jwt", "POST", authenticated=True, authorized_groups=["admin"], regex_priority=2)
+    @enroute.broker.command("GetUserJWT")
+    async def foo(self, request: Request) -> Response:
+       ...
+```
+
 ## Authentication
 
 Modify `config.yml` file. Add new middleware and modify discovery section:
@@ -84,6 +100,23 @@ discovery:
 Currently, there are 2 possible types of authentication:
 - `basic-auth`
 - `jwt`
+
+For jwt auth type you can specify default token expiration. Example:
+```yaml
+...
+middleware:
+  ...
+  - minos.plugins.kong.middleware
+
+discovery:
+  connector: minos.networks.DiscoveryConnector
+  client: minos.plugins.kong.KongDiscoveryClient
+  host: localhost
+  auth-type: jwt
+  token-exp-minutes: 60
+  port: 8001
+...
+```
 
 For the route to be authenticated with the method specified above, a parameter called `authenticated` must be passed:
 ```python
@@ -222,6 +255,8 @@ class UserCommandService(CommandService):
 ```
 
 You can get read the official docs [here](https://pantsel.github.io/konga/).
+
+
 ## Documentation
 
 The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).

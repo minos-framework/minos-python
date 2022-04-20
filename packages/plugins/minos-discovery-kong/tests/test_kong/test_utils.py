@@ -18,3 +18,29 @@ class TestKongDiscoveryUtils(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(pathpart, PathPart)
         self.assertEqual(pathpart.name, "minos")
         self.assertEqual(pathpart.is_generic, False)
+
+    def test_path_as_str(self) -> None:
+        pathpart = Endpoint(r"/user/{uuid:\w{8}-\w{4}-\w{4}-\w{4}-\w{12}}")
+        self.assertEqual(pathpart.path_as_str, "/user/.*")
+
+    def test_path_as_regex(self) -> None:
+        # pylint: disable=W605
+        pathpart = Endpoint(r"/user/{uuid:\w{8}-\w{4}-\w{4}-\w{4}-\w{12}}")
+        self.assertEqual(pathpart.path_as_regex, "/user/\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}")
+
+    def test_path_as_regex_simple_parameter(self) -> None:
+        pathpart = Endpoint("/user/{uuid}")
+        self.assertEqual(pathpart.path_as_regex, "/user/.*")
+
+    def test_path_as_regex_parameter(self) -> None:
+        pathpart = Endpoint("/user/{:uuid}")
+        self.assertEqual(pathpart.path_as_regex, "/user/.*")
+
+    def test_path_as_regex_multiple_parameter(self) -> None:
+        pathpart = Endpoint("/user/{:uuid}/{:uuid}")
+        self.assertEqual(pathpart.path_as_regex, "/user/.*/.*")
+
+    def test_path_as_regex_uuid(self) -> None:
+        # pylint: disable=W605
+        pathpart = Endpoint(r"/user/{uuid:\w{8}-\w{4}-\w{4}-\w{4}-\w{12}}/test")
+        self.assertEqual(pathpart.path_as_regex, "/user/\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}/test")

@@ -112,7 +112,7 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
                 self.route,
                 ["http"],
                 [endpoint["method"]],
-                [endpointClass.path_as_str],
+                [endpointClass.path_as_regex],
                 content_service["id"],
                 regex_priority,
                 False,
