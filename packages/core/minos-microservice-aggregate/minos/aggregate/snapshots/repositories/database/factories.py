@@ -21,7 +21,7 @@ from minos.common import (
     DatabaseOperationFactory,
 )
 
-from .....queries import (
+from ....queries import (
     _Condition,
     _Ordering,
 )

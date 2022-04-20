@@ -10,7 +10,7 @@ from minos.common import (
     DatabaseOperation,
 )
 
-from ......collections import (
+from .....collections import (
     BrokerQueueDatabaseOperationFactory,
 )
 

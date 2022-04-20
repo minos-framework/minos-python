@@ -166,10 +166,9 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
     async def _receive(self) -> BrokerMessage:
         try:
             record = await self.client.getone()
-        except ConsumerStoppedError as exc:
-            if self.already_destroyed:
-                raise StopAsyncIteration
-            raise exc
+        except ConsumerStoppedError:
+            raise StopAsyncIteration
+
         bytes_ = record.value
         message = BrokerMessage.from_avro_bytes(bytes_)
         return message

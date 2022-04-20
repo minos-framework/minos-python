@@ -26,7 +26,7 @@ from minos.common import (
 )
 
 if TYPE_CHECKING:
-    from ....entries import (
+    from ...entries import (
         TransactionStatus,
     )
 
