@@ -18,6 +18,7 @@ from minos.aggregate import (
     TRANSACTION_CONTEXT_VAR,
     Action,
     EventEntry,
+    EventRepository,
     TransactionEntry,
     TransactionRepositoryConflictException,
     TransactionStatus,
@@ -64,8 +65,8 @@ class TestTransactionEntry(AggregateTestCase):
         self.assertEqual(TRANSACTION_CONTEXT_VAR.get(), None)
 
     async def test_async_context_manager(self):
-        with patch("minos.aggregate.TransactionEntry.save") as save_mock, patch(
-            "minos.aggregate.TransactionEntry.commit"
+        with patch.object(TransactionEntry, "save") as save_mock, patch.object(
+            TransactionEntry, "commit"
         ) as commit_mock:
             async with TransactionEntry():
                 self.assertEqual(1, save_mock.call_count)
@@ -74,7 +75,7 @@ class TestTransactionEntry(AggregateTestCase):
             self.assertEqual(1, commit_mock.call_count)
 
     async def test_async_context_manager_without_autocommit(self):
-        with patch("minos.aggregate.TransactionEntry.commit") as commit_mock:
+        with patch.object(TransactionEntry, "commit") as commit_mock:
             async with TransactionEntry(autocommit=False) as transaction:
                 self.assertEqual(0, commit_mock.call_count)
                 transaction.status = TransactionStatus.PENDING
@@ -109,10 +110,10 @@ class TestTransactionEntry(AggregateTestCase):
 
         transaction = TransactionEntry(uuid, TransactionStatus.PENDING)
 
-        with patch(
-            "minos.aggregate.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ), patch("minos.aggregate.TransactionEntry.save") as save_mock, patch(
-            "minos.aggregate.TransactionEntry.validate", return_value=True
+        with patch.object(
+            EventRepository, "offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
+        ), patch.object(TransactionEntry, "save") as save_mock, patch.object(
+            TransactionEntry, "validate", return_value=True
         ) as validate_mock:
             await transaction.reserve()
 
@@ -128,10 +129,10 @@ class TestTransactionEntry(AggregateTestCase):
         uuid = uuid4()
         transaction = TransactionEntry(uuid, TransactionStatus.PENDING)
 
-        with patch(
-            "minos.aggregate.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ), patch("minos.aggregate.TransactionEntry.save") as save_mock, patch(
-            "minos.aggregate.TransactionEntry.validate", return_value=False
+        with patch.object(
+            EventRepository, "offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
+        ), patch.object(TransactionEntry, "save") as save_mock, patch.object(
+            TransactionEntry, "validate", return_value=False
         ) as validate_mock:
             with self.assertRaises(TransactionRepositoryConflictException):
                 await transaction.reserve()
@@ -378,9 +379,9 @@ class TestTransactionEntry(AggregateTestCase):
 
         transaction = TransactionEntry(uuid, TransactionStatus.RESERVED)
 
-        with patch(
-            "minos.aggregate.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ), patch("minos.aggregate.TransactionEntry.save") as save_mock:
+        with patch.object(
+            EventRepository, "offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
+        ), patch.object(TransactionEntry, "save") as save_mock:
             await transaction.reject()
 
         self.assertEqual(1, save_mock.call_count)
@@ -410,9 +411,9 @@ class TestTransactionEntry(AggregateTestCase):
 
         transaction = TransactionEntry(uuid, TransactionStatus.RESERVED)
 
-        with patch(
-            "minos.aggregate.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ), patch("minos.aggregate.TransactionEntry.save") as save_mock:
+        with patch.object(
+            EventRepository, "offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
+        ), patch.object(TransactionEntry, "save") as save_mock:
             await transaction.commit()
 
         self.assertEqual(
@@ -437,12 +438,12 @@ class TestTransactionEntry(AggregateTestCase):
         async def _fn():
             transaction.status = TransactionStatus.RESERVED
 
-        with patch(
-            "minos.aggregate.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ), patch("minos.aggregate.TransactionEntry.reserve", side_effect=_fn) as reserve_mock, patch(
-            "minos.aggregate.TransactionEntry.save"
-        ) as save_mock, patch(
-            "minos.aggregate.TransactionEntry._commit", return_value=True
+        with patch.object(
+            EventRepository, "offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
+        ), patch.object(TransactionEntry, "reserve", side_effect=_fn) as reserve_mock, patch.object(
+            TransactionEntry, "save"
+        ) as save_mock, patch.object(
+            TransactionEntry, "_commit", return_value=True
         ) as commit_mock:
             await transaction.commit()
 
