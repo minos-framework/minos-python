@@ -63,20 +63,31 @@ class TransactionRepository(ABC, SetupMixin):
 
         self._lock_pool = lock_pool
 
-        self._subscribers = list()
+        self._observers = set()
 
     @property
-    def subscribers(self) -> list[TransactionalMixin]:
-        """TODO"""
-        return self._subscribers
+    def observers(self) -> set[TransactionalMixin]:
+        """Get the list of observers.
 
-    def add_subscriber(self, subscriber: TransactionalMixin) -> None:
-        """TODO"""
-        self._subscribers.append(subscriber)
+        :return: A ``list`` of ``TransactionalMixin`` entries.
+        """
+        return self._observers
 
-    def remove_subscriber(self, subscriber: TransactionalMixin) -> None:
-        """TODO"""
-        self._subscribers.remove(subscriber)
+    def register_observer(self, observer: TransactionalMixin) -> None:
+        """Register a new observer into the system.
+
+        :param observer: The observer to be registered.
+        :return: This method does not return anything.
+        """
+        self._observers.add(observer)
+
+    def unregister_observer(self, observer: TransactionalMixin) -> None:
+        """Unregister an observer form the system
+
+        :param observer: The observer to be unregistered
+        :return: This method does not return anything.
+        """
+        self._observers.remove(observer)
 
     async def submit(self, transaction: TransactionEntry) -> TransactionEntry:
         """Submit a new or updated transaction to store it on the repository.

@@ -61,7 +61,7 @@ class DatabaseEventRepository(DatabaseMixin[EventDatabaseOperationFactory], Even
             lock = entry.uuid.int & (1 << 32) - 1
 
         if entry.transaction_uuid != NULL_UUID:
-            transaction = await self._transaction_repository.get(uuid=entry.transaction_uuid)
+            transaction = await self.transaction_repository.get(uuid=entry.transaction_uuid)
             transaction_uuids = await transaction.uuids
         else:
             transaction_uuids = (NULL_UUID,)

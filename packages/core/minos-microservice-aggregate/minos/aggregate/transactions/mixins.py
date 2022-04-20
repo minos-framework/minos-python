@@ -1,6 +1,9 @@
 from abc import (
     abstractmethod,
 )
+from typing import (
+    Optional,
+)
 from uuid import (
     UUID,
 )
@@ -18,7 +21,7 @@ from .repositories import (
 
 
 class TransactionalMixin(SetupMixin):
-    """TODO"""
+    """Transactional Mixin class."""
 
     @Inject()
     def __init__(self, transaction_repository: TransactionRepository, *args, **kwargs):
@@ -27,33 +30,54 @@ class TransactionalMixin(SetupMixin):
             raise NotProvidedException("A transaction repository instance is required.")
         self._transaction_repository = transaction_repository
 
+    @property
+    def transaction_repository(self) -> TransactionRepository:
+        """Get the transaction repository.
+
+        :return: A ``Transaction`` repository instance.
+        """
+        return self._transaction_repository
+
     async def _setup(self) -> None:
         await super()._setup()
-        self.subscribe_to_transactions()
+        self._register_into_transaction_repository()
 
     async def _destroy(self) -> None:
-        self.unsubscribe_from_transactions()
+        self._unregister_from_transaction_repository()
         await super()._destroy()
 
-    def subscribe_to_transactions(self) -> None:
-        """TODO"""
-        self._transaction_repository.add_subscriber(self)
+    def _register_into_transaction_repository(self) -> None:
+        self._transaction_repository.register_observer(self)
 
-    def unsubscribe_from_transactions(self) -> None:
-        """TODO"""
-        self._transaction_repository.remove_subscriber(self)
+    def _unregister_from_transaction_repository(self) -> None:
+        self._transaction_repository.unregister_observer(self)
 
     @abstractmethod
     async def get_related_transactions(self, transaction_uuid: UUID) -> set[UUID]:
-        """TODO"""
+        """Get the set of related transaction identifiers.
+
+        :param transaction_uuid: The identifier of the transaction to be committed.
+        :return: A ``set`` or ``UUID`` values.
+        """
 
     @abstractmethod
-    async def commit_transaction(self, transaction_uuid: UUID, destination: UUID) -> None:
-        """TODO"""
+    async def commit_transaction(self, transaction_uuid: UUID, destination_transaction_uuid: UUID) -> None:
+        """Commit the transaction with given identifier.
+
+        :param transaction_uuid: The identifier of the transaction to be committed.
+        :param destination_transaction_uuid: The identifier of the destination transaction.
+        :return: This method does not return anything.
+        """
 
     async def reject_transaction(self, transaction_uuid: UUID) -> None:
-        """TODO"""
+        """Reject the transaction with given identifier
 
-    @abstractmethod
-    def write_lock(self) -> Lock:
-        """TODO"""
+        :param transaction_uuid: The identifier of the transaction to be committed.
+        :return: This method does not return anything.
+        """
+
+    def write_lock(self) -> Optional[Lock]:
+        """Get a lock if available.
+
+        :return: A ``Lock`` instance or ``None``.
+        """

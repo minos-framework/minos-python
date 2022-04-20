@@ -137,7 +137,7 @@ class TransactionEntry:
             await self.save(status=TransactionStatus.COMMITTED)
 
     async def _commit(self) -> None:
-        for subscriber in self._transaction_repository.subscribers:
+        for subscriber in self._transaction_repository.observers:
             await subscriber.commit_transaction(self.uuid, self.destination_uuid)
 
     async def reserve(self) -> None:
@@ -149,10 +149,8 @@ class TransactionEntry:
             raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
 
         async with self._transaction_repository.write_lock():
-            locks = MultiAsyncContextManager(
-                subscriber.write_lock() for subscriber in self._transaction_repository.subscribers
-            )
-            async with locks:
+
+            async with self._get_observer_locks():
                 await self.save(status=TransactionStatus.RESERVING)
 
                 committable = await self.validate()
@@ -161,6 +159,12 @@ class TransactionEntry:
                 await self.save(status=status)
                 if not committable:
                     raise TransactionRepositoryConflictException(f"{self!r} could not be reserved!")
+
+    def _get_observer_locks(self) -> _MultiAsyncContextManager:
+        locks = (subscriber.write_lock() for subscriber in self._transaction_repository.observers)
+        locks = (lock for lock in locks if lock is not None)
+        locks = _MultiAsyncContextManager(locks)
+        return locks
 
     async def validate(self) -> bool:
         """Check if the transaction is committable.
@@ -183,7 +187,7 @@ class TransactionEntry:
             return False
 
         transaction_uuids = set()
-        for subscriber in self._transaction_repository.subscribers:
+        for subscriber in self._transaction_repository.observers:
             transaction_uuids |= await subscriber.get_related_transactions(self.uuid)
 
         if len(transaction_uuids):
@@ -219,7 +223,7 @@ class TransactionEntry:
             )
 
         async with self._transaction_repository.write_lock():
-            for subscriber in self._transaction_repository.subscribers:
+            for subscriber in self._transaction_repository.observers:
                 await subscriber.reject_transaction(self.uuid)
 
             await self.save(status=TransactionStatus.REJECTED)
@@ -318,9 +322,7 @@ class TransactionStatus(str, Enum):
         raise ValueError(f"The given value does not match with any enum items. Obtained {value}")
 
 
-class MultiAsyncContextManager(tuple):
-    """TODO"""
-
+class _MultiAsyncContextManager(tuple):
     async def __aenter__(self):
         for value in self:
             await value.__aenter__()

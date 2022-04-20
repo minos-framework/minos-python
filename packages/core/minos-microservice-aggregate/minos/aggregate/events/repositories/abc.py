@@ -76,6 +76,8 @@ if TYPE_CHECKING:
 class EventRepository(ABC, TransactionalMixin):
     """Base event repository class in ``minos``."""
 
+    _lock_pool: LockPool
+
     @Inject()
     def __init__(
         self,
@@ -105,7 +107,7 @@ class EventRepository(ABC, TransactionalMixin):
         :param kwargs: Additional named arguments.
         :return: A new ``TransactionEntry`` instance.
         """
-        return TransactionEntry(transaction_repository=self._transaction_repository, **kwargs)
+        return TransactionEntry(transaction_repository=self.transaction_repository, **kwargs)
 
     async def create(self, entry: Union[Event, EventEntry]) -> EventEntry:
         """Store new creation entry into the repository.
@@ -178,7 +180,7 @@ class EventRepository(ABC, TransactionalMixin):
         :param kwargs: Additional named arguments.
         :return: ``True`` if the entry can be submitted or ``False`` otherwise.
         """
-        iterable = self._transaction_repository.select(
+        iterable = self.transaction_repository.select(
             destination_uuid=entry.transaction_uuid,
             uuid_ne=transaction_uuid_ne,
             status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING),
@@ -318,7 +320,11 @@ class EventRepository(ABC, TransactionalMixin):
         return self._lock_pool.acquire("aggregate_event_write_lock")
 
     async def get_related_transactions(self, transaction_uuid: UUID) -> set[UUID]:
-        """TODO"""
+        """Get the set of related transaction identifiers.
+
+        :param transaction_uuid: The identifier of the transaction to be committed.
+        :return: A ``set`` or ``UUID`` values.
+        """
         entries = dict()
         async for entry in self.select(transaction_uuid=transaction_uuid):
             if entry.uuid in entries and entry.version < entries[entry.uuid]:
@@ -333,7 +339,12 @@ class EventRepository(ABC, TransactionalMixin):
         return transaction_uuids
 
     async def commit_transaction(self, transaction_uuid: UUID, destination_transaction_uuid: UUID) -> None:
-        """TODO"""
+        """Commit the transaction with given identifier.
+
+        :param transaction_uuid: The identifier of the transaction to be committed.
+        :param destination_transaction_uuid: The identifier of the destination transaction.
+        :return: This method does not return anything.
+        """
         async for entry in self.select(transaction_uuid=transaction_uuid):
             new = EventEntry.from_another(entry, transaction_uuid=destination_transaction_uuid)
             await self.submit(new, transaction_uuid_ne=transaction_uuid)
