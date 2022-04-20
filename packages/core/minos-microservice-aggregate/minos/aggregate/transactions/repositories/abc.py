@@ -6,6 +6,9 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from collections.abc import (
+    Iterable,
+)
 from datetime import (
     datetime,
 )
@@ -83,10 +86,10 @@ class TransactionRepository(ABC, SetupMixin):
         self,
         uuid: Optional[UUID] = None,
         uuid_ne: Optional[UUID] = None,
-        uuid_in: Optional[tuple[UUID, ...]] = None,
+        uuid_in: Optional[Iterable[UUID]] = None,
         destination_uuid: Optional[UUID] = None,
         status: Optional[TransactionStatus] = None,
-        status_in: Optional[tuple[str, ...]] = None,
+        status_in: Optional[Iterable[str]] = None,
         event_offset: Optional[int] = None,
         event_offset_lt: Optional[int] = None,
         event_offset_gt: Optional[int] = None,

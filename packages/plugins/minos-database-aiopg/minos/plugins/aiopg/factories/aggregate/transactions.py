@@ -32,7 +32,7 @@ from ...operations import (
 )
 
 
-# noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic
+# noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic,SqlDialectInspection
 class AiopgTransactionDatabaseOperationFactory(TransactionDatabaseOperationFactory):
     """Aiopg Transaction Database Operation Factory class."""
 
