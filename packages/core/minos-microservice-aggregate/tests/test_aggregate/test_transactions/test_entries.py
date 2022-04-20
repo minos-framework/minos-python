@@ -39,7 +39,7 @@ class TestTransactionEntry(AggregateTestCase):
         self.assertEqual(TransactionStatus.PENDING, transaction.status)
         self.assertEqual(True, transaction._autocommit)
 
-        self.assertEqual(self.transaction_repository, transaction._transaction_repository)
+        self.assertEqual(self.transaction_repository, transaction.repository)
 
     def test_constructor_extended(self):
         uuid = uuid4()
@@ -49,7 +49,7 @@ class TestTransactionEntry(AggregateTestCase):
         self.assertEqual(status, transaction.status)
         self.assertEqual(False, transaction._autocommit)
 
-        self.assertEqual(self.transaction_repository, transaction._transaction_repository)
+        self.assertEqual(self.transaction_repository, transaction.repository)
 
     def test_constructor_raw_status(self):
         transaction = TransactionEntry(status="pending")

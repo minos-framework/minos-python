@@ -56,4 +56,4 @@ class DatabaseTransactionRepository(DatabaseMixin[TransactionDatabaseOperationFa
     async def _select(self, streaming_mode: Optional[bool] = None, **kwargs) -> AsyncIterator[TransactionEntry]:
         operation = self.database_operation_factory.build_query(**kwargs)
         async for row in self.execute_on_database_and_fetch_all(operation, streaming_mode=streaming_mode):
-            yield TransactionEntry(*row, transaction_repository=self)
+            yield TransactionEntry(*row, repository=self)

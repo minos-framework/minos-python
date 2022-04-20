@@ -79,7 +79,7 @@ class TestEventRepository(AggregateTestCase):
     def test_constructor(self):
         repository = _EventRepository()
         self.assertEqual(self.broker_publisher, repository._broker_publisher)
-        self.assertEqual(self.transaction_repository, repository._transaction_repository)
+        self.assertEqual(self.transaction_repository, repository.transaction_repository)
         self.assertEqual(self.pool_factory.get_pool("lock"), repository._lock_pool)
 
     async def test_constructor_raises(self):
@@ -97,7 +97,7 @@ class TestEventRepository(AggregateTestCase):
         uuid = uuid4()
         transaction = self.event_repository.transaction(uuid=uuid)
         self.assertEqual(TransactionEntry(uuid), transaction)
-        self.assertEqual(self.transaction_repository, transaction._transaction_repository)
+        self.assertEqual(self.transaction_repository, transaction.repository)
 
     async def test_create(self):
         mock = AsyncMock(side_effect=lambda x: x)

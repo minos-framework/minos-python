@@ -57,7 +57,7 @@ class TransactionEntry:
         "destination_uuid",
         "updated_at",
         "_autocommit",
-        "_transaction_repository",
+        "_repository",
         "_token",
     )
 
@@ -68,15 +68,15 @@ class TransactionEntry:
         destination_uuid: Optional[UUID] = None,
         updated_at: Optional[datetime] = None,
         autocommit: bool = True,
-        transaction_repository: Optional[TransactionRepository] = None,
+        repository: Optional[TransactionRepository] = None,
     ):
-        if transaction_repository is None:
+        if repository is None:
             from .repositories import (
                 TransactionRepository,
             )
 
             with suppress(NotProvidedException):
-                transaction_repository = Inject.resolve(TransactionRepository)
+                repository = Inject.resolve(TransactionRepository)
 
         if uuid is None:
             uuid = uuid4()
@@ -96,9 +96,17 @@ class TransactionEntry:
         self.updated_at = updated_at
 
         self._autocommit = autocommit
-        self._transaction_repository = transaction_repository
+        self._repository = repository
 
         self._token = None
+
+    @property
+    def repository(self) -> TransactionRepository:
+        """Get the repository.
+
+        :return: A ``TransactionRepository``.
+        """
+        return self._repository
 
     async def __aenter__(self):
         if self.status != TransactionStatus.PENDING:
@@ -131,13 +139,13 @@ class TransactionEntry:
         if self.status != TransactionStatus.RESERVED:
             raise ValueError(f"Current status is not {TransactionStatus.RESERVED!r}. Obtained: {self.status!r}")
 
-        async with self._transaction_repository.write_lock():
+        async with self._repository.write_lock():
             await self.save(status=TransactionStatus.COMMITTING)
             await self._commit()
             await self.save(status=TransactionStatus.COMMITTED)
 
     async def _commit(self) -> None:
-        for subscriber in self._transaction_repository.observers:
+        for subscriber in self._repository.observers:
             await subscriber.commit_transaction(self.uuid, self.destination_uuid)
 
     async def reserve(self) -> None:
@@ -148,7 +156,7 @@ class TransactionEntry:
         if self.status != TransactionStatus.PENDING:
             raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
 
-        async with self._transaction_repository.write_lock():
+        async with self._repository.write_lock():
 
             async with self._get_observer_locks():
                 await self.save(status=TransactionStatus.RESERVING)
@@ -161,7 +169,7 @@ class TransactionEntry:
                     raise TransactionRepositoryConflictException(f"{self!r} could not be reserved!")
 
     def _get_observer_locks(self) -> _MultiAsyncContextManager:
-        locks = (subscriber.write_lock() for subscriber in self._transaction_repository.observers)
+        locks = (subscriber.write_lock() for subscriber in self._repository.observers)
         locks = (lock for lock in locks if lock is not None)
         locks = _MultiAsyncContextManager(locks)
         return locks
@@ -172,7 +180,7 @@ class TransactionEntry:
         :return: ``True`` if the transaction is valid or ``False`` otherwise.
         """
         with suppress(StopAsyncIteration):
-            iterable = self._transaction_repository.select(
+            iterable = self._repository.select(
                 uuid=self.destination_uuid,
                 status_in=(
                     TransactionStatus.RESERVING,
@@ -187,7 +195,7 @@ class TransactionEntry:
             return False
 
         transaction_uuids = set()
-        for subscriber in self._transaction_repository.observers:
+        for subscriber in self._repository.observers:
             transaction_uuids |= await subscriber.get_related_transactions(self.uuid)
 
         if len(transaction_uuids):
@@ -195,7 +203,7 @@ class TransactionEntry:
                 return False
 
             with suppress(StopAsyncIteration):
-                iterable = self._transaction_repository.select(
+                iterable = self._repository.select(
                     destination_uuid=self.destination_uuid,
                     uuid_in=tuple(transaction_uuids),
                     status_in=(
@@ -222,8 +230,8 @@ class TransactionEntry:
                 f"Obtained: {self.status!r}"
             )
 
-        async with self._transaction_repository.write_lock():
-            for subscriber in self._transaction_repository.observers:
+        async with self._repository.write_lock():
+            for subscriber in self._repository.observers:
                 await subscriber.reject_transaction(self.uuid)
 
             await self.save(status=TransactionStatus.REJECTED)
@@ -238,7 +246,7 @@ class TransactionEntry:
         if status is not None:
             self.status = status
 
-        await self._transaction_repository.submit(self)
+        await self._repository.submit(self)
 
     @property
     async def uuids(self) -> tuple[UUID, ...]:
@@ -269,7 +277,7 @@ class TransactionEntry:
         destination = getattr(self._token, "old_value", Token.MISSING)
 
         if destination == Token.MISSING:
-            destination = await self._transaction_repository.get(uuid=self.destination_uuid)
+            destination = await self._repository.get(uuid=self.destination_uuid)
 
         return destination
 

@@ -107,7 +107,7 @@ class EventRepository(ABC, TransactionalMixin):
         :param kwargs: Additional named arguments.
         :return: A new ``TransactionEntry`` instance.
         """
-        return TransactionEntry(transaction_repository=self.transaction_repository, **kwargs)
+        return TransactionEntry(repository=self.transaction_repository, **kwargs)
 
     async def create(self, entry: Union[Event, EventEntry]) -> EventEntry:
         """Store new creation entry into the repository.
