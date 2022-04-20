@@ -319,8 +319,8 @@ class EventRepository(ABC, TransactionalMixin):
         """
         return self._lock_pool.acquire("aggregate_event_write_lock")
 
-    async def get_related_transactions(self, transaction_uuid: UUID) -> set[UUID]:
-        """Get the set of related transaction identifiers.
+    async def get_collided_transactions(self, transaction_uuid: UUID) -> set[UUID]:
+        """Get the set of collided transaction identifiers.
 
         :param transaction_uuid: The identifier of the transaction to be committed.
         :return: A ``set`` or ``UUID`` values.

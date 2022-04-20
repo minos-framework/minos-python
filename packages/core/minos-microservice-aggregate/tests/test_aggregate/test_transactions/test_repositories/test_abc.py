@@ -11,7 +11,6 @@ from unittest.mock import (
     call,
 )
 from uuid import (
-    UUID,
     uuid4,
 )
 
@@ -43,16 +42,6 @@ class _TransactionRepository(TransactionRepository):
         """For testing purposes."""
 
 
-class _Observer(TransactionalMixin):
-    """For testing purposes."""
-
-    async def get_related_transactions(self, transaction_uuid: UUID) -> set[UUID]:
-        """For testing purposes."""
-
-    async def commit_transaction(self, transaction_uuid: UUID, destination_transaction_uuid: UUID) -> None:
-        """For testing purposes."""
-
-
 class TestTransactionRepository(AggregateTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -72,13 +61,13 @@ class TestTransactionRepository(AggregateTestCase):
         self.assertEqual(set(), self.transaction_repository.observers)
 
     def test_register_observer(self):
-        observer1, observer2 = _Observer(), _Observer()
+        observer1, observer2 = TransactionalMixin(), TransactionalMixin()
         self.transaction_repository.register_observer(observer1)
         self.transaction_repository.register_observer(observer2)
         self.assertEqual({observer1, observer2}, self.transaction_repository.observers)
 
     def test_unregister_observer(self):
-        observer1, observer2 = _Observer(), _Observer()
+        observer1, observer2 = TransactionalMixin(), TransactionalMixin()
         self.transaction_repository.register_observer(observer1)
         self.transaction_repository.register_observer(observer2)
         self.assertEqual({observer1, observer2}, self.transaction_repository.observers)

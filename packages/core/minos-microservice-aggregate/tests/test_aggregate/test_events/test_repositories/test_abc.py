@@ -500,7 +500,7 @@ class TestEventRepository(AggregateTestCase):
             self.assertEqual(56, await self.event_repository.offset)
             self.assertEqual(1, mock.call_count)
 
-    async def test_get_related_transactions(self):
+    async def test_get_collided_transactions(self):
         uuid = uuid4()
         another = uuid4()
 
@@ -523,7 +523,7 @@ class TestEventRepository(AggregateTestCase):
         self.event_repository.select = select_event_mock
 
         expected = {another}
-        observed = await self.event_repository.get_related_transactions(uuid)
+        observed = await self.event_repository.get_collided_transactions(uuid)
         self.assertEqual(expected, observed)
 
         self.assertEqual(

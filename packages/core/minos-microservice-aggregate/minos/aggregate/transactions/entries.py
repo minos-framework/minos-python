@@ -199,7 +199,7 @@ class TransactionEntry:
 
         transaction_uuids = set()
         for subscriber in self._repository.observers:
-            transaction_uuids |= await subscriber.get_related_transactions(transaction_uuid=self.uuid)
+            transaction_uuids |= await subscriber.get_collided_transactions(transaction_uuid=self.uuid)
 
         if len(transaction_uuids):
             if self.destination_uuid in transaction_uuids:

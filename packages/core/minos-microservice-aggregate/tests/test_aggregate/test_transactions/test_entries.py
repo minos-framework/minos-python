@@ -153,7 +153,7 @@ class TestTransactionEntry(AggregateTestCase):
         observer_mock = AsyncMock(return_value={another})
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator([]))
 
-        self.event_repository.get_related_transactions = observer_mock
+        self.event_repository.get_collided_transactions = observer_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = TransactionEntry(uuid)
@@ -196,7 +196,7 @@ class TestTransactionEntry(AggregateTestCase):
         select_event_mock = AsyncMock(return_value={another})
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transaction_event_1))
 
-        self.event_repository.get_related_transactions = select_event_mock
+        self.event_repository.get_collided_transactions = select_event_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = TransactionEntry(uuid, destination_uuid=another)
@@ -230,7 +230,7 @@ class TestTransactionEntry(AggregateTestCase):
             side_effect=[FakeAsyncIterator([]), FakeAsyncIterator(select_transaction_1)],
         )
 
-        self.event_repository.get_related_transactions = select_event_mock
+        self.event_repository.get_collided_transactions = select_event_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = TransactionEntry(uuid)
@@ -265,7 +265,7 @@ class TestTransactionEntry(AggregateTestCase):
             side_effect=[FakeAsyncIterator([]), FakeAsyncIterator(select_transaction_1)],
         )
 
-        self.event_repository.get_related_transactions = select_event_mock
+        self.event_repository.get_collided_transactions = select_event_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = TransactionEntry(uuid)
