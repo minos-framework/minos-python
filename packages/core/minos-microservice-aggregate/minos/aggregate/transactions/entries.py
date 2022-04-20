@@ -146,7 +146,10 @@ class TransactionEntry:
 
     async def _commit(self) -> None:
         for subscriber in self._repository.observers:
-            await subscriber.commit_transaction(self.uuid, self.destination_uuid)
+            await subscriber.commit_transaction(
+                transaction_uuid=self.uuid,
+                destination_transaction_uuid=self.destination_uuid,
+            )
 
     async def reserve(self) -> None:
         """Reserve transaction changes to be ensured that they can be applied.
@@ -196,7 +199,7 @@ class TransactionEntry:
 
         transaction_uuids = set()
         for subscriber in self._repository.observers:
-            transaction_uuids |= await subscriber.get_related_transactions(self.uuid)
+            transaction_uuids |= await subscriber.get_related_transactions(transaction_uuid=self.uuid)
 
         if len(transaction_uuids):
             if self.destination_uuid in transaction_uuids:
@@ -232,7 +235,7 @@ class TransactionEntry:
 
         async with self._repository.write_lock():
             for subscriber in self._repository.observers:
-                await subscriber.reject_transaction(self.uuid)
+                await subscriber.reject_transaction(transaction_uuid=self.uuid)
 
             await self.save(status=TransactionStatus.REJECTED)
 

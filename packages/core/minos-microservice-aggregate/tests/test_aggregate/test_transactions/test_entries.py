@@ -5,7 +5,6 @@ from datetime import (
 from unittest.mock import (
     AsyncMock,
     MagicMock,
-    PropertyMock,
     call,
     patch,
 )
@@ -16,9 +15,7 @@ from uuid import (
 
 from minos.aggregate import (
     TRANSACTION_CONTEXT_VAR,
-    Action,
-    EventEntry,
-    EventRepository,
+    TransactionalMixin,
     TransactionEntry,
     TransactionRepositoryConflictException,
     TransactionStatus,
@@ -110,9 +107,7 @@ class TestTransactionEntry(AggregateTestCase):
 
         transaction = TransactionEntry(uuid, TransactionStatus.PENDING)
 
-        with patch.object(
-            EventRepository, "offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ), patch.object(TransactionEntry, "save") as save_mock, patch.object(
+        with patch.object(TransactionEntry, "save") as save_mock, patch.object(
             TransactionEntry, "validate", return_value=True
         ) as validate_mock:
             await transaction.reserve()
@@ -129,9 +124,7 @@ class TestTransactionEntry(AggregateTestCase):
         uuid = uuid4()
         transaction = TransactionEntry(uuid, TransactionStatus.PENDING)
 
-        with patch.object(
-            EventRepository, "offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ), patch.object(TransactionEntry, "save") as save_mock, patch.object(
+        with patch.object(TransactionEntry, "save") as save_mock, patch.object(
             TransactionEntry, "validate", return_value=False
         ) as validate_mock:
             with self.assertRaises(TransactionRepositoryConflictException):
@@ -157,36 +150,17 @@ class TestTransactionEntry(AggregateTestCase):
         uuid = uuid4()
         another = uuid4()
 
-        agg_uuid = uuid4()
+        observer_mock = AsyncMock(return_value={another})
+        select_transaction_mock = MagicMock(return_value=FakeAsyncIterator([]))
 
-        select_event_1 = [
-            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
-            EventEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
-        ]
-
-        select_event_2 = [
-            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
-        ]
-
-        transaction_event_1 = []
-
-        select_event_mock = MagicMock(
-            side_effect=[FakeAsyncIterator(select_event_1), FakeAsyncIterator(select_event_2)]
-        )
-        select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transaction_event_1))
-
-        self.event_repository.select = select_event_mock
+        self.event_repository.get_related_transactions = observer_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = TransactionEntry(uuid)
 
         self.assertTrue(await transaction.validate())
 
-        self.assertEqual(
-            [call(transaction_uuid=uuid), call(uuid=agg_uuid, version=3)], select_event_mock.call_args_list
-        )
+        self.assertEqual([call(transaction_uuid=uuid)], observer_mock.call_args_list)
         self.assertEqual(
             [
                 call(
@@ -217,27 +191,12 @@ class TestTransactionEntry(AggregateTestCase):
         uuid = uuid4()
         another = uuid4()
 
-        agg_uuid = uuid4()
-
-        select_event_1 = [
-            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
-            EventEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
-        ]
-
-        select_event_2 = [
-            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
-        ]
-
         transaction_event_1 = [TransactionEntry(another, TransactionStatus.RESERVED)]
 
-        select_event_mock = MagicMock(
-            side_effect=[FakeAsyncIterator(select_event_1), FakeAsyncIterator(select_event_2)]
-        )
+        select_event_mock = AsyncMock(return_value={another})
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transaction_event_1))
 
-        self.event_repository.select = select_event_mock
+        self.event_repository.get_related_transactions = select_event_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = TransactionEntry(uuid, destination_uuid=another)
@@ -264,38 +223,21 @@ class TestTransactionEntry(AggregateTestCase):
     async def test_validate_false_already_committed(self):
         uuid = uuid4()
 
-        agg_uuid = uuid4()
-
-        select_event_1 = [
-            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
-            EventEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
-        ]
-
-        select_event_2 = [
-            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE),
-        ]
-
         select_transaction_1 = []
 
-        select_event_mock = MagicMock(
-            side_effect=[FakeAsyncIterator(select_event_1), FakeAsyncIterator(select_event_2)]
-        )
+        select_event_mock = AsyncMock(return_value={NULL_UUID})
         select_transaction_mock = MagicMock(
             side_effect=[FakeAsyncIterator([]), FakeAsyncIterator(select_transaction_1)],
         )
 
-        self.event_repository.select = select_event_mock
+        self.event_repository.get_related_transactions = select_event_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = TransactionEntry(uuid)
 
         self.assertFalse(await transaction.validate())
 
-        self.assertEqual(
-            [call(transaction_uuid=uuid), call(uuid=agg_uuid, version=3)], select_event_mock.call_args_list
-        )
+        self.assertEqual([call(transaction_uuid=uuid)], select_event_mock.call_args_list)
         self.assertEqual(
             [
                 call(
@@ -316,38 +258,21 @@ class TestTransactionEntry(AggregateTestCase):
         uuid = uuid4()
         another = uuid4()
 
-        agg_uuid = uuid4()
-
-        select_event_1 = [
-            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
-            EventEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
-        ]
-
-        select_event_2 = [
-            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
-        ]
-
         select_transaction_1 = [TransactionEntry(another, TransactionStatus.RESERVED)]
 
-        select_event_mock = MagicMock(
-            side_effect=[FakeAsyncIterator(select_event_1), FakeAsyncIterator(select_event_2)]
-        )
+        select_event_mock = AsyncMock(return_value={another})
         select_transaction_mock = MagicMock(
             side_effect=[FakeAsyncIterator([]), FakeAsyncIterator(select_transaction_1)],
         )
 
-        self.event_repository.select = select_event_mock
+        self.event_repository.get_related_transactions = select_event_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = TransactionEntry(uuid)
 
         self.assertFalse(await transaction.validate())
 
-        self.assertEqual(
-            [call(transaction_uuid=uuid), call(uuid=agg_uuid, version=3)], select_event_mock.call_args_list
-        )
+        self.assertEqual([call(transaction_uuid=uuid)], select_event_mock.call_args_list)
         self.assertEqual(
             [
                 call(
@@ -379,13 +304,13 @@ class TestTransactionEntry(AggregateTestCase):
 
         transaction = TransactionEntry(uuid, TransactionStatus.RESERVED)
 
-        with patch.object(
-            EventRepository, "offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ), patch.object(TransactionEntry, "save") as save_mock:
+        with patch.object(TransactionalMixin, "reject_transaction") as observable_mock, patch.object(
+            TransactionEntry, "save"
+        ) as save_mock:
             await transaction.reject()
 
-        self.assertEqual(1, save_mock.call_count)
-        self.assertEqual(call(status=TransactionStatus.REJECTED), save_mock.call_args)
+        self.assertEqual([call(transaction_uuid=transaction.uuid)], observable_mock.call_args_list)
+        self.assertEqual([call(status=TransactionStatus.REJECTED)], save_mock.call_args_list)
 
     async def test_reject_raises(self) -> None:
         with self.assertRaises(ValueError):
@@ -395,34 +320,20 @@ class TestTransactionEntry(AggregateTestCase):
 
     async def test_commit(self) -> None:
         uuid = uuid4()
+        another = uuid4()
 
-        agg_uuid = uuid4()
+        commit_transaction = AsyncMock()
 
-        async def _fn(*args, **kwargs):
-            yield EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid)
-            yield EventEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid)
-            yield EventEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid)
+        self.event_repository.commit_transaction = commit_transaction
 
-        select_mock = MagicMock(side_effect=_fn)
-        submit_mock = AsyncMock()
+        transaction = TransactionEntry(uuid, TransactionStatus.RESERVED, destination_uuid=another)
 
-        self.event_repository.select = select_mock
-        self.event_repository.submit = submit_mock
-
-        transaction = TransactionEntry(uuid, TransactionStatus.RESERVED)
-
-        with patch.object(
-            EventRepository, "offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ), patch.object(TransactionEntry, "save") as save_mock:
+        with patch.object(TransactionEntry, "save") as save_mock:
             await transaction.commit()
 
         self.assertEqual(
-            [
-                call(EventEntry(agg_uuid, "c.Car", 1, bytes(), action=Action.CREATE), transaction_uuid_ne=uuid),
-                call(EventEntry(agg_uuid, "c.Car", 3, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
-                call(EventEntry(agg_uuid, "c.Car", 2, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
-            ],
-            submit_mock.call_args_list,
+            [call(transaction_uuid=uuid, destination_transaction_uuid=another)],
+            commit_transaction.call_args_list,
         )
 
         self.assertEqual(
@@ -438,13 +349,9 @@ class TestTransactionEntry(AggregateTestCase):
         async def _fn():
             transaction.status = TransactionStatus.RESERVED
 
-        with patch.object(
-            EventRepository, "offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ), patch.object(TransactionEntry, "reserve", side_effect=_fn) as reserve_mock, patch.object(
+        with patch.object(TransactionEntry, "reserve", side_effect=_fn) as reserve_mock, patch.object(
             TransactionEntry, "save"
-        ) as save_mock, patch.object(
-            TransactionEntry, "_commit", return_value=True
-        ) as commit_mock:
+        ) as save_mock, patch.object(TransactionEntry, "_commit", return_value=True) as commit_mock:
             await transaction.commit()
 
         self.assertEqual(1, reserve_mock.call_count)
@@ -476,11 +383,6 @@ class TestTransactionEntry(AggregateTestCase):
         await TransactionEntry(uuid, TransactionStatus.PENDING).save(status=TransactionStatus.COMMITTED)
         self.assertEqual(1, submit_mock.call_count)
         self.assertEqual(call(TransactionEntry(uuid, TransactionStatus.COMMITTED)), submit_mock.call_args)
-
-        # submit_mock.reset_mock()
-        # await TransactionEntry(uuid, TransactionStatus.PENDING).save(event_offset=56)
-        # self.assertEqual(1, submit_mock.call_count)
-        # self.assertEqual(call(TransactionEntry(uuid, TransactionStatus.PENDING, 56)), submit_mock.call_args)
 
     async def test_uuids(self):
         first = TransactionEntry()
