@@ -65,7 +65,7 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
         super().__init__(
             *args,
             **kwargs,
-            circuit_breaker_exceptions=(OperationalError, TimeoutError, *circuit_breaker_exceptions),
+            circuit_breaker_exceptions=(ConnectionException, *circuit_breaker_exceptions),
         )
 
         if host is None:
@@ -112,14 +112,17 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
         logger.debug(f"Created {self.database!r} database connection identified by {id(self._connection)}!")
 
     async def _connect(self) -> Connection:
-        return await aiopg.connect(
-            timeout=self._connection_timeout,
-            host=self.host,
-            port=self.port,
-            dbname=self.database,
-            user=self.user,
-            password=self.password,
-        )
+        try:
+            return await aiopg.connect(
+                timeout=self._connection_timeout,
+                host=self.host,
+                port=self.port,
+                dbname=self.database,
+                user=self.user,
+                password=self.password,
+            )
+        except (OperationalError, TimeoutError) as exc:
+            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
 
     async def close(self) -> None:
         """Close database connection.
@@ -163,9 +166,7 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
         except ProgrammingError as exc:
             raise ProgrammingException(str(exc))
         except OperationalError as exc:
-            msg = f"There was an {exc!r} while trying to connect to the database."
-            logger.warning(msg)
-            raise ConnectionException(msg)
+            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
 
     # noinspection PyUnusedLocal
     async def _execute(self, operation: AiopgDatabaseOperation) -> None:
@@ -173,17 +174,19 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
             raise ValueError(f"The operation must be a {AiopgDatabaseOperation!r} instance. Obtained: {operation!r}")
 
         fn = partial(self._execute_cursor, operation=operation.query, parameters=operation.parameters)
-        try:
-            await self.with_circuit_breaker(fn)
-        except IntegrityError as exc:
-            raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
+        await self.with_circuit_breaker(fn)
 
     async def _execute_cursor(self, operation: str, parameters: dict):
         if not await self.is_connected():
             await self.recreate()
 
         self._cursor = await self._connection.cursor(timeout=self._cursor_timeout)
-        await self._cursor.execute(operation=operation, parameters=parameters)
+        try:
+            await self._cursor.execute(operation=operation, parameters=parameters)
+        except OperationalError as exc:
+            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
+        except IntegrityError as exc:
+            raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
 
     async def _destroy_cursor(self, **kwargs):
         if self._cursor is not None:
