@@ -3,7 +3,7 @@ from abc import (
     abstractmethod,
 )
 
-from ...operations import (
+from ..operations import (
     DatabaseOperation,
     DatabaseOperationFactory,
 )

@@ -20,7 +20,7 @@ from minos.common import (
     DatabaseOperationFactory,
 )
 
-from .....actions import (
+from ....actions import (
     Action,
 )
 
