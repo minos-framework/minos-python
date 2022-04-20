@@ -69,6 +69,7 @@ from .transactions import (
     TRANSACTION_CONTEXT_VAR,
     DatabaseTransactionRepository,
     InMemoryTransactionRepository,
+    TransactionalMixin,
     TransactionDatabaseOperationFactory,
     TransactionEntry,
     TransactionRepository,

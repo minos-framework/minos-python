@@ -97,7 +97,6 @@ class TestEventRepository(AggregateTestCase):
         uuid = uuid4()
         transaction = self.event_repository.transaction(uuid=uuid)
         self.assertEqual(TransactionEntry(uuid), transaction)
-        self.assertEqual(self.event_repository, transaction._event_repository)
         self.assertEqual(self.transaction_repository, transaction._transaction_repository)
 
     async def test_create(self):

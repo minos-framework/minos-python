@@ -34,7 +34,8 @@ class DatabaseTransactionRepository(DatabaseMixin[TransactionDatabaseOperationFa
             database_key = ("aggregate", "transaction")
         super().__init__(*args, database_key=database_key, **kwargs)
 
-    async def _setup(self):
+    async def _setup(self) -> None:
+        await super()._setup()
         operation = self.database_operation_factory.build_create()
         await self.execute_on_database(operation)
 

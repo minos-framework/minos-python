@@ -41,9 +41,6 @@ from .contextvars import (
 )
 
 if TYPE_CHECKING:
-    from ..events import (
-        EventRepository,
-    )
     from .repositories import (
         TransactionRepository,
     )
@@ -60,7 +57,6 @@ class TransactionEntry:
         "destination_uuid",
         "updated_at",
         "_autocommit",
-        "_event_repository",
         "_transaction_repository",
         "_token",
     )
@@ -72,18 +68,8 @@ class TransactionEntry:
         destination_uuid: Optional[UUID] = None,
         updated_at: Optional[datetime] = None,
         autocommit: bool = True,
-        event_repository: Optional[EventRepository] = None,
         transaction_repository: Optional[TransactionRepository] = None,
     ):
-
-        if event_repository is None:
-            from ..events import (
-                EventRepository,
-            )
-
-            with suppress(NotProvidedException):
-                event_repository = Inject.resolve(EventRepository)
-
         if transaction_repository is None:
             from .repositories import (
                 TransactionRepository,
@@ -110,7 +96,6 @@ class TransactionEntry:
         self.updated_at = updated_at
 
         self._autocommit = autocommit
-        self._event_repository = event_repository
         self._transaction_repository = transaction_repository
 
         self._token = None
@@ -152,13 +137,8 @@ class TransactionEntry:
             await self.save(status=TransactionStatus.COMMITTED)
 
     async def _commit(self) -> None:
-        from ..events import (
-            EventEntry,
-        )
-
-        async for entry in self._event_repository.select(transaction_uuid=self.uuid):
-            new = EventEntry.from_another(entry, transaction_uuid=self.destination_uuid)
-            await self._event_repository.submit(new, transaction_uuid_ne=self.uuid)
+        for subscriber in self._transaction_repository.subscribers:
+            await subscriber.commit_transaction(self.uuid, self.destination_uuid)
 
     async def reserve(self) -> None:
         """Reserve transaction changes to be ensured that they can be applied.
@@ -169,7 +149,10 @@ class TransactionEntry:
             raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
 
         async with self._transaction_repository.write_lock():
-            async with self._event_repository.write_lock():
+            locks = MultiAsyncContextManager(
+                subscriber.write_lock() for subscriber in self._transaction_repository.subscribers
+            )
+            async with locks:
                 await self.save(status=TransactionStatus.RESERVING)
 
                 committable = await self.validate()
@@ -199,21 +182,14 @@ class TransactionEntry:
 
             return False
 
-        entries = dict()
-        async for entry in self._event_repository.select(transaction_uuid=self.uuid):
-            if entry.uuid in entries and entry.version < entries[entry.uuid]:
-                continue
-            entries[entry.uuid] = entry.version
-
         transaction_uuids = set()
-        for uuid, version in entries.items():
-            async for entry in self._event_repository.select(uuid=uuid, version=version):
-                if entry.transaction_uuid == self.destination_uuid:
-                    return False
-                if entry.transaction_uuid != self.uuid:
-                    transaction_uuids.add(entry.transaction_uuid)
+        for subscriber in self._transaction_repository.subscribers:
+            transaction_uuids |= await subscriber.get_related_transactions(self.uuid)
 
         if len(transaction_uuids):
+            if self.destination_uuid in transaction_uuids:
+                return False
+
             with suppress(StopAsyncIteration):
                 iterable = self._transaction_repository.select(
                     destination_uuid=self.destination_uuid,
@@ -243,6 +219,9 @@ class TransactionEntry:
             )
 
         async with self._transaction_repository.write_lock():
+            for subscriber in self._transaction_repository.subscribers:
+                await subscriber.reject_transaction(self.uuid)
+
             await self.save(status=TransactionStatus.REJECTED)
 
     async def save(self, *, status: Optional[TransactionStatus] = None) -> None:
@@ -337,3 +316,16 @@ class TransactionStatus(str, Enum):
             if item.value == value:
                 return item
         raise ValueError(f"The given value does not match with any enum items. Obtained {value}")
+
+
+class MultiAsyncContextManager(tuple):
+    """TODO"""
+
+    async def __aenter__(self):
+        for value in self:
+            await value.__aenter__()
+        return self
+
+    async def __aexit__(self, *exc):
+        for value in self:
+            await value.__aexit__(*exc)

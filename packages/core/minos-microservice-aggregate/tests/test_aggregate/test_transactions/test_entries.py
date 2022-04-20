@@ -39,7 +39,6 @@ class TestTransactionEntry(AggregateTestCase):
         self.assertEqual(TransactionStatus.PENDING, transaction.status)
         self.assertEqual(True, transaction._autocommit)
 
-        self.assertEqual(self.event_repository, transaction._event_repository)
         self.assertEqual(self.transaction_repository, transaction._transaction_repository)
 
     def test_constructor_extended(self):
@@ -50,7 +49,6 @@ class TestTransactionEntry(AggregateTestCase):
         self.assertEqual(status, transaction.status)
         self.assertEqual(False, transaction._autocommit)
 
-        self.assertEqual(self.event_repository, transaction._event_repository)
         self.assertEqual(self.transaction_repository, transaction._transaction_repository)
 
     def test_constructor_raw_status(self):

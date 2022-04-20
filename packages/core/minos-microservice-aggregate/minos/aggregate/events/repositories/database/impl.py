@@ -36,11 +36,8 @@ class DatabaseEventRepository(DatabaseMixin[EventDatabaseOperationFactory], Even
             database_key = ("aggregate", "event")
         super().__init__(*args, database_key=database_key, **kwargs)
 
-    async def _setup(self):
-        """Setup miscellaneous repository things.
-
-        :return: This method does not return anything.
-        """
+    async def _setup(self) -> None:
+        await super()._setup()
         operation = self.database_operation_factory.build_create()
         await self.execute_on_database(operation)
 

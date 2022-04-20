@@ -5,6 +5,9 @@ from .entries import (
     TransactionEntry,
     TransactionStatus,
 )
+from .mixins import (
+    TransactionalMixin,
+)
 from .repositories import (
     DatabaseTransactionRepository,
     InMemoryTransactionRepository,

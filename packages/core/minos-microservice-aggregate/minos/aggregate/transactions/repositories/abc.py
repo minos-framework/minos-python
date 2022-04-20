@@ -13,6 +13,7 @@ from datetime import (
     datetime,
 )
 from typing import (
+    TYPE_CHECKING,
     AsyncIterator,
     Optional,
 )
@@ -38,6 +39,11 @@ from ..entries import (
     TransactionStatus,
 )
 
+if TYPE_CHECKING:
+    from ..mixins import (
+        TransactionalMixin,
+    )
+
 
 @Injectable("transaction_repository")
 class TransactionRepository(ABC, SetupMixin):
@@ -56,6 +62,21 @@ class TransactionRepository(ABC, SetupMixin):
             raise NotProvidedException("A lock pool instance is required.")
 
         self._lock_pool = lock_pool
+
+        self._subscribers = list()
+
+    @property
+    def subscribers(self) -> list[TransactionalMixin]:
+        """TODO"""
+        return self._subscribers
+
+    def add_subscriber(self, subscriber: TransactionalMixin) -> None:
+        """TODO"""
+        self._subscribers.append(subscriber)
+
+    def remove_subscriber(self, subscriber: TransactionalMixin) -> None:
+        """TODO"""
+        self._subscribers.remove(subscriber)
 
     async def submit(self, transaction: TransactionEntry) -> TransactionEntry:
         """Submit a new or updated transaction to store it on the repository.
