@@ -34,7 +34,7 @@ from minos.common import (
 )
 
 from ..exceptions import (
-    EventRepositoryConflictException,
+    TransactionRepositoryConflictException,
 )
 from .contextvars import (
     TRANSACTION_CONTEXT_VAR,
@@ -177,9 +177,7 @@ class TransactionEntry:
                 status = TransactionStatus.RESERVED if committable else TransactionStatus.REJECTED
                 await self.save(status=status)
                 if not committable:
-                    raise EventRepositoryConflictException(
-                        f"{self!r} could not be reserved!", await self._event_repository.offset
-                    )
+                    raise TransactionRepositoryConflictException(f"{self!r} could not be reserved!")
 
     async def validate(self) -> bool:
         """Check if the transaction is committable.
