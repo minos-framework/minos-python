@@ -68,6 +68,22 @@ class FakeBrokerPublisher(SetupMixin):
         """For testing purposes."""
 
 
+class FakeAsyncIterator:
+    """For testing purposes."""
+
+    def __init__(self, seq):
+        self.iter = iter(seq)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        try:
+            return next(self.iter)
+        except StopIteration:
+            raise StopAsyncIteration
+
+
 class FakeLock(Lock):
     """For testing purposes."""
 

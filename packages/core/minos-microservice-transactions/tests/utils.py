@@ -22,9 +22,6 @@ from minos.common import (
 from minos.common.testing import (
     MinosTestCase,
 )
-from minos.networks import (
-    BrokerClientPool,
-)
 from minos.transactions import (
     InMemoryTransactionRepository,
 )
@@ -40,7 +37,7 @@ class TransactionsTestCase(MinosTestCase, ABC):
     def get_injections(self) -> list[Union[InjectableMixin, type[InjectableMixin], str]]:
         pool_factory = PoolFactory.from_config(
             self.config,
-            default_classes={"broker": BrokerClientPool, "lock": FakeLockPool, "database": DatabaseClientPool},
+            default_classes={"lock": FakeLockPool, "database": DatabaseClientPool},
         )
         transaction_repository = InMemoryTransactionRepository(lock_pool=pool_factory.get_pool("lock"))
 

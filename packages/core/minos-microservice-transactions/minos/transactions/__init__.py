@@ -25,6 +25,3 @@ from .repositories import (
     TransactionDatabaseOperationFactory,
     TransactionRepository,
 )
-from .services import (
-    TransactionService,
-)

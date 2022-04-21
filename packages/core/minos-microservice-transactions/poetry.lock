@@ -116,14 +116,6 @@ python-versions = ">=3.7"
 toml = ["tomli"]
 
 [[package]]
-name = "crontab"
-version = "0.23.0"
-description = "Parse and use crontab schedules in Python"
-category = "main"
-optional = false
-python-versions = "*"
-
-[[package]]
 name = "dependency-injector"
 version = "4.39.1"
 description = "Dependency injection framework for Python"
@@ -218,23 +210,6 @@ uvloop = "^0.16.0"
 [package.source]
 type = "directory"
 url = "../minos-microservice-common"
-
-[[package]]
-name = "minos-microservice-networks"
-version = "0.7.0.dev1"
-description = "The networks core of the Minos Framework"
-category = "main"
-optional = false
-python-versions = "^3.9"
-develop = true
-
-[package.dependencies]
-crontab = "^0.23.0"
-minos-microservice-common = "^0.7.0*"
-
-[package.source]
-type = "directory"
-url = "../minos-microservice-networks"
 
 [[package]]
 name = "mypy-extensions"
@@ -399,7 +374,7 @@ test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "9c9ca4862b7363ae69ed21727f7a65a29a33e373df45250938f7c75f398b8da5"
+content-hash = "4c34a5eab6efb983f4ab2f609f54e5a8475bad1de65c75cce36989757379ea2d"
 
 [metadata.files]
 aiomisc = [
@@ -498,9 +473,6 @@ coverage = [
     {file = "coverage-6.3.2-pp36.pp37.pp38-none-any.whl", hash = "sha256:18d520c6860515a771708937d2f78f63cc47ab3b80cb78e86573b0a760161faf"},
     {file = "coverage-6.3.2.tar.gz", hash = "sha256:03e2a7826086b91ef345ff18742ee9fc47a6839ccd517061ef8fa1976e652ce9"},
 ]
-crontab = [
-    {file = "crontab-0.23.0.tar.gz", hash = "sha256:ca79dede9c2f572bb32f38703e8fddcf3427e86edc838f2ffe7ae4b9ee2b0733"},
-]
 dependency-injector = [
     {file = "dependency-injector-4.39.1.tar.gz", hash = "sha256:9ab76dc5e19b2692aaca49e00f9b41a087138d139b0ec985f92ff0498f038772"},
     {file = "dependency_injector-4.39.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:c788a3d5482e63b5fd55e14fc258f1ff0b51b411927ab132ef0f689cb5d1183f"},
@@ -574,7 +546,6 @@ mccabe = [
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
 minos-microservice-common = []
-minos-microservice-networks = []
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
