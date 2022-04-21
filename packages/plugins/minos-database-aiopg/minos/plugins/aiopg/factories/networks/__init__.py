@@ -3,6 +3,7 @@ from .collections import (
 )
 from .publishers import (
     AiopgBrokerPublisherQueueDatabaseOperationFactory,
+    AiopgBrokerPublisherTransactionDatabaseOperationFactory,
 )
 from .subscribers import (
     AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
