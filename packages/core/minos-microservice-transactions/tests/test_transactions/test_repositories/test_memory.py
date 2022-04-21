@@ -1,18 +1,18 @@
 import unittest
 
-from minos.aggregate import (
+from minos.transactions import (
     InMemoryTransactionRepository,
     TransactionRepository,
 )
-from minos.aggregate.testing import (
+from minos.transactions.testing import (
     TransactionRepositoryTestCase,
 )
 from tests.utils import (
-    AggregateTestCase,
+    TransactionsTestCase,
 )
 
 
-class TestInMemoryTransactionRepository(AggregateTestCase, TransactionRepositoryTestCase):
+class TestInMemoryTransactionRepository(TransactionsTestCase, TransactionRepositoryTestCase):
     __test__ = True
 
     def build_transaction_repository(self) -> TransactionRepository:

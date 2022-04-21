@@ -15,19 +15,19 @@ from uuid import (
     UUID,
 )
 
-from minos.aggregate import (
-    TransactionDatabaseOperationFactory,
-    TransactionStatus,
-)
 from minos.common import (
     ComposedDatabaseOperation,
     DatabaseOperation,
 )
+from minos.transactions import (
+    TransactionDatabaseOperationFactory,
+    TransactionStatus,
+)
 
-from ...clients import (
+from ..clients import (
     AiopgDatabaseClient,
 )
-from ...operations import (
+from ..operations import (
     AiopgDatabaseOperation,
 )
 

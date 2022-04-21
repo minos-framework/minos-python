@@ -4,12 +4,14 @@ from minos.aggregate import (
     AlreadyDeletedException,
     DatabaseEventRepository,
     DatabaseSnapshotRepository,
-    DatabaseTransactionRepository,
     EntitySet,
     ValueObjectSet,
 )
 from minos.common.testing import (
     DatabaseMinosTestCase,
+)
+from minos.transactions import (
+    DatabaseTransactionRepository,
 )
 from tests.utils import (
     AggregateTestCase,

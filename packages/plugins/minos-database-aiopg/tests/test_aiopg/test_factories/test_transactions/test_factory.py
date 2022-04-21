@@ -3,10 +3,6 @@ from uuid import (
     uuid4,
 )
 
-from minos.aggregate import (
-    TransactionDatabaseOperationFactory,
-    TransactionStatus,
-)
 from minos.common import (
     ComposedDatabaseOperation,
     current_datetime,
@@ -14,6 +10,10 @@ from minos.common import (
 from minos.plugins.aiopg import (
     AiopgDatabaseOperation,
     AiopgTransactionDatabaseOperationFactory,
+)
+from minos.transactions import (
+    TransactionDatabaseOperationFactory,
+    TransactionStatus,
 )
 
 

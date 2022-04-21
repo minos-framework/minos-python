@@ -12,11 +12,11 @@ from minos.common import (
     ProgrammingException,
 )
 
-from ....exceptions import (
-    TransactionRepositoryConflictException,
-)
 from ...entries import (
     TransactionEntry,
+)
+from ...exceptions import (
+    TransactionRepositoryConflictException,
 )
 from ..abc import (
     TransactionRepository,

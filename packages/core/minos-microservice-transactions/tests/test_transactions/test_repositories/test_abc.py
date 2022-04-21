@@ -14,19 +14,19 @@ from uuid import (
     uuid4,
 )
 
-from minos.aggregate import (
+from minos.common import (
+    NotProvidedException,
+    SetupMixin,
+)
+from minos.transactions import (
     TransactionalMixin,
     TransactionEntry,
     TransactionNotFoundException,
     TransactionRepository,
     TransactionStatus,
 )
-from minos.common import (
-    NotProvidedException,
-    SetupMixin,
-)
 from tests.utils import (
-    AggregateTestCase,
+    TransactionsTestCase,
     FakeAsyncIterator,
     FakeLock,
 )
@@ -42,7 +42,7 @@ class _TransactionRepository(TransactionRepository):
         """For testing purposes."""
 
 
-class TestTransactionRepository(AggregateTestCase):
+class TestTransactionRepository(TransactionsTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.transaction_repository = _TransactionRepository()

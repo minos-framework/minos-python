@@ -3,13 +3,13 @@ from uuid import (
     uuid4,
 )
 
-from minos.aggregate import (
-    TransactionStatus,
-)
 from minos.saga import (
     Executor,
     SagaContext,
     SagaOperation,
+)
+from minos.transactions import (
+    TransactionStatus,
 )
 from tests.utils import (
     SagaTestCase,

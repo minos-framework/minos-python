@@ -1,18 +1,18 @@
 import unittest
 
-from minos.aggregate import (
-    DatabaseTransactionRepository,
-    TransactionRepository,
-)
-from minos.aggregate.testing import (
-    TransactionRepositoryTestCase,
-)
 from minos.common import (
     DatabaseClientPool,
 )
 from minos.plugins.aiopg import (
     AiopgDatabaseClient,
     AiopgDatabaseOperation,
+)
+from minos.transactions import (
+    DatabaseTransactionRepository,
+    TransactionRepository,
+)
+from minos.transactions.testing import (
+    TransactionRepositoryTestCase,
 )
 from tests.utils import (
     AiopgTestCase,

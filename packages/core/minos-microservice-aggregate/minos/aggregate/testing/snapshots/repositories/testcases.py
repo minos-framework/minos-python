@@ -33,8 +33,6 @@ from minos.aggregate import (
     RootEntity,
     SnapshotEntry,
     SnapshotRepository,
-    TransactionEntry,
-    TransactionStatus,
 )
 from minos.common import (
     classname,
@@ -42,6 +40,10 @@ from minos.common import (
 )
 from minos.common.testing import (
     MinosTestCase,
+)
+from minos.transactions import (
+    TransactionEntry,
+    TransactionStatus,
 )
 
 

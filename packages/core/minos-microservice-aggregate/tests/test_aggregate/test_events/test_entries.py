@@ -12,11 +12,13 @@ from minos.aggregate import (
     EventEntry,
     FieldDiff,
     FieldDiffContainer,
-    TransactionEntry,
 )
 from minos.common import (
     NULL_UUID,
     current_datetime,
+)
+from minos.transactions import (
+    TransactionEntry,
 )
 from tests.utils import (
     Car,

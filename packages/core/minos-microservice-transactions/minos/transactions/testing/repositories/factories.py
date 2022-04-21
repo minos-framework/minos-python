@@ -19,9 +19,11 @@ from minos.common.testing import (
     MockedDatabaseOperation,
 )
 
-from ....transactions import (
-    TransactionDatabaseOperationFactory,
+from ...entries import (
     TransactionStatus,
+)
+from ...repositories import (
+    TransactionDatabaseOperationFactory,
 )
 
 

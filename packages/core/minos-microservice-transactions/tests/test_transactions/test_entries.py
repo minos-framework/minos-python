@@ -2,6 +2,7 @@ import unittest
 from datetime import (
     datetime,
 )
+from typing import Optional
 from unittest.mock import (
     AsyncMock,
     MagicMock,
@@ -13,23 +14,31 @@ from uuid import (
     uuid4,
 )
 
-from minos.aggregate import (
+from minos.common import (
+    NULL_UUID, Lock,
+)
+from minos.transactions import (
     TRANSACTION_CONTEXT_VAR,
     TransactionalMixin,
     TransactionEntry,
     TransactionRepositoryConflictException,
     TransactionStatus,
 )
-from minos.common import (
-    NULL_UUID,
-)
 from tests.utils import (
-    AggregateTestCase,
-    FakeAsyncIterator,
+    TransactionsTestCase,
+    FakeAsyncIterator, FakeLock,
 )
 
 
-class TestTransactionEntry(AggregateTestCase):
+class _TransactionalObserver(TransactionalMixin):
+    """For testing purposes."""
+
+    def write_lock(self) -> Optional[Lock]:
+        """For testing purposes."""
+        return FakeLock("foo")
+
+
+class TestTransactionEntry(TransactionsTestCase):
     def test_constructor(self):
         transaction = TransactionEntry()
 
@@ -62,9 +71,9 @@ class TestTransactionEntry(AggregateTestCase):
         self.assertEqual(TRANSACTION_CONTEXT_VAR.get(), None)
 
     async def test_async_context_manager(self):
-        with patch.object(TransactionEntry, "save") as save_mock, patch.object(
-            TransactionEntry, "commit"
-        ) as commit_mock:
+        p1 = patch.object(TransactionEntry, "save")
+        p2 = patch.object(TransactionEntry, "commit")
+        with p1 as save_mock, p2 as commit_mock:
             async with TransactionEntry():
                 self.assertEqual(1, save_mock.call_count)
                 self.assertEqual(0, commit_mock.call_count)
@@ -72,7 +81,8 @@ class TestTransactionEntry(AggregateTestCase):
             self.assertEqual(1, commit_mock.call_count)
 
     async def test_async_context_manager_without_autocommit(self):
-        with patch.object(TransactionEntry, "commit") as commit_mock:
+        p1 = patch.object(TransactionEntry, "commit")
+        with p1 as commit_mock:
             async with TransactionEntry(autocommit=False) as transaction:
                 self.assertEqual(0, commit_mock.call_count)
                 transaction.status = TransactionStatus.PENDING
@@ -107,10 +117,11 @@ class TestTransactionEntry(AggregateTestCase):
 
         transaction = TransactionEntry(uuid, TransactionStatus.PENDING)
 
-        with patch.object(TransactionEntry, "save") as save_mock, patch.object(
-            TransactionEntry, "validate", return_value=True
-        ) as validate_mock:
-            await transaction.reserve()
+        p1 = patch.object(TransactionEntry, "save")
+        p2 = patch.object(TransactionEntry, "validate", return_value=True)
+        with p1 as save_mock, p2 as validate_mock:
+            async with _TransactionalObserver():
+                await transaction.reserve()
 
         self.assertEqual(1, validate_mock.call_count)
         self.assertEqual(call(), validate_mock.call_args)
@@ -124,9 +135,9 @@ class TestTransactionEntry(AggregateTestCase):
         uuid = uuid4()
         transaction = TransactionEntry(uuid, TransactionStatus.PENDING)
 
-        with patch.object(TransactionEntry, "save") as save_mock, patch.object(
-            TransactionEntry, "validate", return_value=False
-        ) as validate_mock:
+        p1 = patch.object(TransactionEntry, "save")
+        p2 = patch.object(TransactionEntry, "validate", return_value=False)
+        with p1 as save_mock, p2 as validate_mock:
             with self.assertRaises(TransactionRepositoryConflictException):
                 await transaction.reserve()
 
@@ -150,17 +161,17 @@ class TestTransactionEntry(AggregateTestCase):
         uuid = uuid4()
         another = uuid4()
 
-        observer_mock = AsyncMock(return_value={another})
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator([]))
 
-        self.event_repository.get_collided_transactions = observer_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = TransactionEntry(uuid)
+        p1 = patch.object(TransactionalMixin, "get_collided_transactions", return_value={another})
+        with p1 as get_collided_mock:
+            async with _TransactionalObserver():
+                self.assertTrue(await transaction.validate())
 
-        self.assertTrue(await transaction.validate())
-
-        self.assertEqual([call(transaction_uuid=uuid)], observer_mock.call_args_list)
+        self.assertEqual([call(transaction_uuid=uuid)], get_collided_mock.call_args_list)
         self.assertEqual(
             [
                 call(
@@ -193,17 +204,17 @@ class TestTransactionEntry(AggregateTestCase):
 
         transaction_event_1 = [TransactionEntry(another, TransactionStatus.RESERVED)]
 
-        select_event_mock = AsyncMock(return_value={another})
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transaction_event_1))
 
-        self.event_repository.get_collided_transactions = select_event_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = TransactionEntry(uuid, destination_uuid=another)
+        p1 = patch.object(TransactionalMixin, "get_collided_transactions", return_value={another})
+        with p1 as get_collided_mock:
+            async with _TransactionalObserver():
+                self.assertFalse(await transaction.validate())
 
-        self.assertFalse(await transaction.validate())
-
-        self.assertEqual([], select_event_mock.call_args_list)
+        self.assertEqual([], get_collided_mock.call_args_list)
         self.assertEqual(
             [
                 call(
@@ -225,19 +236,20 @@ class TestTransactionEntry(AggregateTestCase):
 
         select_transaction_1 = []
 
-        select_event_mock = AsyncMock(return_value={NULL_UUID})
         select_transaction_mock = MagicMock(
             side_effect=[FakeAsyncIterator([]), FakeAsyncIterator(select_transaction_1)],
         )
 
-        self.event_repository.get_collided_transactions = select_event_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = TransactionEntry(uuid)
 
-        self.assertFalse(await transaction.validate())
+        p1 = patch.object(TransactionalMixin, "get_collided_transactions", return_value={NULL_UUID})
+        with p1 as get_collided_mock:
+            async with _TransactionalObserver():
+                self.assertFalse(await transaction.validate())
 
-        self.assertEqual([call(transaction_uuid=uuid)], select_event_mock.call_args_list)
+        self.assertEqual([call(transaction_uuid=uuid)], get_collided_mock.call_args_list)
         self.assertEqual(
             [
                 call(
@@ -260,19 +272,19 @@ class TestTransactionEntry(AggregateTestCase):
 
         select_transaction_1 = [TransactionEntry(another, TransactionStatus.RESERVED)]
 
-        select_event_mock = AsyncMock(return_value={another})
         select_transaction_mock = MagicMock(
             side_effect=[FakeAsyncIterator([]), FakeAsyncIterator(select_transaction_1)],
         )
 
-        self.event_repository.get_collided_transactions = select_event_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = TransactionEntry(uuid)
+        p1 = patch.object(TransactionalMixin, "get_collided_transactions", return_value={another})
+        with p1 as get_collided_mock:
+            async with _TransactionalObserver():
+                self.assertFalse(await transaction.validate())
 
-        self.assertFalse(await transaction.validate())
-
-        self.assertEqual([call(transaction_uuid=uuid)], select_event_mock.call_args_list)
+        self.assertEqual([call(transaction_uuid=uuid)], get_collided_mock.call_args_list)
         self.assertEqual(
             [
                 call(
@@ -304,12 +316,13 @@ class TestTransactionEntry(AggregateTestCase):
 
         transaction = TransactionEntry(uuid, TransactionStatus.RESERVED)
 
-        with patch.object(TransactionalMixin, "reject_transaction") as observable_mock, patch.object(
-            TransactionEntry, "save"
-        ) as save_mock:
-            await transaction.reject()
+        p1 = patch.object(TransactionalMixin, "reject_transaction")
+        p2 = patch.object(TransactionEntry, "save")
+        with p1 as reject_mock, p2 as save_mock:
+            async with _TransactionalObserver():
+                await transaction.reject()
 
-        self.assertEqual([call(transaction_uuid=transaction.uuid)], observable_mock.call_args_list)
+        self.assertEqual([call(transaction_uuid=transaction.uuid)], reject_mock.call_args_list)
         self.assertEqual([call(status=TransactionStatus.REJECTED)], save_mock.call_args_list)
 
     async def test_reject_raises(self) -> None:
@@ -322,18 +335,16 @@ class TestTransactionEntry(AggregateTestCase):
         uuid = uuid4()
         another = uuid4()
 
-        commit_transaction = AsyncMock()
-
-        self.event_repository.commit_transaction = commit_transaction
-
         transaction = TransactionEntry(uuid, TransactionStatus.RESERVED, destination_uuid=another)
-
-        with patch.object(TransactionEntry, "save") as save_mock:
-            await transaction.commit()
+        p1 = patch.object(TransactionalMixin, "commit_transaction", return_value={another})
+        p2 = patch.object(TransactionEntry, "save")
+        with p1 as commit_mock, p2 as save_mock:
+            async with _TransactionalObserver():
+                await transaction.commit()
 
         self.assertEqual(
             [call(transaction_uuid=uuid, destination_transaction_uuid=another)],
-            commit_transaction.call_args_list,
+            commit_mock.call_args_list,
         )
 
         self.assertEqual(
@@ -349,9 +360,10 @@ class TestTransactionEntry(AggregateTestCase):
         async def _fn():
             transaction.status = TransactionStatus.RESERVED
 
-        with patch.object(TransactionEntry, "reserve", side_effect=_fn) as reserve_mock, patch.object(
-            TransactionEntry, "save"
-        ) as save_mock, patch.object(TransactionEntry, "_commit", return_value=True) as commit_mock:
+        p1 = patch.object(TransactionEntry, "reserve", side_effect=_fn)
+        p2 = patch.object(TransactionEntry, "save")
+        p3 = patch.object(TransactionEntry, "_commit", return_value=True)
+        with p1 as reserve_mock, p2 as save_mock, p3 as commit_mock:
             await transaction.commit()
 
         self.assertEqual(1, reserve_mock.call_count)

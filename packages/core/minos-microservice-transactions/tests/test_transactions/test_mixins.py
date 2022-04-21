@@ -3,24 +3,29 @@ from uuid import (
     uuid4,
 )
 
-from minos.aggregate import (
+from minos.common import (
+    SetupMixin, NotProvidedException,
+)
+from minos.transactions import (
     TransactionalMixin,
 )
-from minos.common import (
-    SetupMixin,
-)
 from tests.utils import (
-    AggregateTestCase,
+    TransactionsTestCase,
 )
 
 
-class TestTransactionalMixin(AggregateTestCase):
+class TestTransactionalMixin(TransactionsTestCase):
     def test_abstract(self) -> None:
         self.assertTrue(issubclass(TransactionalMixin, SetupMixin))
 
     def test_constructor(self):
         observer = TransactionalMixin()
         self.assertEqual(self.transaction_repository, observer.transaction_repository)
+
+    def test_constructor_raises(self):
+        with self.assertRaises(NotProvidedException):
+            # noinspection PyTypeChecker
+            TransactionalMixin(transaction_repository=None)
 
     async def test_register_into_observable(self):
         observer = TransactionalMixin()

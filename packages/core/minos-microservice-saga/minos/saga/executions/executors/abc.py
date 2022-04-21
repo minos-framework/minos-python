@@ -7,7 +7,7 @@ from uuid import (
     UUID,
 )
 
-from minos.aggregate import (
+from minos.transactions import (
     TransactionEntry,
 )
 

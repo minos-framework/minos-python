@@ -31,12 +31,12 @@ from minos.common import (
     SetupMixin,
 )
 
-from ...exceptions import (
-    TransactionNotFoundException,
-)
 from ..entries import (
     TransactionEntry,
     TransactionStatus,
+)
+from ..exceptions import (
+    TransactionNotFoundException,
 )
 
 if TYPE_CHECKING:

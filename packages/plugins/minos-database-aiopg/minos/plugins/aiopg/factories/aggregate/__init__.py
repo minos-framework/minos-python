@@ -5,6 +5,3 @@ from .snapshots import (
     AiopgSnapshotDatabaseOperationFactory,
     AiopgSnapshotQueryDatabaseOperationBuilder,
 )
-from .transactions import (
-    AiopgTransactionDatabaseOperationFactory,
-)

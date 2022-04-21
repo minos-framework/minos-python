@@ -6,14 +6,19 @@ from uuid import (
     uuid4,
 )
 
-from minos.aggregate import (
-    TransactionEntry,
-    TransactionRepository,
-    TransactionRepositoryConflictException,
-    TransactionStatus,
-)
 from minos.common.testing import (
     MinosTestCase,
+)
+
+from ...entries import (
+    TransactionEntry,
+    TransactionStatus,
+)
+from ...exceptions import (
+    TransactionRepositoryConflictException,
+)
+from ...repositories import (
+    TransactionRepository,
 )
 
 

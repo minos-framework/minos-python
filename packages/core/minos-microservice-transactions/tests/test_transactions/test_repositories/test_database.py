@@ -3,27 +3,27 @@ from unittest.mock import (
     patch,
 )
 
-from minos.aggregate import (
-    DatabaseTransactionRepository,
-    TransactionRepository,
-    TransactionStatus,
-)
-from minos.aggregate.testing import (
-    TransactionRepositoryTestCase,
-)
 from minos.common import (
     DatabaseClient,
     ProgrammingException,
     current_datetime,
 )
+from minos.transactions import (
+    DatabaseTransactionRepository,
+    TransactionRepository,
+    TransactionStatus,
+)
+from minos.transactions.testing import (
+    TransactionRepositoryTestCase,
+)
 from tests.utils import (
-    AggregateTestCase,
+    TransactionsTestCase,
     FakeAsyncIterator,
 )
 
 
 # noinspection SqlNoDataSourceInspection
-class TestDatabaseTransactionRepository(AggregateTestCase, TransactionRepositoryTestCase):
+class TestDatabaseTransactionRepository(TransactionsTestCase, TransactionRepositoryTestCase):
     __test__ = True
 
     def build_transaction_repository(self) -> TransactionRepository:

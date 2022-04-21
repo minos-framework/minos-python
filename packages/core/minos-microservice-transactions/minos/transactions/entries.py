@@ -33,11 +33,11 @@ from minos.common import (
     NotProvidedException,
 )
 
-from ..exceptions import (
-    TransactionRepositoryConflictException,
-)
 from .contextvars import (
     TRANSACTION_CONTEXT_VAR,
+)
+from .exceptions import (
+    TransactionRepositoryConflictException,
 )
 
 if TYPE_CHECKING:
