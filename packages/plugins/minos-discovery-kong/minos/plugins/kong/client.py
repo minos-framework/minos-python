@@ -1,10 +1,6 @@
 from __future__ import (
     annotations,
 )
-
-from abc import (
-    ABC,
-)
 from datetime import (
     datetime,
     timedelta,
@@ -22,14 +18,15 @@ from pytz import (
 from minos.common import (
     Config,
     SetupMixin,
+    current_datetime
 )
 
 
-class KongClient(ABC, SetupMixin):
+class KongClient(SetupMixin):
     """Kong Client class."""
 
     def __init__(
-        self, protocol: str = "http", host: str = None, port: str = None, token_expiration_sec: int = None, **kwargs
+        self, protocol: str = "http", host: str = None, port: int = None, token_expiration_sec: int = None, **kwargs
     ):
         super().__init__(**kwargs)
         if host is None:
@@ -46,7 +43,7 @@ class KongClient(ABC, SetupMixin):
     def _from_config(cls, config: Config, **kwargs) -> KongClient:
         discovery_config = config.get_discovery()
 
-        token_expiration_sec = discovery_config.get("token-exp-minutes")
+        token_expiration_sec = discovery_config.get("token-exp")
         host = discovery_config.get("host")
         port = discovery_config.get("port")
 
@@ -187,7 +184,7 @@ class KongClient(ABC, SetupMixin):
     ) -> str:
         payload = {"iss": key, "exp": exp, "nbf": nbf}
 
-        current = datetime.now(tz=utc)
+        current = current_datetime()
 
         if not exp:
             payload["exp"] = current + timedelta(seconds=self.token_expiration_sec)

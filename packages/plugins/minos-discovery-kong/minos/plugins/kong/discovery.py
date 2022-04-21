@@ -53,7 +53,7 @@ class KongDiscoveryClient(DiscoveryClient, CircuitBreakerMixin):
         )
 
         if client is None:
-            client = KongClient()
+            client = KongClient(host=host, port=port)
 
         self.client = client
 
