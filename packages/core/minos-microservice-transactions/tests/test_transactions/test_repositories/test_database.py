@@ -17,8 +17,8 @@ from minos.transactions.testing import (
     TransactionRepositoryTestCase,
 )
 from tests.utils import (
-    TransactionsTestCase,
     FakeAsyncIterator,
+    TransactionsTestCase,
 )
 
 

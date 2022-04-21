@@ -2,7 +2,9 @@ import unittest
 from datetime import (
     datetime,
 )
-from typing import Optional
+from typing import (
+    Optional,
+)
 from unittest.mock import (
     AsyncMock,
     MagicMock,
@@ -15,7 +17,8 @@ from uuid import (
 )
 
 from minos.common import (
-    NULL_UUID, Lock,
+    NULL_UUID,
+    Lock,
 )
 from minos.transactions import (
     TRANSACTION_CONTEXT_VAR,
@@ -25,8 +28,9 @@ from minos.transactions import (
     TransactionStatus,
 )
 from tests.utils import (
+    FakeAsyncIterator,
+    FakeLock,
     TransactionsTestCase,
-    FakeAsyncIterator, FakeLock,
 )
 
 

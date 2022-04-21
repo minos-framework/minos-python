@@ -26,9 +26,9 @@ from minos.transactions import (
     TransactionStatus,
 )
 from tests.utils import (
-    TransactionsTestCase,
     FakeAsyncIterator,
     FakeLock,
+    TransactionsTestCase,
 )
 
 

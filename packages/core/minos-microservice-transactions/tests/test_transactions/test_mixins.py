@@ -4,7 +4,8 @@ from uuid import (
 )
 
 from minos.common import (
-    SetupMixin, NotProvidedException,
+    NotProvidedException,
+    SetupMixin,
 )
 from minos.transactions import (
     TransactionalMixin,
