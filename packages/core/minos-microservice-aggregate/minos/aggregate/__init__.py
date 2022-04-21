@@ -2,7 +2,7 @@
 
 __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
-__version__ = "0.7.0.dev1"
+__version__ = "0.7.0.dev2"
 
 from .actions import (
     Action,
@@ -29,14 +29,15 @@ from .entities import (
     RootEntity,
 )
 from .events import (
+    DatabaseEventRepository,
     Event,
+    EventDatabaseOperationFactory,
     EventEntry,
     EventRepository,
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
     InMemoryEventRepository,
-    PostgreSqlEventRepository,
 )
 from .exceptions import (
     AggregateException,
@@ -57,20 +58,18 @@ from .queries import (
     Ordering,
 )
 from .snapshots import (
+    DatabaseSnapshotRepository,
     InMemorySnapshotRepository,
-    PostgreSqlSnapshotQueryBuilder,
-    PostgreSqlSnapshotReader,
-    PostgreSqlSnapshotRepository,
-    PostgreSqlSnapshotSetup,
-    PostgreSqlSnapshotWriter,
+    SnapshotDatabaseOperationFactory,
     SnapshotEntry,
     SnapshotRepository,
     SnapshotService,
 )
 from .transactions import (
     TRANSACTION_CONTEXT_VAR,
+    DatabaseTransactionRepository,
     InMemoryTransactionRepository,
-    PostgreSqlTransactionRepository,
+    TransactionDatabaseOperationFactory,
     TransactionEntry,
     TransactionRepository,
     TransactionService,

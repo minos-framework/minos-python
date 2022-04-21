@@ -4,6 +4,9 @@ from __future__ import (
 
 import logging
 import warnings
+from asyncio import (
+    shield,
+)
 from contextlib import (
     suppress,
 )
@@ -89,6 +92,8 @@ class SagaExecution:
         """
         if isinstance(raw, cls):
             return raw
+
+        raw = raw.copy()
 
         current = raw | kwargs
         current["definition"] = Saga.from_raw(current["definition"])
@@ -262,7 +267,7 @@ class SagaExecution:
 
         committer = TransactionCommitter(self.uuid, self.executed_steps, *args, **kwargs)
         try:
-            await committer.commit()
+            await shield(committer.commit())
         except Exception as exc:  # FIXME: Exception is too broad
             logger.warning(f"There was an exception on {TransactionCommitter.__name__!r} commit: {exc!r}")
             with suppress(SagaRollbackExecutionException):
@@ -279,7 +284,7 @@ class SagaExecution:
         """
         committer = TransactionCommitter(self.uuid, self.executed_steps, *args, **kwargs)
         try:
-            await committer.reject()
+            await shield(committer.reject())
         except Exception as exc:
             logger.warning(f"There was an exception on {TransactionCommitter.__name__!r} rejection: {exc!r}")
             raise SagaFailedCommitCallbackException(exc)

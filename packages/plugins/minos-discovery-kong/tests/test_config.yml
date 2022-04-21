@@ -2,5 +2,6 @@ discovery:
     connector: minos.networks.DiscoveryConnector
     client: minos.networks.InMemoryDiscoveryClient
     auth-type: jwt
+    token-exp: 60
     host: localhost
     port: 8001

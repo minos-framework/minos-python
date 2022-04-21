@@ -1,5 +1,8 @@
 import importlib
 import pkgutil
+from contextlib import (
+    suppress,
+)
 from functools import (
     lru_cache,
 )
@@ -22,7 +25,7 @@ def import_module(module_name: str) -> Union[type, Callable, ModuleType]:
     parts = module_name.rsplit(".", 1)
 
     try:
-        kallable = importlib.import_module(parts[0])
+        kallable = _import_module(parts[0])
     except ImportError:
         raise MinosImportException(f"Error importing {module_name!r}: the module does not exist")
 
@@ -33,6 +36,16 @@ def import_module(module_name: str) -> Union[type, Callable, ModuleType]:
             raise MinosImportException(f"Error importing {module_name!r}: the qualname does not exist.")
 
     return kallable
+
+
+def _import_module(module_name: str) -> Union[type, Callable, ModuleType]:
+    try:
+        return importlib.import_module(module_name)
+    except ImportError as exc:
+        if "." in module_name:
+            with suppress(MinosImportException):
+                return import_module(module_name)
+        raise exc
 
 
 def classname(cls: Union[type, Callable]) -> str:

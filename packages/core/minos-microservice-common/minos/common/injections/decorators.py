@@ -151,8 +151,9 @@ class Inject:
             if any(self._is_injectable(arg) for arg in get_args(type_)):
                 return True
         elif origin_type is None:
-            if issubclass(type_, InjectableMixin):
-                return True
+            if is_type_subclass(type_):
+                if issubclass(type_, InjectableMixin):
+                    return True
         elif is_type_subclass(origin_type):
             if issubclass(origin_type, InjectableMixin):
                 return True

@@ -16,15 +16,14 @@ from minos.networks import (
     get_host_ip,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    NetworksTestCase,
 )
 
 
-class TestDiscoveryConnector(unittest.IsolatedAsyncioTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestDiscoveryConnector(NetworksTestCase):
     def setUp(self) -> None:
-        self.config = Config(self.CONFIG_FILE_PATH)
+        super().setUp()
+
         self.ip = get_host_ip()
         self.discovery = DiscoveryConnector.from_config(config=self.config)
 
@@ -49,12 +48,12 @@ class TestDiscoveryConnector(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(connector.client, DiscoveryClient)
 
     def test_config_minos_client_does_not_exist(self):
-        config = Config(self.CONFIG_FILE_PATH, minos_discovery_client="wrong-client")
+        config = Config(self.get_config_file_path(), minos_discovery_client="wrong-client")
         with self.assertRaises(MinosImportException):
             DiscoveryConnector.from_config(config=config)
 
     def test_config_minos_client_not_supported(self):
-        config = Config(self.CONFIG_FILE_PATH, minos_discovery_client="minos.common.Model")
+        config = Config(self.get_config_file_path(), minos_discovery_client="minos.common.Model")
         with self.assertRaises(MinosInvalidDiscoveryClient):
             DiscoveryConnector.from_config(config)
 

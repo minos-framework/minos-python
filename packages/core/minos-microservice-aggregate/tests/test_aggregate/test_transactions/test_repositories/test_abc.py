@@ -25,9 +25,9 @@ from minos.common import (
     SetupMixin,
 )
 from tests.utils import (
+    AggregateTestCase,
     FakeAsyncIterator,
     FakeLock,
-    MinosTestCase,
 )
 
 
@@ -41,15 +41,15 @@ class _TransactionRepository(TransactionRepository):
         """For testing purposes."""
 
 
-class TestTransactionRepository(MinosTestCase):
+class TestTransactionRepository(AggregateTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.transaction_repository = _TransactionRepository()
 
     async def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):
-            # noinspection PyTypeChecker
-            _TransactionRepository(lock_pool=None)
+            # noinspection PyArgumentEqualDefault
+            _TransactionRepository(lock_pool=None, pool_factory=None)
 
     def test_abstract(self):
         self.assertTrue(issubclass(TransactionRepository, (ABC, SetupMixin)))
@@ -69,7 +69,7 @@ class TestTransactionRepository(MinosTestCase):
         expected = FakeLock()
         mock = MagicMock(return_value=expected)
 
-        self.lock_pool.acquire = mock
+        self.pool_factory.get_pool("lock").acquire = mock
 
         self.assertEqual(expected, self.transaction_repository.write_lock())
         self.assertEqual(1, mock.call_count)

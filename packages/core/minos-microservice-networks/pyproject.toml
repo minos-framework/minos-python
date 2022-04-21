@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-microservice-networks"
-version = "0.7.0.dev1"
+version = "0.7.0.dev2"
 description = "The networks core of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
@@ -32,9 +32,7 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.9"
 minos-microservice-common = { version ="^0.7.0*", allow-prereleases = true }
-aiopg = "^1.2.1"
 crontab = "^0.23.0"
-psycopg2-binary = "^2.9.3"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }
