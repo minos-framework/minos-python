@@ -8,20 +8,26 @@ from abc import (
 from pathlib import (
     Path,
 )
-from typing import Union
+from typing import (
+    Union,
+)
 
 from minos.common import (
+    DatabaseClientPool,
+    InjectableMixin,
     Lock,
     LockPool,
-    DatabaseClientPool,
     PoolFactory,
-    InjectableMixin,
 )
 from minos.common.testing import (
     MinosTestCase,
 )
-from minos.networks import BrokerClientPool
-from minos.transactions import InMemoryTransactionRepository
+from minos.networks import (
+    BrokerClientPool,
+)
+from minos.transactions import (
+    InMemoryTransactionRepository,
+)
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
