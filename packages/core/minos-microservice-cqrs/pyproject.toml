@@ -39,6 +39,7 @@ minos-microservice-networks = { version ="^0.7.0*", allow-prereleases = true }
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }
 minos-microservice-networks = { path = "../minos-microservice-networks", develop = true }
 minos-microservice-aggregate = { path = "../minos-microservice-aggregate", develop = true }
+minos-microservice-transactions = { path = "../minos-microservice-transactions", develop = true }
 black = "^22.3"
 isort = "^5.8.0"
 pytest = "^7.0.1"
