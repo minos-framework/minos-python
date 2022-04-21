@@ -125,7 +125,7 @@ discovery:
   client: minos.plugins.kong.KongDiscoveryClient
   host: localhost
   auth-type: jwt
-  token-exp-minutes: 60
+  token-exp: 60 # seconds
   port: 8001
 ...
 ```

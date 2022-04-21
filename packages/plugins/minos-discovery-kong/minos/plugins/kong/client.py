@@ -11,9 +11,6 @@ from uuid import (
 
 import httpx as httpx
 import jwt
-from pytz import (
-    utc,
-)
 
 from minos.common import (
     Config,
