@@ -222,7 +222,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-aggregate"
-version = "0.7.0.dev1"
+version = "0.7.0.dev2"
 description = "The Aggregate pattern of the Minos Framework"
 category = "main"
 optional = false
@@ -241,7 +241,7 @@ url = "../../core/minos-microservice-aggregate"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.7.0.dev1"
+version = "0.7.0.dev2"
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
@@ -263,7 +263,7 @@ url = "../../core/minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.7.0.dev1"
+version = "0.7.0.dev2"
 description = "The networks core of the Minos Framework"
 category = "main"
 optional = false
