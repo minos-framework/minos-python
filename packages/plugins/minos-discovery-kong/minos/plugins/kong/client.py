@@ -1,6 +1,7 @@
 from __future__ import (
     annotations,
 )
+
 from datetime import (
     datetime,
     timedelta,
@@ -15,7 +16,7 @@ import jwt
 from minos.common import (
     Config,
     SetupMixin,
-    current_datetime
+    current_datetime,
 )
 
 
