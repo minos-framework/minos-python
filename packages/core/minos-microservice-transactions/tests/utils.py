@@ -12,7 +12,10 @@ from typing import Union
 
 from minos.common import (
     Lock,
-    LockPool, DatabaseClientPool, PoolFactory, InjectableMixin,
+    LockPool,
+    DatabaseClientPool,
+    PoolFactory,
+    InjectableMixin,
 )
 from minos.common.testing import (
     MinosTestCase,

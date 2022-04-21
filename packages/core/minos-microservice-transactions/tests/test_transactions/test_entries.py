@@ -15,7 +15,8 @@ from uuid import (
 )
 
 from minos.common import (
-    NULL_UUID, Lock,
+    NULL_UUID,
+    Lock,
 )
 from minos.transactions import (
     TRANSACTION_CONTEXT_VAR,
@@ -26,7 +27,8 @@ from minos.transactions import (
 )
 from tests.utils import (
     TransactionsTestCase,
-    FakeAsyncIterator, FakeLock,
+    FakeAsyncIterator,
+    FakeLock,
 )
 
 
