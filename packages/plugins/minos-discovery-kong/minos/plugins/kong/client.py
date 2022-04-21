@@ -1,6 +1,7 @@
 from __future__ import (
     annotations,
 )
+
 from datetime import (
     datetime,
     timedelta,
@@ -12,7 +13,11 @@ from uuid import (
 import httpx as httpx
 import jwt
 
-from minos.common import Config, SetupMixin, current_datetime
+from minos.common import (
+    Config,
+    SetupMixin,
+    current_datetime,
+)
 
 
 class KongClient(SetupMixin):
