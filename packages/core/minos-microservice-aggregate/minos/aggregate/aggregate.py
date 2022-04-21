@@ -12,7 +12,7 @@ from minos.common import (
     Config,
     Inject,
     NotProvidedException,
-    SetupMixin,
+    SetupMixin, Injectable,
 )
 from minos.transactions import (
     TransactionRepository,
@@ -27,62 +27,54 @@ from .events import (
 from .snapshots import (
     SnapshotRepository,
 )
+from minos.networks import (
+    TransactionalBrokerPublisher,
+)
 
 RT = TypeVar("RT", bound=RootEntity)
 
 
+@Injectable("aggregate")
 class Aggregate(Generic[RT], SetupMixin):
     """Base Service class"""
 
     transaction_repository: TransactionRepository
     event_repository: EventRepository
     snapshot_repository: SnapshotRepository
+    broker_publisher: TransactionalBrokerPublisher
 
+    @Inject()
     def __init__(
         self,
         transaction_repository: TransactionRepository,
         event_repository: EventRepository,
         snapshot_repository: SnapshotRepository,
+        broker_publisher: TransactionalBrokerPublisher,
         *args,
         **kwargs,
     ):
+        if transaction_repository is None:
+            raise NotProvidedException(f"A {TransactionRepository!r} object must be provided.")
+        if event_repository is None:
+            raise NotProvidedException(f"A {EventRepository!r} object must be provided.")
+        if snapshot_repository is None:
+            raise NotProvidedException(f"A {SnapshotRepository!r} object must be provided.")
+        if broker_publisher is None:
+            raise NotProvidedException(f"A {TransactionalBrokerPublisher!r} object must be provided.")
+
         super().__init__(*args, **kwargs)
+
         self._check_root()
 
         self.transaction_repository = transaction_repository
         self.event_repository = event_repository
         self.snapshot_repository = snapshot_repository
+        self.broker_publisher = broker_publisher
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> Aggregate:
-        kwargs["transaction_repository"] = cls._get_transaction_repository(**kwargs)
-        kwargs["event_repository"] = cls._get_event_repository(**kwargs)
-        kwargs["snapshot_repository"] = cls._get_snapshot_repository(**kwargs)
+        kwargs["broker_publisher"] = TransactionalBrokerPublisher.from_config(config, **kwargs)
         return cls(**kwargs)
-
-    # noinspection PyUnusedLocal
-    @staticmethod
-    @Inject()
-    def _get_transaction_repository(transaction_repository: TransactionRepository, **kwargs) -> TransactionRepository:
-        if transaction_repository is None:
-            raise NotProvidedException(f"A {TransactionRepository!r} object must be provided.")
-        return transaction_repository
-
-    # noinspection PyUnusedLocal
-    @staticmethod
-    @Inject()
-    def _get_event_repository(event_repository: EventRepository, **kwargs) -> EventRepository:
-        if event_repository is None:
-            raise NotProvidedException(f"A {EventRepository!r} object must be provided.")
-        return event_repository
-
-    # noinspection PyUnusedLocal
-    @staticmethod
-    @Inject()
-    def _get_snapshot_repository(snapshot_repository: SnapshotRepository, **kwargs) -> SnapshotRepository:
-        if snapshot_repository is None:
-            raise NotProvidedException(f"A {SnapshotRepository!r} object must be provided.")
-        return snapshot_repository
 
     def _check_root(self):
         self.root  # If root is not valid it will raise an exception.
