@@ -1,3 +1,5 @@
+"""This module contains the implementation of the lmdb client."""
+
 from __future__ import (
     annotations,
 )
