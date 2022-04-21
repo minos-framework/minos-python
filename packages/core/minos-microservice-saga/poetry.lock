@@ -231,6 +231,7 @@ develop = true
 [package.dependencies]
 crontab = "^0.23.0"
 minos-microservice-common = "^0.7.0*"
+minos-microservice-transactions = "^0.7.0*"
 
 [package.source]
 type = "directory"
@@ -416,7 +417,7 @@ test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "0db237d303b06dd9fc7f7bf21e39e84845e915b71fd12bc90c4c2cf7563caf93"
+content-hash = "f7a11c35a966519ecda45424aadc924e0d1101a33522129d107f4b80b7644dcb"
 
 [metadata.files]
 aiomisc = [
