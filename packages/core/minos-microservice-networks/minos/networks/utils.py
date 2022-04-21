@@ -4,12 +4,9 @@ from __future__ import (
 
 import re
 import socket
-import warnings
 from asyncio import (
     QueueEmpty,
 )
-
-from minos.common import Builder as CommonBuilder
 
 
 def get_host_ip() -> str:
@@ -54,11 +51,3 @@ async def consume_queue(queue, max_count: int) -> None:
             queue.get_nowait()
         except QueueEmpty:
             break
-
-
-class Builder(CommonBuilder):
-    """Builder class."""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(f"{Builder!r} has been deprecated. Use {CommonBuilder} instead.", DeprecationWarning)
-        super().__init__(*args, **kwargs)
