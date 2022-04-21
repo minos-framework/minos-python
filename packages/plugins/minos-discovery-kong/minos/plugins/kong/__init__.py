@@ -1,6 +1,6 @@
 __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
-__version__ = "0.7.0.dev1"
+__version__ = "0.7.0.dev2"
 
 from .client import (
     KongClient,
