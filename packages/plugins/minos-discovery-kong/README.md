@@ -63,6 +63,34 @@ services:
           - NODE_ENV=production
 ```
 
+## Decorators
+Decorator `@enroute` can support next params:
+ - `path` - route url path.
+ - `method` - HTTP method.
+ - `authenticated` (Optional) - True if route need authentication.
+ - `authorized_groups` (Optional) - Groups which can access to specified route (they must exist in Kong).
+ - `regex_priority` (Optional) - A number used to choose which route resolves a given request when several routes match it using regexes simultaneously. When two routes match the path and have the same regex_priority, the older one (lowest created_at) is used. Note that the priority for non-regex routes is different (longer non-regex routes are matched before shorter ones). Defaults to 0.
+
+Example:
+```python
+    @enroute.rest.command(f"/users/{{uuid:{UUID_REGEX.pattern}}}/jwt", "POST", authenticated=True, authorized_groups=["admin"], regex_priority=2)
+    @enroute.broker.command("GetUserJWT")
+    async def foo(self, request: Request) -> Response:
+       ...
+```
+## Route path
+It is important to know that it is best to define routes with a regular expression when it is an id, uuid or similar. This is to avoid collisions with similar routes.
+Instead of using:
+```python
+@enroute.rest.command("/users/{uuid}", "POST")
+```
+Use:
+```python
+import re
+UUID_REGEX = re.compile(r"\w{8}-\w{4}-\w{4}-\w{4}-\w{12}")
+@enroute.rest.command(f"/users/{{uuid:{UUID_REGEX.pattern}}}", "POST")
+```
+
 ## Authentication
 
 Modify `config.yml` file. Add new middleware and modify discovery section:
@@ -84,6 +112,91 @@ discovery:
 Currently, there are 2 possible types of authentication:
 - `basic-auth`
 - `jwt`
+
+For jwt auth type you can specify default token expiration. Example:
+```yaml
+...
+middleware:
+  ...
+  - minos.plugins.kong.middleware
+
+discovery:
+  connector: minos.networks.DiscoveryConnector
+  client: minos.plugins.kong.KongDiscoveryClient
+  host: localhost
+  auth-type: jwt
+  token-exp: 60 # seconds
+  port: 8001
+...
+```
+
+### JWT Token creation & refresh
+Example on how to create and refresh token. You need to store in database or similar the secret and key returned form kong in order to refresh existing token.
+```python
+from minos.common import (
+    UUID_REGEX,
+    NotProvidedException,
+    Config,
+    Inject,
+)
+from minos.cqrs import (
+    CommandService,
+)
+from minos.networks import (
+    Request,
+    Response,
+    enroute,
+)
+
+from ..aggregates import (
+    User,
+)
+from minos.plugins.kong import KongClient
+
+class UserCommandService(CommandService):
+    """UserCommandService class."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.kong = self._get_kong_client()
+
+    @staticmethod
+    @Inject()
+    def _get_kong_client(config: Config) -> KongClient:
+        """Get the service name."""
+        if config is None:
+            raise NotProvidedException("The config object must be provided.")
+        return KongClient.from_config(config)
+
+    @enroute.rest.command(f"/users/{{uuid:{UUID_REGEX.pattern}}}/jwt", "POST", authenticated=True,
+                          authorized_groups=["admin"], regex_priority=3)
+    @enroute.broker.command("GetUserJWT")
+    async def create_user_jwt(self, request: Request) -> Response:
+        params = await request.params()
+        uuid = params["uuid"]
+        user = await User.get(uuid)
+
+        if user.uuid == request.user:
+            token = await self.add_jwt_to_consumer(request.headers.get("X-Consumer-ID"))
+            return Response({"token": token})
+        else:
+            return Response(status=404)
+
+    async def add_jwt_to_consumer(self, consumer: str):
+        resp = await self.kong.add_jwt_to_consumer(consumer=consumer)
+        res = resp.json()
+        self.key = res['key']
+        self.secret = res['secret']
+        token = await self.kong.generate_jwt_token(key=self.key, secret=self.secret)
+        return token
+
+    @enroute.rest.command(f"/users/{{uuid:{UUID_REGEX.pattern}}}/refresh-jwt", "POST", authenticated=True,
+                          authorized_groups=["admin"], regex_priority=3)
+    @enroute.broker.command("RefreshJWT")
+    async def refresh_jwt(self, request: Request) -> Response:
+        token = await self.kong.generate_jwt_token(key=self.key, secret=self.secret)
+        return Response({"token": token})
+```
 
 For the route to be authenticated with the method specified above, a parameter called `authenticated` must be passed:
 ```python
@@ -222,6 +335,8 @@ class UserCommandService(CommandService):
 ```
 
 You can get read the official docs [here](https://pantsel.github.io/konga/).
+
+
 ## Documentation
 
 The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).

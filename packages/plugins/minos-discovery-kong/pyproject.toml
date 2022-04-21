@@ -35,6 +35,8 @@ python = "^3.9"
 minos-microservice-common = { version ="^0.7.0*", allow-prereleases = true }
 minos-microservice-networks = { version ="^0.7.0*", allow-prereleases = true }
 httpx = "^0.22.0"
+pytz = "^2022.1"
+PyJWT = "^2.3.0"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../../core/minos-microservice-common", develop = true }

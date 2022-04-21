@@ -1,15 +1,51 @@
+from __future__ import (
+    annotations,
+)
+
+from datetime import (
+    datetime,
+    timedelta,
+)
 from uuid import (
     UUID,
 )
 
 import httpx as httpx
+import jwt
+
+from minos.common import (
+    Config,
+    SetupMixin,
+    current_datetime,
+)
 
 
-class KongClient:
+class KongClient(SetupMixin):
     """Kong Client class."""
 
-    def __init__(self, route):
-        self.route = route
+    def __init__(
+        self, protocol: str = "http", host: str = None, port: int = None, token_expiration_sec: int = None, **kwargs
+    ):
+        super().__init__(**kwargs)
+        if host is None:
+            host = "localhost"
+        if port is None:
+            port = 8001
+        if token_expiration_sec is None:
+            token_expiration_sec = 60 * 5
+
+        self.route = f"{protocol}://{host}:{port}"
+        self.token_expiration_sec = token_expiration_sec
+
+    @classmethod
+    def _from_config(cls, config: Config, **kwargs) -> KongClient:
+        discovery_config = config.get_discovery()
+
+        token_expiration_sec = discovery_config.get("token-exp")
+        host = discovery_config.get("host")
+        port = discovery_config.get("port")
+
+        return cls(host=host, port=port, token_expiration_sec=token_expiration_sec, **kwargs)
 
     @staticmethod
     async def register_service(
@@ -49,6 +85,7 @@ class KongClient:
         methods: list[str],
         paths: list[str],
         service: str,
+        regex_priority: int,
         strip_path: bool = False,
     ):
         url = f"{endpoint}/routes"
@@ -57,6 +94,7 @@ class KongClient:
             "methods": methods,
             "paths": paths,
             "service": {"id": service},
+            "regex_priority": regex_priority,
             "strip_path": strip_path,
         }
 
@@ -130,8 +168,40 @@ class KongClient:
             return resp
 
     async def activate_jwt_plugin_on_route(self, route_id: str):
-        payload = {"name": "jwt", "config": {"secret_is_base64": False, "run_on_preflight": True}}
+        payload = {
+            "name": "jwt",
+            "config": {"secret_is_base64": False, "run_on_preflight": True, "claims_to_verify": ["exp", "nbf"]},
+        }
 
         async with httpx.AsyncClient() as client:
             resp = await client.post(f"{self.route}/routes/{route_id}/plugins", json=payload)
+            return resp
+
+    async def generate_jwt_token(
+        self, key: str, secret: str, algorithm: str = "HS256", exp: datetime = None, nbf: datetime = None
+    ) -> str:
+        payload = {"iss": key, "exp": exp, "nbf": nbf}
+
+        current = current_datetime()
+
+        if not exp:
+            payload["exp"] = current + timedelta(seconds=self.token_expiration_sec)
+
+        if not nbf:
+            payload["nbf"] = current
+
+        return jwt.encode(payload, secret, algorithm=algorithm)
+
+    @staticmethod
+    async def decode_token(token: str, algorithm: str = "HS256"):
+        return jwt.decode(token, options={"verify_signature": False}, algorithms=[algorithm])
+
+    async def get_jwt_by_id(self, id: str):
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{self.route}/jwts/{id}")
+            return resp
+
+    async def get_consumer_jwts(self, consumer: str):
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{self.route}/consumers/{consumer}/jwt")
             return resp
