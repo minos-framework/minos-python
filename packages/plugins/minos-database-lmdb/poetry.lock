@@ -207,7 +207,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-aggregate"
-version = "0.7.0.dev1"
+version = "0.7.0.dev2"
 description = "The Aggregate pattern of the Minos Framework"
 category = "main"
 optional = false
@@ -225,7 +225,7 @@ url = "../../core/minos-microservice-aggregate"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.7.0.dev1"
+version = "0.7.0.dev2"
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
@@ -237,7 +237,6 @@ aiomisc = ">=14.0.3,<15.8.0"
 cached-property = "^1.5.2"
 dependency-injector = "^4.32.2"
 fastavro = "^1.4.0"
-lmdb = "^1.2.1"
 orjson = "^3.5.2"
 PyYAML = ">=5.4.1,<7.0.0"
 uvloop = "^0.16.0"
@@ -248,7 +247,7 @@ url = "../../core/minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.7.0.dev1"
+version = "0.7.0.dev2"
 description = "The networks core of the Minos Framework"
 category = "main"
 optional = false
@@ -265,7 +264,7 @@ url = "../../core/minos-microservice-networks"
 
 [[package]]
 name = "minos-microservice-saga"
-version = "0.7.0.dev1"
+version = "0.7.0.dev2"
 description = "The SAGA pattern of the Minos Framework"
 category = "main"
 optional = false
