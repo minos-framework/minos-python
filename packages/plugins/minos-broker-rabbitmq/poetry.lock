@@ -1,6 +1,6 @@
 [[package]]
 name = "aio-pika"
-version = "7.1.2"
+version = "7.2.0"
 description = "Wrapper for the aiormq for asyncio and humans."
 category = "main"
 optional = false
@@ -269,10 +269,28 @@ develop = true
 [package.dependencies]
 crontab = "^0.23.0"
 minos-microservice-common = "^0.7.0*"
+minos-microservice-transactions = "^0.7.0*"
 
 [package.source]
 type = "directory"
 url = "../../core/minos-microservice-networks"
+
+[[package]]
+name = "minos-microservice-transactions"
+version = "0.0.0"
+description = "The transactions core of the Minos Framework"
+category = "main"
+optional = false
+python-versions = "^3.9"
+develop = true
+
+[package.dependencies]
+cached-property = "^1.5.2"
+minos-microservice-common = "^0.7.0*"
+
+[package.source]
+type = "directory"
+url = "../../core/minos-microservice-transactions"
 
 [[package]]
 name = "multidict"
@@ -477,12 +495,11 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "2b66ade14c61be67e8928576bec9684c7798cc021994c6815a8a0e25b47f5d5b"
+content-hash = "c0890d7bedb8d8ad1ff37ae41b92b0791591284bbf025aed40ff0fb3b3fb77de"
 
 [metadata.files]
 aio-pika = [
-    {file = "aio-pika-7.1.2.tar.gz", hash = "sha256:b754ba114ce3cfbc5fb444c0d41c5f74f5cfff34c2c87fef3eab0ba796ec3e94"},
-    {file = "aio_pika-7.1.2-py3-none-any.whl", hash = "sha256:47fbd996d6ff4a8b1ea0148091b9e056c3a581fd4be863801eba8fce690cd243"},
+    {file = "aio_pika-7.2.0-py3-none-any.whl", hash = "sha256:9b741aa81b3dd3917ec1a4910ab0766e4e568bac498831c6a02f0c96936b2d3c"},
 ]
 aiomisc = [
     {file = "aiomisc-15.7.3-py3-none-any.whl", hash = "sha256:0403e83268e98d0f2a125a70d13303fe1a2358e36db3daf02df032c7fa4f1525"},
@@ -665,6 +682,7 @@ mccabe = [
 ]
 minos-microservice-common = []
 minos-microservice-networks = []
+minos-microservice-transactions = []
 multidict = [
     {file = "multidict-6.0.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:0b9e95a740109c6047602f4db4da9949e6c5945cefbad34a1299775ddc9a62e2"},
     {file = "multidict-6.0.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ac0e27844758d7177989ce406acc6a83c16ed4524ebc363c1f748cba184d89d3"},
