@@ -14,7 +14,9 @@ from ...messages import (
 class BrokerPublisherTransactionEntry:
     """TODO"""
 
-    def __init__(self, message: Union[bytes, BrokerMessage], transaction_uuid: UUID):
+    def __init__(self, message: Union[memoryview, bytes, BrokerMessage], transaction_uuid: UUID):
+        if isinstance(message, memoryview):
+            message = message.tobytes()
         if isinstance(message, bytes):
             message = BrokerMessage.from_avro_bytes(message)
         self._message = message
