@@ -77,6 +77,14 @@ class Aggregate(Generic[RT], SetupMixin):
         kwargs["broker_publisher"] = TransactionalBrokerPublisher.from_config(config, **kwargs)
         return cls(**kwargs)
 
+    async def _setup(self) -> None:
+        await super()._setup()
+        await self.broker_publisher.setup()
+
+    async def _destroy(self) -> None:
+        await self.broker_publisher.destroy()
+        await super()._destroy()
+
     def _check_root(self):
         self.root  # If root is not valid it will raise an exception.
 

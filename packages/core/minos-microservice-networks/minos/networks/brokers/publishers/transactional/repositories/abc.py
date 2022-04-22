@@ -9,12 +9,16 @@ from uuid import (
     UUID,
 )
 
+from minos.common import (
+    SetupMixin,
+)
+
 from ..entries import (
     BrokerPublisherTransactionEntry,
 )
 
 
-class BrokerPublisherTransactionRepository(ABC):
+class BrokerPublisherTransactionRepository(ABC, SetupMixin):
     """TODO"""
 
     def select(self, transaction_uuid: UUID) -> AsyncIterator[BrokerPublisherTransactionEntry]:

@@ -47,8 +47,18 @@ class TransactionalBrokerPublisher(BrokerPublisher, TransactionalMixin):
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> TransactionalBrokerPublisher:
         if "repository" not in kwargs:
-            kwargs["repository"] = InMemoryBrokerPublisherTransactionRepository()
+            kwargs["repository"] = InMemoryBrokerPublisherTransactionRepository.from_config(config, **kwargs)
+        if "broker_publisher" in kwargs and "impl" not in kwargs:
+            kwargs["impl"] = kwargs["broker_publisher"]
         return cls(**kwargs)
+
+    async def _setup(self) -> None:
+        await super()._setup()
+        await self.repository.setup()
+
+    async def _destroy(self) -> None:
+        await self.repository.destroy()
+        await super()._destroy()
 
     async def _send(self, message: BrokerMessage) -> None:
         transaction = TRANSACTION_CONTEXT_VAR.get()

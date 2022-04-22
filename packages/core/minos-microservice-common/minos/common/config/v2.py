@@ -66,6 +66,9 @@ class ConfigV2(Config):
             partial_ans.extend(self._get_aggregate().get("repositories", dict()).values())
 
         with suppress(MinosConfigException):
+            partial_ans.append(self._get_aggregate().get("client"))
+
+        with suppress(MinosConfigException):
             partial_ans.append(self._get_discovery().get("connector"))
 
         with suppress(MinosConfigException):
@@ -205,7 +208,8 @@ class ConfigV2(Config):
 
     def _get_aggregate(self) -> dict[str, Any]:
         data = deepcopy(self.get_by_key("aggregate"))
-
+        if "client" in data:
+            data["client"] = import_module(data.get("client"))
         data["entities"] = [import_module(classname) for classname in data.get("entities", list())]
         data["repositories"] = {name: import_module(value) for name, value in data.get("repositories", dict()).items()}
         return data
