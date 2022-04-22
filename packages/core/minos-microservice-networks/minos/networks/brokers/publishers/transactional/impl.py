@@ -1,9 +1,14 @@
+from __future__ import (
+    annotations,
+)
+
 from uuid import (
     UUID,
 )
 
 from minos.common import (
     NULL_UUID,
+    Config,
     Inject,
 )
 from minos.transactions import (
@@ -17,11 +22,12 @@ from ...messages import (
 from ..abc import (
     BrokerPublisher,
 )
-from . import (
+from .entries import (
     BrokerPublisherTransactionEntry,
 )
 from .repositories import (
     BrokerPublisherTransactionRepository,
+    InMemoryBrokerPublisherTransactionRepository,
 )
 
 
@@ -37,6 +43,12 @@ class TransactionalBrokerPublisher(BrokerPublisher, TransactionalMixin):
 
         self.impl = impl
         self.repository = repository
+
+    @classmethod
+    def _from_config(cls, config: Config, **kwargs) -> TransactionalBrokerPublisher:
+        if "repository" not in kwargs:
+            kwargs["repository"] = InMemoryBrokerPublisherTransactionRepository()
+        return cls(**kwargs)
 
     async def _send(self, message: BrokerMessage) -> None:
         transaction = TRANSACTION_CONTEXT_VAR.get()

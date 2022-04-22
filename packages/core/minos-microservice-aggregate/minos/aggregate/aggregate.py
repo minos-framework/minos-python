@@ -11,8 +11,12 @@ from typing import (
 from minos.common import (
     Config,
     Inject,
+    Injectable,
     NotProvidedException,
-    SetupMixin, Injectable,
+    SetupMixin,
+)
+from minos.networks import (
+    TransactionalBrokerPublisher,
 )
 from minos.transactions import (
     TransactionRepository,
@@ -26,9 +30,6 @@ from .events import (
 )
 from .snapshots import (
     SnapshotRepository,
-)
-from minos.networks import (
-    TransactionalBrokerPublisher,
 )
 
 RT = TypeVar("RT", bound=RootEntity)
@@ -87,7 +88,7 @@ class Aggregate(Generic[RT], SetupMixin):
         """
         # noinspection PyUnresolvedReferences
         bases = self.__orig_bases__
-        root = get_args(bases[0])[0]
+        root = get_args(next((base for base in bases if len(get_args(base))), None))[0]
         if not isinstance(root, type) or not issubclass(root, RootEntity):
             raise TypeError(f"{type(self)!r} must contain a {RootEntity!r} as generic value.")
         return root
