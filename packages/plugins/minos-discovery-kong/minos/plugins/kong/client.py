@@ -24,13 +24,15 @@ class KongClient(SetupMixin):
     """Kong Client class."""
 
     def __init__(
-        self, protocol: str = "http", host: str = None, port: int = None, token_expiration_sec: int = None, **kwargs
+        self, protocol: str = None, host: str = None, port: int = None, token_expiration_sec: int = None, **kwargs
     ):
         super().__init__(**kwargs)
         if host is None:
             host = "localhost"
         if port is None:
             port = 8001
+        if protocol is None:
+            protocol = "http"
         if token_expiration_sec is None:
             token_expiration_sec = 60 * 5
 
