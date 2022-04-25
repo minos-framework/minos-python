@@ -21,7 +21,7 @@ from .abc import (
 
 
 class InMemoryBrokerPublisherTransactionRepository(BrokerPublisherTransactionRepository):
-    """TODO"""
+    """In Memory Broker Publisher Transaction Repository class."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

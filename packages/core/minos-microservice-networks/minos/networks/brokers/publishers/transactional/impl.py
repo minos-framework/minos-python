@@ -35,7 +35,7 @@ from .repositories import (
 
 
 class TransactionalBrokerPublisher(BrokerPublisher, TransactionalMixin):
-    """TODO"""
+    """Transactional Broker Publisher class."""
 
     impl: BrokerPublisher
     repository: BrokerPublisherTransactionRepository

@@ -15,7 +15,7 @@ from ...messages import (
 
 
 class BrokerPublisherTransactionEntry:
-    """TODO"""
+    """Broker Publisher Transaction Entry class."""
 
     def __init__(self, message: Union[memoryview, bytes, BrokerMessage], transaction_uuid: UUID):
         if isinstance(message, memoryview):
@@ -27,16 +27,25 @@ class BrokerPublisherTransactionEntry:
 
     @property
     def message(self) -> BrokerMessage:
-        """TODO"""
+        """Get the message.
+
+        :return: A ``BrokerMessage`` instance.
+        """
         return self._message
 
     @property
     def transaction_uuid(self) -> UUID:
-        """TODO"""
+        """Get the transaction identifier.
+
+        :return: An ``UUID`` instance.
+        """
         return self._transaction_uuid
 
     def as_raw(self) -> dict[str, Any]:
-        """TODO"""
+        """Get a raw representation of the instance.
+
+        :return: A dictionary in which the keys are attribute names and values the attribute contents.
+        """
         return {
             "message": self._message.avro_bytes,
             "transaction_uuid": self._transaction_uuid,

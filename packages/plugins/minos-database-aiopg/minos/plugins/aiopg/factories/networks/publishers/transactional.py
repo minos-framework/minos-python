@@ -27,7 +27,7 @@ from ....operations import (
 
 # noinspection SqlDialectInspection,SqlNoDataSourceInspection
 class AiopgBrokerPublisherTransactionDatabaseOperationFactory(BrokerPublisherTransactionDatabaseOperationFactory):
-    """TODO"""
+    """Aiopg Broker Publisher Transaction Database Operation Factory class."""
 
     @staticmethod
     def build_table_name() -> str:
@@ -38,7 +38,10 @@ class AiopgBrokerPublisherTransactionDatabaseOperationFactory(BrokerPublisherTra
         return "broker_publisher_transactional_messages"
 
     def build_create(self) -> DatabaseOperation:
-        """TODO"""
+        """Build the operation to initialize the database storage.
+
+        :return: A ``DatabaseOperation`` instance.
+        """
         return ComposedDatabaseOperation(
             [
                 AiopgDatabaseOperation(
@@ -60,7 +63,12 @@ class AiopgBrokerPublisherTransactionDatabaseOperationFactory(BrokerPublisherTra
         )
 
     def build_query(self, transaction_uuid: Optional[UUID]) -> DatabaseOperation:
-        """TODO"""
+        """Build the operation to query stored messages.
+
+        :param transaction_uuid: The identifier of the transaction, if ``None`` is provided then the messages aren't
+            filtered by transaction.
+        :return: A ``DatabaseOperation`` instance.
+        """
         if transaction_uuid is None:
             return AiopgDatabaseOperation(SQL(f"SELECT message, transaction_uuid FROM {self.build_table_name()}"))
 
@@ -76,7 +84,12 @@ class AiopgBrokerPublisherTransactionDatabaseOperationFactory(BrokerPublisherTra
         )
 
     def build_submit(self, message: bytes, transaction_uuid: UUID) -> DatabaseOperation:
-        """TODO"""
+        """Build the operation to submit a new message.
+
+        :param message: The message to be submitted.
+        :param transaction_uuid: The identifier of the transaction.
+        :return: A ``DatabaseOperation`` instance.
+        """
         return AiopgDatabaseOperation(
             SQL(
                 f"""
@@ -91,7 +104,11 @@ class AiopgBrokerPublisherTransactionDatabaseOperationFactory(BrokerPublisherTra
         )
 
     def build_delete_batch(self, transaction_uuid: UUID) -> DatabaseOperation:
-        """TODO"""
+        """Build the operation to delete a batch of messages by transaction.
+
+        :param transaction_uuid: The identifier of the transaction.
+        :return: A ``DatabaseOperation`` instance.
+        """
         return AiopgDatabaseOperation(
             SQL(f"DELETE FROM {self.build_table_name()} WHERE transaction_uuid = %(transaction_uuid)s"),
             {"transaction_uuid": transaction_uuid},

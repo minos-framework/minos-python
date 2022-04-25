@@ -25,7 +25,7 @@ class DatabaseBrokerPublisherTransactionRepository(
     BrokerPublisherTransactionRepository,
     DatabaseMixin[BrokerPublisherTransactionDatabaseOperationFactory],
 ):
-    """TODO"""
+    """Database Broker Publisher Transaction Repository class."""
 
     def __init__(self, *args, database_key: Optional[tuple[str]] = None, **kwargs):
         if database_key is None:
