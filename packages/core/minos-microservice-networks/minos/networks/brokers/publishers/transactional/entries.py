@@ -1,3 +1,6 @@
+from collections.abc import (
+    Iterable,
+)
 from typing import (
     Any,
     Union,
@@ -38,3 +41,15 @@ class BrokerPublisherTransactionEntry:
             "message": self._message.avro_bytes,
             "transaction_uuid": self._transaction_uuid,
         }
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, type(self)) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> Iterable:
+        yield from (
+            self._message,
+            self._transaction_uuid,
+        )

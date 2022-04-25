@@ -49,7 +49,7 @@ class TransactionalBrokerPublisher(BrokerPublisher, TransactionalMixin):
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> TransactionalBrokerPublisher:
-        if "repository" not in kwargs:
+        if "repository" in kwargs:
             kwargs["repository"] = cls._get_repository_from_config(config, **kwargs)
         if "broker_publisher" in kwargs and "impl" not in kwargs:
             kwargs["impl"] = kwargs["broker_publisher"]
@@ -61,7 +61,9 @@ class TransactionalBrokerPublisher(BrokerPublisher, TransactionalMixin):
     ) -> BrokerPublisherTransactionRepository:
         if isinstance(repository, str):
             repository = import_module(repository)
-        return repository.from_config(config, **kwargs)
+        if isinstance(repository, type):
+            repository = repository.from_config(config, **kwargs)
+        return repository
 
     async def _setup(self) -> None:
         await super()._setup()
