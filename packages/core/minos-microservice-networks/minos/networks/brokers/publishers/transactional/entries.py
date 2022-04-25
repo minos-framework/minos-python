@@ -45,9 +45,6 @@ class BrokerPublisherTransactionEntry:
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, type(self)) and tuple(self) == tuple(other)
 
-    def __hash__(self) -> int:
-        return hash(tuple(self))
-
     def __iter__(self) -> Iterable:
         yield from (
             self._message,
