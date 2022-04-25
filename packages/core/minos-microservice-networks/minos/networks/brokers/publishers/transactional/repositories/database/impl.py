@@ -40,7 +40,9 @@ class DatabaseBrokerPublisherTransactionRepository(
         operation = self.database_operation_factory.build_create()
         await self.execute_on_database(operation)
 
-    async def _select(self, transaction_uuid: UUID) -> AsyncIterator[BrokerPublisherTransactionEntry]:
+    async def _select(
+        self, transaction_uuid: Optional[UUID], **kwargs
+    ) -> AsyncIterator[BrokerPublisherTransactionEntry]:
         operation = self.database_operation_factory.build_query(transaction_uuid)
         async for raw in self.execute_on_database_and_fetch_all(operation):
             yield BrokerPublisherTransactionEntry(*raw)

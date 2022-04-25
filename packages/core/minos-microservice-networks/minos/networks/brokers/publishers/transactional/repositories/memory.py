@@ -1,8 +1,12 @@
 from collections import (
     defaultdict,
 )
+from itertools import (
+    chain,
+)
 from typing import (
     AsyncIterator,
+    Optional,
 )
 from uuid import (
     UUID,
@@ -23,8 +27,14 @@ class InMemoryBrokerPublisherTransactionRepository(BrokerPublisherTransactionRep
         super().__init__(*args, **kwargs)
         self._storage = defaultdict(list)
 
-    async def _select(self, transaction_uuid: UUID) -> AsyncIterator[BrokerPublisherTransactionEntry]:
-        for entry in self._storage[transaction_uuid]:
+    async def _select(
+        self, transaction_uuid: Optional[UUID], **kwargs
+    ) -> AsyncIterator[BrokerPublisherTransactionEntry]:
+        if transaction_uuid is None:
+            iterable = chain.from_iterable(self._storage.values())
+        else:
+            iterable = self._storage[transaction_uuid]
+        for entry in iterable:
             yield entry
 
     async def _submit(self, entry: BrokerPublisherTransactionEntry) -> None:

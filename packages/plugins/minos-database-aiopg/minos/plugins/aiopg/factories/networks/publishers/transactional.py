@@ -1,3 +1,6 @@
+from typing import (
+    Optional,
+)
 from uuid import (
     UUID,
 )
@@ -56,8 +59,11 @@ class AiopgBrokerPublisherTransactionDatabaseOperationFactory(BrokerPublisherTra
             ]
         )
 
-    def build_query(self, transaction_uuid: UUID) -> DatabaseOperation:
+    def build_query(self, transaction_uuid: Optional[UUID]) -> DatabaseOperation:
         """TODO"""
+        if transaction_uuid is None:
+            return AiopgDatabaseOperation(SQL(f"SELECT message, transaction_uuid FROM {self.build_table_name()}"))
+
         return AiopgDatabaseOperation(
             SQL(
                 f"""

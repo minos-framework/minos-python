@@ -2,6 +2,9 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from typing import (
+    Optional,
+)
 from uuid import (
     UUID,
 )
@@ -20,7 +23,7 @@ class BrokerPublisherTransactionDatabaseOperationFactory(DatabaseOperationFactor
         """TODO"""
 
     @abstractmethod
-    def build_query(self, transaction_uuid: UUID) -> DatabaseOperation:
+    def build_query(self, transaction_uuid: Optional[UUID]) -> DatabaseOperation:
         """TODO"""
 
     @abstractmethod
