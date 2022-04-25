@@ -64,12 +64,12 @@ class TestConfigV2(unittest.TestCase):
             FakeHttpConnector,
             FakeBrokerPublisher,
             FakeBrokerSubscriberBuilder(FakeBrokerSubscriber),
+            FakeDiscoveryConnector,
+            FakeSagaManager,
             FakeEventRepository,
             FakeSnapshotRepository,
             FakeTransactionRepository,
             FakeAggregate,
-            FakeDiscoveryConnector,
-            FakeSagaManager,
             FakeCustomInjection,
         ]
         self.assertEqual(expected, self.config.get_injections())

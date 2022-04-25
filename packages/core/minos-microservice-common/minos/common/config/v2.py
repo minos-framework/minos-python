@@ -63,16 +63,16 @@ class ConfigV2(Config):
             partial_ans.append(self._get_interfaces().get("broker").get("subscriber"))
 
         with suppress(MinosConfigException):
-            partial_ans.extend(self._get_aggregate().get("repositories", dict()).values())
-
-        with suppress(MinosConfigException):
-            partial_ans.append(self._get_aggregate().get("client"))
-
-        with suppress(MinosConfigException):
             partial_ans.append(self._get_discovery().get("connector"))
 
         with suppress(MinosConfigException):
             partial_ans.append(self._get_saga().get("manager"))
+
+        with suppress(MinosConfigException):
+            partial_ans.extend(self._get_aggregate().get("repositories", dict()).values())
+
+        with suppress(MinosConfigException):
+            partial_ans.append(self._get_aggregate().get("client"))
 
         with suppress(MinosConfigException):
             injections = self.get_by_key("injections")

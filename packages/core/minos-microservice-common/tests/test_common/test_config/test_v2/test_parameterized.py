@@ -40,12 +40,12 @@ class TestConfigV2Parameterized(unittest.TestCase):
             PoolFactory,
             FakeBrokerPublisher,
             FakeBrokerSubscriberBuilder(FakeBrokerSubscriber),
+            FakeDiscoveryConnector,
+            FakeSagaManager,
             FakeEventRepository,
             FakeSnapshotRepository,
             FakeTransactionRepository,
             FakeAggregate,
-            FakeDiscoveryConnector,
-            FakeSagaManager,
             FakeCustomInjection,
         ]
         self.assertEqual(expected, config.get_injections())
