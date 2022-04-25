@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from typing import (
+    Union,
+)
 from uuid import (
     UUID,
 )
@@ -10,6 +13,7 @@ from minos.common import (
     NULL_UUID,
     Config,
     Inject,
+    import_module,
 )
 from minos.transactions import (
     TRANSACTION_CONTEXT_VAR,
@@ -53,8 +57,10 @@ class TransactionalBrokerPublisher(BrokerPublisher, TransactionalMixin):
 
     @staticmethod
     def _get_repository_from_config(
-        config: Config, repository: type[BrokerPublisherTransactionRepository], **kwargs
+        config: Config, repository: Union[str, type[BrokerPublisherTransactionRepository]], **kwargs
     ) -> BrokerPublisherTransactionRepository:
+        if isinstance(repository, str):
+            repository = import_module(repository)
         return repository.from_config(config, **kwargs)
 
     async def _setup(self) -> None:

@@ -84,9 +84,9 @@ class Aggregate(Generic[RT], SetupMixin):
     ) -> BrokerPublisher:
         aggregate_config = config.get_aggregate()
 
-        if "broker_publisher" in aggregate_config:
-            client_cls = aggregate_config["broker_publisher"]["client"]
-            broker_publisher = client_cls.from_config(config, **(aggregate_config["broker_publisher"] | kwargs))
+        if "publisher" in aggregate_config:
+            client_cls = aggregate_config["publisher"]["client"]
+            broker_publisher = client_cls.from_config(config, **(aggregate_config["publisher"] | kwargs))
 
         return broker_publisher
 

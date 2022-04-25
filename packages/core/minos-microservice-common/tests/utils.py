@@ -195,3 +195,8 @@ class FakeSnapshotRepository:
 @Injectable("transaction_repository")
 class FakeTransactionRepository:
     """For testing purposes."""
+
+
+@Injectable("aggregate")
+class FakeAggregate:
+    """For testing purposes."""

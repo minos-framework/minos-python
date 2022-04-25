@@ -210,13 +210,11 @@ class ConfigV2(Config):
         data = deepcopy(self.get_by_key("aggregate"))
         if "client" in data:
             data["client"] = import_module(data.get("client"))
-        if "broker_publisher" in data:
-            if isinstance(data["broker_publisher"], str):
-                data["broker_publisher"] = import_module(data.get("broker_publisher"))
-            if isinstance(data["broker_publisher"], dict):
-                data["broker_publisher"]["client"] = import_module(data["broker_publisher"]["client"])
-                if "repository" in data["broker_publisher"]:
-                    data["broker_publisher"]["repository"] = import_module(data["broker_publisher"]["repository"])
+        if "publisher" in data:
+            if isinstance(data["publisher"], str):
+                data["publisher"] = import_module(data.get("publisher"))
+            if isinstance(data["publisher"], dict):
+                data["publisher"]["client"] = import_module(data["publisher"]["client"])
 
         data["entities"] = [import_module(classname) for classname in data.get("entities", list())]
         data["repositories"] = {name: import_module(value) for name, value in data.get("repositories", dict()).items()}
