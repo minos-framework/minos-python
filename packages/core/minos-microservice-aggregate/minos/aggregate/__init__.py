@@ -7,7 +7,7 @@ __version__ = "0.7.0.dev2"
 from .actions import (
     Action,
 )
-from .aggregate import (
+from .impl import (
     Aggregate,
 )
 from .collections import (
