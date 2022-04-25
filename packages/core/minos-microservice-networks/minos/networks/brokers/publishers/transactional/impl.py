@@ -27,7 +27,6 @@ from .entries import (
 )
 from .repositories import (
     BrokerPublisherTransactionRepository,
-    InMemoryBrokerPublisherTransactionRepository,
 )
 
 
@@ -47,10 +46,16 @@ class TransactionalBrokerPublisher(BrokerPublisher, TransactionalMixin):
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> TransactionalBrokerPublisher:
         if "repository" not in kwargs:
-            kwargs["repository"] = InMemoryBrokerPublisherTransactionRepository.from_config(config, **kwargs)
+            kwargs["repository"] = cls._get_repository_from_config(config, **kwargs)
         if "broker_publisher" in kwargs and "impl" not in kwargs:
             kwargs["impl"] = kwargs["broker_publisher"]
         return cls(**kwargs)
+
+    @staticmethod
+    def _get_repository_from_config(
+        config: Config, repository: type[BrokerPublisherTransactionRepository], **kwargs
+    ) -> BrokerPublisherTransactionRepository:
+        return repository.from_config(config, **kwargs)
 
     async def _setup(self) -> None:
         await super()._setup()

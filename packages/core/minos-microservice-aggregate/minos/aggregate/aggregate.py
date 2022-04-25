@@ -16,7 +16,7 @@ from minos.common import (
     SetupMixin,
 )
 from minos.networks import (
-    TransactionalBrokerPublisher,
+    BrokerPublisher,
 )
 from minos.transactions import (
     TransactionRepository,
@@ -42,7 +42,7 @@ class Aggregate(Generic[RT], SetupMixin):
     transaction_repository: TransactionRepository
     event_repository: EventRepository
     snapshot_repository: SnapshotRepository
-    broker_publisher: TransactionalBrokerPublisher
+    broker_publisher: BrokerPublisher
 
     @Inject()
     def __init__(
@@ -50,7 +50,7 @@ class Aggregate(Generic[RT], SetupMixin):
         transaction_repository: TransactionRepository,
         event_repository: EventRepository,
         snapshot_repository: SnapshotRepository,
-        broker_publisher: TransactionalBrokerPublisher,
+        broker_publisher: BrokerPublisher,
         *args,
         **kwargs,
     ):
@@ -61,7 +61,7 @@ class Aggregate(Generic[RT], SetupMixin):
         if snapshot_repository is None:
             raise NotProvidedException(f"A {SnapshotRepository!r} object must be provided.")
         if broker_publisher is None:
-            raise NotProvidedException(f"A {TransactionalBrokerPublisher!r} object must be provided.")
+            raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
 
         super().__init__(*args, **kwargs)
 
@@ -74,8 +74,21 @@ class Aggregate(Generic[RT], SetupMixin):
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> Aggregate:
-        kwargs["broker_publisher"] = TransactionalBrokerPublisher.from_config(config, **kwargs)
+        kwargs["broker_publisher"] = cls._get_broker_publisher_from_config(config, **kwargs)
         return cls(**kwargs)
+
+    @staticmethod
+    @Inject()
+    def _get_broker_publisher_from_config(
+        config: Config, broker_publisher: BrokerPublisher, **kwargs
+    ) -> BrokerPublisher:
+        aggregate_config = config.get_aggregate()
+
+        if "broker_publisher" in aggregate_config:
+            client_cls = aggregate_config["broker_publisher"]["client"]
+            broker_publisher = client_cls.from_config(config, **(aggregate_config["broker_publisher"] | kwargs))
+
+        return broker_publisher
 
     async def _setup(self) -> None:
         await super()._setup()
