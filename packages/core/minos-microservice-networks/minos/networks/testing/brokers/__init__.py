@@ -4,6 +4,7 @@ from .collections import (
 from .publishers import (
     BrokerPublisherTransactionRepositoryTestCase,
     MockedBrokerPublisherQueueDatabaseOperationFactory,
+    MockedBrokerPublisherTransactionDatabaseOperationFactory,
 )
 from .subscribers import (
     MockedBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,

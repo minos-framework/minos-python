@@ -3,4 +3,5 @@ from .queues import (
 )
 from .transactions import (
     BrokerPublisherTransactionRepositoryTestCase,
+    MockedBrokerPublisherTransactionDatabaseOperationFactory,
 )

@@ -1,18 +1,54 @@
 from abc import (
     abstractmethod,
 )
+from typing import (
+    Optional,
+)
 from uuid import (
+    UUID,
     uuid4,
 )
 
+from minos.common import (
+    DatabaseOperation,
+)
 from minos.common.testing import (
     MinosTestCase,
+    MockedDatabaseClient,
+    MockedDatabaseOperation,
 )
-from minos.networks import (
+
+from ....brokers import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
+    BrokerPublisherTransactionDatabaseOperationFactory,
     BrokerPublisherTransactionEntry,
     BrokerPublisherTransactionRepository,
+)
+
+
+class MockedBrokerPublisherTransactionDatabaseOperationFactory(BrokerPublisherTransactionDatabaseOperationFactory):
+    """For testing purposes"""
+
+    def build_create(self) -> DatabaseOperation:
+        """For testing purposes"""
+        return MockedDatabaseOperation("create")
+
+    def build_query(self, transaction_uuid: Optional[UUID]) -> DatabaseOperation:
+        """For testing purposes"""
+        return MockedDatabaseOperation("query")
+
+    def build_submit(self, message: bytes, transaction_uuid: UUID) -> DatabaseOperation:
+        """For testing purposes"""
+        return MockedDatabaseOperation("submit")
+
+    def build_delete_batch(self, transaction_uuid: UUID) -> DatabaseOperation:
+        """For testing purposes"""
+        return MockedDatabaseOperation("delete_batch")
+
+
+MockedDatabaseClient.set_factory(
+    BrokerPublisherTransactionDatabaseOperationFactory, MockedBrokerPublisherTransactionDatabaseOperationFactory
 )
 
 
@@ -22,6 +58,20 @@ class BrokerPublisherTransactionRepositoryTestCase(MinosTestCase):
     def setUp(self):
         super().setUp()
         self.repository = self.build_repository()
+
+        self.transaction_uuid_1 = uuid4()
+        self.transaction_uuid_2 = uuid4()
+        self.entries = [
+            BrokerPublisherTransactionEntry(
+                BrokerMessageV1("AddFoo", BrokerMessageV1Payload(56)), self.transaction_uuid_1
+            ),
+            BrokerPublisherTransactionEntry(
+                BrokerMessageV1("AddFoo", BrokerMessageV1Payload(56)), self.transaction_uuid_1
+            ),
+            BrokerPublisherTransactionEntry(
+                BrokerMessageV1("AddFoo", BrokerMessageV1Payload(56)), self.transaction_uuid_2
+            ),
+        ]
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -39,28 +89,15 @@ class BrokerPublisherTransactionRepositoryTestCase(MinosTestCase):
         raise NotImplementedError
 
     async def populate(self) -> None:
-        m1 = BrokerMessageV1("AddFoo", BrokerMessageV1Payload(56))
-        m2 = BrokerMessageV1("AddFoo", BrokerMessageV1Payload(56))
-        m3 = BrokerMessageV1("AddFoo", BrokerMessageV1Payload(56))
-
-        self.transaction_uuid_1 = uuid4()
-        self.transaction_uuid_2 = uuid4()
-        self.entries = [
-            BrokerPublisherTransactionEntry(m1, self.transaction_uuid_1),
-            BrokerPublisherTransactionEntry(m2, self.transaction_uuid_1),
-            BrokerPublisherTransactionEntry(m3, self.transaction_uuid_2),
-        ]
 
         for entry in self.entries:
             await self.repository.submit(entry)
 
     async def test_submit(self):
-        message = BrokerMessageV1("AddFoo", BrokerMessageV1Payload(56))
-        transaction_uuid = uuid4()
-        entry = BrokerPublisherTransactionEntry(message, transaction_uuid)
+        entry = self.entries[0]
         await self.repository.submit(entry)
 
-        observed = [entry async for entry in self.repository.select(transaction_uuid)]
+        observed = [entry async for entry in self.repository.select(entry.transaction_uuid)]
 
         self.assertEqual([entry], observed)
 
