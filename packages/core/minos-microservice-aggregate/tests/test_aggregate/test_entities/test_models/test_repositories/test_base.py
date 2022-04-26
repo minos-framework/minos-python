@@ -2,6 +2,9 @@ import unittest
 from asyncio import (
     gather,
 )
+from operator import (
+    itemgetter,
+)
 from uuid import (
     uuid4,
 )
@@ -9,12 +12,14 @@ from uuid import (
 from minos.aggregate import (
     AlreadyDeletedException,
     Condition,
+    EntityRepository,
     EventRepositoryException,
     NotFoundException,
     Ordering,
 )
 from minos.common import (
     NULL_UUID,
+    NotProvidedException,
     current_datetime,
 )
 from tests.utils import (
@@ -23,9 +28,19 @@ from tests.utils import (
 )
 
 
-class TestRootEntity(AggregateTestCase):
+class TestEntityRepository(AggregateTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.repository = EntityRepository()
+
+    def test_constructor_raises(self):
+        with self.assertRaises(NotProvidedException):
+            EntityRepository(event_repository=None)
+        with self.assertRaises(NotProvidedException):
+            EntityRepository(snapshot_repository=None)
+
     async def test_create(self):
-        observed = await Car.create(doors=3, color="blue")
+        observed, _ = await self.repository.create(Car, doors=3, color="blue")
         expected = Car(
             3,
             "blue",
@@ -38,27 +53,30 @@ class TestRootEntity(AggregateTestCase):
 
     async def test_create_raises(self):
         with self.assertRaises(EventRepositoryException):
-            await Car.create(uuid=uuid4(), doors=3, color="blue")
+            await self.repository.create(Car, uuid=uuid4(), doors=3, color="blue")
         with self.assertRaises(EventRepositoryException):
-            await Car.create(version=1, doors=3, color="blue")
+            await self.repository.create(Car, version=1, doors=3, color="blue")
         with self.assertRaises(EventRepositoryException):
-            await Car.create(created_at=current_datetime(), doors=3, color="blue")
+            await self.repository.create(Car, created_at=current_datetime(), doors=3, color="blue")
         with self.assertRaises(EventRepositoryException):
-            await Car.create(updated_at=current_datetime(), doors=3, color="blue")
+            await self.repository.create(Car, updated_at=current_datetime(), doors=3, color="blue")
 
     async def test_classname(self):
         self.assertEqual("tests.utils.Car", Car.classname)
 
     async def test_get_all(self):
         instances = list(
-            await gather(
-                Car.create(doors=5, color="blue"),
-                Car.create(doors=3, color="red"),
-                Car.create(doors=1, color="blue"),
+            map(
+                itemgetter(0),
+                await gather(
+                    self.repository.create(Car, doors=5, color="blue"),
+                    self.repository.create(Car, doors=3, color="red"),
+                    self.repository.create(Car, doors=1, color="blue"),
+                ),
             )
         )
         ordering = Ordering.ASC("doors")
-        iterable = Car.get_all(ordering)
+        iterable = self.repository.get_all(Car, ordering)
         observed = [v async for v in iterable]
 
         expected = sorted(instances, key=lambda car: car.doors)
@@ -66,72 +84,75 @@ class TestRootEntity(AggregateTestCase):
 
     async def test_find(self):
         originals = set(
-            await gather(
-                Car.create(doors=3, color="blue"),
-                Car.create(doors=3, color="red"),
-                Car.create(doors=5, color="blue"),
+            map(
+                itemgetter(0),
+                await gather(
+                    self.repository.create(Car, doors=3, color="blue"),
+                    self.repository.create(Car, doors=3, color="red"),
+                    self.repository.create(Car, doors=5, color="blue"),
+                ),
             )
         )
         condition = Condition.IN("uuid", {o.uuid for o in originals})
         ordering = Ordering.ASC("doors")
         limit = 10
-        iterable = Car.find(condition, ordering, limit)
+        iterable = self.repository.find(Car, condition, ordering, limit)
         recovered = {v async for v in iterable}
 
         self.assertEqual(originals, recovered)
 
     async def test_get(self):
-        original = await Car.create(doors=3, color="blue")
-        recovered = await Car.get(original.uuid)
+        original, _ = await self.repository.create(Car, doors=3, color="blue")
+        recovered = await self.repository.get(Car, original.uuid)
 
         self.assertEqual(original, recovered)
 
     async def test_get_raises(self):
         with self.assertRaises(NotFoundException):
-            await Car.get(NULL_UUID)
+            await self.repository.get(Car, NULL_UUID)
 
     async def test_update(self):
-        car = await Car.create(doors=3, color="blue")
+        car, _ = await self.repository.create(Car, doors=3, color="blue")
 
-        await car.update(color="red")
+        await self.repository.update(car, color="red")
         expected = Car(3, "red", uuid=car.uuid, version=2, created_at=car.created_at, updated_at=car.updated_at)
         self.assertEqual(expected, car)
-        self.assertEqual(car, await Car.get(car.uuid))
+        self.assertEqual(car, await self.repository.get(Car, car.uuid))
 
-        await car.update(doors=5)
+        await self.repository.update(car, doors=5)
         expected = Car(5, "red", uuid=car.uuid, version=3, created_at=car.created_at, updated_at=car.updated_at)
         self.assertEqual(expected, car)
-        self.assertEqual(car, await Car.get(car.uuid))
+        self.assertEqual(car, await self.repository.get(Car, car.uuid))
 
     async def test_update_no_changes(self):
-        car = await Car.create(doors=3, color="blue")
+        car, _ = await self.repository.create(Car, doors=3, color="blue")
 
-        await car.update(color="blue")
+        await self.repository.update(car, color="blue")
         expected = Car(3, "blue", uuid=car.uuid, version=1, created_at=car.created_at, updated_at=car.updated_at)
         self.assertEqual(expected, car)
-        self.assertEqual(car, await Car.get(car.uuid))
+        self.assertEqual(car, await self.repository.get(Car, car.uuid))
 
     async def test_update_raises(self):
         with self.assertRaises(EventRepositoryException):
-            await Car(3, "blue").update(version=1)
+            await self.repository.update(Car(3, "blue"), version=1)
         with self.assertRaises(EventRepositoryException):
-            await Car(3, "blue").update(created_at=current_datetime())
+            await self.repository.update(Car(3, "blue"), created_at=current_datetime())
         with self.assertRaises(EventRepositoryException):
-            await Car(3, "blue").update(updated_at=current_datetime())
+            await self.repository.update(Car(3, "blue"), updated_at=current_datetime())
 
     async def test_refresh(self):
-        car = await Car.create(doors=3, color="blue")
+        car, _ = await self.repository.create(Car, doors=3, color="blue")
         uuid = car.uuid
 
-        car2 = await Car.get(uuid)
-        await car2.update(color="red")
-        await car2.update(doors=5)
+        car2 = await self.repository.get(Car, uuid)
+        await self.repository.update(car2, color="red")
+        await self.repository.update(car2, doors=5)
 
         self.assertEqual(
             Car(3, "blue", uuid=uuid, version=1, created_at=car.created_at, updated_at=car.updated_at),
             car,
         )
-        await car.refresh()
+        await self.repository.refresh(car)
         self.assertEqual(
             Car(5, "red", uuid=uuid, version=3, created_at=car.created_at, updated_at=car.updated_at),
             car,
@@ -143,16 +164,16 @@ class TestRootEntity(AggregateTestCase):
         car.doors = 5
 
         with self.assertRaises(NotFoundException):
-            await car.refresh()
+            await self.repository.refresh(car)
 
-        await car.save()
+        await self.repository.save(car)
         self.assertEqual(
             Car(5, "red", uuid=car.uuid, version=1, created_at=car.created_at, updated_at=car.updated_at),
             car,
         )
 
     async def test_save_update(self):
-        car = await Car.create(doors=3, color="blue")
+        car, _ = await self.repository.create(Car, doors=3, color="blue")
 
         uuid = car.uuid
 
@@ -160,26 +181,26 @@ class TestRootEntity(AggregateTestCase):
         car.doors = 5
 
         expected = Car(3, "blue", uuid=uuid, version=1, created_at=car.created_at, updated_at=car.updated_at)
-        self.assertEqual(expected, await Car.get(uuid))
+        self.assertEqual(expected, await self.repository.get(Car, uuid))
 
-        await car.save()
+        await self.repository.save(car)
         expected = Car(5, "red", uuid=uuid, version=2, created_at=car.created_at, updated_at=car.updated_at)
         self.assertEqual(expected, car)
 
         expected = Car(5, "red", uuid=uuid, version=2, created_at=car.created_at, updated_at=car.updated_at)
-        self.assertEqual(expected, await Car.get(uuid))
+        self.assertEqual(expected, await self.repository.get(Car, uuid))
 
     async def test_save_raises(self):
         with self.assertRaises(EventRepositoryException):
-            await Car(3, "blue", uuid=uuid4()).save()
+            await self.repository.save(Car(3, "blue", uuid=uuid4()))
         with self.assertRaises(EventRepositoryException):
-            await Car(3, "blue", version=1).save()
+            await self.repository.save(Car(3, "blue", version=1))
 
     async def test_delete(self):
-        car = await Car.create(doors=3, color="blue")
-        await car.delete()
+        car, _ = await self.repository.create(Car, doors=3, color="blue")
+        await self.repository.delete(car)
         with self.assertRaises(AlreadyDeletedException):
-            await Car.get(car.uuid)
+            await self.repository.get(Car, car.uuid)
 
 
 if __name__ == "__main__":

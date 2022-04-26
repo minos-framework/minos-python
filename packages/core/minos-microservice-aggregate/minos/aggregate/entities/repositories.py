@@ -50,19 +50,19 @@ class EntityRepository:
     @Inject()
     def __init__(
         self,
-        _event_repository: EventRepository,
-        _snapshot_repository: SnapshotRepository,
+        event_repository: EventRepository,
+        snapshot_repository: SnapshotRepository,
         *args,
         **kwargs,
     ):
 
-        if _event_repository is None:
+        if event_repository is None:
             raise NotProvidedException(f"A {EventRepository!r} instance is required.")
-        if _snapshot_repository is None:
+        if snapshot_repository is None:
             raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
 
-        self._event_repository = _event_repository
-        self._snapshot_repository = _snapshot_repository
+        self._event_repository = event_repository
+        self._snapshot_repository = snapshot_repository
 
     async def get(self, cls: type[T], uuid: UUID, **kwargs) -> T:
         """Get one instance from the database based on its identifier.
@@ -71,9 +71,6 @@ class EntityRepository:
         :param uuid: The identifier of the instance.
         :return: A ``RootEntity`` instance.
         """
-        if self._snapshot_repository is None:
-            raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
-
         # noinspection PyTypeChecker
         return await self._snapshot_repository.get(cls.classname, uuid, **kwargs)
 
@@ -93,9 +90,6 @@ class EntityRepository:
             instances that meet the given condition.
         :return: A ``RootEntity`` instance.
         """
-        if self._snapshot_repository is None:
-            raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
-
         # noinspection PyTypeChecker
         return self._snapshot_repository.get_all(cls.classname, ordering, limit, **kwargs)
 
@@ -117,8 +111,6 @@ class EntityRepository:
             instances that meet the given condition.
         :return: An asynchronous iterator of ``RootEntity`` instances.
         """
-        if self._snapshot_repository is None:
-            raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
         # noinspection PyTypeChecker
         return self._snapshot_repository.find(cls.classname, condition, ordering, limit, **kwargs)
 
@@ -179,7 +171,7 @@ class EntityRepository:
             )
 
         for key, value in kwargs.items():
-            setattr(self, key, value)
+            setattr(instance, key, value)
 
         previous = await self.get(type(instance), instance.uuid)
         event = instance.diff(previous)

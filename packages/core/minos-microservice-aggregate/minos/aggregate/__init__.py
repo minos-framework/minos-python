@@ -17,6 +17,7 @@ from .contextvars import (
 )
 from .entities import (
     Entity,
+    EntityRepository,
     EntitySet,
     ExternalEntity,
     Ref,

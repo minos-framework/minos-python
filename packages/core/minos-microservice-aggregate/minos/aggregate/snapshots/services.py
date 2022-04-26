@@ -84,7 +84,8 @@ class SnapshotService:
             raise ResponseException(f"There was a problem while parsing the given request: {exc!r}")
 
         try:
-            instances = await gather(*(self.type_.get(uuid) for uuid in content["uuids"]))
+            futures = (self.snapshot_repository.get(self.type_, uuid) for uuid in content["uuids"])
+            instances = await gather(*futures)
         except Exception as exc:
             raise ResponseException(f"There was a problem while getting the instances: {exc!r}")
 

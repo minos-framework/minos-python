@@ -20,6 +20,7 @@ from tests.utils import (
 )
 
 
+@unittest.skip
 class TestRootEntityBroker(AggregateTestCase):
     async def test_create(self):
         car = await Car.create(doors=3, color="blue")
