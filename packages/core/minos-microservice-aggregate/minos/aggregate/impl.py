@@ -23,6 +23,7 @@ from minos.transactions import (
 )
 
 from .entities import (
+    EntityRepository,
     RootEntity,
 )
 from .events import (
@@ -42,6 +43,7 @@ class Aggregate(Generic[RT], SetupMixin):
     transaction_repository: TransactionRepository
     event_repository: EventRepository
     snapshot_repository: SnapshotRepository
+    repository: EntityRepository
     broker_publisher: BrokerPublisher
 
     @Inject()
@@ -66,6 +68,8 @@ class Aggregate(Generic[RT], SetupMixin):
         super().__init__(*args, **kwargs)
 
         self._check_root()
+
+        self.repository = EntityRepository(event_repository, snapshot_repository)
 
         self.transaction_repository = transaction_repository
         self.event_repository = event_repository
