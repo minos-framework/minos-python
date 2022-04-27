@@ -34,12 +34,12 @@ from ..snapshots import (
     SnapshotRepository,
 )
 from .models import (
-    RootEntity,
+    Entity,
 )
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T", bound=RootEntity)
+T = TypeVar("T", bound=Entity)
 
 
 class EntityRepository:
