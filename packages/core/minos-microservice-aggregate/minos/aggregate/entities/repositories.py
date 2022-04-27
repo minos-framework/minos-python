@@ -33,12 +33,12 @@ from ..snapshots import (
     SnapshotRepository,
 )
 from .models import (
-    Entity,
+    RootEntity,
 )
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T", bound=Entity)
+T = TypeVar("T", bound=RootEntity)
 
 
 class EntityRepository:
@@ -70,7 +70,7 @@ class EntityRepository:
 
         :param type_: The of the entity to be looked for.
         :param uuid: The identifier of the instance.
-        :return: A ``Entity`` instance.
+        :return: A ``RootEntity`` instance.
         """
         # noinspection PyTypeChecker
         return await self._snapshot_repository.get(type_, uuid, **kwargs)
@@ -89,7 +89,7 @@ class EntityRepository:
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
             instances that meet the given condition.
-        :return: A ``Entity`` instance.
+        :return: A ``RootEntity`` instance.
         """
         # noinspection PyTypeChecker
         return self._snapshot_repository.get_all(type_, ordering, limit, **kwargs)
@@ -110,19 +110,19 @@ class EntityRepository:
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
             instances that meet the given condition.
-        :return: An asynchronous iterator of ``Entity`` instances.
+        :return: An asynchronous iterator of ``RootEntity`` instances.
         """
         # noinspection PyTypeChecker
         return self._snapshot_repository.find(type_, condition, ordering, limit, **kwargs)
 
     async def create(self, type_or_instance: Union[T, type[T]], *args, **kwargs) -> tuple[T, Event]:
-        """Create a new ``Entity`` instance.
+        """Create a new ``RootEntity`` instance.
 
         :param type_or_instance: The instance to be created. If it is a ``type`` then the instance is created internally
             using ``args`` and ``kwargs`` as parameters.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
-        :return: A new ``Entity`` instance.
+        :return: A new ``RootEntity`` instance.
         """
         if "uuid" in kwargs:
             raise EventRepositoryException(
@@ -146,7 +146,7 @@ class EntityRepository:
             instance = type_or_instance
             if len(args) or len(kwargs):
                 raise EventRepositoryException(
-                    f"Additional parameters are not provided when passing an already built {Entity!r} instance. "
+                    f"Additional parameters are not provided when passing an already built {RootEntity!r} instance. "
                     f"Obtained: args={args!r}, kwargs={kwargs!r}"
                 )
 
@@ -159,11 +159,11 @@ class EntityRepository:
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
     async def update(self, instance: T, **kwargs) -> tuple[T, Optional[Event]]:
-        """Update an existing ``Entity`` instance.
+        """Update an existing ``RootEntity`` instance.
 
         :param instance: The instance to be updated.
         :param kwargs: Additional named arguments.
-        :return: An updated ``Entity``  instance.
+        :return: An updated ``RootEntity``  instance.
         """
 
         if "version" in kwargs:
