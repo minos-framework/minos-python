@@ -16,6 +16,7 @@ from minos.common import (
     Inject,
     NotProvidedException,
 )
+from ..actions import Action
 
 from ..deltas import (
     Delta,
@@ -150,7 +151,7 @@ class EntityRepository:
                     f"Obtained: args={args!r}, kwargs={kwargs!r}"
                 )
 
-        delta = Delta.from_root_entity(instance)
+        delta = Delta.from_entity(instance)
         entry = await self._delta_repository.submit(delta)
 
         self._update_from_repository_entry(instance, entry)
@@ -234,7 +235,7 @@ class EntityRepository:
 
         :return: This method does not return anything.
         """
-        delta = Delta.from_deleted_root_entity(instance)
+        delta = Delta.from_entity(instance, action=Action.DELETE)
         entry = await self._delta_repository.submit(delta)
 
         self._update_from_repository_entry(instance, entry)

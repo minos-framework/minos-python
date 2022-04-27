@@ -40,7 +40,7 @@ class TestExceptions(AggregateTestCase):
 
     def test_snapshot_conflict(self):
         entity = Car(3, "red")
-        delta = Delta.from_root_entity(entity)
+        delta = Delta.from_entity(entity)
         exception = SnapshotRepositoryConflictException(entity, delta)
 
         self.assertIsInstance(exception, SnapshotRepositoryException)

@@ -91,7 +91,7 @@ class TestSnapshotEntry(AggregateTestCase):
 
     def test_from_delta_entry(self):
         car = Car(3, "blue", uuid=self.uuid, version=1)
-        delta_entry = DeltaEntry.from_delta(Delta.from_root_entity(car), version=1)
+        delta_entry = DeltaEntry.from_delta(Delta.from_entity(car), version=1)
         with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
             snapshot_entry = SnapshotEntry.from_delta_entry(delta_entry)
             self.assertEqual(delta_entry.uuid, snapshot_entry.uuid)
