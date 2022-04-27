@@ -8,7 +8,7 @@ from uuid import (
 
 from minos.aggregate import (
     Action,
-    Event,
+    Delta,
     FieldDiff,
     FieldDiffContainer,
     Ref,
@@ -32,7 +32,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         self.uuid = uuid4()
         self.bars = [Bar(uuid4(), 1, "hello"), Bar(uuid4(), 1, "world")]
         self.now = current_datetime()
-        self.diff = Event(
+        self.diff = Delta(
             self.uuid,
             "Foo",
             1,
@@ -44,7 +44,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         self.broker_pool = BrokerClientPool({})
 
     async def test_handle_resolving_dependencies(self):
-        value = Event(
+        value = Delta(
             self.uuid,
             "Foo",
             1,
@@ -71,7 +71,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         with patch("minos.aggregate.RefResolver.resolve", side_effect=ValueError):
             observed = await PreEventHandler.handle(self.diff, resolve_references=True, broker_pool=self.broker_pool)
 
-        expected = Event(
+        expected = Delta(
             self.uuid,
             "Foo",
             1,
