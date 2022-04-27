@@ -5,6 +5,7 @@ from collections.abc import (
 from typing import (
     Optional,
     TypeVar,
+    Union,
 )
 from uuid import (
     UUID,
@@ -32,16 +33,16 @@ from ..snapshots import (
     SnapshotRepository,
 )
 from .models import (
-    RootEntity,
+    Entity,
 )
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T", bound=RootEntity)
+T = TypeVar("T", bound=Entity)
 
 
 class EntityRepository:
-    """TODO"""
+    """Entity Repository class."""
 
     _event_repository: EventRepository
     _snapshot_repository: SnapshotRepository
@@ -64,38 +65,38 @@ class EntityRepository:
         self._event_repository = event_repository
         self._snapshot_repository = snapshot_repository
 
-    async def get(self, cls: type[T], uuid: UUID, **kwargs) -> T:
+    async def get(self, type_: type[T], uuid: UUID, **kwargs) -> T:
         """Get one instance from the database based on its identifier.
 
-        :param cls: TODO
+        :param type_: The of the entity to be looked for.
         :param uuid: The identifier of the instance.
-        :return: A ``RootEntity`` instance.
+        :return: A ``Entity`` instance.
         """
         # noinspection PyTypeChecker
-        return await self._snapshot_repository.get(cls.classname, uuid, **kwargs)
+        return await self._snapshot_repository.get(type_, uuid, **kwargs)
 
     def get_all(
         self,
-        cls: type[T],
+        type_: type[T],
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         **kwargs,
     ) -> AsyncIterator[T]:
         """Get all instance from the database.
 
-        :param cls: TODO
+        :param type_: The of the entity to be looked for.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
             instances that meet the given condition.
-        :return: A ``RootEntity`` instance.
+        :return: A ``Entity`` instance.
         """
         # noinspection PyTypeChecker
-        return self._snapshot_repository.get_all(cls.classname, ordering, limit, **kwargs)
+        return self._snapshot_repository.get_all(type_, ordering, limit, **kwargs)
 
     def find(
         self,
-        cls: type[T],
+        type_: type[T],
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
@@ -103,24 +104,25 @@ class EntityRepository:
     ) -> AsyncIterator[T]:
         """Find a collection of instances based on a given ``Condition``.
 
-        :param cls: TODO
+        :param type_: The of the entity to be looked for.
         :param condition: The ``Condition`` that must be satisfied by all the instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
             instances that meet the given condition.
-        :return: An asynchronous iterator of ``RootEntity`` instances.
+        :return: An asynchronous iterator of ``Entity`` instances.
         """
         # noinspection PyTypeChecker
-        return self._snapshot_repository.find(cls.classname, condition, ordering, limit, **kwargs)
+        return self._snapshot_repository.find(type_, condition, ordering, limit, **kwargs)
 
-    async def create(self, cls: type[T], *args, **kwargs) -> tuple[T, Event]:
-        """Create a new ``RootEntity`` instance.
+    async def create(self, type_or_instance: Union[T, type[T]], *args, **kwargs) -> tuple[T, Event]:
+        """Create a new ``Entity`` instance.
 
-        :param cls: TODO
+        :param type_or_instance: The instance to be created. If it is a ``type`` then the instance is created internally
+            using ``args`` and ``kwargs`` as parameters.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
-        :return: A new ``RootEntity`` instance.
+        :return: A new ``Entity`` instance.
         """
         if "uuid" in kwargs:
             raise EventRepositoryException(
@@ -138,8 +140,15 @@ class EntityRepository:
             raise EventRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['updated_at']}"
             )
-
-        instance: T = cls(*args, **kwargs)
+        if isinstance(type_or_instance, type):
+            instance: T = type_or_instance(*args, **kwargs)
+        else:
+            instance = type_or_instance
+            if len(args) or len(kwargs):
+                raise EventRepositoryException(
+                    f"Additional parameters are not provided when passing an already built {Entity!r} instance. "
+                    f"Obtained: args={args!r}, kwargs={kwargs!r}"
+                )
 
         event = Event.from_root_entity(instance)
         entry = await self._event_repository.submit(event)
@@ -150,11 +159,11 @@ class EntityRepository:
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
     async def update(self, instance: T, **kwargs) -> tuple[T, Optional[Event]]:
-        """Update an existing ``RootEntity`` instance.
+        """Update an existing ``Entity`` instance.
 
-        :param instance: TODO
+        :param instance: The instance to be updated.
         :param kwargs: Additional named arguments.
-        :return: An updated ``RootEntity``  instance.
+        :return: An updated ``Entity``  instance.
         """
 
         if "version" in kwargs:

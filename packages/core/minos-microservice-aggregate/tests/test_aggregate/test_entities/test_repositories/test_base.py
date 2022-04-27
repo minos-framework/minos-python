@@ -39,7 +39,7 @@ class TestEntityRepository(AggregateTestCase):
         with self.assertRaises(NotProvidedException):
             EntityRepository(snapshot_repository=None)
 
-    async def test_create(self):
+    async def test_create_from_type(self):
         observed, _ = await self.repository.create(Car, doors=3, color="blue")
         expected = Car(
             3,
@@ -51,6 +51,11 @@ class TestEntityRepository(AggregateTestCase):
         )
         self.assertEqual(expected, observed)
 
+    async def test_create_from_instance(self):
+        instance = Car(doors=3, color="blue")
+        observed, _ = await self.repository.create(instance)
+        self.assertEqual(instance, observed)
+
     async def test_create_raises(self):
         with self.assertRaises(EventRepositoryException):
             await self.repository.create(Car, uuid=uuid4(), doors=3, color="blue")
@@ -60,6 +65,10 @@ class TestEntityRepository(AggregateTestCase):
             await self.repository.create(Car, created_at=current_datetime(), doors=3, color="blue")
         with self.assertRaises(EventRepositoryException):
             await self.repository.create(Car, updated_at=current_datetime(), doors=3, color="blue")
+        with self.assertRaises(EventRepositoryException):
+            await self.repository.create(Car(doors=3, color="blue"), "foo")
+        with self.assertRaises(EventRepositoryException):
+            await self.repository.create(Car(doors=3, color="blue"), foo="bar")
 
     async def test_classname(self):
         self.assertEqual("tests.utils.Car", Car.classname)
