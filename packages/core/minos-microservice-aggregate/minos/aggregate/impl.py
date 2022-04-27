@@ -2,8 +2,12 @@ from __future__ import (
     annotations,
 )
 
+from asyncio import (
+    gather,
+)
 from typing import (
     Generic,
+    Optional,
     TypeVar,
     get_args,
 )
@@ -16,18 +20,25 @@ from minos.common import (
     SetupMixin,
 )
 from minos.networks import (
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
     BrokerPublisher,
 )
 from minos.transactions import (
     TransactionRepository,
 )
 
+from .actions import (
+    Action,
+)
 from .entities import (
     EntityRepository,
     RootEntity,
 )
 from .events import (
+    Event,
     EventRepository,
+    IncrementalFieldDiff,
 )
 from .snapshots import (
     SnapshotRepository,
@@ -119,3 +130,34 @@ class Aggregate(Generic[RT], SetupMixin):
         if not isinstance(root, type) or not issubclass(root, RootEntity):
             raise TypeError(f"{type(self)!r} must contain a {RootEntity!r} as generic value.")
         return root
+
+    async def send_domain_event(self, delta: Optional[Event]) -> None:
+        """Send a domain event message containing a delta.
+
+        :param delta: The delta to be sent.
+        :return: This method does not return anything.
+        """
+
+        if delta is None:
+            return
+
+        suffix_mapper = {
+            Action.CREATE: "Created",
+            Action.UPDATE: "Updated",
+            Action.DELETE: "Deleted",
+        }
+        topic = f"{delta.simplified_name}{suffix_mapper[delta.action]}"
+        message = BrokerMessageV1(topic, BrokerMessageV1Payload(delta))
+        futures = [self.broker_publisher.send(message)]
+
+        if delta.action == Action.UPDATE:
+            for decomposed_event in delta.decompose():
+                diff = next(iter(decomposed_event.fields_diff.flatten_values()))
+                composed_topic = f"{topic}.{diff.name}"
+                if isinstance(diff, IncrementalFieldDiff):
+                    composed_topic += f".{diff.action.value}"
+
+                message = BrokerMessageV1(composed_topic, BrokerMessageV1Payload(decomposed_event))
+                futures.append(self.broker_publisher.send(message))
+
+        await gather(*futures)
