@@ -22,8 +22,8 @@ from minos.common import (
     DeclarativeModel,
 )
 
-from ..events import (
-    Event,
+from ..deltas import (
+    Delta,
     IncrementalFieldDiff,
 )
 
@@ -72,7 +72,7 @@ class RootEntity(Entity):
 
         super().__init__(version, created_at, updated_at, *args, uuid=uuid, **kwargs)
 
-    def diff(self, another: RootEntity) -> Event:
+    def diff(self, another: RootEntity) -> Delta:
         """Compute the difference with another instance.
 
         Both ``RootEntity`` instances (``self`` and ``another``) must share the same ``uuid`` value.
@@ -80,21 +80,21 @@ class RootEntity(Entity):
         :param another: Another ``RootEntity`` instance.
         :return: An ``FieldDiffContainer`` instance.
         """
-        return Event.from_difference(self, another)
+        return Delta.from_difference(self, another)
 
-    def apply_diff(self, event: Event) -> None:
+    def apply_diff(self, delta: Delta) -> None:
         """Apply the differences over the instance.
 
-        :param event: The ``FieldDiffContainer`` containing the values to be set.
+        :param delta: The ``FieldDiffContainer`` containing the values to be set.
         :return: This method does not return anything.
         """
-        if self.uuid != event.uuid:
+        if self.uuid != delta.uuid:
             raise ValueError(
-                f"To apply the difference, it must have same uuid. " f"Expected: {self.uuid!r} Obtained: {event.uuid!r}"
+                f"To apply the difference, it must have same uuid. " f"Expected: {self.uuid!r} Obtained: {delta.uuid!r}"
             )
 
-        logger.debug(f"Applying {event!r} to {self!r}...")
-        for diff in event.fields_diff.flatten_values():
+        logger.debug(f"Applying {delta!r} to {self!r}...")
+        for diff in delta.fields_diff.flatten_values():
             if isinstance(diff, IncrementalFieldDiff):
                 container = getattr(self, diff.name)
                 if diff.action.is_delete:
@@ -103,24 +103,24 @@ class RootEntity(Entity):
                     container.add(diff.value)
             else:
                 setattr(self, diff.name, diff.value)
-        self.version = event.version
-        self.updated_at = event.created_at
+        self.version = delta.version
+        self.updated_at = delta.created_at
 
     @classmethod
-    def from_diff(cls: Type[T], event: Event, *args, **kwargs) -> T:
-        """Build a new instance from an ``Event``.
+    def from_diff(cls: Type[T], delta: Delta, *args, **kwargs) -> T:
+        """Build a new instance from an ``Delta``.
 
-        :param event: The difference that contains the data.
+        :param delta: The difference that contains the data.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A new ``RootEntity`` instance.
         """
         return cls(
             *args,
-            uuid=event.uuid,
-            version=event.version,
-            created_at=event.created_at,
-            updated_at=event.created_at,
-            **event.get_fields(),
+            uuid=delta.uuid,
+            version=delta.version,
+            created_at=delta.created_at,
+            updated_at=delta.created_at,
+            **delta.get_fields(),
             **kwargs,
         )

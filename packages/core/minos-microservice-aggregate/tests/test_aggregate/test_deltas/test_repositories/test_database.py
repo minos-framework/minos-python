@@ -12,11 +12,11 @@ from uuid import (
 
 from minos.aggregate import (
     Action,
-    DatabaseEventRepository,
-    EventRepository,
+    DatabaseDeltaRepository,
+    DeltaRepository,
 )
 from minos.aggregate.testing import (
-    EventRepositoryTestCase,
+    DeltaRepositoryTestCase,
 )
 from minos.common import (
     DatabaseClient,
@@ -29,12 +29,12 @@ from tests.utils import (
 )
 
 
-class TestDatabaseEventRepositorySubmit(AggregateTestCase, EventRepositoryTestCase):
+class TestDatabaseDeltaRepositorySubmit(AggregateTestCase, DeltaRepositoryTestCase):
     __test__ = True
 
-    def build_event_repository(self) -> EventRepository:
+    def build_delta_repository(self) -> DeltaRepository:
         """For testing purposes."""
-        return DatabaseEventRepository.from_config(self.config)
+        return DatabaseDeltaRepository.from_config(self.config)
 
     async def test_generate_uuid(self):
         fetch_one = [

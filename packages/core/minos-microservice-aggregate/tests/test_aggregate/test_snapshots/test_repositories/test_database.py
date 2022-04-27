@@ -35,14 +35,14 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
     def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
-            DatabaseSnapshotRepository(event_repository=None)
+            DatabaseSnapshotRepository(delta_repository=None)
 
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
             DatabaseSnapshotRepository(transaction_repository=None)
 
     async def test_is_synced(self):
-        self.event_repository.select = MagicMock(side_effect=[FakeAsyncIterator([1]), FakeAsyncIterator([])])
+        self.delta_repository.select = MagicMock(side_effect=[FakeAsyncIterator([1]), FakeAsyncIterator([])])
 
         with patch.object(DatabaseClient, "fetch_one", return_value=(0,)):
             self.assertFalse(await self.snapshot_repository.is_synced(SnapshotRepositoryTestCase.Car))

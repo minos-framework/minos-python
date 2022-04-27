@@ -19,12 +19,12 @@ from minos.common.testing import (
 from ....actions import (
     Action,
 )
-from ....events import (
-    EventDatabaseOperationFactory,
+from ....deltas import (
+    DeltaDatabaseOperationFactory,
 )
 
 
-class MockedEventDatabaseOperationFactory(EventDatabaseOperationFactory):
+class MockedDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
     """For testing purposes."""
 
     def build_create(self) -> DatabaseOperation:
@@ -74,4 +74,4 @@ class MockedEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         return MockedDatabaseOperation("select_max_id")
 
 
-MockedDatabaseClient.set_factory(EventDatabaseOperationFactory, MockedEventDatabaseOperationFactory)
+MockedDatabaseClient.set_factory(DeltaDatabaseOperationFactory, MockedDeltaDatabaseOperationFactory)

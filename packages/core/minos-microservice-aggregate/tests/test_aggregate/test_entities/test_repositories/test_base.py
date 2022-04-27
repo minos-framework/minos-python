@@ -12,8 +12,8 @@ from uuid import (
 from minos.aggregate import (
     AlreadyDeletedException,
     Condition,
+    DeltaRepositoryException,
     EntityRepository,
-    EventRepositoryException,
     NotFoundException,
     Ordering,
 )
@@ -35,7 +35,7 @@ class TestEntityRepository(AggregateTestCase):
 
     def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):
-            EntityRepository(event_repository=None)
+            EntityRepository(delta_repository=None)
         with self.assertRaises(NotProvidedException):
             EntityRepository(snapshot_repository=None)
 
@@ -57,17 +57,17 @@ class TestEntityRepository(AggregateTestCase):
         self.assertEqual(instance, observed)
 
     async def test_create_raises(self):
-        with self.assertRaises(EventRepositoryException):
+        with self.assertRaises(DeltaRepositoryException):
             await self.repository.create(Car, uuid=uuid4(), doors=3, color="blue")
-        with self.assertRaises(EventRepositoryException):
+        with self.assertRaises(DeltaRepositoryException):
             await self.repository.create(Car, version=1, doors=3, color="blue")
-        with self.assertRaises(EventRepositoryException):
+        with self.assertRaises(DeltaRepositoryException):
             await self.repository.create(Car, created_at=current_datetime(), doors=3, color="blue")
-        with self.assertRaises(EventRepositoryException):
+        with self.assertRaises(DeltaRepositoryException):
             await self.repository.create(Car, updated_at=current_datetime(), doors=3, color="blue")
-        with self.assertRaises(EventRepositoryException):
+        with self.assertRaises(DeltaRepositoryException):
             await self.repository.create(Car(doors=3, color="blue"), "foo")
-        with self.assertRaises(EventRepositoryException):
+        with self.assertRaises(DeltaRepositoryException):
             await self.repository.create(Car(doors=3, color="blue"), foo="bar")
 
     async def test_classname(self):
@@ -142,11 +142,11 @@ class TestEntityRepository(AggregateTestCase):
         self.assertEqual(car, await self.repository.get(Car, car.uuid))
 
     async def test_update_raises(self):
-        with self.assertRaises(EventRepositoryException):
+        with self.assertRaises(DeltaRepositoryException):
             await self.repository.update(Car(3, "blue"), version=1)
-        with self.assertRaises(EventRepositoryException):
+        with self.assertRaises(DeltaRepositoryException):
             await self.repository.update(Car(3, "blue"), created_at=current_datetime())
-        with self.assertRaises(EventRepositoryException):
+        with self.assertRaises(DeltaRepositoryException):
             await self.repository.update(Car(3, "blue"), updated_at=current_datetime())
 
     async def test_refresh(self):
@@ -200,9 +200,9 @@ class TestEntityRepository(AggregateTestCase):
         self.assertEqual(expected, await self.repository.get(Car, uuid))
 
     async def test_save_raises(self):
-        with self.assertRaises(EventRepositoryException):
+        with self.assertRaises(DeltaRepositoryException):
             await self.repository.save(Car(3, "blue", uuid=uuid4()))
-        with self.assertRaises(EventRepositoryException):
+        with self.assertRaises(DeltaRepositoryException):
             await self.repository.save(Car(3, "blue", version=1))
 
     async def test_delete(self):

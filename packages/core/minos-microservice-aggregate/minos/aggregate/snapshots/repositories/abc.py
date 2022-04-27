@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 class SnapshotRepository(ABC, SetupMixin):
     """Base Snapshot class.
 
-    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
+    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as deltas by the delta repository
     class.
     """
 

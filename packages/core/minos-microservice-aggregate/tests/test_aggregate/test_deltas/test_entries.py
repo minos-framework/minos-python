@@ -8,8 +8,8 @@ from uuid import (
 
 from minos.aggregate import (
     Action,
-    Event,
-    EventEntry,
+    Delta,
+    DeltaEntry,
     FieldDiff,
     FieldDiffContainer,
 )
@@ -31,7 +31,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.transaction_uuid = uuid4()
 
     def test_constructor(self):
-        entry = EventEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
+        entry = DeltaEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(self.uuid, entry.uuid)
         self.assertEqual("example.Car", entry.name)
         self.assertEqual(0, entry.version)
@@ -43,11 +43,11 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
 
     # noinspection SpellCheckingInspection
     def test_constructor_with_memoryview_data(self):
-        entry = EventEntry(self.uuid, "example.Car", 0, memoryview(bytes("car", "utf-8")))
+        entry = DeltaEntry(self.uuid, "example.Car", 0, memoryview(bytes("car", "utf-8")))
         self.assertEqual(bytes("car", "utf-8"), entry.data)
 
     def test_constructor_extended(self):
-        entry = EventEntry(
+        entry = DeltaEntry(
             uuid=self.uuid,
             name="example.Car",
             version=0,
@@ -66,12 +66,12 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(datetime(2020, 10, 13, 8, 45, 32), entry.created_at)
         self.assertEqual(self.transaction_uuid, entry.transaction_uuid)
 
-    async def test_from_event(self):
+    async def test_from_delta(self):
         fields_diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         created_at = current_datetime()
-        event = Event(self.uuid, Car.classname, 1, Action.CREATE, created_at, fields_diff)
+        delta = Delta(self.uuid, Car.classname, 1, Action.CREATE, created_at, fields_diff)
 
-        entry = EventEntry.from_event(event)
+        entry = DeltaEntry.from_delta(delta)
         self.assertEqual(self.uuid, entry.uuid)
         self.assertEqual("tests.utils.Car", entry.name)
         self.assertEqual(None, entry.version)
@@ -81,13 +81,13 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(None, entry.created_at)
         self.assertEqual(NULL_UUID, entry.transaction_uuid)
 
-    async def test_from_event_with_transaction(self):
+    async def test_from_delta_with_transaction(self):
         transaction = TransactionEntry(self.transaction_uuid)
         fields_diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         created_at = current_datetime()
-        event = Event(self.uuid, Car.classname, 1, Action.CREATE, created_at, fields_diff)
+        delta = Delta(self.uuid, Car.classname, 1, Action.CREATE, created_at, fields_diff)
 
-        entry = EventEntry.from_event(event, transaction=transaction)
+        entry = DeltaEntry.from_delta(delta, transaction=transaction)
         self.assertEqual(self.uuid, entry.uuid)
         self.assertEqual("tests.utils.Car", entry.name)
         self.assertEqual(None, entry.version)
@@ -99,7 +99,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
 
     async def test_from_another(self):
         created_at = datetime(2020, 10, 13, 8, 45, 32)
-        another = EventEntry(
+        another = DeltaEntry(
             uuid=self.uuid,
             name="example.Car",
             version=0,
@@ -110,7 +110,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
             transaction_uuid=self.transaction_uuid,
         )
         transaction_uuid = uuid4()
-        entry = EventEntry.from_another(another, transaction_uuid=transaction_uuid)
+        entry = DeltaEntry.from_another(another, transaction_uuid=transaction_uuid)
 
         self.assertEqual(self.uuid, entry.uuid)
         self.assertEqual("example.Car", entry.name)
@@ -121,50 +121,50 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(created_at, entry.created_at)
         self.assertEqual(transaction_uuid, entry.transaction_uuid)
 
-    def test_event(self):
+    def test_delta(self):
         field_diff_container = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         version = 1
         now = current_datetime()
 
-        event = Event(self.uuid, Car.classname, version, Action.CREATE, now, field_diff_container)
+        delta = Delta(self.uuid, Car.classname, version, Action.CREATE, now, field_diff_container)
 
-        entry = EventEntry.from_event(event)
+        entry = DeltaEntry.from_delta(delta)
 
         entry.version = version
         entry.created_at = now
 
-        self.assertEqual(event, entry.event)
+        self.assertEqual(delta, entry.delta)
 
     def test_field_diff_container(self):
         field_diff_container = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
-        entry = EventEntry(self.uuid, "example.Car", 0, field_diff_container.avro_bytes)
+        entry = DeltaEntry(self.uuid, "example.Car", 0, field_diff_container.avro_bytes)
 
         self.assertEqual(field_diff_container, entry.field_diff_container)
 
     def test_field_diff_container_empty(self):
-        entry = EventEntry(self.uuid, "example.Car", 0, bytes())
+        entry = DeltaEntry(self.uuid, "example.Car", 0, bytes())
 
         self.assertEqual(FieldDiffContainer.empty(), entry.field_diff_container)
 
     def test_id_setup(self):
-        entry = EventEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
+        entry = DeltaEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(None, entry.id)
         entry.id = 5678
         self.assertEqual(5678, entry.id)
 
     def test_action_setup(self):
-        entry = EventEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
+        entry = DeltaEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(None, entry.action)
         entry.action = Action.CREATE
         self.assertEqual(Action.CREATE, entry.action)
 
     def test_equals(self):
-        a = EventEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
-        b = EventEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
+        a = DeltaEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
+        b = DeltaEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(a, b)
 
     def test_hash(self):
-        entry = EventEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
+        entry = DeltaEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
         self.assertIsInstance(hash(entry), int)
 
     def test_repr(self):
@@ -175,7 +175,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         action = Action.CREATE
         created_at = datetime(2020, 10, 13, 8, 45, 32)
         transaction_uuid = uuid4()
-        entry = EventEntry(
+        entry = DeltaEntry(
             uuid=self.uuid,
             name=name,
             version=version,
@@ -186,7 +186,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
             transaction_uuid=transaction_uuid,
         )
         expected = (
-            f"EventEntry(uuid={self.uuid!r}, name={name!r}, "
+            f"DeltaEntry(uuid={self.uuid!r}, name={name!r}, "
             f"version={version!r}, len(data)={len(data)!r}, id={id_!r}, action={action!r}, created_at={created_at!r}, "
             f"transaction_uuid={transaction_uuid!r})"
         )
@@ -200,7 +200,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         action = Action.CREATE
         created_at = datetime(2020, 10, 13, 8, 45, 32)
         transaction_uuid = uuid4()
-        entry = EventEntry(
+        entry = DeltaEntry(
             uuid=self.uuid,
             name=name,
             version=version,

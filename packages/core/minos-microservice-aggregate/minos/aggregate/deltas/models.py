@@ -43,8 +43,8 @@ logger = logging.getLogger(__name__)
 
 
 @total_ordering
-class Event(DeclarativeModel):
-    """Event class."""
+class Delta(DeclarativeModel):
+    """Delta class."""
 
     uuid: UUID
     name: str
@@ -126,13 +126,13 @@ class Event(DeclarativeModel):
         return self.fields_diff.get_all(return_diff)
 
     @classmethod
-    def from_difference(cls, a: RootEntity, b: RootEntity, action: Action = Action.UPDATE) -> Event:
-        """Build an ``Event`` instance from the difference of two instances.
+    def from_difference(cls, a: RootEntity, b: RootEntity, action: Action = Action.UPDATE) -> Delta:
+        """Build an ``Delta`` instance from the difference of two instances.
 
         :param a: One ``RootEntity`` instance.
         :param b: Another ``RootEntity`` instance.
         :param action: The action that generates the ``RootEntity`` difference.
-        :return: An ``Event`` instance.
+        :return: An ``Delta`` instance.
         """
         logger.debug(f"Computing the {cls!r} between {a!r} and {b!r}...")
 
@@ -155,12 +155,12 @@ class Event(DeclarativeModel):
         )
 
     @classmethod
-    def from_root_entity(cls, instance: RootEntity, action: Action = Action.CREATE) -> Event:
-        """Build an ``Event`` from a ``RootEntity`` (considering all fields as differences).
+    def from_root_entity(cls, instance: RootEntity, action: Action = Action.CREATE) -> Delta:
+        """Build an ``Delta`` from a ``RootEntity`` (considering all fields as differences).
 
         :param instance: A ``RootEntity`` instance.
-        :param action: The action that generates the event.
-        :return: An ``Event`` instance.
+        :param action: The action that generates the delta.
+        :return: An ``Delta`` instance.
         """
 
         fields_diff = FieldDiffContainer.from_model(instance, ignore={"uuid", "version", "created_at", "updated_at"})
@@ -174,12 +174,12 @@ class Event(DeclarativeModel):
         )
 
     @classmethod
-    def from_deleted_root_entity(cls, instance: RootEntity, action: Action = Action.DELETE) -> Event:
-        """Build an ``Event`` from a ``RootEntity`` (considering all fields as differences).
+    def from_deleted_root_entity(cls, instance: RootEntity, action: Action = Action.DELETE) -> Delta:
+        """Build an ``Delta`` from a ``RootEntity`` (considering all fields as differences).
 
         :param instance: A ``RootEntity`` instance.
-        :param action: The action that generates the event.
-        :return: An ``Event`` instance.
+        :param action: The action that generates the delta.
+        :return: An ``Delta`` instance.
         """
         return cls(
             uuid=instance.uuid,
@@ -190,10 +190,10 @@ class Event(DeclarativeModel):
             fields_diff=FieldDiffContainer.empty(),
         )
 
-    def decompose(self) -> list[Event]:
-        """Decompose the ``Event`` fields into multiple ``Event`` instances with once Field.
+    def decompose(self) -> list[Delta]:
+        """Decompose the ``Delta`` fields into multiple ``Delta`` instances with once Field.
 
-        :return: An list of``Event`` instances.
+        :return: An list of``Delta`` instances.
         """
         return [
             type(self)(

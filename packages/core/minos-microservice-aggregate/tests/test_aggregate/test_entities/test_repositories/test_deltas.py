@@ -5,8 +5,8 @@ from typing import (
 
 from minos.aggregate import (
     Action,
+    Delta,
     EntityRepository,
-    Event,
     FieldDiff,
     FieldDiffContainer,
     Ref,
@@ -27,7 +27,7 @@ class TestEntityRepositoryDelta(AggregateTestCase):
         car, delta = await self.repository.create(Car, doors=3, color="blue")
 
         self.assertEqual(
-            Event(
+            Delta(
                 uuid=car.uuid,
                 name=Car.classname,
                 version=1,
@@ -50,7 +50,7 @@ class TestEntityRepositoryDelta(AggregateTestCase):
         _, delta = await self.repository.update(car, color="red")
 
         self.assertEqual(
-            Event(
+            Delta(
                 uuid=car.uuid,
                 name=Car.classname,
                 version=2,
@@ -67,7 +67,7 @@ class TestEntityRepositoryDelta(AggregateTestCase):
         delta = await self.repository.delete(car)
 
         self.assertEqual(
-            Event(
+            Delta(
                 uuid=car.uuid,
                 name=Car.classname,
                 version=2,
