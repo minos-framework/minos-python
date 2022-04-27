@@ -26,7 +26,6 @@ from minos.aggregate import (
     EventRepositoryException,
     FieldDiff,
     FieldDiffContainer,
-    IncrementalFieldDiff,
 )
 from minos.common import (
     NULL_UUID,
@@ -34,9 +33,6 @@ from minos.common import (
     SetupMixin,
     classname,
     current_datetime,
-)
-from minos.networks import (
-    BrokerMessageV1,
 )
 from minos.transactions import (
     TRANSACTION_CONTEXT_VAR,
@@ -80,14 +76,10 @@ class TestEventRepository(AggregateTestCase):
 
     def test_constructor(self):
         repository = _EventRepository()
-        self.assertEqual(self.broker_publisher, repository._broker_publisher)
         self.assertEqual(self.transaction_repository, repository.transaction_repository)
         self.assertEqual(self.pool_factory.get_pool("lock"), repository._lock_pool)
 
     async def test_constructor_raises(self):
-        with self.assertRaises(NotProvidedException):
-            # noinspection PyTypeChecker
-            _EventRepository(broker_publisher=None)
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
             _EventRepository(transaction_repository=None)
@@ -149,9 +141,7 @@ class TestEventRepository(AggregateTestCase):
             return e
 
         submit_mock = AsyncMock(side_effect=_fn)
-        send_events_mock = AsyncMock()
         self.event_repository._submit = submit_mock
-        self.event_repository._send_events = send_events_mock
 
         uuid = uuid4()
         event = Event(
@@ -167,8 +157,6 @@ class TestEventRepository(AggregateTestCase):
         self.event_repository.validate = validate_mock
 
         observed = await self.event_repository.submit(event)
-
-        self.assertEqual(1, send_events_mock.call_count)
 
         self.assertIsInstance(observed, EventEntry)
         self.assertEqual(uuid, observed.uuid)
@@ -195,9 +183,7 @@ class TestEventRepository(AggregateTestCase):
             return e
 
         submit_mock = AsyncMock(side_effect=_fn)
-        send_events_mock = AsyncMock()
         self.event_repository._submit = submit_mock
-        self.event_repository._send_events = send_events_mock
 
         uuid = uuid4()
         event = Event(
@@ -214,8 +200,6 @@ class TestEventRepository(AggregateTestCase):
 
         observed = await self.event_repository.submit(event)
 
-        self.assertEqual(0, send_events_mock.call_count)
-
         self.assertIsInstance(observed, EventEntry)
         self.assertEqual(uuid, observed.uuid)
         self.assertEqual("example.Car", observed.name)
@@ -225,101 +209,6 @@ class TestEventRepository(AggregateTestCase):
         self.assertEqual(Action.UPDATE, observed.action)
         self.assertEqual(created_at, observed.created_at)
         self.assertEqual(transaction.uuid, observed.transaction_uuid)
-
-    async def test_submit_send_events(self):
-        created_at = current_datetime()
-        id_ = 12
-        field_diff_container = FieldDiffContainer([IncrementalFieldDiff("colors", str, "red", Action.CREATE)])
-
-        async def _fn(e: EventEntry) -> EventEntry:
-            e.id = id_
-            e.version = 56
-            e.created_at = created_at
-            return e
-
-        submit_mock = AsyncMock(side_effect=_fn)
-        self.event_repository._submit = submit_mock
-
-        uuid = uuid4()
-        event = Event(
-            uuid=uuid,
-            name="example.Car",
-            version=2,
-            action=Action.UPDATE,
-            created_at=current_datetime(),
-            fields_diff=field_diff_container,
-        )
-
-        validate_mock = AsyncMock(return_value=True)
-        self.event_repository.validate = validate_mock
-
-        await self.event_repository.submit(event)
-
-        observed = self.broker_publisher.messages
-
-        self.assertEqual(2, len(observed))
-        self.assertIsInstance(observed[0], BrokerMessageV1)
-        self.assertEqual("CarUpdated", observed[0].topic)
-        self.assertEqual(
-            Event(
-                uuid=uuid,
-                name="example.Car",
-                version=56,
-                action=Action.UPDATE,
-                created_at=created_at,
-                fields_diff=field_diff_container,
-            ),
-            observed[0].content,
-        )
-        self.assertEqual("CarUpdated.colors.create", observed[1].topic)
-        self.assertIsInstance(observed[1], BrokerMessageV1)
-        self.assertEqual(
-            Event(
-                uuid=uuid,
-                name="example.Car",
-                version=56,
-                action=Action.UPDATE,
-                created_at=created_at,
-                fields_diff=field_diff_container,
-            ),
-            observed[1].content,
-        )
-
-    async def test_submit_not_send_events(self):
-        created_at = current_datetime()
-        id_ = 12
-        field_diff_container = FieldDiffContainer([IncrementalFieldDiff("colors", str, "red", Action.CREATE)])
-
-        async def _fn(e: EventEntry) -> EventEntry:
-            e.id = id_
-            e.version = 56
-            e.created_at = created_at
-            return e
-
-        submit_mock = AsyncMock(side_effect=_fn)
-        self.event_repository._submit = submit_mock
-
-        uuid = uuid4()
-        event = EventEntry.from_event(
-            Event(
-                uuid=uuid,
-                name="example.Car",
-                version=2,
-                action=Action.UPDATE,
-                created_at=current_datetime(),
-                fields_diff=field_diff_container,
-            ),
-            transaction_uuid=uuid4(),
-        )
-
-        validate_mock = AsyncMock(return_value=True)
-        self.event_repository.validate = validate_mock
-
-        await self.event_repository.submit(event)
-
-        observed = self.broker_publisher.messages
-
-        self.assertEqual(0, len(observed))
 
     async def test_submit_raises_missing_action(self):
         entry = EventEntry(uuid4(), "example.Car", 0, bytes())

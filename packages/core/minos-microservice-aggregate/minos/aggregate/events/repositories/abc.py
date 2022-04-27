@@ -6,9 +6,6 @@ from abc import (
     ABC,
     abstractmethod,
 )
-from asyncio import (
-    gather,
-)
 from contextlib import (
     suppress,
 )
@@ -24,7 +21,6 @@ from uuid import (
 )
 
 from minos.common import (
-    NULL_UUID,
     Inject,
     Injectable,
     Lock,
@@ -32,12 +28,6 @@ from minos.common import (
     NotProvidedException,
     PoolFactory,
     classname,
-)
-from minos.networks import (
-    BrokerMessageV1,
-    BrokerMessageV1Payload,
-    BrokerMessageV1Strategy,
-    BrokerPublisher,
 )
 from minos.transactions import (
     TRANSACTION_CONTEXT_VAR,
@@ -59,9 +49,6 @@ from ...exceptions import (
 from ..entries import (
     EventEntry,
 )
-from ..fields import (
-    IncrementalFieldDiff,
-)
 from ..models import (
     Event,
 )
@@ -81,7 +68,6 @@ class EventRepository(ABC, TransactionalMixin):
     @Inject()
     def __init__(
         self,
-        broker_publisher: BrokerPublisher,
         lock_pool: Optional[LockPool] = None,
         pool_factory: Optional[PoolFactory] = None,
         *args,
@@ -92,13 +78,9 @@ class EventRepository(ABC, TransactionalMixin):
         if lock_pool is None and pool_factory is not None:
             lock_pool = pool_factory.get_pool("lock")
 
-        if broker_publisher is None:
-            raise NotProvidedException("A broker instance is required.")
-
         if lock_pool is None:
             raise NotProvidedException("A lock pool instance is required.")
 
-        self._broker_publisher = broker_publisher
         self._lock_pool = lock_pool
 
     def transaction(self, **kwargs) -> TransactionEntry:
@@ -163,9 +145,6 @@ class EventRepository(ABC, TransactionalMixin):
 
                 entry = await self._submit(entry, **kwargs)
 
-            if entry.transaction_uuid == NULL_UUID:
-                await self._send_events(entry.event)
-
         finally:
             IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.reset(token)
 
@@ -201,36 +180,6 @@ class EventRepository(ABC, TransactionalMixin):
     @abstractmethod
     async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
         raise NotImplementedError
-
-    async def _send_events(self, event: Event):
-        suffix_mapper = {
-            Action.CREATE: "Created",
-            Action.UPDATE: "Updated",
-            Action.DELETE: "Deleted",
-        }
-        topic = f"{event.simplified_name}{suffix_mapper[event.action]}"
-        message = BrokerMessageV1(
-            topic=topic,
-            payload=BrokerMessageV1Payload(content=event),
-            strategy=BrokerMessageV1Strategy.MULTICAST,
-        )
-        futures = [self._broker_publisher.send(message)]
-
-        if event.action == Action.UPDATE:
-            for decomposed_event in event.decompose():
-                diff = next(iter(decomposed_event.fields_diff.flatten_values()))
-                composed_topic = f"{topic}.{diff.name}"
-                if isinstance(diff, IncrementalFieldDiff):
-                    composed_topic += f".{diff.action.value}"
-
-                message = BrokerMessageV1(
-                    topic=composed_topic,
-                    payload=BrokerMessageV1Payload(content=decomposed_event),
-                    strategy=BrokerMessageV1Strategy.MULTICAST,
-                )
-                futures.append(self._broker_publisher.send(message))
-
-        await gather(*futures)
 
     # noinspection PyShadowingBuiltins
     async def select(
