@@ -1,5 +1,5 @@
 from .events import (
-    AiopgEventDatabaseOperationFactory,
+    AiopgDeltaDatabaseOperationFactory,
 )
 from .snapshots import (
     AiopgSnapshotDatabaseOperationFactory,

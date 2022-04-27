@@ -54,7 +54,7 @@ class TestService(DatabaseMinosTestCase):
         self.assertEqual(self.injector.pool_factory, self.service.pool_factory)
 
         with self.assertRaises(AttributeError):
-            self.service.event_repository
+            self.service.delta_repository
 
     async def test_pre_event(self):
         with patch("minos.cqrs.PreEventHandler.handle") as mock:

@@ -64,7 +64,7 @@ aggregate:
   entities:
     - builtins.int
   repositories:
-    event: tests.utils.FakeEventRepository
+    delta: tests.utils.FakeDeltaRepository
     snapshot: tests.utils.FakeSnapshotRepository
     transaction: tests.utils.FakeTransactionRepository
 routers:

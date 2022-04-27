@@ -3,7 +3,7 @@ from pathlib import (
 )
 
 from minos.aggregate import (
-    InMemoryEventRepository,
+    InMemoryDeltaRepository,
     InMemorySnapshotRepository,
 )
 from minos.common import (
@@ -46,13 +46,13 @@ class AiopgTestCase(DatabaseMinosTestCase):
         transaction_repository = InMemoryTransactionRepository(
             lock_pool=pool_factory.get_pool("lock"),
         )
-        event_repository = InMemoryEventRepository(
+        delta_repository = InMemoryDeltaRepository(
             broker_publisher=broker_publisher,
             transaction_repository=transaction_repository,
             lock_pool=pool_factory.get_pool("lock"),
         )
         snapshot_repository = InMemorySnapshotRepository(
-            event_repository=event_repository,
+            delta_repository=delta_repository,
             transaction_repository=transaction_repository,
         )
         return [
@@ -60,7 +60,7 @@ class AiopgTestCase(DatabaseMinosTestCase):
             broker_publisher,
             broker_subscriber_builder,
             transaction_repository,
-            event_repository,
+            delta_repository,
             snapshot_repository,
         ]
 
