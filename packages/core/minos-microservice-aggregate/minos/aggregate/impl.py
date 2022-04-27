@@ -131,7 +131,7 @@ class Aggregate(Generic[RT], SetupMixin):
             raise TypeError(f"{type(self)!r} must contain a {RootEntity!r} as generic value.")
         return root
 
-    async def send_domain_event(self, delta: Optional[Event]) -> None:
+    async def publish_domain_event(self, delta: Optional[Event]) -> None:
         """Send a domain event message containing a delta.
 
         :param delta: The delta to be sent.

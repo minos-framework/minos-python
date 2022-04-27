@@ -87,11 +87,11 @@ class TestAggregate(AggregateTestCase):
         uuid = await self.aggregate.create_order()
         self.assertIsInstance(uuid, UUID)
 
-    async def test_send_domain_event_none(self):
-        await self.aggregate.send_domain_event(None)
+    async def test_publish_domain_event_none(self):
+        await self.aggregate.publish_domain_event(None)
         self.assertEqual(list(), self.broker_publisher.messages)
 
-    async def test_send_domain_event_create(self):
+    async def test_publish_domain_event_create(self):
         delta = Event(
             uuid=uuid4(),
             name=Car.classname,
@@ -106,7 +106,7 @@ class TestAggregate(AggregateTestCase):
                 ]
             ),
         )
-        await self.aggregate.send_domain_event(delta)
+        await self.aggregate.publish_domain_event(delta)
 
         observed = self.broker_publisher.messages
 
@@ -115,7 +115,7 @@ class TestAggregate(AggregateTestCase):
         self.assertEqual("CarCreated", observed[0].topic)
         self.assertEqual(delta, observed[0].content)
 
-    async def test_send_domain_event_update(self):
+    async def test_publish_domain_event_update(self):
         delta = Event(
             uuid=uuid4(),
             name=Car.classname,
@@ -130,7 +130,7 @@ class TestAggregate(AggregateTestCase):
             ),
         )
 
-        await self.aggregate.send_domain_event(delta)
+        await self.aggregate.publish_domain_event(delta)
 
         observed = self.broker_publisher.messages
 
@@ -167,7 +167,7 @@ class TestAggregate(AggregateTestCase):
             observed[2].content,
         )
 
-    async def test_send_domain_event_delete(self):
+    async def test_publish_domain_event_delete(self):
         delta = Event(
             uuid=uuid4(),
             name=Car.classname,
@@ -177,7 +177,7 @@ class TestAggregate(AggregateTestCase):
             fields_diff=FieldDiffContainer.empty(),
         )
 
-        await self.aggregate.send_domain_event(delta)
+        await self.aggregate.publish_domain_event(delta)
 
         observed = self.broker_publisher.messages
 
