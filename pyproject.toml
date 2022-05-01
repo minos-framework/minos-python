@@ -20,7 +20,7 @@ minos-http-aiohttp = { path = "packages/plugins/minos-http-aiohttp", develop = t
 [tool.poetry.dev-dependencies]
 black = "^22.1"
 isort = "^5.8.0"
-pytest = "^7.0.1"
+pytest = "^7.1.2"
 coverage = "^6.3"
 flake8 = "^4.0.1"
 Sphinx = "^4.0.1"
