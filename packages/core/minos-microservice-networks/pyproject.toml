@@ -40,7 +40,7 @@ psycopg2-binary = "^2.9.3"
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }
 black = "^22.1"
 isort = "^5.8.0"
-pytest = "^7.0.1"
+pytest = "^7.1.2"
 coverage = "^6.3"
 flake8 = "^4.0.1"
 Sphinx = "^4.0.1"
