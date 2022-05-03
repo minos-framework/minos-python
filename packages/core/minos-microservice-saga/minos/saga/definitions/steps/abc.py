@@ -55,6 +55,8 @@ class SagaStep(ABC):
         if isinstance(raw, cls):
             return raw
 
+        raw = raw.copy()
+
         if "cls" in raw:
             # noinspection PyTypeChecker
             step_cls: type = import_module(raw.pop("cls"))

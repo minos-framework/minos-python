@@ -73,6 +73,7 @@ class Injectable:
 
         # noinspection PyTypeChecker
         output_type: OutputType = types.new_class(input_type.__name__, bases, {})
+        output_type.__module__ = input_type.__module__
 
         # noinspection PyProtectedMember
         output_type._set_injectable_name(self._name)
@@ -150,8 +151,9 @@ class Inject:
             if any(self._is_injectable(arg) for arg in get_args(type_)):
                 return True
         elif origin_type is None:
-            if issubclass(type_, InjectableMixin):
-                return True
+            if is_type_subclass(type_):
+                if issubclass(type_, InjectableMixin):
+                    return True
         elif is_type_subclass(origin_type):
             if issubclass(origin_type, InjectableMixin):
                 return True

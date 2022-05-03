@@ -12,11 +12,11 @@ from dependency_injector.containers import (
 from minos.common import (
     Config,
     DependencyInjector,
+    PoolFactory,
     classname,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
-    FakeLockPool,
 )
 
 
@@ -25,17 +25,17 @@ class TestDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.config = Config(CONFIG_FILE_PATH)
 
     def test_from_str(self):
-        injector = DependencyInjector(self.config, [classname(FakeLockPool)])
-        self.assertIsInstance(injector.lock_pool, FakeLockPool)
+        injector = DependencyInjector(self.config, [classname(PoolFactory)])
+        self.assertIsInstance(injector.pool_factory, PoolFactory)
 
     def test_from_type(self):
-        injector = DependencyInjector(self.config, [FakeLockPool])
-        self.assertIsInstance(injector.lock_pool, FakeLockPool)
+        injector = DependencyInjector(self.config, [PoolFactory])
+        self.assertIsInstance(injector.pool_factory, PoolFactory)
 
     def test_from_instance(self):
-        instance = FakeLockPool()
+        instance = PoolFactory.from_config(self.config)
         injector = DependencyInjector(self.config, [instance])
-        self.assertEqual(instance, injector.lock_pool)
+        self.assertEqual(instance, injector.pool_factory)
 
     def test_raises_building(self):
         injector = DependencyInjector(self.config, ["path.to.LockPool"])
@@ -52,16 +52,16 @@ class TestDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(injector.container, Container)
         self.assertEqual(self.config, injector.container.config())
 
-    def test_container_lock_pool(self):
-        injector = DependencyInjector(self.config, [FakeLockPool])
-        self.assertEqual(injector.lock_pool, injector.container.lock_pool())
+    def test_container_pool_factory(self):
+        injector = DependencyInjector(self.config, [PoolFactory])
+        self.assertEqual(injector.pool_factory, injector.container.pool_factory())
 
     async def test_wire_unwire(self):
         from minos.common.injections import (
             decorators,
         )
 
-        injector = DependencyInjector(self.config, [FakeLockPool])
+        injector = DependencyInjector(self.config, [PoolFactory])
 
         mock = MagicMock()
         injector.container.wire = mock
@@ -79,7 +79,7 @@ class TestDependencyInjector(unittest.IsolatedAsyncioTestCase):
             decorators,
         )
 
-        injector = DependencyInjector(self.config, [FakeLockPool])
+        injector = DependencyInjector(self.config, [PoolFactory])
 
         mock = MagicMock()
         injector.container.wire = mock
