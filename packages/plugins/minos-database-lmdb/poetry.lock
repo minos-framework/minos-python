@@ -73,7 +73,7 @@ python-versions = "*"
 
 [[package]]
 name = "click"
-version = "8.1.2"
+version = "8.1.3"
 description = "Composable command line interface toolkit"
 category = "dev"
 optional = false
@@ -142,7 +142,7 @@ yaml = ["pyyaml"]
 
 [[package]]
 name = "fastavro"
-version = "1.4.10"
+version = "1.4.11"
 description = "Fast read/write of AVRO files"
 category = "main"
 optional = false
@@ -207,7 +207,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-aggregate"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The Aggregate pattern of the Minos Framework"
 category = "main"
 optional = false
@@ -225,7 +225,7 @@ url = "../../core/minos-microservice-aggregate"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
@@ -247,7 +247,7 @@ url = "../../core/minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The networks core of the Minos Framework"
 category = "main"
 optional = false
@@ -264,7 +264,7 @@ url = "../../core/minos-microservice-networks"
 
 [[package]]
 name = "minos-microservice-saga"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The SAGA pattern of the Minos Framework"
 category = "main"
 optional = false
@@ -377,7 +377,7 @@ diagrams = ["railroad-diagrams", "jinja2"]
 
 [[package]]
 name = "pytest"
-version = "7.1.1"
+version = "7.1.2"
 description = "pytest: simple powerful testing with Python"
 category = "dev"
 optional = false
@@ -489,8 +489,8 @@ cached-property = [
     {file = "cached_property-1.5.2-py2.py3-none-any.whl", hash = "sha256:df4f613cf7ad9a588cc381aaf4a512d26265ecebd5eb9e1ba12f1319eb85a6a0"},
 ]
 click = [
-    {file = "click-8.1.2-py3-none-any.whl", hash = "sha256:24e1a4a9ec5bf6299411369b208c1df2188d9eb8d916302fe6bf03faed227f1e"},
-    {file = "click-8.1.2.tar.gz", hash = "sha256:479707fe14d9ec9a0757618b7a100a0ae4c4e236fac5b7f80ca68028141a1a72"},
+    {file = "click-8.1.3-py3-none-any.whl", hash = "sha256:bb4d8133cb15a609f44e8213d9b391b0809795062913b383c62be0ee95b1db48"},
+    {file = "click-8.1.3.tar.gz", hash = "sha256:7682dc8afb30297001674575ea00d1814d808d6a36af415a82bd481d37ba7b8e"},
 ]
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
@@ -585,22 +585,22 @@ dependency-injector = [
     {file = "dependency_injector-4.39.1-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:ca126bbed370b8c002c859ebeb76f6d83eba2d7fb5d66f37f47cfc19661d2889"},
 ]
 fastavro = [
-    {file = "fastavro-1.4.10-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:f225c81e869b3cefef6f2b478cd452693181ed7e645be3cea4d82024354ecaa0"},
-    {file = "fastavro-1.4.10-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b7669302c9124b7cd6c1bdff80c77116b2290c984814077fb7d01d7389586054"},
-    {file = "fastavro-1.4.10-cp310-cp310-win_amd64.whl", hash = "sha256:995525bdfbdfef205ea148b5bc6a9fe5ccf921931123c39d9aad75a2b661681e"},
-    {file = "fastavro-1.4.10-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:64244c53f1e4853184c2f7383d0332e1dcb34c38c05e6613530ade0378e8acfc"},
-    {file = "fastavro-1.4.10-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c60965da6dc7a91e00ccd84d84797fad746555f44e8a816c4cc460fb231c44fe"},
-    {file = "fastavro-1.4.10-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:10eb25378f37dc00c10e83c4c0442c1a6d1b871f74a6dfdfc12b6447962bbdd0"},
-    {file = "fastavro-1.4.10-cp37-cp37m-win_amd64.whl", hash = "sha256:d5719adf6045fc743de5fa738d561a81e58dc782c94f1b16cb21b5dd6253e7fd"},
-    {file = "fastavro-1.4.10-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:24c4a1a8cc92e135ecfcd9cbd1f6cfa088cbc74d78c18e02a609cb11fa33778d"},
-    {file = "fastavro-1.4.10-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0934490b0c3bcfd6bcbacbcb5144c6b5e4298cda209fbb17c856adf5405127dd"},
-    {file = "fastavro-1.4.10-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a23763d73412c077aee401a0368c64cbc23859e26711dbae78a3cf0227f65165"},
-    {file = "fastavro-1.4.10-cp38-cp38-win_amd64.whl", hash = "sha256:09f1dfdd8192ae09e0f477d1f024d8054fccdb099ad495d2a796bcee3cadebd1"},
-    {file = "fastavro-1.4.10-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:0c6695753fa3035bbd0fa5cb21bf1b5dad39483c669b32ca0bb55fb07c1ccc87"},
-    {file = "fastavro-1.4.10-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:35f960dbba04647d8d6d5616f879622d2a1e8a84eb2d2e02a883a22e0803463a"},
-    {file = "fastavro-1.4.10-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9660878ca01e3dbbee12385c5902a2b6b12ecbb5af4733d1026175a14b1ef67f"},
-    {file = "fastavro-1.4.10-cp39-cp39-win_amd64.whl", hash = "sha256:64cbd386e408b3bcb2de53b1f847163073eb0d0d0338db65f76051c6ba9a9bc1"},
-    {file = "fastavro-1.4.10.tar.gz", hash = "sha256:a24f9dd803c44bfb599476b000f9bd0088f7ac2401e6c20818f38d8af12785a0"},
+    {file = "fastavro-1.4.11-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:44f01008f95d685edacc4b10366c755d25612df00924349f7d34a29f08522ce3"},
+    {file = "fastavro-1.4.11-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:18f5e736d12e67348f253da8a332d7c3b483ca04f2b6e772befa79d1a46bac9d"},
+    {file = "fastavro-1.4.11-cp310-cp310-win_amd64.whl", hash = "sha256:8dca11bc3191cd7de0a3c4b76a70dac493356a219e96ebcde0def1f06faddef7"},
+    {file = "fastavro-1.4.11-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:7a2a0bf03686f9d860e8f8476be000f5b3e6cc9af6853dbabab2ef9cfa5dc3a0"},
+    {file = "fastavro-1.4.11-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0c17e3decfac260e1be4d02d1903d2483eec2f3ce7f92c9b808a0f6a81572c4b"},
+    {file = "fastavro-1.4.11-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:19ba25c6529f50722a7618cc4ca24c7d265def57fd9f94e4e554e1df8cce38d2"},
+    {file = "fastavro-1.4.11-cp37-cp37m-win_amd64.whl", hash = "sha256:ceaba04da9419f40899a670eb62eb373a127b511bb8e3ae4f6f1f23ec49bd0e4"},
+    {file = "fastavro-1.4.11-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:732eab3a1ae5d2c3f4b52e747c55bcc41c4df0eb7e8a395038080741a3c0a934"},
+    {file = "fastavro-1.4.11-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c03d3c802b71f44e7b3442abae961bba996258244bd222b242ad1e5cb7754e57"},
+    {file = "fastavro-1.4.11-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e7cb7475a9b25b9f8aebe7eb756dafedd0369434571062f3883d894281befd7c"},
+    {file = "fastavro-1.4.11-cp38-cp38-win_amd64.whl", hash = "sha256:ce0776f54591aef90bcd02bd919964abe4c2ad2a10a4336c3a1b66cef289b41c"},
+    {file = "fastavro-1.4.11-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:621e72cc365c9539d7590e7b43e48a62e6bfb4c2de7c16837fed54d113d7312c"},
+    {file = "fastavro-1.4.11-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:842b25782f911ee8c626f9d9fedc2ef01aeac272536fe90ee6d45b2ae7cdb024"},
+    {file = "fastavro-1.4.11-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f8491bfcba25c9d661289f884688e5a4f56f2ee389a240d0ad02692495a9a087"},
+    {file = "fastavro-1.4.11-cp39-cp39-win_amd64.whl", hash = "sha256:c94130a8c8d80073eb0276844915aa5e928ae322024e76dc57943542ccda211c"},
+    {file = "fastavro-1.4.11.tar.gz", hash = "sha256:7c64332ad52de0134be9a933ca986514c3ff85c63d54bc5398c31f0498ac1820"},
 ]
 flake8 = [
     {file = "flake8-4.0.1-py2.py3-none-any.whl", hash = "sha256:479b1304f72536a55948cb40a32dce8bb0ffe3501e26eaf292c7e60eb5e0428d"},
@@ -722,8 +722,8 @@ pyparsing = [
     {file = "pyparsing-3.0.8.tar.gz", hash = "sha256:7bf433498c016c4314268d95df76c81b842a4cb2b276fa3312cfb1e1d85f6954"},
 ]
 pytest = [
-    {file = "pytest-7.1.1-py3-none-any.whl", hash = "sha256:92f723789a8fdd7180b6b06483874feca4c48a5c76968e03bb3e7f806a1869ea"},
-    {file = "pytest-7.1.1.tar.gz", hash = "sha256:841132caef6b1ad17a9afde46dc4f6cfa59a05f9555aae5151f73bdf2820ca63"},
+    {file = "pytest-7.1.2-py3-none-any.whl", hash = "sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c"},
+    {file = "pytest-7.1.2.tar.gz", hash = "sha256:a06a0425453864a270bc45e71f783330a7428defb4230fb5e6a731fde06ecd45"},
 ]
 pyyaml = [
     {file = "PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:d4db7c7aef085872ef65a8fd7d6d09a14ae91f691dec3e87ee5ee0539d516f53"},

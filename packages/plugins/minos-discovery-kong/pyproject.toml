@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-discovery-kong"
-version = "0.7.0.dev3"
+version = "0.7.0.dev4"
 description = "The minos-kong plugin offer an interface that permit integrate Minos Microservice with Kong API Gateway"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
@@ -22,12 +22,12 @@ keywords = [
     "kong"
 ]
 packages = [
-    { include = "minos" }
+    { include = "minos" },
 ]
 include = [
-    "AUTHORS.md",
-    "HISTORY.md",
-    "LICENSE",
+    { path = "AUTHORS.md", format = "sdist" },
+    { path = "HISTORY.md", format = "sdist" },
+    { path = "LICENSE", format = "sdist" },
 ]
 
 [tool.poetry.dependencies]
