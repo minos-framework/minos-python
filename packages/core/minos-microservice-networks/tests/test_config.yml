@@ -16,31 +16,12 @@ rest:
     host: localhost
     port: 8080
 repository:
+    client: minos.common.testing.MockedDatabaseClient
     database: order_db
     user: minos
     password: min0s
     host: localhost
     port: 5432
-snapshot:
-    database: order_db
-    user: minos
-    password: min0s
-    host: localhost
-    port: 5432
-broker:
-  host: localhost
-  port: 9092
-  queue:
-    database: order_db
-    user: minos
-    password: min0s
-    host: localhost
-    port: 5432
-    records: 10
-    retry: 2
-saga:
-    storage:
-        path: "./order.lmdb"
 discovery:
     client: minos.networks.InMemoryDiscoveryClient
     host: discovery-service

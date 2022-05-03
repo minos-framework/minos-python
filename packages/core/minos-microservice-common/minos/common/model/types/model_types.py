@@ -87,8 +87,15 @@ class ModelType(type):
         :param model: The model class.
         :return: A new ``ModelType`` instance.
         """
+        from .builders import (
+            TypeHintParser,
+        )
+
+        type_hints = GenericTypeProjector.from_model(model).build()
+        type_hints = {k: TypeHintParser(v).build() for k, v in type_hints.items()}
+
         # noinspection PyTypeChecker
-        return ModelType.build(name_=model.classname, type_hints_=GenericTypeProjector.from_model(model).build())
+        return ModelType.build(name_=model.classname, type_hints_=type_hints)
 
     def __call__(cls, *args, **kwargs) -> Model:
         return cls.model_cls.from_model_type(cls, *args, **kwargs)

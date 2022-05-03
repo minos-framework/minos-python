@@ -79,10 +79,7 @@ class DiscoveryConnector(SetupMixin):
         discovery_config = config.get_discovery()
 
         client_cls = cls._client_cls_from_config(discovery_config)
-        client_host = discovery_config.get("host")
-        client_port = discovery_config.get("port")
-
-        return client_cls(host=client_host, port=client_port)
+        return client_cls.from_config(config)
 
     @staticmethod
     def _client_cls_from_config(discovery_config: dict[str, Any]) -> type[DiscoveryClient]:
@@ -104,7 +101,8 @@ class DiscoveryConnector(SetupMixin):
         for name in config.get_services():
             decorators = EnrouteCollector(name, config).get_rest_command_query()
             endpoints += [
-                {"url": decorator.url, "method": decorator.method} for decorator in set(chain(*decorators.values()))
+                {"url": decorator.url, "method": decorator.method} | decorator.kwargs
+                for decorator in set(chain(*decorators.values()))
             ]
 
         endpoints.sort(key=itemgetter("url", "method"))

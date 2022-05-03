@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 from pathlib import (
     Path,
 )
@@ -8,11 +12,20 @@ from minos.common import (
     Injectable,
     Lock,
     LockPool,
+    Pool,
     Port,
+    testing,
 )
 
 BASE_PATH = Path(__file__).parent
-CONFIG_FILE_PATH = BASE_PATH / "config" / "v1.yml"
+CONFIG_FILE_PATH = BASE_PATH / "config" / "v2.yml"
+
+
+class CommonTestCase(testing.MinosTestCase):
+    testing_module = testing
+
+    def get_config_file_path(self) -> Path:
+        return CONFIG_FILE_PATH
 
 
 class FakeEntrypoint:
@@ -65,8 +78,11 @@ class FakeLock(Lock):
             key = "fake"
         super().__init__(key, *args, **kwargs)
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        return
+    async def acquire(self) -> None:
+        """For testing purposes."""
+
+    async def release(self):
+        """For testing purposes."""
 
 
 class FakeLockPool(LockPool):
@@ -148,13 +164,11 @@ class FakeBrokerSubscriberBuilder(Builder[FakeBrokerSubscriber]):
 FakeBrokerSubscriber.set_builder(FakeBrokerSubscriberBuilder)
 
 
-@Injectable("database_pool")
-class FakeDatabasePool:
+class FakeDatabasePool(Pool):
     """For testing purposes."""
 
 
-@Injectable("broker_pool")
-class FakeBrokerClientPool:
+class FakeBrokerClientPool(Pool):
     """For testing purposes."""
 
 

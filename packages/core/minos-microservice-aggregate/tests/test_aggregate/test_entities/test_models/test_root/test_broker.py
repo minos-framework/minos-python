@@ -14,13 +14,13 @@ from minos.networks import (
     BrokerMessageV1,
 )
 from tests.utils import (
+    AggregateTestCase,
     Car,
-    MinosTestCase,
     Owner,
 )
 
 
-class TestRootEntityBroker(MinosTestCase):
+class TestRootEntityBroker(AggregateTestCase):
     async def test_create(self):
         car = await Car.create(doors=3, color="blue")
 

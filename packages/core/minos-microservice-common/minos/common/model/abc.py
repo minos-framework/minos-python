@@ -114,11 +114,11 @@ class Model(Mapping):
     # noinspection PyUnusedLocal
     @classmethod
     def from_avro_bytes(cls: Type[T], raw: bytes, batch_mode: bool = False, **kwargs) -> Union[T, list[T]]:
-        """Build a single instance or a sequence of instances from bytes
+        """Build a single instance or a sequence of instances from bytes.
 
         :param raw: A ``bytes`` representation of the model.
         :param batch_mode: If ``True`` the data is processed as a list of models, otherwise the data is processed as a
-        single model.
+            single model.
         :param kwargs: Additional named arguments.
         :return: A single instance or a sequence of instances.
         """
