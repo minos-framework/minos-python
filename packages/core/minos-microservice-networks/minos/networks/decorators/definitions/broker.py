@@ -17,7 +17,8 @@ from .kinds import (
 class BrokerEnrouteDecorator(EnrouteDecorator, ABC):
     """Broker Enroute class"""
 
-    def __init__(self, topic: str):
+    def __init__(self, topic: str, **kwargs):
+        super().__init__(**kwargs)
         self.topic = topic
 
     def __iter__(self) -> Iterable:

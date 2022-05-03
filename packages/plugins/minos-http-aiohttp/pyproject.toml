@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "minos-http-aiohttp"
-version = "0.6.0"
-description = "The aiohttp plugin of the Minos Framework."
+version = "0.7.0.dev1"
+description = "The aiohttp plugin of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
 homepage = "https://www.minos.run/"
@@ -31,8 +31,8 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.6.0"
-minos-microservice-networks = "^0.6.0"
+minos-microservice-common = { version ="^0.7.0*", allow-prereleases = true }
+minos-microservice-networks = { version ="^0.7.0*", allow-prereleases = true }
 aiohttp = "^3.8.1"
 orjson = "^3.6.7"
 cached-property = "^1.5.2"
@@ -45,12 +45,6 @@ isort = "^5.8.0"
 pytest = "^6.2.4"
 coverage = "^6.3"
 flake8 = "^4.0.1"
-Sphinx = "^4.0.1"
-pre-commit = "^2.12.1"
-sphinx-autodoc-typehints = "^1.12.0"
-sphinxcontrib-apidoc = "^0.3.0"
-sphinx-rtd-theme = "^1.0.0"
-m2r2 = "^0.3.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

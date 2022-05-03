@@ -73,14 +73,12 @@ class TestModelAvro(unittest.IsolatedAsyncioTestCase):
                 "fields": [
                     {
                         "name": "user",
-                        "type": [
-                            {
-                                "fields": [{"name": "username", "type": "string"}],
-                                "name": "GenericUser",
-                                "namespace": "tests.model_classes.goodbye",
-                                "type": "record",
-                            }
-                        ],
+                        "type": {
+                            "fields": [{"name": "username", "type": "string"}],
+                            "name": "GenericUser",
+                            "namespace": "tests.model_classes.goodbye",
+                            "type": "record",
+                        },
                     }
                 ],
                 "name": "Auth",

@@ -6,8 +6,9 @@ from .entries import (
     TransactionStatus,
 )
 from .repositories import (
+    DatabaseTransactionRepository,
     InMemoryTransactionRepository,
-    PostgreSqlTransactionRepository,
+    TransactionDatabaseOperationFactory,
     TransactionRepository,
 )
 from .services import (

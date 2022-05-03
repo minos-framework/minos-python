@@ -70,6 +70,10 @@ class TestEnrouteHandleDecorator(unittest.IsolatedAsyncioTestCase):
         wrapper = self.decorator(_fn)
         self.assertEqual(Response("Fn"), wrapper(self.request))
 
+    def test_kwargs(self):
+        self.decorator = _FakeEnrouteDecorator(foo="foo", bar="bar")
+        self.assertEqual({"foo": "foo", "bar": "bar"}, self.decorator.kwargs)
+
     async def test_async_function_call(self):
         wrapper = self.decorator(_async_fn)
         self.assertEqual(Response("Async Fn: test"), await wrapper(self.request))
