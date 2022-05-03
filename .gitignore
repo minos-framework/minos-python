@@ -323,7 +323,7 @@ $RECYCLE.BIN/
 *.lmdb
 
 # Sphinx Api Documentation
-**/docs/api*
+**/docs/api-reference*
 **/docs/_build
 
 tutorials/stock-wallet/front/stock-front

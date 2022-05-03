@@ -11,13 +11,13 @@ from minos.common import (
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
-    MinosTestCase,
+    AggregateTestCase,
     Order,
     OrderAggregate,
 )
 
 
-class TestAggregate(MinosTestCase):
+class TestAggregate(AggregateTestCase):
     async def test_root(self):
         async with OrderAggregate.from_config(CONFIG_FILE_PATH) as aggregate:
             self.assertEqual(Order, aggregate.root)

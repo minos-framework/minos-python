@@ -41,9 +41,6 @@ from minos.networks import (
     BrokerMessage,
     BrokerSubscriber,
     BrokerSubscriberBuilder,
-    InMemoryBrokerSubscriberQueueBuilder,
-    PostgreSqlBrokerSubscriberQueueBuilder,
-    QueuedBrokerSubscriberBuilder,
 )
 
 from .common import (
@@ -169,10 +166,9 @@ class KafkaBrokerSubscriber(BrokerSubscriber, KafkaCircuitBreakerMixin):
     async def _receive(self) -> BrokerMessage:
         try:
             record = await self.client.getone()
-        except ConsumerStoppedError as exc:
-            if self.already_destroyed:
-                raise StopAsyncIteration
-            raise exc
+        except ConsumerStoppedError:
+            raise StopAsyncIteration
+
         bytes_ = record.value
         message = BrokerMessage.from_avro_bytes(bytes_)
         return message
@@ -196,27 +192,3 @@ class KafkaBrokerSubscriberBuilder(BrokerSubscriberBuilder[KafkaBrokerSubscriber
 
 
 KafkaBrokerSubscriber.set_builder(KafkaBrokerSubscriberBuilder)
-
-
-class PostgreSqlQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):
-    """PostgreSql Queued Kafka Broker Subscriber Builder class."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args,
-            impl_builder=KafkaBrokerSubscriberBuilder.new(),
-            queue_builder=PostgreSqlBrokerSubscriberQueueBuilder.new(),
-            **kwargs,
-        )
-
-
-class InMemoryQueuedKafkaBrokerSubscriberBuilder(QueuedBrokerSubscriberBuilder):
-    """In Memory Queued Kafka Broker Subscriber Builder class."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args,
-            impl_builder=KafkaBrokerSubscriberBuilder.new(),
-            queue_builder=InMemoryBrokerSubscriberQueueBuilder.new(),
-            **kwargs,
-        )
