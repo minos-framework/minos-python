@@ -7,13 +7,11 @@ from datetime import (
     datetime,
 )
 from typing import (
-    Optional,
     Type,
     TypeVar,
 )
 from uuid import (
     UUID,
-    uuid4,
 )
 
 from minos.common import (
@@ -35,27 +33,6 @@ class Entity(DeclarativeModel):
 
     uuid: UUID
 
-    def __init__(self, *args, uuid: Optional[UUID] = None, **kwargs):
-        if uuid is None:
-            uuid = uuid4()
-        super().__init__(uuid, *args, **kwargs)
-
-
-class ExternalEntity(Entity):
-    """External Entity class."""
-
-    version: int
-
-    def __init__(self, uuid: UUID, *args, **kwargs):
-        super().__init__(uuid=uuid, *args, **kwargs)
-
-
-T = TypeVar("T", bound="RootEntity")
-
-
-class RootEntity(Entity):
-    """Base Root Entity class."""
-
     version: int
     created_at: datetime
     updated_at: datetime
@@ -70,14 +47,14 @@ class RootEntity(Entity):
         **kwargs,
     ):
 
-        super().__init__(version, created_at, updated_at, *args, uuid=uuid, **kwargs)
+        super().__init__(uuid, version, created_at, updated_at, *args, **kwargs)
 
-    def diff(self, another: RootEntity) -> Delta:
+    def diff(self, another: Entity) -> Delta:
         """Compute the difference with another instance.
 
-        Both ``RootEntity`` instances (``self`` and ``another``) must share the same ``uuid`` value.
+        Both ``Entity`` instances (``self`` and ``another``) must share the same ``uuid`` value.
 
-        :param another: Another ``RootEntity`` instance.
+        :param another: Another ``Entity`` instance.
         :return: An ``FieldDiffContainer`` instance.
         """
         return Delta.from_difference(self, another)
@@ -113,7 +90,7 @@ class RootEntity(Entity):
         :param delta: The difference that contains the data.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
-        :return: A new ``RootEntity`` instance.
+        :return: A new ``Entity`` instance.
         """
         return cls(
             *args,
@@ -124,3 +101,17 @@ class RootEntity(Entity):
             **delta.get_fields(),
             **kwargs,
         )
+
+
+class ExternalEntity(DeclarativeModel):
+    """External Entity class."""
+
+    uuid: UUID
+    version: int
+
+
+T = TypeVar("T", bound=Entity)
+
+
+class RootEntity(Entity):
+    """Base Root Entity class."""

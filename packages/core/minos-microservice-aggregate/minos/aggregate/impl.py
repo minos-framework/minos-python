@@ -37,14 +37,14 @@ from .deltas import (
     IncrementalFieldDiff,
 )
 from .entities import (
+    Entity,
     EntityRepository,
-    RootEntity,
 )
 from .snapshots import (
     SnapshotRepository,
 )
 
-RT = TypeVar("RT", bound=RootEntity)
+RT = TypeVar("RT", bound=Entity)
 
 
 @Injectable("aggregate")
@@ -119,16 +119,16 @@ class Aggregate(Generic[RT], SetupMixin):
         self.root  # If root is not valid it will raise an exception.
 
     @property
-    def root(self) -> type[RootEntity]:
+    def root(self) -> type[Entity]:
         """Get the root entity of the aggregate.
 
-        :return: A ``RootEntity`` type.
+        :return: A ``Entity`` type.
         """
         # noinspection PyUnresolvedReferences
         bases = self.__orig_bases__
         root = get_args(next((base for base in bases if len(get_args(base))), None))[0]
-        if not isinstance(root, type) or not issubclass(root, RootEntity):
-            raise TypeError(f"{type(self)!r} must contain a {RootEntity!r} as generic value.")
+        if not isinstance(root, type) or not issubclass(root, Entity):
+            raise TypeError(f"{type(self)!r} must contain a {Entity!r} as generic value.")
         return root
 
     async def publish_domain_event(self, delta: Optional[Delta]) -> None:

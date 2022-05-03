@@ -23,7 +23,6 @@ from minos.aggregate import (
     InMemoryDeltaRepository,
     InMemorySnapshotRepository,
     Ref,
-    RootEntity,
     ValueObject,
     ValueObjectSet,
     testing,
@@ -127,7 +126,7 @@ class FakeLockPool(LockPool):
         """For testing purposes."""
 
 
-class Owner(RootEntity):
+class Owner(Entity):
     """For testing purposes"""
 
     name: str
@@ -135,7 +134,7 @@ class Owner(RootEntity):
     age: Optional[int]
 
 
-class Car(RootEntity):
+class Car(Entity):
     """For testing purposes"""
 
     doors: int
@@ -143,7 +142,7 @@ class Car(RootEntity):
     owner: Optional[Ref[Owner]]
 
 
-class Order(RootEntity):
+class Order(Entity):
     """For testing purposes"""
 
     products: EntitySet[OrderItem]

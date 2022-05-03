@@ -25,12 +25,12 @@ from minos.aggregate import (
     AlreadyDeletedException,
     Condition,
     DeltaEntry,
+    Entity,
     FieldDiff,
     FieldDiffContainer,
     NotFoundException,
     Ordering,
     Ref,
-    RootEntity,
     SnapshotEntry,
     SnapshotRepository,
 )
@@ -52,14 +52,14 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
 
     snapshot_repository: SnapshotRepository
 
-    class Owner(RootEntity):
+    class Owner(Entity):
         """For testing purposes"""
 
         name: str
         surname: str
         age: Optional[int]
 
-    class Car(RootEntity):
+    class Car(Entity):
         """For testing purposes"""
 
         doors: int
