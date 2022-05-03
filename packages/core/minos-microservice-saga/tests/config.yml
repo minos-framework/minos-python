@@ -1,6 +1,10 @@
-service:
-    name: order
-    aggregate: tests.utils.Order
-saga:
-    storage:
-        path: "./order.lmdb"
+version: 2
+name: order
+
+databases:
+  saga:
+    client: minos.common.testing.MockedDatabaseClient
+    path: "./order.lmdb"
+
+pools:
+  database: minos.common.DatabaseClientPool

@@ -31,6 +31,7 @@ from .types import (
     MissingSentinel,
     TypeHintBuilder,
     TypeHintComparator,
+    TypeHintParser,
 )
 
 logger = logging.getLogger(__name__)
@@ -64,7 +65,7 @@ class Field:
     @property
     def type(self) -> type:
         """Type getter."""
-        return self._type
+        return TypeHintParser(self._type).build()
 
     @property
     def real_type(self) -> type:

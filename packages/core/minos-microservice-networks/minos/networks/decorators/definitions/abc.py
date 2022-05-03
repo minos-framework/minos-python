@@ -30,6 +30,9 @@ class EnrouteDecorator(ABC):
     # noinspection PyFinal
     KIND: Final[EnrouteDecoratorKind]
 
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
     def __call__(self, func: Union[Handler, HandlerWrapper]) -> HandlerWrapper:
         if isinstance(func, HandlerWrapper):
             meta = func.meta

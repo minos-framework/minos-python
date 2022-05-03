@@ -19,7 +19,8 @@ from minos.networks import (
 class GraphQlEnrouteDecorator(EnrouteDecorator, ABC):
     """GraphQl Enroute Decorator class"""
 
-    def __init__(self, name: str, output, argument: Optional = None):
+    def __init__(self, name: str, output, argument: Optional = None, **kwargs):
+        super().__init__(**kwargs)
         self.name = name
         self.argument = argument
         self.output = output

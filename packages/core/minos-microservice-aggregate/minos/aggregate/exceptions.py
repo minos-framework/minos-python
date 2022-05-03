@@ -40,7 +40,7 @@ class TransactionRepositoryException(AggregateException):
 
 
 class TransactionRepositoryConflictException(TransactionRepositoryException):
-    """Exception to be raised when a transactions has invalid status."""
+    """Exception to be raised when a transaction has invalid status."""
 
 
 class TransactionNotFoundException(TransactionRepositoryException):
