@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-microservice-cqrs"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The CQRS pattern of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"

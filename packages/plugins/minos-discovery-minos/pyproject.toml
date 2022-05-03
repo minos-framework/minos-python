@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-discovery-minos"
-version = "0.7.0.dev1"
+version = "0.7.0.dev4"
 description = "The minos-discovery plugin of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
