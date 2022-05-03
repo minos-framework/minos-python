@@ -2,37 +2,34 @@ import unittest
 
 from minos.aggregate import (
     AlreadyDeletedException,
+    DatabaseEventRepository,
+    DatabaseSnapshotRepository,
+    DatabaseTransactionRepository,
     EntitySet,
-    PostgreSqlEventRepository,
-    PostgreSqlSnapshotRepository,
-    PostgreSqlTransactionRepository,
     ValueObjectSet,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    AggregateTestCase,
     Car,
-    MinosTestCase,
     Order,
     OrderItem,
     Review,
 )
 
 
-class TestExternalEntityWithPostgreSql(MinosTestCase, PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestExternalEntityWithDatabase(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self):
         super().setUp()
 
-        self.transaction_repository = PostgreSqlTransactionRepository.from_config(self.config)
+        self.transaction_repository = DatabaseTransactionRepository.from_config(self.config)
 
-        self.event_repository = PostgreSqlEventRepository.from_config(
+        self.event_repository = DatabaseEventRepository.from_config(
             self.config, transaction_repository=self.transaction_repository
         )
-        self.snapshot_repository = PostgreSqlSnapshotRepository.from_config(
+        self.snapshot_repository = DatabaseSnapshotRepository.from_config(
             self.config, event_repository=self.event_repository, transaction_repository=self.transaction_repository
         )
 

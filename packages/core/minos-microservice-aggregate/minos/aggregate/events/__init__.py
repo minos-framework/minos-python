@@ -10,7 +10,8 @@ from .models import (
     Event,
 )
 from .repositories import (
+    DatabaseEventRepository,
+    EventDatabaseOperationFactory,
     EventRepository,
     InMemoryEventRepository,
-    PostgreSqlEventRepository,
 )

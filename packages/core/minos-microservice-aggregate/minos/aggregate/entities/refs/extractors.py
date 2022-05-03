@@ -61,7 +61,11 @@ class RefExtractor:
             self._build_iterable(value.values(), get_args(type_)[1], ans)
 
         elif isinstance(value, Ref):
-            cls = value.data_cls or get_args(type_)[0]
+            cls = value.data_cls
+            if cls is None and len(args := get_args(type_)):
+                cls = args[0]
+            if cls is None and len(args := get_args(type_.type_hints["data"])):
+                cls = args[0]
             name = cls.__name__
             ans[name].add(value)
 

@@ -1,0 +1,10 @@
+version: 2
+name: order
+databases:
+  default:
+    client: minos.common.testing.MockedDatabaseClient
+  saga:
+    client: minos.plugins.lmdb.LmdbDatabaseClient
+    path: "./saga.lmdb"
+pools:
+  database: minos.common.DatabaseClientPool

@@ -1,7 +1,7 @@
 from .queues import (
     BrokerQueue,
+    BrokerQueueDatabaseOperationFactory,
+    DatabaseBrokerQueue,
+    DatabaseBrokerQueueBuilder,
     InMemoryBrokerQueue,
-    PostgreSqlBrokerQueue,
-    PostgreSqlBrokerQueueBuilder,
-    PostgreSqlBrokerQueueQueryFactory,
 )

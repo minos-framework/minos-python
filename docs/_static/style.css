@@ -1,3 +1,11 @@
 .wy-nav-content {
     max-width: 1200px !important;
 }
+
+dl[class*="py"] {
+    display: block !important;
+}
+
+dl[class*="py"] > dt {
+    display: block !important;
+}
