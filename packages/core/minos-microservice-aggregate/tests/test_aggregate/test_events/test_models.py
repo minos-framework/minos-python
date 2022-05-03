@@ -19,13 +19,13 @@ from minos.common import (
     current_datetime,
 )
 from tests.utils import (
+    AggregateTestCase,
     Car,
-    MinosTestCase,
     Owner,
 )
 
 
-class TestEvent(MinosTestCase):
+class TestEvent(AggregateTestCase):
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
 

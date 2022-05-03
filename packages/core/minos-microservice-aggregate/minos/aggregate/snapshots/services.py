@@ -30,7 +30,7 @@ from minos.networks import (
     enroute,
 )
 
-from .abc import (
+from .repositories import (
     SnapshotRepository,
 )
 

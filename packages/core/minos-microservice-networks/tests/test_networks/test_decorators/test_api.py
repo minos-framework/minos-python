@@ -16,9 +16,25 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
         decorator = enroute.rest.command(path="tickets/", method="GET")
         self.assertEqual(RestCommandEnrouteDecorator("tickets/", "GET"), decorator)
 
+    def test_rest_command_kwargs(self):
+        decorator = enroute.rest.command(
+            path="tickets/",
+            method="GET",
+            foo="bar",
+        )
+        self.assertEqual({"foo": "bar"}, decorator.kwargs)
+
     def test_rest_query(self):
         decorator = enroute.rest.query(path="tickets/", method="GET")
         self.assertEqual(RestQueryEnrouteDecorator("tickets/", "GET"), decorator)
+
+    def test_rest_query_kwargs(self):
+        decorator = enroute.rest.query(
+            path="tickets/",
+            method="GET",
+            foo="bar",
+        )
+        self.assertEqual({"foo": "bar"}, decorator.kwargs)
 
     def test_rest_event_raises(self):
         with self.assertRaises(AttributeError):

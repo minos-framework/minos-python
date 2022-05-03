@@ -1,44 +1,37 @@
 import unittest
 from unittest.mock import (
-    PropertyMock,
     patch,
 )
 
-import aiopg
-from aiopg import (
-    Connection,
-)
-from psycopg2 import (
-    OperationalError,
-)
-
 from minos.common import (
-    PostgreSqlLock,
-    PostgreSqlLockPool,
-    PostgreSqlPool,
+    Config,
+    ConnectionException,
+    DatabaseClient,
+    DatabaseClientBuilder,
+    DatabaseClientPool,
+    DatabaseLock,
+    DatabaseLockPool,
+    classname,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
+    MockedDatabaseClient,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
+    CommonTestCase,
 )
 
 
-class TestPostgreSqlPool(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestDatabaseClientPool(CommonTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.pool = PostgreSqlPool.from_config(self.config)
+        self.pool = DatabaseClientPool.from_config(self.config)
 
     def test_constructor(self):
-        pool = PostgreSqlPool("foo")
-        self.assertEqual("foo", pool.database)
-        self.assertEqual("postgres", pool.user)
-        self.assertEqual("", pool.password)
-        self.assertEqual("localhost", pool.host)
-        self.assertEqual(5432, pool.port)
+        builder = DatabaseClientBuilder()
+        pool = DatabaseClientPool(builder)
+        self.assertEqual(builder, pool.client_builder)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -49,45 +42,51 @@ class TestPostgreSqlPool(PostgresAsyncTestCase):
         await super().asyncTearDown()
 
     def test_from_config(self):
-        repository_config = self.config.get_database_by_name("event")
-        self.assertEqual(repository_config["database"], self.pool.database)
-        self.assertEqual(repository_config["user"], self.pool.user)
-        self.assertEqual(repository_config["password"], self.pool.password)
-        self.assertEqual(repository_config["host"], self.pool.host)
-        self.assertEqual(repository_config["port"], self.pool.port)
+        pool = DatabaseClientPool.from_config(self.config, key="event")
+        self.assertIsInstance(pool.client_builder, DatabaseClientBuilder)
+        self.assertEqual(MockedDatabaseClient, pool.client_builder.instance_cls)
 
-    async def test_acquire(self):
+    def test_from_config_client_builder(self):
+        config = Config(CONFIG_FILE_PATH, databases_default_client=classname(DatabaseClientBuilder))
+        pool = DatabaseClientPool.from_config(config)
+        self.assertIsInstance(pool.client_builder, DatabaseClientBuilder)
+
+    def test_from_config_client_none(self):
+        config = Config(CONFIG_FILE_PATH, databases_default_client=None)
+        with self.assertRaises(ValueError):
+            DatabaseClientPool.from_config(config)
+
+    async def test_acquire_once(self):
         async with self.pool.acquire() as c1:
-            self.assertIsInstance(c1, Connection)
+            self.assertIsInstance(c1, DatabaseClient)
+
+    async def test_acquire_multiple_recycle(self):
+        async with self.pool.acquire() as c1:
+            pass
         async with self.pool.acquire() as c2:
             self.assertEqual(c1, c2)
 
-    async def test_acquire_with_error(self):
-        with patch("aiopg.Connection.isolation_level", new_callable=PropertyMock, side_effect=(OperationalError, None)):
-            async with self.pool.acquire() as connection:
-                self.assertIsInstance(connection, Connection)
+    async def test_acquire_multiple_same_time(self):
+        async with self.pool.acquire() as c1:
+            async with self.pool.acquire() as c2:
+                self.assertNotEqual(c1, c2)
 
-    async def test_acquire_with_connection_error(self):
-        executed = [False]
-        original = aiopg.connect
+    async def test_acquire_with_reset(self):
+        with patch.object(MockedDatabaseClient, "reset") as reset_mock:
+            async with self.pool.acquire():
+                self.assertEqual(0, reset_mock.call_count)
+        self.assertEqual(1, reset_mock.call_count)
 
-        def _side_effect(*args, **kwargs):
-            if not executed[0]:
-                executed[0] = True
-                raise OperationalError
-            return original(*args, **kwargs)
-
-        with patch("aiopg.connect", side_effect=_side_effect):
-            async with self.pool.acquire() as connection:
-                self.assertIsInstance(connection, Connection)
+    async def test_acquire_with_raises(self):
+        with patch.object(MockedDatabaseClient, "setup", side_effect=[ConnectionException(""), None]):
+            async with self.pool.acquire() as client:
+                self.assertIsInstance(client, MockedDatabaseClient)
 
 
-class TestPostgreSqlLockPool(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestDatabaseLockPool(CommonTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.pool = PostgreSqlLockPool.from_config(self.config)
+        self.pool = DatabaseLockPool.from_config(self.config)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -99,7 +98,7 @@ class TestPostgreSqlLockPool(PostgresAsyncTestCase):
 
     async def test_acquire(self):
         async with self.pool.acquire("foo") as lock:
-            self.assertIsInstance(lock, PostgreSqlLock)
+            self.assertIsInstance(lock, DatabaseLock)
             self.assertEqual("foo", lock.key)
 
 
