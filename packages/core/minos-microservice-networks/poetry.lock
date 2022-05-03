@@ -199,7 +199,11 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
+<<<<<<< HEAD
+version = "0.6.1"
+=======
 version = "0.7.0.dev2"
+>>>>>>> origin/0.7.0
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
@@ -382,7 +386,11 @@ test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
+<<<<<<< HEAD
+content-hash = "d5f8ad9c8522f5daf4ab000f252e1c0d0dd602adbb8f1976760afb2ed1322def"
+=======
 content-hash = "fb90fd955533067f90236079e7f071d3f45f6d4cf0d28398f4a1ac2654576755"
+>>>>>>> origin/0.7.0
 
 [metadata.files]
 aiomisc = [
