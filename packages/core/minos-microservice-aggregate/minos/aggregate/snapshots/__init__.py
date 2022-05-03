@@ -1,18 +1,11 @@
-from .abc import (
-    SnapshotRepository,
-)
 from .entries import (
     SnapshotEntry,
 )
-from .memory import (
+from .repositories import (
+    DatabaseSnapshotRepository,
     InMemorySnapshotRepository,
-)
-from .pg import (
-    PostgreSqlSnapshotQueryBuilder,
-    PostgreSqlSnapshotReader,
-    PostgreSqlSnapshotRepository,
-    PostgreSqlSnapshotSetup,
-    PostgreSqlSnapshotWriter,
+    SnapshotDatabaseOperationFactory,
+    SnapshotRepository,
 )
 from .services import (
     SnapshotService,

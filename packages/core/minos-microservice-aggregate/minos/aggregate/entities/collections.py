@@ -140,6 +140,8 @@ class EntitySet(IncrementalSet[T]):
         :param type_: The data type.
         :return: A decoded instance.
         """
+        data_cls = get_args(type_.type_hints["data"])[1]
+        target = {decoder.build(v, data_cls, **kwargs) for v in target}
         target = {str(v["uuid"]): v for v in target}
         decoded = decoder.build(target, type_.type_hints["data"], **kwargs)
         return cls(decoded, additional_type_hints=type_.type_hints)

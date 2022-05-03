@@ -31,5 +31,6 @@ from .types import (
     NoneType,
     TypeHintBuilder,
     TypeHintComparator,
+    TypeHintParser,
     is_model_type,
 )

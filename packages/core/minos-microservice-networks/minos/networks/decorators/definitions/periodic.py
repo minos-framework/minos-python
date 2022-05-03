@@ -32,7 +32,8 @@ if TYPE_CHECKING:
 class PeriodicEnrouteDecorator(EnrouteDecorator, ABC):
     """Periodic Enroute class"""
 
-    def __init__(self, crontab: Union[str, CronTab, CronTabImpl]):
+    def __init__(self, crontab: Union[str, CronTab, CronTabImpl], **kwargs):
+        super().__init__(**kwargs)
         from ...scheduling import (
             CronTab,
         )

@@ -18,12 +18,12 @@ from minos.common import (
     current_datetime,
 )
 from tests.utils import (
+    AggregateTestCase,
     Car,
-    MinosTestCase,
 )
 
 
-class TestRootEntity(MinosTestCase):
+class TestRootEntity(AggregateTestCase):
     async def test_create(self):
         observed = await Car.create(doors=3, color="blue")
         expected = Car(

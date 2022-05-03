@@ -38,7 +38,7 @@ class BrokerHandler(SetupMixin):
     """Broker Handler class."""
 
     def __init__(
-        self, dispatcher: BrokerDispatcher, subscriber: BrokerSubscriber, concurrency: int = 15, *args, **kwargs
+        self, dispatcher: BrokerDispatcher, subscriber: BrokerSubscriber, concurrency: int = 5, *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
 

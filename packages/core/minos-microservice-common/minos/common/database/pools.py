@@ -9,19 +9,12 @@ from typing import (
     Optional,
 )
 
-import aiopg
 from aiomisc.pool import (
     ContextManager,
 )
-from aiopg import (
-    Connection,
-)
-from psycopg2 import (
-    OperationalError,
-)
 
-from ..injections import (
-    Injectable,
+from ..config import (
+    Config,
 )
 from ..locks import (
     LockPool,
@@ -29,86 +22,101 @@ from ..locks import (
 from ..pools import (
     Pool,
 )
+from .clients import (
+    ConnectionException,
+    DatabaseClient,
+    DatabaseClientBuilder,
+)
 from .locks import (
-    PostgreSqlLock,
+    DatabaseLock,
 )
 
 logger = logging.getLogger(__name__)
 
 
-@Injectable("postgresql_pool")
-class PostgreSqlPool(Pool[ContextManager]):
-    """Postgres Pool class."""
+class DatabaseClientPool(Pool[DatabaseClient]):
+    """Database Client Pool class."""
 
-    def __init__(
-        self,
-        database: str,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
-        user: Optional[str] = None,
-        password: Optional[str] = None,
-        *args,
-        **kwargs,
-    ):
+    def __init__(self, client_builder: DatabaseClientBuilder, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if host is None:
-            host = "localhost"
-        if port is None:
-            port = 5432
-        if user is None:
-            user = "postgres"
-        if password is None:
-            password = ""
-
-        self.database = database
-        self.host = host
-        self.port = port
-        self.user = user
-        self.password = password
+        self._client_builder = client_builder
 
     @classmethod
-    def _from_config(cls, *args, config, **kwargs):
-        return cls(*args, **config.get_default_database(), **kwargs)
+    def _from_config(cls, config: Config, identifier: Optional[str] = None, **kwargs):
+        base_builder = config.get_database_by_name(identifier).get("client")
+        if base_builder is None:
+            raise ValueError(f"{base_builder!r} is not a {DatabaseClientBuilder!r} instance.")
+        elif issubclass(base_builder, DatabaseClient):
+            base_builder = base_builder.get_builder()
+        elif issubclass(base_builder, DatabaseClientBuilder):
+            base_builder = base_builder()
 
-    async def _create_instance(self) -> Optional[Connection]:
+        client_builder = base_builder.with_name(identifier).with_config(config)
+
+        return cls(client_builder=client_builder, **kwargs)
+
+    async def _create_instance(self) -> Optional[DatabaseClient]:
+        instance = self._client_builder.build()
+
         try:
-            connection = await aiopg.connect(
-                host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password
-            )
-        except OperationalError as exc:
-            logger.warning(f"There was an {exc!r} while trying to get a database connection.")
-            await sleep(1)
+            await instance.setup()
+        except ConnectionException:
+            await sleep(0.1)
             return None
 
-        logger.info(f"Created {self.database!r} database connection identified by {id(connection)}!")
-        return connection
+        logger.info(f"Created {instance!r}!")
+        return instance
 
-    async def _destroy_instance(self, instance: Connection):
-        if not instance.closed:
-            await instance.close()
-        logger.info(f"Destroyed {self.database!r} database connection identified by {id(instance)}!")
+    async def _destroy_instance(self, instance: DatabaseClient):
+        if instance is None:
+            return
+        logger.info(f"Destroyed {instance!r}!")
+        await instance.destroy()
 
-    async def _check_instance(self, instance: Optional[Connection]) -> bool:
+    async def _check_instance(self, instance: Optional[DatabaseClient]) -> bool:
         if instance is None:
             return False
+        return await instance.is_valid()
 
-        try:
-            # This operation connects to the database and raises an exception if something goes wrong.
-            instance.isolation_level
-        except OperationalError:
-            return False
+    async def _release_instance(self, instance: DatabaseClient) -> None:
+        await instance.reset()
 
-        return not instance.closed
+    @property
+    def client_cls(self) -> type[DatabaseClient]:
+        """Get the instance's class.
+
+        :return: A ``type`` instance that is subclass of ``DatabaseClient``.
+        """
+        return self.client_builder.instance_cls
+
+    @property
+    def client_builder(self) -> DatabaseClientBuilder:
+        """Get the client builder class.
+
+        :return: A ``DatabaseClientBuilder`` instance.
+        """
+        return self._client_builder
 
 
-class PostgreSqlLockPool(LockPool, PostgreSqlPool):
-    """Postgres Locking Pool class."""
+class DatabaseLockPool(LockPool, DatabaseClientPool):
+    """Database Lock Pool class."""
 
-    def acquire(self, key: Hashable, *args, **kwargs) -> PostgreSqlLock:
+    def acquire(self, key: Hashable, *args, **kwargs) -> DatabaseLock:
         """Acquire a new lock.
 
         :param key: The key to be used for locking.
-        :return: A ``PostgreSqlLock`` instance.
+        :return: A ``DatabaseLock`` instance.
         """
-        return PostgreSqlLock(super().acquire(), key, *args, **kwargs)
+        acquired = super(DatabaseClientPool, self).acquire()
+
+        async def _fn_enter():
+            client = await acquired.__aenter__()
+            return await DatabaseLock(client, key, *args, **kwargs).__aenter__()
+
+        async def _fn_exit(lock: DatabaseLock):
+            await lock.__aexit__(None, None, None)
+            await acquired.__aexit__(None, None, None)
+
+        # noinspection PyTypeChecker
+        return ContextManager(_fn_enter, _fn_exit)
