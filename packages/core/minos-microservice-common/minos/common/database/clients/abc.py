@@ -100,7 +100,7 @@ class DatabaseClient(ABC, BuildableMixin):
 
         if isinstance(operation, ComposedDatabaseOperation):
             for op in operation.operations:
-                await wait_for(self._execute(op), operation.timeout)
+                await wait_for(self.execute(op), operation.timeout)
         else:
             await wait_for(self._execute(operation), operation.timeout)
 

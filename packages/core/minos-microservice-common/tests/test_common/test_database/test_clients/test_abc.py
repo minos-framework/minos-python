@@ -133,13 +133,15 @@ class TestDatabaseClient(CommonTestCase):
         self.assertEqual([call(operation)], mock.call_args_list)
 
     async def test_execute_composed(self):
-        mock = AsyncMock()
         client = _DatabaseClient()
-        client._execute = mock
+        mock = AsyncMock(side_effect=client.execute)
+        client.execute = mock
         composed = ComposedDatabaseOperation([_DatabaseOperation(), _DatabaseOperation()])
         await client.execute(composed)
 
-        self.assertEqual([call(composed.operations[0]), call(composed.operations[1])], mock.call_args_list)
+        self.assertEqual(
+            [call(composed), call(composed.operations[0]), call(composed.operations[1])], mock.call_args_list
+        )
 
     async def test_execute_with_lock(self):
         op1 = _DatabaseOperation(lock="foo")
