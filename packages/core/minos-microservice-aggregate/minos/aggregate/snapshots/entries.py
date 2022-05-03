@@ -32,7 +32,7 @@ from ..exceptions import (
 
 if TYPE_CHECKING:
     from ..entities import (
-        RootEntity,
+        Entity,
     )
 
 
@@ -75,10 +75,10 @@ class SnapshotEntry:
         self.transaction_uuid = transaction_uuid
 
     @classmethod
-    def from_root_entity(cls, instance: RootEntity, **kwargs) -> SnapshotEntry:
-        """Build a new instance from a ``RootEntity``.
+    def from_root_entity(cls, instance: Entity, **kwargs) -> SnapshotEntry:
+        """Build a new instance from a ``Entity``.
 
-        :param instance: The ``RootEntity`` instance.
+        :param instance: The ``Entity`` instance.
         :return: A new ``SnapshotEntry`` instance.
         """
         data = {k: v for k, v in instance.avro_data.items() if k not in {"uuid", "version", "created_at", "updated_at"}}
@@ -149,14 +149,14 @@ class SnapshotEntry:
 
         return json.dumps(self.data)
 
-    def build(self, **kwargs) -> RootEntity:
-        """Rebuild the stored ``RootEntity`` object instance from the internal state.
+    def build(self, **kwargs) -> Entity:
+        """Rebuild the stored ``Entity`` object instance from the internal state.
 
         :param kwargs: Additional named arguments.
-        :return: A ``RootEntity`` instance.
+        :return: A ``Entity`` instance.
         """
         from ..entities import (
-            RootEntity,
+            Entity,
         )
 
         if self.data is None:
@@ -169,12 +169,12 @@ class SnapshotEntry:
             "updated_at": self.updated_at,
         }
         data |= kwargs
-        instance = RootEntity.from_avro(self.schema, data)
+        instance = Entity.from_avro(self.schema, data)
         return instance
 
     @property
-    def type_(self) -> type[RootEntity]:
-        """Load the concrete ``RootEntity`` class.
+    def type_(self) -> type[Entity]:
+        """Load the concrete ``Entity`` class.
 
         :return: A ``Type`` object.
         """

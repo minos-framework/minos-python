@@ -52,7 +52,7 @@ from .abc import (
 class InMemorySnapshotRepository(SnapshotRepository):
     """InMemory Snapshot class.
 
-    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as deltas by the delta repository
+    The snapshot provides a direct accessor to the ``Entity`` instances stored as deltas by the delta repository
     class.
     """
 

@@ -20,6 +20,9 @@ from minos.common import (
     NULL_UUID,
     import_module,
 )
+from minos.transactions import (
+    TransactionEntry,
+)
 
 from ..actions import (
     Action,
@@ -33,10 +36,7 @@ from .models import (
 
 if TYPE_CHECKING:
     from ..entities import (
-        RootEntity,
-    )
-    from ..transactions import (
-        TransactionEntry,
+        Entity,
     )
 
 
@@ -83,7 +83,7 @@ class DeltaEntry:
 
     @classmethod
     def from_delta(cls, delta: Delta, *, transaction: Optional[TransactionEntry] = None, **kwargs) -> DeltaEntry:
-        """Build a new instance from a ``RootEntity``.
+        """Build a new instance from a ``Entity``.
 
         :param delta: The delta.
         :param transaction: Optional transaction.
@@ -129,8 +129,8 @@ class DeltaEntry:
         }
 
     @property
-    def type_(self) -> type[RootEntity]:
-        """Load the concrete ``RootEntity`` class.
+    def type_(self) -> type[Entity]:
+        """Load the concrete ``Entity`` class.
 
         :return: A ``Type`` object.
         """

@@ -15,7 +15,7 @@ if TYPE_CHECKING:
         Delta,
     )
     from .entities import (
-        RootEntity,
+        Entity,
     )
 
 
@@ -42,7 +42,7 @@ class SnapshotRepositoryException(AggregateException):
 class SnapshotRepositoryConflictException(SnapshotRepositoryException):
     """Exception to be raised when current version is newer than the one to be processed."""
 
-    def __init__(self, previous: RootEntity, delta: Delta):
+    def __init__(self, previous: Entity, delta: Delta):
         self.previous = previous
         self.delta = delta
         super().__init__(
@@ -52,11 +52,11 @@ class SnapshotRepositoryConflictException(SnapshotRepositoryException):
 
 
 class NotFoundException(SnapshotRepositoryException):
-    """Exception to be raised when a ``RootEntity`` is not found on the repository."""
+    """Exception to be raised when a ``Entity`` is not found on the repository."""
 
 
 class AlreadyDeletedException(SnapshotRepositoryException):
-    """Exception to be raised when a ``RootEntity`` is already deleted from the repository."""
+    """Exception to be raised when a ``Entity`` is already deleted from the repository."""
 
 
 class ValueObjectException(AggregateException):

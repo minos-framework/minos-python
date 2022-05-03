@@ -56,7 +56,7 @@ class Delta(DeclarativeModel):
 
     @property
     def simplified_name(self) -> str:
-        """Get the RootEntity's simplified name.
+        """Get the Entity's simplified name.
 
         :return: An string value.
         """
@@ -129,9 +129,9 @@ class Delta(DeclarativeModel):
     def from_difference(cls, a: Entity, b: Entity, action: Action = Action.UPDATE) -> Delta:
         """Build an ``Delta`` instance from the difference of two instances.
 
-        :param a: One ``RootEntity`` instance.
-        :param b: Another ``RootEntity`` instance.
-        :param action: The action that generates the ``RootEntity`` difference.
+        :param a: One ``Entity`` instance.
+        :param b: Another ``Entity`` instance.
+        :param action: The action that generates the ``Entity`` difference.
         :return: An ``Delta`` instance.
         """
         logger.debug(f"Computing the {cls!r} between {a!r} and {b!r}...")
@@ -156,9 +156,9 @@ class Delta(DeclarativeModel):
 
     @classmethod
     def from_entity(cls, instance: Entity, action: Action = Action.CREATE) -> Delta:
-        """Build an ``Delta`` from a ``RootEntity`` (considering all fields as differences).
+        """Build an ``Delta`` from a ``Entity`` (considering all fields as differences).
 
-        :param instance: A ``RootEntity`` instance.
+        :param instance: A ``Entity`` instance.
         :param action: The action that generates the delta.
         :return: An ``Delta`` instance.
         """

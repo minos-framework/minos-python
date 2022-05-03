@@ -16,8 +16,10 @@ from minos.common import (
     Inject,
     NotProvidedException,
 )
-from ..actions import Action
 
+from ..actions import (
+    Action,
+)
 from ..deltas import (
     Delta,
     DeltaEntry,
@@ -71,7 +73,7 @@ class EntityRepository:
 
         :param type_: The of the entity to be looked for.
         :param uuid: The identifier of the instance.
-        :return: A ``RootEntity`` instance.
+        :return: A ``Entity`` instance.
         """
         # noinspection PyTypeChecker
         return await self._snapshot_repository.get(type_, uuid, **kwargs)
@@ -90,7 +92,7 @@ class EntityRepository:
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
             instances that meet the given condition.
-        :return: A ``RootEntity`` instance.
+        :return: A ``Entity`` instance.
         """
         # noinspection PyTypeChecker
         return self._snapshot_repository.get_all(type_, ordering, limit, **kwargs)
@@ -111,19 +113,19 @@ class EntityRepository:
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
             instances that meet the given condition.
-        :return: An asynchronous iterator of ``RootEntity`` instances.
+        :return: An asynchronous iterator of ``Entity`` instances.
         """
         # noinspection PyTypeChecker
         return self._snapshot_repository.find(type_, condition, ordering, limit, **kwargs)
 
     async def create(self, type_or_instance: Union[T, type[T]], *args, **kwargs) -> tuple[T, Delta]:
-        """Create a new ``RootEntity`` instance.
+        """Create a new ``Entity`` instance.
 
         :param type_or_instance: The instance to be created. If it is a ``type`` then the instance is created internally
             using ``args`` and ``kwargs`` as parameters.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
-        :return: A new ``RootEntity`` instance.
+        :return: A new ``Entity`` instance.
         """
         if "uuid" in kwargs:
             raise DeltaRepositoryException(
@@ -147,7 +149,7 @@ class EntityRepository:
             instance = type_or_instance
             if len(args) or len(kwargs):
                 raise DeltaRepositoryException(
-                    f"Additional parameters are not provided when passing an already built {RootEntity!r} instance. "
+                    f"Additional parameters are not provided when passing an already built {Entity!r} instance. "
                     f"Obtained: args={args!r}, kwargs={kwargs!r}"
                 )
 
@@ -160,11 +162,11 @@ class EntityRepository:
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
     async def update(self, instance: T, **kwargs) -> tuple[T, Optional[Delta]]:
-        """Update an existing ``RootEntity`` instance.
+        """Update an existing ``Entity`` instance.
 
         :param instance: The instance to be updated.
         :param kwargs: Additional named arguments.
-        :return: An updated ``RootEntity``  instance.
+        :return: An updated ``Entity``  instance.
         """
 
         if "version" in kwargs:
