@@ -99,10 +99,13 @@ class DatabaseClient(ABC, BuildableMixin):
             await self._create_lock(operation.lock)
 
         if isinstance(operation, ComposedDatabaseOperation):
-            for op in operation.operations:
-                await wait_for(self._execute(op), operation.timeout)
+            await wait_for(self._execute_composed(operation), operation.timeout)
         else:
             await wait_for(self._execute(operation), operation.timeout)
+
+    async def _execute_composed(self, operation: ComposedDatabaseOperation) -> None:
+        for op in operation.operations:
+            await self.execute(op)
 
     @abstractmethod
     async def _execute(self, operation: DatabaseOperation) -> None:
