@@ -22,7 +22,7 @@ from minos.common import (
     current_datetime,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.networks import (
     BrokerCommandEnrouteDecorator,
@@ -31,15 +31,12 @@ from minos.networks import (
     ResponseException,
 )
 from tests.utils import (
-    CONFIG_FILE_PATH,
+    AggregateTestCase,
     FakeAsyncIterator,
-    MinosTestCase,
 )
 
 
-class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestSnapshotService(AggregateTestCase, DatabaseMinosTestCase):
     def setUp(self) -> None:
         super().setUp()
 

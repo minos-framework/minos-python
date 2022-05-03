@@ -7,8 +7,8 @@ from .memory import (
 )
 from .queued import (
     BrokerPublisherQueue,
+    BrokerPublisherQueueDatabaseOperationFactory,
+    DatabaseBrokerPublisherQueue,
     InMemoryBrokerPublisherQueue,
-    PostgreSqlBrokerPublisherQueue,
-    PostgreSqlBrokerPublisherQueueQueryFactory,
     QueuedBrokerPublisher,
 )

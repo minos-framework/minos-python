@@ -14,7 +14,6 @@ from typing import (
 
 from minos.common import (
     Config,
-    Injectable,
     Pool,
 )
 
@@ -28,14 +27,11 @@ from .messages import (
 logger = logging.getLogger(__name__)
 
 
-@Injectable("broker_pool")
 class BrokerClientPool(Pool):
     """Broker Client Pool class."""
 
-    def __init__(
-        self, instance_kwargs: dict[str, Any], maxsize: int = 5, recycle: Optional[int] = 3600, *args, **kwargs
-    ):
-        super().__init__(maxsize=maxsize, recycle=recycle, *args, **kwargs)
+    def __init__(self, instance_kwargs: dict[str, Any], maxsize: int = 5, *args, **kwargs):
+        super().__init__(maxsize=maxsize, *args, **kwargs)
         self._instance_kwargs = instance_kwargs
 
     @classmethod

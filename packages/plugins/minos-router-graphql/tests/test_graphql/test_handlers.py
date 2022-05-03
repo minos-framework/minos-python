@@ -16,12 +16,10 @@ from minos.networks import (
     ResponseException,
 )
 from minos.plugins.graphql import (
-    GraphQlHandler,
-    GraphQLSchemaBuilder,
-)
-from minos.plugins.graphql.decorators import (
     GraphQlCommandEnrouteDecorator,
+    GraphQlHandler,
     GraphQlQueryEnrouteDecorator,
+    GraphQLSchemaBuilder,
 )
 from tests.test_graphql.test_builders.test_schema import (
     callback_fn,
