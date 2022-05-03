@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 from abc import (
     ABC,
     abstractmethod,
@@ -19,6 +23,7 @@ from minos.common import (
     Lock,
     LockPool,
     NotProvidedException,
+    PoolFactory,
     SetupMixin,
 )
 
@@ -36,8 +41,13 @@ class TransactionRepository(ABC, SetupMixin):
     """Transaction Repository base class."""
 
     @Inject()
-    def __init__(self, lock_pool: LockPool, *args, **kwargs):
+    def __init__(
+        self, lock_pool: Optional[LockPool] = None, pool_factory: Optional[PoolFactory] = None, *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
+
+        if lock_pool is None and pool_factory is not None:
+            lock_pool = pool_factory.get_pool("lock")
 
         if lock_pool is None:
             raise NotProvidedException("A lock pool instance is required.")

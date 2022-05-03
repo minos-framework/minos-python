@@ -1,0 +1,5 @@
+discovery:
+    connector: minos.networks.DiscoveryConnector
+    client: minos.networks.InMemoryDiscoveryClient
+    host: localhost
+    port: 8001

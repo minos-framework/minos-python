@@ -3,7 +3,6 @@ from __future__ import (
 )
 
 import logging
-import warnings
 from asyncio import (
     TimeoutError,
     wait_for,
@@ -22,16 +21,10 @@ from aiokafka import (
     AIOKafkaProducer,
 )
 
-from minos.common import (
-    Config,
-)
 from minos.networks import (
     BrokerMessage,
     BrokerPublisher,
     BrokerPublisherBuilder,
-    InMemoryBrokerPublisherQueue,
-    PostgreSqlBrokerPublisherQueue,
-    QueuedBrokerPublisher,
 )
 
 from .common import (
@@ -40,34 +33,6 @@ from .common import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-class PostgreSqlQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
-    """PostgreSql Queued Kafka Broker Publisher class."""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(f"{PostgreSqlQueuedKafkaBrokerPublisher!r} has been deprecated.", DeprecationWarning)
-        super().__init__(*args, **kwargs)
-
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> PostgreSqlQueuedKafkaBrokerPublisher:
-        impl = KafkaBrokerPublisher.from_config(config, **kwargs)
-        queue = PostgreSqlBrokerPublisherQueue.from_config(config, **kwargs)
-        return cls(impl, queue, **kwargs)
-
-
-class InMemoryQueuedKafkaBrokerPublisher(QueuedBrokerPublisher):
-    """In Memory Queued Kafka Broker Publisher class."""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(f"{InMemoryQueuedKafkaBrokerPublisher!r} has been deprecated.", DeprecationWarning)
-        super().__init__(*args, **kwargs)
-
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> InMemoryQueuedKafkaBrokerPublisher:
-        impl = KafkaBrokerPublisher.from_config(config, **kwargs)
-        queue = InMemoryBrokerPublisherQueue.from_config(config, **kwargs)
-        return cls(impl, queue, **kwargs)
 
 
 class KafkaBrokerPublisher(BrokerPublisher, KafkaCircuitBreakerMixin):
