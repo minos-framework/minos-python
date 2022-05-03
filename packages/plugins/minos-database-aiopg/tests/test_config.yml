@@ -1,0 +1,9 @@
+version: 2
+databases:
+  default:
+    client: minos.plugins.aiopg.AiopgDatabaseClient
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432

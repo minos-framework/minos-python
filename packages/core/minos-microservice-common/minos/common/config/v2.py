@@ -51,7 +51,7 @@ class ConfigV2(Config):
         partial_ans = list()
 
         with suppress(MinosConfigException):
-            partial_ans.extend(self._get_pools().values())
+            partial_ans.append(self._get_pools().get("factory"))
 
         with suppress(MinosConfigException):
             partial_ans.append(self._get_interfaces().get("http").get("connector"))
@@ -99,63 +99,73 @@ class ConfigV2(Config):
 
     def _get_databases(self) -> dict[str, dict[str, Any]]:
         data = deepcopy(self.get_by_key("databases"))
+        for database in data.values():
+            if database.get("client") is not None:
+                database["client"] = import_module(database["client"])
         return data
 
     def _get_interfaces(self) -> dict[str, dict[str, Any]]:
         data = deepcopy(self.get_by_key("interfaces"))
 
-        if "http" in data:
+        if data.get("http") is not None:
             data["http"] = self._parse_http_interface(data["http"])
-        if "broker" in data:
+        if data.get("broker") is not None:
             data["broker"] = self._parse_broker_interface(data["broker"])
-        if "periodic" in data:
+        if data.get("periodic") is not None:
             data["periodic"] = self._parse_periodic_interface(data["periodic"])
 
         return data
 
     @staticmethod
     def _parse_http_interface(data: dict[str, Any]) -> dict[str, Any]:
-        if "port" in data:
+        if data.get("port") is not None:
             data["port"] = import_module(data["port"])
-        if "connector" in data:
+        if data.get("connector") is not None:
             data["connector"]["client"] = import_module(data["connector"]["client"])
         return data
 
     @staticmethod
     def _parse_broker_interface(data: dict[str, Any]) -> dict[str, Any]:
-        if "port" in data:
+        if data.get("port") is not None:
             data["port"] = import_module(data["port"])
 
-        if "publisher" in data:
+        if data.get("publisher") is not None:
             data["publisher"]["client"] = import_module(data["publisher"]["client"])
-            if "queue" in data["publisher"]:
+            if data["publisher"].get("queue") is not None:
                 data["publisher"]["queue"] = import_module(data["publisher"]["queue"])
 
-        if "subscriber" in data:
+        if data.get("subscriber") is not None:
             data["subscriber"]["client"] = import_module(data["subscriber"]["client"])
-            if "queue" in data["subscriber"]:
+            if data["subscriber"].get("queue") is not None:
                 data["subscriber"]["queue"] = import_module(data["subscriber"]["queue"])
-            if "validator" in data["subscriber"]:
+            if data["subscriber"].get("validator") is not None:
                 data["subscriber"]["validator"] = import_module(data["subscriber"]["validator"])
 
         return data
 
     @staticmethod
     def _parse_periodic_interface(data: dict[str, Any]) -> dict[str, Any]:
-        if "port" in data:
+        if data.get("port") is not None:
             data["port"] = import_module(data["port"])
 
         return data
 
     def _get_pools(self) -> dict[str, type]:
         try:
-            data = self.get_by_key("pools")
+            types = self.get_by_key("pools")
         except MinosConfigException:
-            data = dict()
+            return dict()
 
-        data = {name: import_module(classname) for name, classname in data.items()}
+        types = {name: import_module(classname) for name, classname in types.items()}
 
-        return data
+        from ..pools import (
+            PoolFactory,
+        )
+
+        return {
+            "factory": PoolFactory,
+            "types": types,
+        }
 
     def _get_routers(self) -> list[type]:
         try:

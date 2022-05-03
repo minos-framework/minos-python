@@ -24,12 +24,12 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
-    MinosTestCase,
+    SagaTestCase,
     send_create_product,
 )
 
 
-class TestRequestExecutor(MinosTestCase):
+class TestRequestExecutor(SagaTestCase):
     def setUp(self) -> None:
         super().setUp()
 

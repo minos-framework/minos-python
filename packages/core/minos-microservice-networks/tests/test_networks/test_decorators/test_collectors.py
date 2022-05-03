@@ -15,10 +15,13 @@ from minos.networks import (
 from tests.utils import (
     FakeService,
     FakeServiceWithGetEnroute,
+    FakeServiceWithKwargs,
 )
 
 
 class TestEnrouteCollector(unittest.IsolatedAsyncioTestCase):
+    ticket_route = "tickets/"
+
     def test_decorated_str(self):
         analyzer = EnrouteCollector(classname(FakeService))
         self.assertEqual(FakeService, analyzer.decorated)
@@ -28,7 +31,10 @@ class TestEnrouteCollector(unittest.IsolatedAsyncioTestCase):
 
         observed = analyzer.get_all()
         expected = {
-            "get_tickets": {BrokerQueryEnrouteDecorator("GetTickets"), RestQueryEnrouteDecorator("tickets/", "GET")},
+            "get_tickets": {
+                BrokerQueryEnrouteDecorator("GetTickets"),
+                RestQueryEnrouteDecorator(self.ticket_route, "GET"),
+            },
             "create_ticket": {
                 BrokerCommandEnrouteDecorator("CreateTicket"),
                 BrokerCommandEnrouteDecorator("AddTicket"),
@@ -50,9 +56,19 @@ class TestEnrouteCollector(unittest.IsolatedAsyncioTestCase):
 
         observed = analyzer.get_rest_command_query()
         expected = {
-            "get_tickets": {RestQueryEnrouteDecorator("tickets/", "GET")},
+            "get_tickets": {RestQueryEnrouteDecorator(self.ticket_route, "GET")},
             "create_ticket": {RestCommandEnrouteDecorator("orders/", "GET")},
             "delete_ticket": {RestCommandEnrouteDecorator("orders/", "DELETE")},
+        }
+
+        self.assertEqual(expected, observed)
+
+    def test_get_rest_command_query_kwargs(self):
+        analyzer = EnrouteCollector(FakeServiceWithKwargs)
+
+        observed = analyzer.get_rest_command_query()
+        expected = {
+            "get_tickets": {RestQueryEnrouteDecorator(self.ticket_route, "GET", foo="bar")},
         }
 
         self.assertEqual(expected, observed)
