@@ -597,6 +597,7 @@ aiopg = "^1.2.1"
 minos-microservice-aggregate = "^0.7.0*"
 minos-microservice-common = "^0.7.0*"
 minos-microservice-networks = "^0.7.0*"
+minos-microservice-transactions = "^0.7.0*"
 psycopg2-binary = "^2.9.3"
 
 [package.source]
@@ -692,6 +693,7 @@ develop = true
 cached-property = "^1.5.2"
 minos-microservice-common = "^0.7.0*"
 minos-microservice-networks = "^0.7.0*"
+minos-microservice-transactions = "^0.7.0*"
 
 [package.source]
 type = "directory"
@@ -765,13 +767,30 @@ develop = true
 
 [package.dependencies]
 cached-property = "^1.5.2"
-minos-microservice-aggregate = "^0.7.0*"
 minos-microservice-common = "^0.7.0*"
 minos-microservice-networks = "^0.7.0*"
+minos-microservice-transactions = "^0.7.0*"
 
 [package.source]
 type = "directory"
 url = "packages/core/minos-microservice-saga"
+
+[[package]]
+name = "minos-microservice-transactions"
+version = "0.0.0"
+description = "The transactions core of the Minos Framework"
+category = "main"
+optional = false
+python-versions = "^3.9"
+develop = true
+
+[package.dependencies]
+cached-property = "^1.5.2"
+minos-microservice-common = "^0.7.0*"
+
+[package.source]
+type = "directory"
+url = "packages/core/minos-microservice-transactions"
 
 [[package]]
 name = "minos-router-graphql"
@@ -1308,7 +1327,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "aaacb6ce77b50b2d9589e233496a4e0af9713e9156ace0f4f12b4dd3a4ebcfef"
+content-hash = "904cd0155e041277a9d0b51612836a71634e6dd7831bc95b100feb04cd9d7f38"
 
 [metadata.files]
 aio-pika = [
@@ -1822,6 +1841,7 @@ minos-microservice-common = []
 minos-microservice-cqrs = []
 minos-microservice-networks = []
 minos-microservice-saga = []
+minos-microservice-transactions = []
 minos-router-graphql = []
 mistune = [
     {file = "mistune-0.8.4-py2.py3-none-any.whl", hash = "sha256:88a1051873018da288eee8538d476dffe1262495144b33ecb586c4ab266bb8d4"},
