@@ -5,9 +5,9 @@ from .impl import (
 from .queues import (
     BrokerSubscriberQueue,
     BrokerSubscriberQueueBuilder,
+    BrokerSubscriberQueueDatabaseOperationFactory,
+    DatabaseBrokerSubscriberQueue,
+    DatabaseBrokerSubscriberQueueBuilder,
     InMemoryBrokerSubscriberQueue,
     InMemoryBrokerSubscriberQueueBuilder,
-    PostgreSqlBrokerSubscriberQueue,
-    PostgreSqlBrokerSubscriberQueueBuilder,
-    PostgreSqlBrokerSubscriberQueueQueryFactory,
 )

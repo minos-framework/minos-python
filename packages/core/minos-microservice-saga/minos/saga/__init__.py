@@ -1,6 +1,8 @@
+"""The SAGA pattern of the Minos Framework."""
+
 __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
-__version__ = "0.6.0"
+__version__ = "0.7.0.dev2"
 
 from .context import (
     SagaContext,
@@ -44,6 +46,7 @@ from .exceptions import (
 )
 from .executions import (
     ConditionalSagaStepExecution,
+    DatabaseSagaExecutionRepository,
     Executor,
     LocalExecutor,
     LocalSagaStepExecution,
@@ -51,7 +54,8 @@ from .executions import (
     RequestExecutor,
     ResponseExecutor,
     SagaExecution,
-    SagaExecutionStorage,
+    SagaExecutionDatabaseOperationFactory,
+    SagaExecutionRepository,
     SagaStatus,
     SagaStepExecution,
     SagaStepStatus,

@@ -3,8 +3,8 @@ from .abc import (
 )
 from .duplicates import (
     BrokerSubscriberDuplicateValidator,
+    BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
+    DatabaseBrokerSubscriberDuplicateValidator,
+    DatabaseBrokerSubscriberDuplicateValidatorBuilder,
     InMemoryBrokerSubscriberDuplicateValidator,
-    PostgreSqlBrokerSubscriberDuplicateValidator,
-    PostgreSqlBrokerSubscriberDuplicateValidatorBuilder,
-    PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
 )

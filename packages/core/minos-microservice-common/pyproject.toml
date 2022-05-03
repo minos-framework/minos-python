@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-microservice-common"
-version = "0.6.1"
+version = "0.7.0.dev2"
 description = "The common core of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
@@ -31,28 +31,20 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-aiomisc = ">=14.0.3,<16.0.0"
+aiomisc = ">=14.0.3,<15.8.0"
 fastavro = "^1.4.0"
 orjson = "^3.5.2"
-lmdb = "^1.2.1"
 PyYAML = ">=5.4.1,<7.0.0"
-aiopg = "^1.2.1"
 dependency-injector = "^4.32.2"
 cached-property = "^1.5.2"
 uvloop = "^0.16.0"
 
 [tool.poetry.dev-dependencies]
-black = "^22.1"
+black = "^22.3"
 isort = "^5.8.0"
 pytest = "^7.0.1"
 coverage = "^6.3"
 flake8 = "^4.0.1"
-Sphinx = "^4.0.1"
-pre-commit = "^2.12.1"
-sphinx-autodoc-typehints = "^1.18.1"
-sphinxcontrib-apidoc = "^0.3.0"
-sphinx-rtd-theme = "^1.0.0"
-m2r2 = "^0.3.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
