@@ -8,6 +8,7 @@ from unittest.mock import (
 
 from minos.aggregate import (
     Action,
+    Entity,
     EntitySet,
     IncrementalSetDiff,
     IncrementalSetDiffEntry,
@@ -18,6 +19,10 @@ from minos.common import (
 from tests.utils import (
     OrderItem,
 )
+
+
+class _NotHashable(Entity):
+    foo: set[int]
 
 
 class TestEntitySet(unittest.TestCase):
@@ -137,6 +142,10 @@ class TestEntitySet(unittest.TestCase):
 
     def test_avro_bytes(self):
         expected = EntitySet({OrderItem("John"), OrderItem("Michael")})
+        self.assertEqual(expected, Model.from_avro_bytes(expected.avro_bytes))
+
+    def test_avro_bytes_not_hashable(self):
+        expected = EntitySet([_NotHashable({1}), _NotHashable({2})])
         self.assertEqual(expected, Model.from_avro_bytes(expected.avro_bytes))
 
 
