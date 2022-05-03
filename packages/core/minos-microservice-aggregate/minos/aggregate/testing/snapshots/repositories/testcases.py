@@ -155,7 +155,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(self.uuid_1, self.Car.classname, 4),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",
@@ -165,7 +165,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
                     updated_at=observed[1].updated_at,
                 )
             ),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",
@@ -194,7 +194,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(self.uuid_1, self.Car.classname, 4),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",
@@ -204,7 +204,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
                     updated_at=observed[1].updated_at,
                 )
             ),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",
@@ -234,7 +234,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         expected = [
             SnapshotEntry(self.uuid_1, self.Car.classname, 4),
             SnapshotEntry(self.uuid_2, self.Car.classname, 4),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",
@@ -263,7 +263,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(self.uuid_1, self.Car.classname, 4),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",
@@ -273,7 +273,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
                     updated_at=observed[1].updated_at,
                 )
             ),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",

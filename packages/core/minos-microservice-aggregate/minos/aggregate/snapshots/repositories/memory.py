@@ -178,7 +178,7 @@ class InMemorySnapshotRepository(SnapshotRepository):
         for entry in entries[1:]:
             instance.apply_diff(entry.delta)
 
-        snapshot = SnapshotEntry.from_root_entity(instance)
+        snapshot = SnapshotEntry.from_entity(instance)
 
         return snapshot
 

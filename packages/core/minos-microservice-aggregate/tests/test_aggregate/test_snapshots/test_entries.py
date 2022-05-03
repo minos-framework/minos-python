@@ -17,6 +17,7 @@ from minos.aggregate import (
     SnapshotEntry,
 )
 from minos.common import (
+    AvroSchemaEncoder,
     MinosJsonBinaryProtocol,
 )
 from tests.utils import (
@@ -77,10 +78,10 @@ class TestSnapshotEntry(AggregateTestCase):
         self.assertEqual(datetime(2020, 1, 10, 4, 23), entry.created_at)
         self.assertEqual(datetime(2020, 1, 10, 4, 25), entry.updated_at)
 
-    def test_from_root_entity(self):
+    def test_from_entity(self):
         car = Car(3, "blue", uuid=self.uuid, version=1)
-        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
-            entry = SnapshotEntry.from_root_entity(car)
+        with patch.object(AvroSchemaEncoder, "generate_random_str", return_value="hello"):
+            entry = SnapshotEntry.from_entity(car)
             self.assertEqual(car.uuid, entry.uuid)
             self.assertEqual(car.classname, entry.name)
             self.assertEqual(car.version, entry.version)
@@ -92,7 +93,7 @@ class TestSnapshotEntry(AggregateTestCase):
     def test_from_delta_entry(self):
         car = Car(3, "blue", uuid=self.uuid, version=1)
         delta_entry = DeltaEntry.from_delta(Delta.from_entity(car), version=1)
-        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
+        with patch.object(AvroSchemaEncoder, "generate_random_str", return_value="hello"):
             snapshot_entry = SnapshotEntry.from_delta_entry(delta_entry)
             self.assertEqual(delta_entry.uuid, snapshot_entry.uuid)
             self.assertEqual(delta_entry.name, snapshot_entry.name)
@@ -108,12 +109,12 @@ class TestSnapshotEntry(AggregateTestCase):
 
     def test_type_(self):
         car = Car(3, "blue", uuid=self.uuid, version=1)
-        entry = SnapshotEntry.from_root_entity(car)
+        entry = SnapshotEntry.from_entity(car)
         self.assertEqual(Car, entry.type_)
 
     def test_build(self):
         car = Car(3, "blue", uuid=self.uuid, version=1)
-        entry = SnapshotEntry.from_root_entity(car)
+        entry = SnapshotEntry.from_entity(car)
         self.assertEqual(car, entry.build())
 
     def test_build_raises(self):

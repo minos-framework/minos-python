@@ -111,7 +111,3 @@ class ExternalEntity(DeclarativeModel):
 
 
 T = TypeVar("T", bound=Entity)
-
-
-class RootEntity(Entity):
-    """Base Root Entity class."""

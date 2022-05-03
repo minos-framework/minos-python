@@ -7,9 +7,9 @@ from pathlib import (
 )
 
 from minos.aggregate import (
+    Entity,
     ExternalEntity,
     Ref,
-    Entity,
 )
 from minos.cqrs import (
     CommandService,

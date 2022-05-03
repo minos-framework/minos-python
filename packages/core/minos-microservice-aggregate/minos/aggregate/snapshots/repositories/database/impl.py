@@ -175,7 +175,7 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
     async def _submit_update_or_create(self, delta_entry: DeltaEntry, **kwargs) -> SnapshotEntry:
         instance = await self._build_instance(delta_entry, **kwargs)
 
-        snapshot_entry = SnapshotEntry.from_root_entity(instance, transaction_uuid=delta_entry.transaction_uuid)
+        snapshot_entry = SnapshotEntry.from_entity(instance, transaction_uuid=delta_entry.transaction_uuid)
         snapshot_entry = await self._submit_entry(snapshot_entry)
         return snapshot_entry
 

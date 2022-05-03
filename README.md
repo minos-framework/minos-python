@@ -221,13 +221,13 @@ Create a `foo/main.py` file and add the following content:
 # foo/main.py
 
 from pathlib import Path
-from minos.aggregate import Aggregate, RootEntity
+from minos.aggregate import Aggregate, Entity
 from minos.common import EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 
 
-class Foo(RootEntity):
-    """Foo RootEntity class."""
+class Foo(Entity):
+    """Foo Entity class."""
 
 
 class FooAggregate(Aggregate[Foo]):
@@ -259,13 +259,12 @@ The way to model data in `minos` is highly inspired by the  [Event Sourcing](htt
 
 * `minos.aggregate.Entity`: A model that has an identifier that gives it a unique identity, in the sense that some values from which it is composed could change, but its identity will continue being the same.
 * `minos.aggregate.ExternalEntity`: A model that belongs to another microservice (or aggregate boundary) but needs to be used for some reason inside this microservice (or aggregate boundary).
-* `minos.aggregate.RootEntity`: Is an `Entity` superset that provides global identity across the project compared to standard `Entity` models, that has only local identity (the `RootEntity` can be accessed from another microservices as `ExternalEntity` models, but standard `Entity` models can only be accessed within the microservice that define them). The `RootEntity` is also the one that interacts with the persistence layer (the `EventRepository` and `SnapshotRepository` instances).
-* `minos.aggregate.Ref`: A wrapper class that provides the functionality to store a reference of other `RootEntity` or `ExternalEntity` instances.
+* `minos.aggregate.Ref`: A wrapper class that provides the functionality to store a reference of other `Entity` or `ExternalEntity` instances.
 * `minos.aggregate.EntitySet`: A container of `Entity` instances that takes advantage of the incremental behaviour of the `EventRepository`.
 * `minos.aggregate.ValueObject`: A model that is only identified by the values that compose it, so that if some of them changes, then the model becomes completely different (for that reason, these models are immutable).
 * `minos.aggregate.ValueObjectSet`: A container of `ValueObject` instances that takes advantage of the incremental behaviour of the `EventRepository.
-* `minos.aggregate.Aggregate`: A collection of `Entity` and/or `ValueObject` models that are related to each other through a `RootEntity`.
-* `minos.aggregate.Event`: A model that contains the difference between the a `RootEntity` instance and its previous version (if any).
+* `minos.aggregate.Aggregate`: A collection of `Entity` and/or `ValueObject` models that are related to each other through a special `Entity` known as the Root Entity of the Aggregate.
+* `minos.aggregate.Event`: A model that contains the difference between the a `Entity` instance and its previous version (if any).
 
 Here is an example of the creation the `Foo` aggregate. In this case, it has two attributes, a `bar` being a `str`, and a `foobar` being an optional reference to the external `FooBar` aggregate, which it is assumed that it has a `something` attribute.
 
@@ -275,11 +274,11 @@ Here is an example of the creation the `Foo` aggregate. In this case, it has two
 from __future__ import annotations
 from typing import Optional
 from uuid import UUID
-from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
+from minos.aggregate import Aggregate, Entity, ExternalEntity, Ref
 
 
-class Foo(RootEntity):
-    """Foo RootEntity class."""
+class Foo(Entity):
+    """Foo Entity class."""
 
     bar: str
     foobar: Optional[Ref[FooBar]]
@@ -330,13 +329,13 @@ from pathlib import Path
 from typing import Optional
 from uuid import UUID
 
-from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
+from minos.aggregate import Aggregate, Entity, ExternalEntity, Ref
 from minos.common import EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 
 
-class Foo(RootEntity):
-    """Foo RootEntity class."""
+class Foo(Entity):
+    """Foo Entity class."""
 
     bar: str
     foobar: Optional[Ref[FooBar]]
@@ -432,14 +431,14 @@ from pathlib import Path
 from typing import Optional
 from uuid import UUID
 
-from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
+from minos.aggregate import Aggregate, Entity, ExternalEntity, Ref
 from minos.common import EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 from minos.networks import Request, Response, enroute
 
 
-class Foo(RootEntity):
-    """Foo RootEntity class."""
+class Foo(Entity):
+    """Foo Entity class."""
 
     bar: str
     foobar: Optional[Ref[FooBar]]
@@ -590,14 +589,14 @@ from pathlib import Path
 from typing import Optional
 from uuid import UUID
 
-from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
+from minos.aggregate import Aggregate, Entity, ExternalEntity, Ref
 from minos.common import EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 from minos.networks import Request, Response, enroute
 
 
-class Foo(RootEntity):
-    """Foo RootEntity class."""
+class Foo(Entity):
+    """Foo Entity class."""
 
     bar: str
     foobar: Optional[Ref[FooBar]]
@@ -793,15 +792,15 @@ from pathlib import Path
 from typing import Optional
 from uuid import UUID
 
-from minos.aggregate import Aggregate, RootEntity, ExternalEntity, Ref
+from minos.aggregate import Aggregate, Entity, ExternalEntity, Ref
 from minos.common import ModelType, EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 from minos.networks import Request, Response, enroute
 from minos.saga import Saga, SagaContext, SagaRequest, SagaResponse
 
 
-class Foo(RootEntity):
-    """Foo RootEntity class."""
+class Foo(Entity):
+    """Foo Entity class."""
 
     bar: str
     foobar: Optional[Ref[FooBar]]
@@ -1040,13 +1039,13 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import UUID
 
-from minos.aggregate import Aggregate, RootEntity
+from minos.aggregate import Aggregate, Entity
 from minos.common import EntrypointLauncher
 from minos.cqrs import CommandService
 from minos.networks import Request, Response, enroute
 
 
-class FooBar(RootEntity):
+class FooBar(Entity):
     """FooBar Root Entity clas."""
 
     something: str

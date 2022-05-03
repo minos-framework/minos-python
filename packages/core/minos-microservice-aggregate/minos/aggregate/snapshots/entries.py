@@ -75,7 +75,7 @@ class SnapshotEntry:
         self.transaction_uuid = transaction_uuid
 
     @classmethod
-    def from_root_entity(cls, instance: Entity, **kwargs) -> SnapshotEntry:
+    def from_entity(cls, instance: Entity, **kwargs) -> SnapshotEntry:
         """Build a new instance from a ``Entity``.
 
         :param instance: The ``Entity`` instance.

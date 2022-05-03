@@ -4,7 +4,6 @@ from .collections import (
 from .models import (
     Entity,
     ExternalEntity,
-    RootEntity,
 )
 from .refs import (
     Ref,
