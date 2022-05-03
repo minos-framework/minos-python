@@ -21,12 +21,12 @@ keywords = [
     "saga",
 ]
 packages = [
-    { include = "minos" }
+    { include = "minos" },
 ]
 include = [
-    "AUTHORS.md",
-    "HISTORY.md",
-    "LICENSE",
+    { path = "AUTHORS.md", format = "sdist" },
+    { path = "HISTORY.md", format = "sdist" },
+    { path = "LICENSE", format = "sdist" },
 ]
 
 [tool.poetry.dependencies]
