@@ -547,7 +547,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-broker-kafka"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The kafka plugin of the Minos Framework"
 category = "main"
 optional = false
@@ -567,7 +567,7 @@ url = "packages/plugins/minos-broker-kafka"
 
 [[package]]
 name = "minos-broker-rabbitmq"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The rabbitmq plugin of the Minos Framework"
 category = "main"
 optional = false
@@ -585,7 +585,7 @@ url = "packages/plugins/minos-broker-rabbitmq"
 
 [[package]]
 name = "minos-database-aiopg"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The aiopg plugin of the Minos Framework"
 category = "main"
 optional = false
@@ -605,7 +605,7 @@ url = "packages/plugins/minos-database-aiopg"
 
 [[package]]
 name = "minos-database-lmdb"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The lmdb plugin of the Minos Framework"
 category = "main"
 optional = false
@@ -623,7 +623,7 @@ url = "packages/plugins/minos-database-lmdb"
 
 [[package]]
 name = "minos-discovery-kong"
-version = "0.7.0.dev3"
+version = "0.7.0.dev4"
 description = "The minos-kong plugin offer an interface that permit integrate Minos Microservice with Kong API Gateway"
 category = "main"
 optional = false
@@ -643,7 +643,7 @@ url = "packages/plugins/minos-discovery-kong"
 
 [[package]]
 name = "minos-discovery-minos"
-version = "0.7.0.dev1"
+version = "0.7.0.dev4"
 description = "The minos-discovery plugin of the Minos Framework"
 category = "main"
 optional = false
@@ -661,7 +661,7 @@ url = "packages/plugins/minos-discovery-minos"
 
 [[package]]
 name = "minos-http-aiohttp"
-version = "0.7.0.dev1"
+version = "0.7.0.dev4"
 description = "The aiohttp plugin of the Minos Framework"
 category = "main"
 optional = false
@@ -681,7 +681,7 @@ url = "packages/plugins/minos-http-aiohttp"
 
 [[package]]
 name = "minos-microservice-aggregate"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The Aggregate pattern of the Minos Framework"
 category = "main"
 optional = false
@@ -699,7 +699,7 @@ url = "packages/core/minos-microservice-aggregate"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
@@ -721,7 +721,7 @@ url = "packages/core/minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-cqrs"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The CQRS pattern of the Minos Framework"
 category = "main"
 optional = false
@@ -739,7 +739,7 @@ url = "packages/core/minos-microservice-cqrs"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The networks core of the Minos Framework"
 category = "main"
 optional = false
@@ -756,7 +756,7 @@ url = "packages/core/minos-microservice-networks"
 
 [[package]]
 name = "minos-microservice-saga"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The SAGA pattern of the Minos Framework"
 category = "main"
 optional = false
@@ -775,7 +775,7 @@ url = "packages/core/minos-microservice-saga"
 
 [[package]]
 name = "minos-router-graphql"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The graphql plugin of the Minos Framework"
 category = "main"
 optional = false

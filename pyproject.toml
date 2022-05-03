@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-python"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = ""
 authors = ["Minos Framework Devs <hey@minos.run>"]
 license = "MIT"

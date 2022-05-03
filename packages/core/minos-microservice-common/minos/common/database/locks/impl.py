@@ -5,8 +5,7 @@ from __future__ import (
 from collections.abc import (
     Hashable,
 )
-
-from pyparsing import (
+from typing import (
     Optional,
 )
 

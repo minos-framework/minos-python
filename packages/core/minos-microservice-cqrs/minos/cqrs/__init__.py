@@ -2,7 +2,7 @@
 
 __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
-__version__ = "0.7.0.dev2"
+__version__ = "0.7.0.dev4"
 
 from .exceptions import (
     MinosCqrsException,
