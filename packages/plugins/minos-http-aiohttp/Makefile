@@ -15,10 +15,6 @@ reformat:
 	poetry run black --line-length 120 minos tests
 	poetry run isort minos tests
 
-docs:
-	rm -rf docs/api
-	poetry run $(MAKE) --directory=docs html
-
 release:
 	$(MAKE) dist
 	poetry publish
@@ -38,5 +34,4 @@ check:
 	$(MAKE) reformat
 	$(MAKE) lint
 	$(MAKE) test
-	$(MAKE) docs
 	$(MAKE) dist

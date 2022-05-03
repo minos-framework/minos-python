@@ -7,6 +7,7 @@ from minos.common import (
     Config,
     ConfigV1,
     MinosConfigException,
+    PoolFactory,
 )
 from tests.utils import (
     BASE_PATH,
@@ -51,9 +52,7 @@ class TestConfigV1(unittest.TestCase):
 
     def test_injections(self):
         expected = [
-            FakeLockPool,
-            FakeDatabasePool,
-            FakeBrokerClientPool,
+            PoolFactory,
             FakeHttpConnector,
             FakeBrokerPublisher,
             FakeBrokerSubscriberBuilder,
@@ -185,7 +184,15 @@ class TestConfigV1(unittest.TestCase):
             config.get_interface_by_name("unknown")
 
     def test_pools(self):
-        self.assertEqual(dict(), self.config.get_pools())
+        expected = {
+            "factory": PoolFactory,
+            "types": {
+                "lock": FakeLockPool,
+                "database": FakeDatabasePool,
+                "broker": FakeBrokerClientPool,
+            },
+        }
+        self.assertEqual(expected, self.config.get_pools())
 
     def test_services(self):
         self.assertEqual([float, int], self.config.get_services())

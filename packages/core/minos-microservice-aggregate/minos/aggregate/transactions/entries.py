@@ -17,6 +17,7 @@ from enum import (
 )
 from typing import (
     TYPE_CHECKING,
+    Any,
     Iterable,
     Optional,
     Union,
@@ -315,6 +316,19 @@ class TransactionEntry:
             f"{type(self).__name__}(uuid={self.uuid!r}, status={self.status!r}, event_offset={self.event_offset!r}, "
             f"destination_uuid={self.destination_uuid!r}, updated_at={self.updated_at!r})"
         )
+
+    def as_raw(self) -> dict[str, Any]:
+        """Get a raw representation of the instance.
+
+        :return: A dictionary in which the keys are attribute names and values the attribute contents.
+        """
+        return {
+            "uuid": self.uuid,
+            "status": self.status,
+            "event_offset": self.event_offset,
+            "destination_uuid": self.destination_uuid,
+            "updated_at": self.updated_at,
+        }
 
 
 class TransactionStatus(str, Enum):
