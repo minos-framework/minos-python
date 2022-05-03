@@ -1,3 +1,5 @@
+"""This module contains the implementation of the graphql handler."""
+
 import logging
 import traceback
 from typing import (

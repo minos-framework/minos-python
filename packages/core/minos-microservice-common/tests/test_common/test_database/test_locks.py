@@ -1,52 +1,37 @@
 import unittest
 
-import aiopg
-from aiopg import (
-    Cursor,
-)
-
 from minos.common import (
+    DatabaseLock,
     Lock,
-    PostgreSqlLock,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
-from tests.utils import (
-    CONFIG_FILE_PATH,
+    MockedDatabaseClient,
 )
 
 
-class TestPostgreSqlLock(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = CONFIG_FILE_PATH
-
+class TestDatabaseLock(unittest.IsolatedAsyncioTestCase):
     def test_base(self):
-        self.assertTrue(issubclass(PostgreSqlLock, Lock))
+        self.assertTrue(issubclass(DatabaseLock, Lock))
 
-    async def test_wrapped_connection(self):
-        wrapped_connection = aiopg.connect(**self.repository_db)
-        lock = PostgreSqlLock(wrapped_connection, "foo")
-        self.assertEqual(wrapped_connection, lock.wrapped_connection)
+    async def test_client(self):
+        client = MockedDatabaseClient()
+        lock = DatabaseLock(client, "foo")
+        self.assertEqual(client, lock.client)
 
     async def test_key(self):
-        wrapped_connection = aiopg.connect(**self.repository_db)
-        lock = PostgreSqlLock(wrapped_connection, "foo")
+        client = MockedDatabaseClient()
+        lock = DatabaseLock(client, "foo")
         self.assertEqual("foo", lock.key)
 
     async def test_key_raises(self):
-        wrapped_connection = aiopg.connect(**self.repository_db)
+        client = MockedDatabaseClient()
         with self.assertRaises(ValueError):
-            PostgreSqlLock(wrapped_connection, [])
+            DatabaseLock(client, [])
 
     async def test_hashed_key(self):
-        wrapped_connection = aiopg.connect(**self.repository_db)
-        lock = PostgreSqlLock(wrapped_connection, "foo")
+        client = MockedDatabaseClient()
+        lock = DatabaseLock(client, "foo")
         self.assertEqual(hash("foo"), lock.hashed_key)
-
-    async def test_cursor(self):
-        wrapped_connection = aiopg.connect(**self.repository_db)
-        async with PostgreSqlLock(wrapped_connection, "foo") as lock:
-            self.assertIsInstance(lock.cursor, Cursor)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,4 @@
 import unittest
-from itertools import (
-    chain,
-    cycle,
-)
 from unittest.mock import (
     patch,
 )
@@ -11,6 +7,7 @@ from minos.common import (
     Config,
     ConfigV2,
     MinosConfigException,
+    PoolFactory,
 )
 from tests.utils import (
     BASE_PATH,
@@ -60,9 +57,7 @@ class TestConfigV2(unittest.TestCase):
 
     def test_injections(self):
         expected = [
-            FakeLockPool,
-            FakeDatabasePool,
-            FakeBrokerClientPool,
+            PoolFactory,
             FakeHttpConnector,
             FakeBrokerPublisher,
             FakeBrokerSubscriberBuilder(FakeBrokerSubscriber),
@@ -80,8 +75,7 @@ class TestConfigV2(unittest.TestCase):
             self.assertEqual(list(), self.config.get_injections())
 
     def test_injections_not_injectable(self):
-        side_effect = chain([{"client": "builtins.int"}], cycle([MinosConfigException("")]))
-        with patch.object(ConfigV2, "get_by_key", side_effect=side_effect):
+        with patch.object(ConfigV2, "_get_pools", return_value={"factory": int}):
             with self.assertRaises(MinosConfigException):
                 self.config.get_injections()
 
@@ -145,9 +139,12 @@ class TestConfigV2(unittest.TestCase):
 
     def test_pools(self):
         expected = {
-            "broker": FakeBrokerClientPool,
-            "database": FakeDatabasePool,
-            "lock": FakeLockPool,
+            "factory": PoolFactory,
+            "types": {
+                "broker": FakeBrokerClientPool,
+                "database": FakeDatabasePool,
+                "lock": FakeLockPool,
+            },
         }
         self.assertEqual(expected, self.config.get_pools())
 
@@ -194,15 +191,6 @@ class TestConfigV2(unittest.TestCase):
         self.assertEqual("localhost", database_config["host"])
         self.assertEqual(5432, database_config["port"])
 
-    def test_database_event(self):
-        config = ConfigV2(self.file_path, with_environment=False)
-        database_config = config.get_database_by_name("event")
-        self.assertEqual("order_db", database_config["database"])
-        self.assertEqual("minos", database_config["user"])
-        self.assertEqual("min0s", database_config["password"])
-        self.assertEqual("localhost", database_config["host"])
-        self.assertEqual(5432, database_config["port"])
-
     def test_database_query(self):
         config = ConfigV2(self.file_path, with_environment=False)
         query_database = config.get_database_by_name("query")
@@ -211,24 +199,6 @@ class TestConfigV2(unittest.TestCase):
         self.assertEqual("min0s", query_database["password"])
         self.assertEqual("localhost", query_database["host"])
         self.assertEqual(5432, query_database["port"])
-
-    def test_database_snapshot(self):
-        config = ConfigV2(self.file_path, with_environment=False)
-        snapshot = config.get_database_by_name("snapshot")
-        self.assertEqual("order_db", snapshot["database"])
-        self.assertEqual("minos", snapshot["user"])
-        self.assertEqual("min0s", snapshot["password"])
-        self.assertEqual("localhost", snapshot["host"])
-        self.assertEqual(5432, snapshot["port"])
-
-    def test_database_broker(self):
-        config = ConfigV2(self.file_path, with_environment=False)
-        snapshot = config.get_database_by_name("broker")
-        self.assertEqual("order_db", snapshot["database"])
-        self.assertEqual("minos", snapshot["user"])
-        self.assertEqual("min0s", snapshot["password"])
-        self.assertEqual("localhost", snapshot["host"])
-        self.assertEqual(5432, snapshot["port"])
 
     def test_database_saga(self):
         config = ConfigV2(self.file_path, with_environment=False)

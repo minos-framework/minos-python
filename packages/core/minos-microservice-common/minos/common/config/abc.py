@@ -145,18 +145,21 @@ class Config(ABC):
 
         :return: A ``dict`` containing the database's config values.
         """
-        return self.get_database_by_name("default")
+        return self.get_database_by_name(None)
 
-    def get_database_by_name(self, name: str) -> dict[str, Any]:
+    def get_database_by_name(self, name: Optional[str]) -> dict[str, Any]:
         """Get the database value by name.
 
         :param name: The name of the database. If ``None`` is provided then the default database will be used.
         :return: A ``dict`` containing the database's config values.
         """
+        if name is None:
+            name = "default"
+
         databases = self.get_databases()
 
         if name not in databases:
-            name = "default"
+            raise MinosConfigException(f"{name!r} database is not configured")
 
         return databases[name]
 

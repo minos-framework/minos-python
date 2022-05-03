@@ -79,6 +79,22 @@ class FakeQueryService:
         return "eu38hj32-889283-j2jjb5kl"
 
 
+class FakeQueryService2:
+    """For testng purposes."""
+
+    # noinspection PyUnusedLocal
+    @enroute.graphql.query(
+        name="order",
+        argument=GraphQLField(GraphQLString),
+        output=GraphQLString,
+        foo="bar",
+    )
+    def get_order(self, request: Request):
+        """For testng purposes."""
+
+        return "eu38hj32-889283-j2jjb5kl"
+
+
 user_type = GraphQLObjectType(
     "UserType",
     {

@@ -3,7 +3,7 @@ from .impl import (
 )
 from .queues import (
     BrokerPublisherQueue,
+    BrokerPublisherQueueDatabaseOperationFactory,
+    DatabaseBrokerPublisherQueue,
     InMemoryBrokerPublisherQueue,
-    PostgreSqlBrokerPublisherQueue,
-    PostgreSqlBrokerPublisherQueueQueryFactory,
 )
