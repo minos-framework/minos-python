@@ -199,7 +199,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.7.0.dev2"
+version = "0.7.0.dev4"
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
