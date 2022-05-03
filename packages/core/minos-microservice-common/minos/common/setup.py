@@ -94,7 +94,7 @@ class SetupMixin(Object):
         :return: This method does not return anything.
         """
         if not self._already_setup:
-            logger.info(f"Setting up a {type(self).__name__!r} instance...")
+            logger.debug(f"Setting up a {type(self).__name__!r} instance...")
             await self._setup()
             self._already_setup = True
 
@@ -110,7 +110,7 @@ class SetupMixin(Object):
         :return: This method does not return anything.
         """
         if self._already_setup:
-            logger.info(f"Destroying a {type(self).__name__!r} instance...")
+            logger.debug(f"Destroying a {type(self).__name__!r} instance...")
             await self._destroy()
             self._already_setup = False
 

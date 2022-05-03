@@ -3,9 +3,9 @@ from .impl import (
 )
 from .validators import (
     BrokerSubscriberDuplicateValidator,
+    BrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     BrokerSubscriberValidator,
+    DatabaseBrokerSubscriberDuplicateValidator,
+    DatabaseBrokerSubscriberDuplicateValidatorBuilder,
     InMemoryBrokerSubscriberDuplicateValidator,
-    PostgreSqlBrokerSubscriberDuplicateValidator,
-    PostgreSqlBrokerSubscriberDuplicateValidatorBuilder,
-    PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory,
 )

@@ -1,5 +1,6 @@
 from .builders import (
     TypeHintBuilder,
+    TypeHintParser,
     build_union,
 )
 from .comparators import (

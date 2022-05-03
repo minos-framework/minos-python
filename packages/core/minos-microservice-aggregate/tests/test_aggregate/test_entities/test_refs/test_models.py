@@ -25,7 +25,7 @@ from minos.common import (
     ModelType,
 )
 from tests.utils import (
-    MinosTestCase,
+    AggregateTestCase,
 )
 
 FakeMessage = ModelType.build("FakeMessage", {"content": Any})
@@ -34,7 +34,7 @@ Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
 Foo = ModelType.build("Foo", {"another": Ref[Bar]})
 
 
-class TestRef(MinosTestCase):
+class TestRef(AggregateTestCase):
     def test_subclass(self):
         # noinspection PyTypeHints
         self.assertTrue(issubclass(Ref, (DeclarativeModel, UUID, Generic)))

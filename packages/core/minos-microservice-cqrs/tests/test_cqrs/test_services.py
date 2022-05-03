@@ -7,18 +7,18 @@ from unittest.mock import (
 )
 
 from minos.common import (
+    DatabaseLockPool,
     DependencyInjector,
-    PostgreSqlLockPool,
+    PoolFactory,
 )
 from minos.common.testing import (
-    PostgresAsyncTestCase,
+    DatabaseMinosTestCase,
 )
 from minos.cqrs import (
     MinosIllegalHandlingException,
     Service,
 )
 from minos.networks import (
-    BrokerClientPool,
     BrokerCommandEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
     InMemoryRequest,
@@ -32,15 +32,15 @@ from tests.utils import (
 )
 
 
-class TestService(PostgresAsyncTestCase):
+class TestService(DatabaseMinosTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
 
-        self.lock_pool = PostgreSqlLockPool.from_config(self.config)
+        self.lock_pool = DatabaseLockPool.from_config(self.config)
 
-        self.injector = DependencyInjector(self.config, [BrokerClientPool])
+        self.injector = DependencyInjector(self.config, [PoolFactory])
         self.injector.wire_injections(modules=[sys.modules[__name__]])
 
         self.service = FakeService(config=self.config, lock_pool=self.lock_pool)
@@ -51,7 +51,7 @@ class TestService(PostgresAsyncTestCase):
     async def test_constructor(self):
         self.assertEqual(self.config, self.service.config)
         self.assertEqual(self.lock_pool, self.service.lock_pool)
-        self.assertEqual(self.injector.broker_pool, self.service.broker_pool)
+        self.assertEqual(self.injector.pool_factory, self.service.pool_factory)
 
         with self.assertRaises(AttributeError):
             self.service.event_repository
@@ -67,7 +67,7 @@ class TestService(PostgresAsyncTestCase):
             self.assertEqual(1, mock.call_count)
 
 
-class TestQueryService(PostgresAsyncTestCase):
+class TestQueryService(DatabaseMinosTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -94,7 +94,7 @@ class TestQueryService(PostgresAsyncTestCase):
         self.assertEqual(expected, observed)
 
 
-class TestCommandService(PostgresAsyncTestCase):
+class TestCommandService(DatabaseMinosTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:

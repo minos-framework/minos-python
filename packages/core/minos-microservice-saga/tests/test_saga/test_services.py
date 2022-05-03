@@ -24,11 +24,11 @@ from minos.saga import (
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
-    MinosTestCase,
+    SagaTestCase,
 )
 
 
-class TestSagaService(MinosTestCase):
+class TestSagaService(SagaTestCase):
     def setUp(self) -> None:
         super().setUp()
 

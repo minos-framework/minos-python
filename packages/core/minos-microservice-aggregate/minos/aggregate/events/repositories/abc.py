@@ -13,6 +13,7 @@ from contextlib import (
     suppress,
 )
 from typing import (
+    TYPE_CHECKING,
     AsyncIterator,
     Awaitable,
     Optional,
@@ -29,7 +30,9 @@ from minos.common import (
     Lock,
     LockPool,
     NotProvidedException,
+    PoolFactory,
     SetupMixin,
+    classname,
 )
 from minos.networks import (
     BrokerMessageV1,
@@ -64,6 +67,11 @@ from ..models import (
     Event,
 )
 
+if TYPE_CHECKING:
+    from ...entities import (
+        RootEntity,
+    )
+
 
 @Injectable("event_repository")
 class EventRepository(ABC, SetupMixin):
@@ -74,11 +82,15 @@ class EventRepository(ABC, SetupMixin):
         self,
         broker_publisher: BrokerPublisher,
         transaction_repository: TransactionRepository,
-        lock_pool: LockPool,
+        lock_pool: Optional[LockPool] = None,
+        pool_factory: Optional[PoolFactory] = None,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+
+        if lock_pool is None and pool_factory is not None:
+            lock_pool = pool_factory.get_pool("lock")
 
         if broker_publisher is None:
             raise NotProvidedException("A broker instance is required.")
@@ -228,7 +240,7 @@ class EventRepository(ABC, SetupMixin):
     async def select(
         self,
         uuid: Optional[UUID] = None,
-        name: Optional[str] = None,
+        name: Optional[Union[str, type[RootEntity]]] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
         version_gt: Optional[int] = None,
@@ -263,6 +275,8 @@ class EventRepository(ABC, SetupMixin):
         :param transaction_uuid_in: The destination transaction identifier must be equal to one of the given values.
         :return: A list of entries.
         """
+        if isinstance(name, type):
+            name = classname(name)
         generator = self._select(
             uuid=uuid,
             name=name,

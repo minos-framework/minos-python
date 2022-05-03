@@ -10,6 +10,7 @@ from itertools import (
 )
 from typing import (
     Any,
+    Optional,
     Union,
 )
 from uuid import (
@@ -19,6 +20,8 @@ from uuid import (
 from minos.common import (
     Inject,
     Model,
+    NotProvidedException,
+    PoolFactory,
 )
 from minos.networks import (
     BrokerClient,
@@ -45,7 +48,18 @@ class RefResolver:
 
     # noinspection PyUnusedLocal
     @Inject()
-    def __init__(self, broker_pool: BrokerClientPool, **kwargs):
+    def __init__(
+        self,
+        broker_pool: Optional[BrokerClientPool] = None,
+        pool_factory: Optional[PoolFactory] = None,
+        **kwargs,
+    ):
+        if broker_pool is None and pool_factory is not None:
+            broker_pool = pool_factory.get_pool("broker")
+
+        if not isinstance(broker_pool, BrokerClientPool):
+            raise NotProvidedException(f"A {BrokerClientPool!r} instance is required. Obtained: {broker_pool}")
+
         self.broker_pool = broker_pool
 
     # noinspection PyUnusedLocal
