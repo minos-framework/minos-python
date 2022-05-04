@@ -80,9 +80,9 @@ class AvroDataDecoder(DataDecoder):
 
     def _build(self, type_: type, data: Any, **kwargs) -> Any:
         origin = get_origin(type_)
-        if origin is not Union:
-            return self._build_single(type_, data, **kwargs)
-        return self._build_union(type_, data, **kwargs)
+        if origin is Union:
+            return self._build_union(type_, data, **kwargs)
+        return self._build_single(type_, data, **kwargs)
 
     def _build_union(self, type_: type, data: Any, **kwargs) -> Any:
         alternatives = get_args(type_)
@@ -103,9 +103,6 @@ class AvroDataDecoder(DataDecoder):
         if type_ is Any:
             return self._build_any(data, **kwargs)
 
-        if isinstance(type_, TypeVar):
-            return self._build_typevar(type_, data, **kwargs)
-
         if type_ is NoneType:
             return self._build_none(type_, data, **kwargs)
 
@@ -114,6 +111,12 @@ class AvroDataDecoder(DataDecoder):
 
         if data is MissingSentinel:
             raise DataDecoderRequiredValueException("Value is missing.")
+
+        if isinstance(type_, TypeVar):
+            return self._build_typevar(type_, data, **kwargs)
+
+        if isinstance(type_, ModelType):
+            return self._build_model_type(type_, data, **kwargs)
 
         if is_model_subclass(type_):
             # noinspection PyTypeChecker
@@ -149,9 +152,6 @@ class AvroDataDecoder(DataDecoder):
 
             if issubclass(type_, UUID):
                 return self._build_uuid(data, **kwargs)
-
-            if isinstance(type_, ModelType):
-                return self._build_model_type(type_, data, **kwargs)
 
         return self._build_collection(type_, data, **kwargs)
 
