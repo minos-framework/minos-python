@@ -229,11 +229,15 @@ class ModelType(type):
         )
 
     def __hash__(cls) -> int:
-        return hash(tuple(cls))
+        if not hasattr(cls, "_hash"):
+            cls._hash = hash(tuple(cls))
+        return cls._hash
 
     def __iter__(cls) -> Iterable:
         # noinspection PyRedundantParentheses
-        yield from (cls.name, cls.namespace, tuple(cls.type_hints.items()))
+        yield cls.name
+        yield cls.namespace
+        yield frozenset(cls.type_hints.items())
 
     def __repr__(cls):
         return f"{type(cls).__name__}(name={cls.name!r}, namespace={cls.namespace!r}, type_hints={cls.type_hints!r})"
