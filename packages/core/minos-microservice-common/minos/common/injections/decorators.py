@@ -19,7 +19,6 @@ from inspect import (
 from typing import (
     Any,
     Generic,
-    Type,
     TypeVar,
     Union,
     get_args,
