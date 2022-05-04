@@ -45,6 +45,7 @@ from ....types import (
     NoneType,
     TypeHintBuilder,
     is_model_subclass,
+    is_model_type,
     is_type_subclass,
     unpack_typevar,
 )
@@ -247,9 +248,8 @@ class AvroDataDecoder(DataDecoder):
         return self._build_model_type(ModelType.from_model(type_), data, **kwargs)
 
     def _build_model_type(self, type_: ModelType, data: Any, **kwargs) -> Any:
-        if hasattr(data, "model_type"):
-            if ModelType.from_model(data) >= type_:
-                return data
+        if is_model_type(data) and ModelType.from_model(data) >= type_:
+            return data
 
         if (ans := type_.model_cls.decode_data(self, data, type_, **kwargs)) is not MissingSentinel:
             return ans
