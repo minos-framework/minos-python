@@ -21,32 +21,6 @@ from .model_types import (
     ModelType,
 )
 
-
-def is_model_subclass(type_: type) -> bool:
-    """Check if the given type field is subclass of ``Model``."""
-    from ..abc import (
-        Model,
-    )
-
-    if not is_type_subclass(type_):
-        type_ = get_origin(type_)
-    return is_type_subclass(type_) and issubclass(type_, Model)
-
-
-def is_type_subclass(type_: type) -> bool:
-    """Check if the given type field is subclass of ``type``."""
-    return issubclass(type(type_), type(type))
-
-
-def is_model_type(value: Any):
-    """Check if the given type is a model instance."""
-    from ..abc import (
-        Model,
-    )
-
-    return isinstance(value, Model)
-
-
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=type)
@@ -114,3 +88,25 @@ class TypeHintComparator:
         if len(first_args) != len(second_args):
             return False
         return all(cls._compare(fi, si) for fi, si in zip(first_args, second_args))
+
+
+def is_model_type(value: Any):
+    """Check if the given type is a model instance."""
+    return is_model_subclass(type(value))
+
+
+@lru_cache()
+def is_model_subclass(type_: type) -> bool:
+    """Check if the given type field is subclass of ``Model``."""
+    from ..abc import (
+        Model,
+    )
+
+    if not is_type_subclass(type_):
+        type_ = get_origin(type_)
+    return is_type_subclass(type_) and issubclass(type_, Model)
+
+
+def is_type_subclass(type_: type) -> bool:
+    """Check if the given type field is subclass of ``type``."""
+    return issubclass(type(type_), type(type))
