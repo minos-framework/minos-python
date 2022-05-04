@@ -47,8 +47,6 @@ from .mixins import (
 
 InputType = TypeVar("InputType", bound=type)
 
-OutputType = Union[InputType, Type[InjectableMixin]]
-
 
 class Injectable:
     """Injectable decorator."""
@@ -66,13 +64,13 @@ class Injectable:
         """
         return self._name
 
-    def __call__(self, input_type: InputType) -> OutputType:
+    def __call__(self, input_type: InputType):
         bases = (input_type, InjectableMixin)
         if (generic := self._build_generic(input_type)) is not None:
             bases = (*bases, generic)
 
         # noinspection PyTypeChecker
-        output_type: OutputType = types.new_class(input_type.__name__, bases, {})
+        output_type = types.new_class(input_type.__name__, bases, {})
         output_type.__module__ = input_type.__module__
 
         # noinspection PyProtectedMember
