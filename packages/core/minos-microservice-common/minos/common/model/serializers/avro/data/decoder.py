@@ -101,10 +101,10 @@ class AvroDataDecoder(DataDecoder):
 
     def _build_single(self, type_: type, data: Any, **kwargs) -> Any:
         if type_ is Any:
-            type_ = TypeHintBuilder(data).build()
+            return self._build_any(data, **kwargs)
+
         if isinstance(type_, TypeVar):
-            unpacked_type = unpack_typevar(type_)
-            return self._build(unpacked_type, data, **kwargs)
+            return self._build_typevar(type_, data, **kwargs)
 
         if type_ is NoneType:
             return self._build_none(type_, data, **kwargs)
@@ -154,6 +154,15 @@ class AvroDataDecoder(DataDecoder):
                 return self._build_model_type(type_, data, **kwargs)
 
         return self._build_collection(type_, data, **kwargs)
+
+    def _build_any(self, data: Any, **kwargs) -> Any:
+        type_ = TypeHintBuilder(data).build()
+        return self._build(type_, data, **kwargs)
+
+    # noinspection SpellCheckingInspection
+    def _build_typevar(self, type_: TypeVar, data: Any, **kwargs) -> Any:
+        unpacked_type = unpack_typevar(type_)
+        return self._build(unpacked_type, data, **kwargs)
 
     @staticmethod
     def _build_none(type_: type, data: Any, **kwargs) -> Any:
