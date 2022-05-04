@@ -136,7 +136,15 @@ class ModelType(type):
         return f"{cls.namespace}.{cls.name}"
 
     def __le__(cls, other: Any) -> bool:
-        return (cls == other) or (cls < other)
+        from .comparators import (
+            TypeHintComparator,
+        )
+
+        return (cls == other) or (
+            cls._equal_without_types(other)
+            and cls.type_hints.keys() < other.type_hints.keys()
+            and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in cls.type_hints.items())
+        )
 
     def __lt__(cls, other: Any) -> bool:
         from .comparators import (
@@ -150,7 +158,15 @@ class ModelType(type):
         )
 
     def __ge__(cls, other: Any) -> bool:
-        return (cls == other) or (cls > other)
+        from .comparators import (
+            TypeHintComparator,
+        )
+
+        return (cls == other) or (
+            cls._equal_without_types(other)
+            and cls.type_hints.keys() >= other.type_hints.keys()
+            and all(TypeHintComparator(v, cls.type_hints[k]).match() for k, v in other.type_hints.items())
+        )
 
     def __gt__(cls, other: Any) -> bool:
         from .comparators import (
