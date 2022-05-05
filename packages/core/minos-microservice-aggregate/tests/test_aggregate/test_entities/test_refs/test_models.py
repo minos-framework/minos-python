@@ -3,6 +3,7 @@ from typing import (
     Any,
     Generic,
     Union,
+    get_args,
 )
 from unittest.mock import (
     patch,
@@ -30,14 +31,26 @@ from tests.utils import (
 
 FakeMessage = ModelType.build("FakeMessage", {"content": Any})
 
-Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-Foo = ModelType.build("Foo", {"another": Ref[Bar]})
+Bar = ModelType.build("Bar", {"uuid": UUID, "version": int, "text": str})
+Foo = ModelType.build("Foo", {"another": Ref["Bar"]})
 
 
 class TestRef(AggregateTestCase):
     def test_subclass(self):
         # noinspection PyTypeHints
         self.assertTrue(issubclass(Ref, (DeclarativeModel, UUID, Generic)))
+
+    def test_generic_type(self):
+        # noinspection PyPep8Naming
+        User = ModelType.build("User", uuid=UUID, version=int)
+        typed = Ref[User]
+        args = get_args(typed)
+        self.assertEqual((User,), args)
+
+    def test_generic_str(self):
+        typed = Ref["User"]
+        args = get_args(typed)
+        self.assertEqual((ModelType.build("User", uuid=UUID, version=int),), args)
 
     def test_raises(self):
         with self.assertRaises(ValueError):
@@ -107,38 +120,38 @@ class TestRef(AggregateTestCase):
         self.assertEqual(uuid_2, value.data)
 
     def test_model(self):
-        another = Bar(uuid4(), 1)
+        another = Bar(uuid4(), 1, "foobar")
         value = Foo(another=another)
 
         self.assertEqual(another, value.another)
 
     def test_model_uuid(self):
         uuid = uuid4()
-        value = Ref(Bar(uuid, 1))
+        value = Ref(Bar(uuid, 1, "foobar"))
 
         self.assertEqual(uuid, value.uuid)
 
     def test_model_getattr(self):
-        value = Ref(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1, "foobar"))
 
-        self.assertEqual(1, value.age)
+        self.assertEqual("foobar", value.text)
 
     def test_model_getattr_raises(self):
-        value = Ref(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1, "foobar"))
 
         with self.assertRaises(AttributeError):
             value.year
 
     def test_model_setattr(self):
-        value = Ref(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1, "foobar"))
 
-        value.age = 2
+        value.text = "hello"
 
-        self.assertEqual(2, value.data.age)
+        self.assertEqual("hello", value.data.text)
 
     def test_model_setattr_uuid(self):
         uuid_2 = uuid4()
-        value = Ref(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1, "foobar"))
 
         value.uuid = uuid_2
 
@@ -146,32 +159,32 @@ class TestRef(AggregateTestCase):
 
     def test_model_setattr_raises(self):
         uuid_2 = uuid4()
-        value = Ref(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1, "foobar"))
 
         with self.assertRaises(AttributeError):
             value.something = uuid_2
 
     def test_model_getitem(self):
-        value = Ref(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1, "foobar"))
 
-        self.assertEqual(1, value["age"])
+        self.assertEqual("foobar", value["text"])
 
     def test_model_getitem_raises(self):
-        value = Ref(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1, "foobar"))
 
         with self.assertRaises(KeyError):
             value["year"]
 
     def test_model_setitem(self):
-        value = Ref(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1, "foobar"))
 
-        value["age"] = 2
+        value["text"] = "hello"
 
-        self.assertEqual(2, value.data.age)
+        self.assertEqual("hello", value.data.text)
 
     def test_model_setitem_uuid(self):
         uuid_2 = uuid4()
-        value = Ref(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1, "foobar"))
 
         value["uuid"] = uuid_2
 
@@ -179,18 +192,18 @@ class TestRef(AggregateTestCase):
 
     def test_model_setitem_raises(self):
         uuid_2 = uuid4()
-        value = Ref(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1, "foobar"))
 
         with self.assertRaises(KeyError):
             value["something"] = uuid_2
 
     def test_fields(self):
-        value = Ref(Bar(uuid4(), 1))
+        value = Ref(Bar(uuid4(), 1, "foobar"))
 
         self.assertEqual({"data": Field("data", Union[Bar, UUID], value)}, value.fields)
 
     def test_model_avro_data(self):
-        value = Bar(uuid4(), 1)
+        value = Bar(uuid4(), 1, "foobar")
 
         self.assertEqual(value.avro_data, Ref(value).avro_data)
 
@@ -200,7 +213,7 @@ class TestRef(AggregateTestCase):
 
     async def test_model_avro_data_submitting(self):
         uuid = uuid4()
-        value = Bar(uuid, 1)
+        value = Bar(uuid, 1, "foobar")
 
         IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
         self.assertEqual(str(uuid), Ref(value).avro_data)
@@ -211,14 +224,15 @@ class TestRef(AggregateTestCase):
         self.assertEqual(str(value), Ref(value).avro_data)
 
     def test_model_avro_schema(self):
-        another = Bar(uuid4(), 1)
+        another = Bar(uuid4(), 1, "foobar")
 
         expected = [
             [
                 {
                     "fields": [
                         {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
-                        {"name": "age", "type": "int"},
+                        {"name": "version", "type": "int"},
+                        {"name": "text", "type": "string"},
                     ],
                     "name": "Bar",
                     "namespace": "",
@@ -240,7 +254,7 @@ class TestRef(AggregateTestCase):
                 {
                     "fields": [
                         {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
-                        {"name": "age", "type": "int"},
+                        {"name": "version", "type": "int"},
                     ],
                     "logicalType": "minos.aggregate.entities.refs.models.Ref",
                     "name": "Bar",
@@ -253,7 +267,7 @@ class TestRef(AggregateTestCase):
         self.assertEqual(expected, ref.avro_schema)
 
     def test_model_from_avro(self):
-        another = Bar(uuid4(), 1)
+        another = Bar(uuid4(), 1, "foobar")
         expected = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
         schema = [
@@ -261,7 +275,7 @@ class TestRef(AggregateTestCase):
             {
                 "fields": [
                     {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
-                    {"name": "age", "type": "int"},
+                    {"name": "text", "type": "string"},
                 ],
                 "logicalType": "minos.aggregate.entities.refs.models.Ref",
                 "name": "Bar",
@@ -282,7 +296,7 @@ class TestRef(AggregateTestCase):
             {
                 "fields": [
                     {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
-                    {"name": "age", "type": "int"},
+                    {"name": "text", "type": "int"},
                 ],
                 "logicalType": "minos.aggregate.entities.refs.models.Ref",
                 "name": "Bar",
@@ -298,16 +312,16 @@ class TestRef(AggregateTestCase):
 
     async def test_resolve(self):
         another = uuid4()
-        resolved_another = Bar(another, 1)
+        resolved_another = Bar(another, 1, "foobar")
 
         ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
-        self.assertEqual(ref.data, another)
+        self.assertEqual(another, ref.data)
 
         with patch.object(RefResolver, "resolve", return_value=resolved_another):
             await ref.resolve()
 
-        self.assertEqual(ref.data, Bar(another, 1))
+        self.assertEqual(Bar(another, 1, "foobar"), ref.data)
 
     async def test_resolve_raises(self):
         another = uuid4()
@@ -321,7 +335,7 @@ class TestRef(AggregateTestCase):
     async def test_resolve_already(self):
         uuid = uuid4()
 
-        ref = Ref(Bar(uuid, 1))
+        ref = Ref(Bar(uuid, 1, "foobar"))
 
         await ref.resolve()
 
@@ -330,10 +344,10 @@ class TestRef(AggregateTestCase):
 
     async def test_resolved(self):
         self.assertFalse(Ref(uuid4()).resolved)
-        self.assertTrue(Ref(Bar(uuid4(), 4)).resolved)
+        self.assertTrue(Ref(Bar(uuid4(), 1, "foobar")).resolved)
 
     def test_avro_model(self):
-        another = Bar(uuid4(), 1)
+        another = Bar(uuid4(), 1, "foobar")
         ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
         self.assertEqual(ref, Ref.from_avro_bytes(ref.avro_bytes))
@@ -352,7 +366,7 @@ class TestRef(AggregateTestCase):
 
     def test_repr_model(self):
         another_uuid = uuid4()
-        another = Bar(another_uuid, 1)
+        another = Bar(another_uuid, 1, "foobar")
         ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
         self.assertEqual(f"Ref({another!r})", repr(ref))
@@ -365,7 +379,7 @@ class TestRef(AggregateTestCase):
 
     def test_str_model(self):
         another_uuid = uuid4()
-        another = Bar(another_uuid, 1)
+        another = Bar(another_uuid, 1, "foobar")
         ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
         self.assertEqual(str(another_uuid), str(ref))
