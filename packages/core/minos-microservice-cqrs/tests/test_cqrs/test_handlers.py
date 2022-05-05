@@ -3,6 +3,7 @@ from unittest.mock import (
     patch,
 )
 from uuid import (
+    UUID,
     uuid4,
 )
 
@@ -14,6 +15,7 @@ from minos.aggregate import (
     Ref,
 )
 from minos.common import (
+    ModelType,
     current_datetime,
 )
 from minos.cqrs import (
@@ -22,9 +24,8 @@ from minos.cqrs import (
 from minos.networks import (
     BrokerClientPool,
 )
-from tests.utils import (
-    Bar,
-)
+
+Bar = ModelType.build("Bar", uuid=UUID, version=int, name=str)
 
 
 class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):

@@ -19,7 +19,6 @@ from minos.aggregate import (
     Aggregate,
     Entity,
     EntitySet,
-    ExternalEntity,
     InMemoryDeltaRepository,
     InMemorySnapshotRepository,
     Ref,
@@ -159,13 +158,6 @@ class Review(ValueObject):
     """For testing purposes."""
 
     message: str
-
-
-class Product(ExternalEntity):
-    """For testing purposes."""
-
-    title: str
-    quantity: int
 
 
 class OrderAggregate(Aggregate[Order]):

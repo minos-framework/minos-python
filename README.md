@@ -258,8 +258,7 @@ python foo/main.py
 The way to model data in `minos` is highly inspired by the  [Event Sourcing](https://microservices.io/patterns/data/event-sourcing.html) ideas. For this reason, the classes to be used to model data are:
 
 * `minos.aggregate.Entity`: A model that has an identifier that gives it a unique identity, in the sense that some values from which it is composed could change, but its identity will continue being the same.
-* `minos.aggregate.ExternalEntity`: A model that belongs to another microservice (or aggregate boundary) but needs to be used for some reason inside this microservice (or aggregate boundary).
-* `minos.aggregate.Ref`: A wrapper class that provides the functionality to store a reference of other `Entity` or `ExternalEntity` instances.
+* `minos.aggregate.Ref`: A wrapper class that provides the functionality to store a reference of other `Entity` instances.
 * `minos.aggregate.EntitySet`: A container of `Entity` instances that takes advantage of the incremental behaviour of the `EventRepository`.
 * `minos.aggregate.ValueObject`: A model that is only identified by the values that compose it, so that if some of them changes, then the model becomes completely different (for that reason, these models are immutable).
 * `minos.aggregate.ValueObjectSet`: A container of `ValueObject` instances that takes advantage of the incremental behaviour of the `EventRepository.
@@ -274,20 +273,14 @@ Here is an example of the creation the `Foo` aggregate. In this case, it has two
 from __future__ import annotations
 from typing import Optional
 from uuid import UUID
-from minos.aggregate import Aggregate, Entity, ExternalEntity, Ref
+from minos.aggregate import Aggregate, Entity, Ref
 
 
 class Foo(Entity):
     """Foo Entity class."""
 
     bar: str
-    foobar: Optional[Ref[FooBar]]
-
-
-class FooBar(ExternalEntity):
-    """FooBar ExternalEntity clas."""
-
-    something: str
+    foobar: Optional[Ref["FooBar"]]
 
 
 class FooAggregate(Aggregate[Foo]):
@@ -329,7 +322,7 @@ from pathlib import Path
 from typing import Optional
 from uuid import UUID
 
-from minos.aggregate import Aggregate, Entity, ExternalEntity, Ref
+from minos.aggregate import Aggregate, Entity, Ref
 from minos.common import EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 
@@ -338,13 +331,7 @@ class Foo(Entity):
     """Foo Entity class."""
 
     bar: str
-    foobar: Optional[Ref[FooBar]]
-
-
-class FooBar(ExternalEntity):
-    """FooBar ExternalEntity clas."""
-
-    something: str
+    foobar: Optional[Ref["FooBar"]]
 
 
 class FooAggregate(Aggregate[Foo]):
@@ -431,7 +418,7 @@ from pathlib import Path
 from typing import Optional
 from uuid import UUID
 
-from minos.aggregate import Aggregate, Entity, ExternalEntity, Ref
+from minos.aggregate import Aggregate, Entity, Ref
 from minos.common import EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 from minos.networks import Request, Response, enroute
@@ -441,13 +428,7 @@ class Foo(Entity):
     """Foo Entity class."""
 
     bar: str
-    foobar: Optional[Ref[FooBar]]
-
-
-class FooBar(ExternalEntity):
-    """FooBar ExternalEntity clas."""
-
-    something: str
+    foobar: Optional[Ref["FooBar"]]
 
 
 class FooAggregate(Aggregate[Foo]):
@@ -589,7 +570,7 @@ from pathlib import Path
 from typing import Optional
 from uuid import UUID
 
-from minos.aggregate import Aggregate, Entity, ExternalEntity, Ref
+from minos.aggregate import Aggregate, Entity, Ref
 from minos.common import EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 from minos.networks import Request, Response, enroute
@@ -599,13 +580,7 @@ class Foo(Entity):
     """Foo Entity class."""
 
     bar: str
-    foobar: Optional[Ref[FooBar]]
-
-
-class FooBar(ExternalEntity):
-    """FooBar ExternalEntity clas."""
-
-    something: str
+    foobar: Optional[Ref["FooBar"]]
 
 
 class FooAggregate(Aggregate[Foo]):
@@ -792,7 +767,7 @@ from pathlib import Path
 from typing import Optional
 from uuid import UUID
 
-from minos.aggregate import Aggregate, Entity, ExternalEntity, Ref
+from minos.aggregate import Aggregate, Entity, Ref
 from minos.common import ModelType, EntrypointLauncher
 from minos.cqrs import CommandService, QueryService
 from minos.networks import Request, Response, enroute
@@ -803,13 +778,7 @@ class Foo(Entity):
     """Foo Entity class."""
 
     bar: str
-    foobar: Optional[Ref[FooBar]]
-
-
-class FooBar(ExternalEntity):
-    """FooBar ExternalEntity clas."""
-
-    something: str
+    foobar: Optional[Ref["FooBar"]]
 
 
 class FooAggregate(Aggregate[Foo]):
