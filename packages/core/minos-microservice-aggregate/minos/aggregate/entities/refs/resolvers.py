@@ -5,8 +5,14 @@ from asyncio import (
 from collections.abc import (
     Iterable,
 )
+from functools import (
+    reduce,
+)
 from itertools import (
     chain,
+)
+from operator import (
+    or_,
 )
 from typing import (
     Any,
@@ -20,6 +26,7 @@ from uuid import (
 from minos.common import (
     Inject,
     Model,
+    ModelType,
     NotProvidedException,
     PoolFactory,
 )
@@ -30,8 +37,14 @@ from minos.networks import (
     BrokerMessageV1Payload,
 )
 
+from ...entities import (
+    Entity,
+)
 from ...exceptions import (
     RefException,
+)
+from ...snapshots import (
+    SnapshotRepository,
 )
 from .extractors import (
     RefExtractor,
@@ -50,6 +63,7 @@ class RefResolver:
     @Inject()
     def __init__(
         self,
+        snapshot_repository: SnapshotRepository,
         broker_pool: Optional[BrokerClientPool] = None,
         pool_factory: Optional[PoolFactory] = None,
         **kwargs,
@@ -60,6 +74,10 @@ class RefResolver:
         if not isinstance(broker_pool, BrokerClientPool):
             raise NotProvidedException(f"A {BrokerClientPool!r} instance is required. Obtained: {broker_pool}")
 
+        if snapshot_repository is None:
+            raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
+
+        self._snapshot_repository = snapshot_repository
         self.broker_pool = broker_pool
 
     # noinspection PyUnusedLocal
@@ -79,16 +97,42 @@ class RefResolver:
 
         return RefInjector(data, recovered).build()
 
-    async def _query(self, references: dict[str, set[UUID]]) -> dict[UUID, Model]:
+    async def _query(self, references: dict[type, set[UUID]]) -> dict[UUID, Model]:
+        snapshot, broker = dict(), dict()
+        for type_, uuids in references.items():
+            if issubclass(type_, Entity) or (isinstance(type_, ModelType) and issubclass(type_.model_cls, Entity)):
+                snapshot[type_] = uuids
+            else:
+                broker[type_] = uuids
+
+        parts = await gather(self._query_broker(broker), self._query_snapshot(snapshot))
+        ans = reduce(or_, parts)
+        return ans
+
+    async def _query_broker(self, references: dict[type, set[UUID]]) -> dict[UUID, Model]:
+        if not len(references):
+            return dict()
+
         messages = (
-            BrokerMessageV1(self.build_topic_name(name), BrokerMessageV1Payload({"uuids": uuids}))
-            for name, uuids in references.items()
+            BrokerMessageV1(self.build_topic_name(type_), BrokerMessageV1Payload({"uuids": refs}))
+            for type_, refs in references.items()
         )
         async with self.broker_pool.acquire() as broker:
             futures = (broker.send(message) for message in messages)
             await gather(*futures)
 
             return {model.uuid: model for model in await self._get_response(broker, len(references))}
+
+    async def _query_snapshot(self, references: dict[type, set[UUID]]) -> dict[UUID, Model]:
+        if not len(references):
+            return dict()
+
+        futures = list()
+        for type_, uuids in references.items():
+            for uuid in uuids:
+                # noinspection PyTypeChecker
+                futures.append(self._snapshot_repository.get(type_, uuid))
+        return {model.uuid: model for model in await gather(*futures)}
 
     @staticmethod
     async def _get_response(broker: BrokerClient, count: int, **kwargs) -> Iterable[Model]:

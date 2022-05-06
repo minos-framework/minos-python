@@ -19,6 +19,7 @@ from uuid import (
 
 from minos.common import (
     Injectable,
+    ModelType,
     SetupMixin,
     classname,
 )
@@ -56,7 +57,7 @@ class SnapshotRepository(ABC, SetupMixin):
 
     async def get(
         self,
-        name: Union[str, type[Entity]],
+        name: Union[str, type[Entity], ModelType],
         uuid: UUID,
         transaction: Optional[TransactionEntry] = None,
         **kwargs,
@@ -75,7 +76,7 @@ class SnapshotRepository(ABC, SetupMixin):
         instance = snapshot_entry.build(**kwargs)
         return instance
 
-    async def get_entry(self, name: str, uuid: UUID, **kwargs) -> SnapshotEntry:
+    async def get_entry(self, name: Union[str, type[Entity], ModelType], uuid: UUID, **kwargs) -> SnapshotEntry:
         """Get a ``SnapshotEntry`` from its identifier.
 
         :param name: Class name of the ``Entity``.
@@ -93,7 +94,7 @@ class SnapshotRepository(ABC, SetupMixin):
 
     def get_all(
         self,
-        name: str,
+        name: Union[str, type[Entity], ModelType],
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
@@ -127,7 +128,7 @@ class SnapshotRepository(ABC, SetupMixin):
 
     async def find(
         self,
-        name: Union[str, type[Entity]],
+        name: Union[str, type[Entity], ModelType],
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
@@ -165,7 +166,7 @@ class SnapshotRepository(ABC, SetupMixin):
 
     async def find_entries(
         self,
-        name: str,
+        name: Union[str, type[Entity], ModelType],
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
@@ -195,6 +196,8 @@ class SnapshotRepository(ABC, SetupMixin):
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Entity`` instances.
         """
+        if isinstance(name, ModelType):
+            name = name.model_cls
         if isinstance(name, type):
             name = classname(name)
 
