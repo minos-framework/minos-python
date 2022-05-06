@@ -18,6 +18,7 @@ from minos.common import (
     NotProvidedException,
 )
 from minos.networks import (
+    BrokerClientPool,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
@@ -40,6 +41,14 @@ class TestRefResolver(AggregateTestCase):
         self.uuid = uuid4()
         self.another_uuid = uuid4()
         self.value = Foo(self.uuid, 1, another=Ref(self.another_uuid))
+
+    def test_broker_pool(self):
+        resolver = RefResolver()
+        self.assertIsInstance(resolver.broker_pool, BrokerClientPool)
+
+    def test_snapshot_repository(self):
+        resolver = RefResolver()
+        self.assertIsInstance(resolver.snapshot_repository, SnapshotRepository)
 
     def test_broker_pool_not_provided(self):
         with self.assertRaises(NotProvidedException):

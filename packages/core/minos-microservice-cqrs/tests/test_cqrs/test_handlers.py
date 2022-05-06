@@ -13,6 +13,7 @@ from minos.aggregate import (
     FieldDiff,
     FieldDiffContainer,
     Ref,
+    RefResolver,
 )
 from minos.common import (
     ModelType,
@@ -20,9 +21,6 @@ from minos.common import (
 )
 from minos.cqrs import (
     PreEventHandler,
-)
-from minos.networks import (
-    BrokerClientPool,
 )
 
 Bar = ModelType.build("Bar", uuid=UUID, version=int, name=str)
@@ -42,8 +40,6 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
             FieldDiffContainer([FieldDiff("bars", list[Ref[Bar]], [b.uuid for b in self.bars])]),
         )
 
-        self.broker_pool = BrokerClientPool({})
-
     async def test_handle_resolving_dependencies(self):
         value = Delta(
             self.uuid,
@@ -54,8 +50,10 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
             FieldDiffContainer([FieldDiff("bars", list[Ref[Bar]], self.bars)]),
         )
 
-        with patch("minos.aggregate.RefResolver.resolve", return_value=value):
-            observed = await PreEventHandler.handle(self.diff, resolve_references=True, broker_pool=self.broker_pool)
+        with patch.object(RefResolver, "resolve", return_value=value):
+            observed = await PreEventHandler.handle(
+                self.diff, resolve_references=True, broker_pool=object(), snapshot_repository=object()
+            )
 
         self.assertEqual(value, observed)
         self.assertEqual(self.bars, [b.data for b in observed["bars"]])
@@ -69,8 +67,10 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.diff, observed)
 
     async def test_handle_raises(self):
-        with patch("minos.aggregate.RefResolver.resolve", side_effect=ValueError):
-            observed = await PreEventHandler.handle(self.diff, resolve_references=True, broker_pool=self.broker_pool)
+        with patch.object(RefResolver, "resolve", side_effect=ValueError):
+            observed = await PreEventHandler.handle(
+                self.diff, resolve_references=True, broker_pool=object(), snapshot_repository=object()
+            )
 
         expected = Delta(
             self.uuid,

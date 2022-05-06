@@ -71,14 +71,30 @@ class RefResolver:
         if broker_pool is None and pool_factory is not None:
             broker_pool = pool_factory.get_pool("broker")
 
-        if not isinstance(broker_pool, BrokerClientPool):
-            raise NotProvidedException(f"A {BrokerClientPool!r} instance is required. Obtained: {broker_pool}")
+        if broker_pool is None:
+            raise NotProvidedException(f"A {BrokerClientPool!r} instance is required.")
 
         if snapshot_repository is None:
             raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
 
+        self._broker_pool = broker_pool
         self._snapshot_repository = snapshot_repository
-        self.broker_pool = broker_pool
+
+    @property
+    def broker_pool(self) -> BrokerClientPool:
+        """Get the broker pool.
+
+        :return: A ``BrokerClientPool`` instance.
+        """
+        return self._broker_pool
+
+    @property
+    def snapshot_repository(self) -> SnapshotRepository:
+        """Get the snapshot repository.
+
+        :return: A ``SnapshotRepository`` instance.
+        """
+        return self._snapshot_repository
 
     # noinspection PyUnusedLocal
     async def resolve(self, data: Any, **kwargs) -> Any:
@@ -117,7 +133,7 @@ class RefResolver:
             BrokerMessageV1(self.build_topic_name(type_), BrokerMessageV1Payload({"uuids": refs}))
             for type_, refs in references.items()
         )
-        async with self.broker_pool.acquire() as broker:
+        async with self._broker_pool.acquire() as broker:
             futures = (broker.send(message) for message in messages)
             await gather(*futures)
 
