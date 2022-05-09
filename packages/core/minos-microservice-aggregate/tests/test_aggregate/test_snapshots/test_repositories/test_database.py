@@ -414,6 +414,45 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             ):
                 await super().test_find_empty()
 
+    async def test_find_one(self):
+        entities = [
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_2, version=2),
+        ]
+        with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
+            with patch.object(
+                DatabaseClient,
+                "fetch_all",
+                return_value=FakeAsyncIterator(
+                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
+                ),
+            ):
+                await super().test_find_one()
+
+    async def test_find_one_raises(self):
+        with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
+            with patch.object(
+                DatabaseClient,
+                "fetch_all",
+                return_value=FakeAsyncIterator([]),
+            ):
+                await super().test_find_one_raises()
+
+    async def test_get_all(self):
+        entities = [
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_1, version=1),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_2, version=2),
+            SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_3, version=1),
+        ]
+        with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
+            with patch.object(
+                DatabaseClient,
+                "fetch_all",
+                side_effect=lambda: FakeAsyncIterator(
+                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
+                ),
+            ):
+                await super().test_get_all()
+
     async def test_get(self):
         entities = [
             SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_2, version=2),

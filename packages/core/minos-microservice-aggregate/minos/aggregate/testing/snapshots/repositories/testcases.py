@@ -532,6 +532,39 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         expected = set()
         self.assertEqual(expected, observed)
 
+    async def test_find_one(self):
+        await self.populate_and_synchronize()
+        condition = Condition.IN("uuid", {self.uuid_2})
+
+        observed = await self.snapshot_repository.find_one(self.Car, condition)
+
+        expected = self.Car(
+            3,
+            "blue",
+            uuid=self.uuid_2,
+            version=2,
+            created_at=observed.created_at,
+            updated_at=observed.updated_at,
+        )
+        self.assertEqual(expected, observed)
+
+    async def test_find_one_raises(self):
+        await self.populate_and_synchronize()
+        condition = Condition.FALSE
+
+        with self.assertRaises(NotFoundException):
+            await self.snapshot_repository.find_one(self.Car, condition)
+
+    async def test_get_all(self):
+        await self.populate_and_synchronize()
+        iterable = self.snapshot_repository.find(self.Car, Condition.TRUE, ordering=Ordering.ASC("updated_at"))
+        expected = [v async for v in iterable]
+
+        iterable = self.snapshot_repository.get_all(self.Car, ordering=Ordering.ASC("updated_at"))
+        observed = [v async for v in iterable]
+
+        self.assertEqual(expected, observed)
+
     async def test_get(self):
         await self.populate_and_synchronize()
         observed = await self.snapshot_repository.get(self.Car, self.uuid_2)
