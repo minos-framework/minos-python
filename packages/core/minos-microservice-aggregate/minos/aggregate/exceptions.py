@@ -35,18 +35,6 @@ class EventRepositoryConflictException(EventRepositoryException):
         self.offset = offset
 
 
-class TransactionRepositoryException(AggregateException):
-    """Base transaction repository exception."""
-
-
-class TransactionRepositoryConflictException(TransactionRepositoryException):
-    """Exception to be raised when a transaction has invalid status."""
-
-
-class TransactionNotFoundException(TransactionRepositoryException):
-    """Exception to be raised when some transaction is not found on the repository."""
-
-
 class SnapshotRepositoryException(AggregateException):
     """Base snapshot exception."""
 

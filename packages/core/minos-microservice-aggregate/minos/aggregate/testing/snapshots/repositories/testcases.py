@@ -33,8 +33,6 @@ from minos.aggregate import (
     RootEntity,
     SnapshotEntry,
     SnapshotRepository,
-    TransactionEntry,
-    TransactionStatus,
 )
 from minos.common import (
     classname,
@@ -42,6 +40,10 @@ from minos.common import (
 )
 from minos.common.testing import (
     MinosTestCase,
+)
+from minos.transactions import (
+    TransactionEntry,
+    TransactionStatus,
 )
 
 
@@ -104,19 +106,11 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         await self.event_repository.delete(
             EventEntry(self.uuid_2, name, 3, bytes(), transaction_uuid=self.transaction_3)
         )
+        await self.transaction_repository.submit(TransactionEntry(self.transaction_1, TransactionStatus.PENDING))
+        await self.transaction_repository.submit(TransactionEntry(self.transaction_2, TransactionStatus.PENDING))
+        await self.transaction_repository.submit(TransactionEntry(self.transaction_3, TransactionStatus.REJECTED))
         await self.transaction_repository.submit(
-            TransactionEntry(self.transaction_1, TransactionStatus.PENDING, await self.event_repository.offset)
-        )
-        await self.transaction_repository.submit(
-            TransactionEntry(self.transaction_2, TransactionStatus.PENDING, await self.event_repository.offset)
-        )
-        await self.transaction_repository.submit(
-            TransactionEntry(self.transaction_3, TransactionStatus.REJECTED, await self.event_repository.offset)
-        )
-        await self.transaction_repository.submit(
-            TransactionEntry(
-                self.transaction_4, TransactionStatus.REJECTED, await self.event_repository.offset, self.transaction_3
-            )
+            TransactionEntry(self.transaction_4, TransactionStatus.REJECTED, self.transaction_3)
         )
 
     async def populate_and_synchronize(self):

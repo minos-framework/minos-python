@@ -34,6 +34,7 @@ python = "^3.9"
 minos-microservice-common = { version ="^0.7.0*", allow-prereleases = true }
 minos-microservice-networks = { version ="^0.7.0*", allow-prereleases = true }
 minos-microservice-aggregate = { version ="^0.7.0*", allow-prereleases = true }
+minos-microservice-transactions = { version ="^0.7.0*", allow-prereleases = true }
 aiopg = "^1.2.1"
 psycopg2-binary = "^2.9.3"
 
@@ -41,6 +42,7 @@ psycopg2-binary = "^2.9.3"
 minos-microservice-common = { path = "../../core/minos-microservice-common", develop = true }
 minos-microservice-networks = { path = "../../core/minos-microservice-networks", develop = true }
 minos-microservice-aggregate = { path = "../../core/minos-microservice-aggregate", develop = true }
+minos-microservice-transactions = { path = "../../core/minos-microservice-transactions", develop = true }
 black = "^22.3"
 isort = "^5.8.0"
 pytest = "^7.0.1"

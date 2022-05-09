@@ -24,6 +24,11 @@ from minos.common import (
     Inject,
     NotProvidedException,
 )
+from minos.transactions import (
+    TransactionEntry,
+    TransactionRepository,
+    TransactionStatus,
+)
 
 from ...events import (
     EventEntry,
@@ -35,11 +40,6 @@ from ...exceptions import (
 from ...queries import (
     _Condition,
     _Ordering,
-)
-from ...transactions import (
-    TransactionEntry,
-    TransactionRepository,
-    TransactionStatus,
 )
 from ..entries import (
     SnapshotEntry,

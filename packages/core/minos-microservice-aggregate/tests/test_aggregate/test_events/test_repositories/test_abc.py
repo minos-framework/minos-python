@@ -18,7 +18,6 @@ from uuid import (
 
 from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
-    TRANSACTION_CONTEXT_VAR,
     Action,
     Event,
     EventEntry,
@@ -28,8 +27,6 @@ from minos.aggregate import (
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
-    TransactionEntry,
-    TransactionStatus,
 )
 from minos.common import (
     NULL_UUID,
@@ -40,6 +37,11 @@ from minos.common import (
 )
 from minos.networks import (
     BrokerMessageV1,
+)
+from minos.transactions import (
+    TRANSACTION_CONTEXT_VAR,
+    TransactionEntry,
+    TransactionStatus,
 )
 from tests.utils import (
     AggregateTestCase,
@@ -79,7 +81,7 @@ class TestEventRepository(AggregateTestCase):
     def test_constructor(self):
         repository = _EventRepository()
         self.assertEqual(self.broker_publisher, repository._broker_publisher)
-        self.assertEqual(self.transaction_repository, repository._transaction_repository)
+        self.assertEqual(self.transaction_repository, repository.transaction_repository)
         self.assertEqual(self.pool_factory.get_pool("lock"), repository._lock_pool)
 
     async def test_constructor_raises(self):
@@ -97,8 +99,7 @@ class TestEventRepository(AggregateTestCase):
         uuid = uuid4()
         transaction = self.event_repository.transaction(uuid=uuid)
         self.assertEqual(TransactionEntry(uuid), transaction)
-        self.assertEqual(self.event_repository, transaction._event_repository)
-        self.assertEqual(self.transaction_repository, transaction._transaction_repository)
+        self.assertEqual(self.transaction_repository, transaction.repository)
 
     async def test_create(self):
         mock = AsyncMock(side_effect=lambda x: x)
@@ -500,6 +501,64 @@ class TestEventRepository(AggregateTestCase):
         ) as mock:
             self.assertEqual(56, await self.event_repository.offset)
             self.assertEqual(1, mock.call_count)
+
+    async def test_get_collided_transactions(self):
+        uuid = uuid4()
+        another = uuid4()
+
+        agg_uuid = uuid4()
+
+        select_event_1 = [
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
+        ]
+
+        select_event_2 = [
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
+        ]
+
+        select_event_mock = MagicMock(
+            side_effect=[FakeAsyncIterator(select_event_1), FakeAsyncIterator(select_event_2)]
+        )
+        self.event_repository.select = select_event_mock
+
+        expected = {another}
+        observed = await self.event_repository.get_collided_transactions(uuid)
+        self.assertEqual(expected, observed)
+
+        self.assertEqual(
+            [call(transaction_uuid=uuid), call(uuid=agg_uuid, version=3)], select_event_mock.call_args_list
+        )
+
+    async def test_commit(self) -> None:
+        uuid = uuid4()
+
+        agg_uuid = uuid4()
+
+        async def _fn(*args, **kwargs):
+            yield EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid)
+            yield EventEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid)
+            yield EventEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid)
+
+        select_mock = MagicMock(side_effect=_fn)
+        submit_mock = AsyncMock()
+
+        self.event_repository.select = select_mock
+        self.event_repository.submit = submit_mock
+
+        with patch.object(EventRepository, "offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)):
+            await self.event_repository.commit_transaction(uuid, NULL_UUID)
+
+        self.assertEqual(
+            [
+                call(EventEntry(agg_uuid, "c.Car", 1, bytes(), action=Action.CREATE), transaction_uuid_ne=uuid),
+                call(EventEntry(agg_uuid, "c.Car", 3, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
+                call(EventEntry(agg_uuid, "c.Car", 2, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
+            ],
+            submit_mock.call_args_list,
+        )
 
 
 if __name__ == "__main__":

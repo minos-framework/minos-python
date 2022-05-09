@@ -5,6 +5,9 @@ from __future__ import (
 from collections.abc import (
     AsyncIterator,
 )
+from contextlib import (
+    suppress,
+)
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -21,6 +24,12 @@ from minos.common import (
     ProgrammingException,
     import_module,
 )
+from minos.transactions import (
+    TransactionEntry,
+    TransactionNotFoundException,
+    TransactionRepository,
+    TransactionStatus,
+)
 
 from ....events import (
     Event,
@@ -30,16 +39,10 @@ from ....events import (
 from ....exceptions import (
     NotFoundException,
     SnapshotRepositoryConflictException,
-    TransactionNotFoundException,
 )
 from ....queries import (
     _Condition,
     _Ordering,
-)
-from ....transactions import (
-    TransactionEntry,
-    TransactionRepository,
-    TransactionStatus,
 )
 from ...entries import (
     SnapshotEntry,
@@ -87,11 +90,9 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         self._transaction_repository = transaction_repository
 
     async def _setup(self) -> None:
+        await super()._setup()
         operation = self.database_operation_factory.build_create()
         await self.execute_on_database(operation)
-
-    async def _destroy(self) -> None:
-        await super()._destroy()
 
     # noinspection PyUnusedLocal
     async def _find_entries(
@@ -134,16 +135,16 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
     async def _synchronize(self, **kwargs) -> None:
         initial_offset = await self._load_offset()
 
+        transaction_uuids = set()
         offset = initial_offset
         async for event_entry in self._event_repository.select(id_gt=offset, **kwargs):
-            try:
+            with suppress(SnapshotRepositoryConflictException):
                 await self._dispatch_one(event_entry, **kwargs)
-            except SnapshotRepositoryConflictException:
-                pass
-            offset = max(event_entry.id, offset)
 
-        if initial_offset < offset:
-            await self._clean_transactions(initial_offset)
+            offset = max(event_entry.id, offset)
+            transaction_uuids.add(event_entry.transaction_uuid)
+
+        await self._clean_transactions(transaction_uuids)
 
         await self._store_offset(offset)
 
@@ -217,11 +218,19 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
 
         return snapshot_entry
 
-    async def _clean_transactions(self, offset: int, **kwargs) -> None:
+    async def _clean_transactions(self, uuids: set[UUID], **kwargs) -> None:
+        if not len(uuids):
+            return
+
         iterable = self._transaction_repository.select(
-            event_offset_gt=offset, status_in=(TransactionStatus.COMMITTED, TransactionStatus.REJECTED), **kwargs
+            uuid_in=uuids,
+            status_in=(TransactionStatus.COMMITTED, TransactionStatus.REJECTED),
+            **kwargs,
         )
-        transaction_uuids = {transaction.uuid async for transaction in iterable}
-        if len(transaction_uuids):
-            operation = self.database_operation_factory.build_delete(transaction_uuids)
-            await self.execute_on_database(operation)
+        uuids = {transaction.uuid async for transaction in iterable}
+
+        if not len(uuids):
+            return
+
+        operation = self.database_operation_factory.build_delete(uuids)
+        await self.execute_on_database(operation)

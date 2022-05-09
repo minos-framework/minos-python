@@ -22,7 +22,6 @@ from minos.aggregate import (
     EventRepositoryConflictException,
     EventRepositoryException,
     FieldDiffContainer,
-    TransactionEntry,
 )
 from minos.common import (
     NULL_UUID,
@@ -30,6 +29,9 @@ from minos.common import (
 )
 from minos.common.testing import (
     MinosTestCase,
+)
+from minos.transactions import (
+    TransactionEntry,
 )
 
 

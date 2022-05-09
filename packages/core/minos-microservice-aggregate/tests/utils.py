@@ -22,7 +22,6 @@ from minos.aggregate import (
     ExternalEntity,
     InMemoryEventRepository,
     InMemorySnapshotRepository,
-    InMemoryTransactionRepository,
     Ref,
     RootEntity,
     ValueObject,
@@ -43,13 +42,20 @@ from minos.networks import (
     InMemoryBrokerPublisher,
     InMemoryBrokerSubscriberBuilder,
 )
+from minos.transactions import (
+    InMemoryTransactionRepository,
+)
+from minos.transactions import testing as transactions_testing
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
 
 class AggregateTestCase(MinosTestCase, ABC):
-    testing_module = testing
+    testing_module = {
+        "aggregate": testing,
+        "transactions": transactions_testing,
+    }
 
     def get_config_file_path(self):
         return CONFIG_FILE_PATH

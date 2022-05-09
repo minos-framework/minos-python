@@ -5,7 +5,6 @@ from pathlib import (
 from minos.aggregate import (
     InMemoryEventRepository,
     InMemorySnapshotRepository,
-    InMemoryTransactionRepository,
 )
 from minos.common import (
     DatabaseClientPool,
@@ -20,6 +19,9 @@ from minos.networks import (
     BrokerClientPool,
     InMemoryBrokerPublisher,
     InMemoryBrokerSubscriberBuilder,
+)
+from minos.transactions import (
+    InMemoryTransactionRepository,
 )
 
 BASE_PATH = Path(__file__).parent

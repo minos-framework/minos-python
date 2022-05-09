@@ -22,6 +22,10 @@ from minos.common import (
     SetupMixin,
     classname,
 )
+from minos.transactions import (
+    TRANSACTION_CONTEXT_VAR,
+    TransactionEntry,
+)
 
 from ...exceptions import (
     NotFoundException,
@@ -31,10 +35,6 @@ from ...queries import (
     _Condition,
     _EqualCondition,
     _Ordering,
-)
-from ...transactions import (
-    TRANSACTION_CONTEXT_VAR,
-    TransactionEntry,
 )
 from ..entries import (
     SnapshotEntry,
