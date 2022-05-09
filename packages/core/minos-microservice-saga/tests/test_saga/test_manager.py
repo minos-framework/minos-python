@@ -1,8 +1,5 @@
 import unittest
 import warnings
-from shutil import (
-    rmtree,
-)
 from unittest.mock import (
     AsyncMock,
     call,
@@ -17,7 +14,6 @@ from minos.common import (
     DatabaseClient,
     DatabaseClientPool,
     NotProvidedException,
-    ProgrammingException,
 )
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
@@ -29,7 +25,6 @@ from minos.networks import (
 from minos.saga import (
     SagaContext,
     SagaExecution,
-    SagaExecutionNotFoundException,
     SagaExecutionRepository,
     SagaFailedExecutionException,
     SagaManager,
@@ -41,7 +36,6 @@ from minos.saga.testing import (
 )
 from tests.utils import (
     ADD_ORDER,
-    DB_PATH,
     DELETE_ORDER,
     Foo,
     SagaTestCase,
@@ -49,8 +43,6 @@ from tests.utils import (
 
 
 class TestSagaManager(SagaTestCase):
-    DB_PATH = DB_PATH
-
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
 
@@ -76,10 +68,6 @@ class TestSagaManager(SagaTestCase):
         self.user = uuid4()
         REQUEST_USER_CONTEXT_VAR.set(self.user)
         self.manager: SagaManager = SagaManager.from_config(self.config)
-
-    def tearDown(self) -> None:
-        rmtree(self.DB_PATH, ignore_errors=True)
-        super().tearDown()
 
     def test_constructor(self):
         self.assertIsInstance(self.manager.storage, SagaExecutionRepository)
@@ -109,9 +97,6 @@ class TestSagaManager(SagaTestCase):
             execution = await self.manager.run(ADD_ORDER)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
-        with self.assertRaises(SagaExecutionNotFoundException):
-            with patch.object(DatabaseClient, "fetch_one", side_effect=[ProgrammingException("")]):
-                await self.manager.storage.load(execution.uuid)
 
         observed = self.broker_publisher.messages
         expected = self._build_expected_messages(observed)
@@ -189,10 +174,6 @@ class TestSagaManager(SagaTestCase):
             with patch.object(DatabaseClient, "fetch_one", side_effect=[execution.raw]):
                 execution = await self.manager.run(response=response, pause_on_disk=True)
             self.assertEqual(SagaStatus.Finished, execution.status)
-
-        with self.assertRaises(SagaExecutionNotFoundException):
-            with patch.object(DatabaseClient, "fetch_one", side_effect=[ProgrammingException("")]):
-                await self.manager.storage.load(self.uuid)
 
         observed = self.broker_publisher.messages
         expected = self._build_expected_messages(observed)

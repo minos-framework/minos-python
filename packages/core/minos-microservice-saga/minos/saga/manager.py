@@ -202,9 +202,6 @@ class SagaManager(SetupMixin):
 
                 headers["related_services"] = ",".join(related_services)
 
-        if execution.status == SagaStatus.Finished:
-            await self.storage.delete(execution)
-
         if return_execution:
             return execution
 
