@@ -11,6 +11,7 @@ from uuid import (
 )
 
 from minos.common import (
+    UUID_REGEX,
     Config,
     current_datetime,
 )
@@ -22,6 +23,7 @@ from minos.networks import (
     InMemoryRequest,
     PeriodicEventEnrouteDecorator,
     ResponseException,
+    RestCommandEnrouteDecorator,
 )
 from minos.saga import (
     SagaManager,
@@ -54,11 +56,25 @@ class TestSagaService(SagaTestCase):
 
     def test_get_enroute(self):
         expected = {
-            "__reply__": {BrokerCommandEnrouteDecorator("orderReply")},
-            "__reserve__": {BrokerCommandEnrouteDecorator("_ReserveOrderTransaction")},
-            "__reject__": {BrokerCommandEnrouteDecorator("_RejectOrderTransaction")},
-            "__commit__": {BrokerCommandEnrouteDecorator("_CommitOrderTransaction")},
-            "__reject_blocked__": {PeriodicEventEnrouteDecorator("* * * * *")},
+            SagaService._handle_reply.__name__: {
+                BrokerCommandEnrouteDecorator("orderReply"),
+            },
+            SagaService._handle_get.__name__: {
+                BrokerCommandEnrouteDecorator("_GetOrderSagaExecution"),
+                RestCommandEnrouteDecorator(f"/orders/saga/executions/{{uuid:{UUID_REGEX.pattern}}}", "GET"),
+            },
+            SagaService._handle_reserve.__name__: {
+                BrokerCommandEnrouteDecorator("_ReserveOrderTransaction"),
+            },
+            SagaService._handle_reject.__name__: {
+                BrokerCommandEnrouteDecorator("_RejectOrderTransaction"),
+            },
+            SagaService._handle_commit.__name__: {
+                BrokerCommandEnrouteDecorator("_CommitOrderTransaction"),
+            },
+            SagaService._handle_reject_blocked.__name__: {
+                PeriodicEventEnrouteDecorator("* * * * *"),
+            },
         }
         observed = SagaService.__get_enroute__(self.config)
         self.assertEqual(expected, observed)
@@ -72,7 +88,7 @@ class TestSagaService(SagaTestCase):
                     "foo", headers={"saga": str(uuid), "transactions": str(uuid), "related_services": "ticket,product"}
                 ),
             )
-            response = await self.service.__reply__(BrokerRequest(reply))
+            response = await self.service._handle_reply(BrokerRequest(reply))
         self.assertEqual(None, response)
         self.assertEqual(
             [
@@ -90,7 +106,7 @@ class TestSagaService(SagaTestCase):
         uuid = uuid4()
         with patch.object(TransactionEntry, "reserve") as reserve_mock:
             with patch.object(TransactionRepository, "get", return_value=TransactionEntry(uuid)) as get_mock:
-                response = await self.service.__reserve__(InMemoryRequest(uuid))
+                response = await self.service._handle_reserve(InMemoryRequest(uuid))
         self.assertEqual([call(uuid)], get_mock.call_args_list)
         self.assertEqual([call()], reserve_mock.call_args_list)
         self.assertEqual(None, response)
@@ -98,18 +114,18 @@ class TestSagaService(SagaTestCase):
     async def test_reserve_raises(self):
         with patch.object(TransactionRepository, "get", side_effect=TransactionNotFoundException("")):
             with self.assertRaises(ResponseException):
-                await self.service.__reserve__(InMemoryRequest(None))
+                await self.service._handle_reserve(InMemoryRequest(None))
 
         with patch.object(TransactionRepository, "get", return_value=TransactionEntry()):
             with patch.object(TransactionEntry, "reserve", side_effect=TransactionRepositoryConflictException("")):
                 with self.assertRaises(ResponseException):
-                    await self.service.__reserve__(InMemoryRequest(None))
+                    await self.service._handle_reserve(InMemoryRequest(None))
 
     async def test_reject(self):
         uuid = uuid4()
         with patch.object(TransactionEntry, "reject") as reject_mock:
             with patch.object(TransactionRepository, "get", return_value=TransactionEntry(uuid)) as get_mock:
-                response = await self.service.__reject__(InMemoryRequest(uuid))
+                response = await self.service._handle_reject(InMemoryRequest(uuid))
         self.assertEqual([call(uuid)], get_mock.call_args_list)
         self.assertEqual([call()], reject_mock.call_args_list)
         self.assertEqual(None, response)
@@ -122,7 +138,7 @@ class TestSagaService(SagaTestCase):
                 "get",
                 return_value=TransactionEntry(uuid, status=TransactionStatus.REJECTED),
             ) as get_mock:
-                response = await self.service.__reject__(InMemoryRequest(uuid))
+                response = await self.service._handle_reject(InMemoryRequest(uuid))
         self.assertEqual([call(uuid)], get_mock.call_args_list)
         self.assertEqual([], reject_mock.call_args_list)
         self.assertEqual(None, response)
@@ -130,18 +146,18 @@ class TestSagaService(SagaTestCase):
     async def test_reject_raises(self):
         with patch.object(TransactionRepository, "get", side_effect=TransactionNotFoundException("")):
             with self.assertRaises(ResponseException):
-                await self.service.__reject__(InMemoryRequest(None))
+                await self.service._handle_reject(InMemoryRequest(None))
 
         with patch.object(TransactionRepository, "get", return_value=TransactionEntry()):
             with patch.object(TransactionEntry, "reject", side_effect=TransactionRepositoryConflictException("")):
                 with self.assertRaises(ResponseException):
-                    await self.service.__reject__(InMemoryRequest(None))
+                    await self.service._handle_reject(InMemoryRequest(None))
 
     async def test_commit(self):
         uuid = uuid4()
         with patch.object(TransactionEntry, "commit") as commit_mock:
             with patch.object(TransactionRepository, "get", return_value=TransactionEntry(uuid)) as get_mock:
-                response = await self.service.__commit__(InMemoryRequest(uuid))
+                response = await self.service._handle_commit(InMemoryRequest(uuid))
         self.assertEqual([call(uuid)], get_mock.call_args_list)
         self.assertEqual([call()], commit_mock.call_args_list)
         self.assertEqual(None, response)
@@ -149,12 +165,12 @@ class TestSagaService(SagaTestCase):
     async def test_commit_raises(self):
         with patch.object(TransactionRepository, "get", side_effect=TransactionNotFoundException("")):
             with self.assertRaises(ResponseException):
-                await self.service.__commit__(InMemoryRequest(None))
+                await self.service._handle_commit(InMemoryRequest(None))
 
         with patch.object(TransactionRepository, "get", return_value=TransactionEntry()):
             with patch.object(TransactionEntry, "commit", side_effect=TransactionRepositoryConflictException("")):
                 with self.assertRaises(ResponseException):
-                    await self.service.__commit__(InMemoryRequest(None))
+                    await self.service._handle_commit(InMemoryRequest(None))
 
     async def test_reject_blocked(self):
         uuid = uuid4()
@@ -162,7 +178,7 @@ class TestSagaService(SagaTestCase):
             with patch.object(
                 TransactionRepository, "select", return_value=FakeAsyncIterator([TransactionEntry(uuid)])
             ) as select_mock:
-                response = await self.service.__reject_blocked__(InMemoryRequest(uuid))
+                response = await self.service._handle_reject_blocked(InMemoryRequest(uuid))
 
         self.assertEqual(1, select_mock.call_count)
         self.assertEqual((TransactionStatus.RESERVED,), select_mock.call_args.kwargs["status_in"])
@@ -185,7 +201,7 @@ class TestSagaService(SagaTestCase):
                 "select",
                 return_value=FakeAsyncIterator([TransactionEntry(uuid), TransactionEntry(uuid)]),
             ):
-                response = await self.service.__reject_blocked__(InMemoryRequest(uuid))
+                response = await self.service._handle_reject_blocked(InMemoryRequest(uuid))
 
         self.assertEqual([call(), call()], reject_mock.call_args_list)
         self.assertEqual(None, response)

@@ -19,9 +19,7 @@ from uuid import (
 )
 
 from minos.common import (
-    Config,
     Inject,
-    Injectable,
     NotProvidedException,
     PoolFactory,
     SetupMixin,
@@ -34,35 +32,32 @@ from minos.networks import (
     BrokerMessage,
 )
 
-from .context import (
+from ..context import (
     SagaContext,
 )
-from .definitions import (
+from ..definitions import (
     Saga,
 )
-from .exceptions import (
+from ..exceptions import (
     SagaFailedExecutionException,
     SagaPausedExecutionStepException,
 )
-from .executions import (
-    DatabaseSagaExecutionRepository,
-    SagaExecution,
-    SagaExecutionRepository,
-    SagaStatus,
-)
-from .messages import (
+from ..messages import (
     SagaResponse,
+)
+from .repositories import (
+    SagaExecutionRepository,
+)
+from .saga import (
+    SagaExecution,
+    SagaStatus,
 )
 
 logger = logging.getLogger(__name__)
 
 
-@Injectable("saga_manager")
-class SagaManager(SetupMixin):
-    """Saga Manager implementation class.
-
-    The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
-    """
+class SagaRunner(SetupMixin):
+    """TODO"""
 
     @Inject()
     def __init__(
@@ -83,18 +78,6 @@ class SagaManager(SetupMixin):
             raise NotProvidedException(f"A {BrokerClientPool!r} instance is required.")
 
         self.broker_pool = broker_pool
-
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> SagaManager:
-        """Build an instance from config.
-
-        :param args: Additional positional arguments.
-        :param config: Config instance.
-        :param kwargs: Additional named arguments.
-        :return: A new ``SagaManager`` instance.
-        """
-        storage = DatabaseSagaExecutionRepository.from_config(config, **kwargs)
-        return cls(storage=storage, **kwargs)
 
     async def _setup(self) -> None:
         await super()._setup()
