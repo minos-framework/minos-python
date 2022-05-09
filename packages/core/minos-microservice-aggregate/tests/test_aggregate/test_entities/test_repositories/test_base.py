@@ -110,23 +110,6 @@ class TestEntityRepository(AggregateTestCase):
 
         self.assertEqual(originals, recovered)
 
-    async def test_find_one(self):
-        originals = list(
-            map(
-                itemgetter(0),
-                await gather(
-                    self.repository.create(Car, doors=3, color="blue"),
-                    self.repository.create(Car, doors=3, color="red"),
-                    self.repository.create(Car, doors=5, color="blue"),
-                ),
-            )
-        )
-        condition = Condition.IN("uuid", {originals[0].uuid})
-        observed = await self.repository.find_one(Car, condition)
-        expected = originals[0]
-
-        self.assertEqual(expected, observed)
-
     async def test_get(self):
         original, _ = await self.repository.create(Car, doors=3, color="blue")
         recovered = await self.repository.get(Car, original.uuid)

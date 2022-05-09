@@ -97,16 +97,6 @@ class EntityRepository:
         # noinspection PyTypeChecker
         return self._snapshot_repository.get_all(type_, ordering, limit, **kwargs)
 
-    async def find_one(self, type_: type[T], condition: _Condition, **kwargs) -> T:
-        """Find a ``Entity`` instance based on a ``Condition``.
-
-        :param type_: The type of the entity to be looked for.
-        :param condition: The condition that must be satisfied by the ``Entity`` instances.
-        :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that containing the ``Entity`` instances.
-        """
-        return await self._snapshot_repository.find_one(type_, condition, **kwargs)
-
     def find(
         self,
         type_: type[T],
@@ -117,7 +107,7 @@ class EntityRepository:
     ) -> AsyncIterator[T]:
         """Find a collection of instances based on a given ``Condition``.
 
-        :param type_: The type of the entity to be looked for.
+        :param type_: The of the entity to be looked for.
         :param condition: The ``Condition`` that must be satisfied by all the instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
@@ -125,6 +115,7 @@ class EntityRepository:
             instances that meet the given condition.
         :return: An asynchronous iterator of ``Entity`` instances.
         """
+        # noinspection PyTypeChecker
         return self._snapshot_repository.find(type_, condition, ordering, limit, **kwargs)
 
     async def create(self, type_or_instance: Union[T, type[T]], *args, **kwargs) -> tuple[T, Delta]:
