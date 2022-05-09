@@ -96,6 +96,14 @@ class Delta(DeclarativeModel):
         warnings.warn("get_one() method is deprecated by get_field() and will be removed soon.", DeprecationWarning)
         return self.get_field(name, return_diff)
 
+    def has_field(self, name: str) -> bool:
+        """Check if the field identified is present.
+
+        :param name: The name of the field.
+        :return: ``True`` if the field is present or ``False`` otherwise.
+        """
+        return self.fields_diff.has_one(name)
+
     def get_field(self, name: str, return_diff: bool = False) -> Union[FieldDiff, Any, list[FieldDiff], list[Any]]:
         """Get first field diff with given name.
 

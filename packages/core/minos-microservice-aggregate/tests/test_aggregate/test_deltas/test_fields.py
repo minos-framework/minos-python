@@ -230,6 +230,10 @@ class TestFieldDiffContainerAccessors(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.fields_diff["something"]
 
+    def test_has_one(self):
+        self.assertTrue(self.fields_diff.has_one("color"))
+        self.assertFalse(self.fields_diff.has_one("something"))
+
     def test_get_one_single(self):
         observed = self.fields_diff.get_one("color")
         expected = FieldDiff("color", str, "red")

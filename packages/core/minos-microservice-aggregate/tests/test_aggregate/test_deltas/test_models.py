@@ -212,6 +212,10 @@ class TestDeltaAccessors(unittest.TestCase):
             observed = self.diff.get_one("doors", return_diff=True)
         self.assertEqual(expected, observed)
 
+    def test_has_field(self):
+        self.assertTrue(self.diff.has_field("color"))
+        self.assertFalse(self.diff.has_field("something"))
+
     def test_get_field_single(self):
         observed = self.diff.get_field("color")
         expected = "red"
