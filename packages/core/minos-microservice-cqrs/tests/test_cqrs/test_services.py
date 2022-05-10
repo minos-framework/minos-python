@@ -46,6 +46,14 @@ class TestService(DatabaseMinosTestCase):
 
         self.service = FakeService(config=self.config, lock_pool=self.lock_pool)
 
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.lock_pool.setup()
+
+    async def asyncTearDown(self) -> None:
+        await self.lock_pool.destroy()
+        await super().asyncTearDown()
+
     def tearDown(self) -> None:
         self.injector.unwire_injections()
         super().tearDown()

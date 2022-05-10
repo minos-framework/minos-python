@@ -50,12 +50,24 @@ CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 class NetworksTestCase(MinosTestCase, ABC):
     testing_module = testing
 
+    def setUp(self) -> None:
+        self.lock_pool = FakeLockPool()
+        super().setUp()
+
+    async def asyncSetUp(self) -> None:
+        await self.lock_pool.setup()
+        await super().asyncSetUp()
+
+    async def asyncTearDown(self) -> None:
+        await super().asyncTearDown()
+        await self.lock_pool.destroy()
+
     def get_config_file_path(self):
         return CONFIG_FILE_PATH
 
     def get_injections(self) -> list[Union[InjectableMixin, type[InjectableMixin], str]]:
         injections = [
-            InMemoryTransactionRepository(lock_pool=FakeLockPool()),
+            InMemoryTransactionRepository(lock_pool=self.lock_pool),
         ]
         # noinspection PyTypeChecker
         return super().get_injections() + injections
