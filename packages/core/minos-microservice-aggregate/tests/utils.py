@@ -172,9 +172,8 @@ class Product(ExternalEntity):
 class OrderAggregate(Aggregate[Order]):
     """For testing purposes."""
 
-    @staticmethod
-    async def create_order() -> UUID:
+    async def create_order(self) -> UUID:
         """For testing purposes."""
 
-        order = await Order.create(products=EntitySet(), reviews=ValueObjectSet())
+        order, _ = await self.repository.create(Order, products=EntitySet(), reviews=ValueObjectSet())
         return order.uuid

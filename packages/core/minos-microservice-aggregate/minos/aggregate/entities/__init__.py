@@ -12,3 +12,6 @@ from .refs import (
     RefInjector,
     RefResolver,
 )
+from .repositories import (
+    EntityRepository,
+)
