@@ -5,7 +5,7 @@ from uuid import (
 
 from minos.aggregate import (
     Action,
-    Event,
+    Delta,
     FieldDiff,
     FieldDiffContainer,
 )
@@ -43,7 +43,7 @@ class TestRootEntityDifferences(AggregateTestCase):
         )
 
     def test_diff(self):
-        expected = Event(
+        expected = Delta(
             uuid=self.uuid,
             name=Car.classname,
             version=3,
@@ -55,7 +55,7 @@ class TestRootEntityDifferences(AggregateTestCase):
         self.assertEqual(expected, observed)
 
     def test_apply_diff(self):
-        diff = Event(
+        diff = Delta(
             uuid=self.uuid,
             name=Car.classname,
             version=3,
@@ -67,7 +67,7 @@ class TestRootEntityDifferences(AggregateTestCase):
         self.assertEqual(self.final, self.initial)
 
     def test_apply_diff_raises(self):
-        diff = Event(
+        diff = Delta(
             uuid=self.uuid_another,
             name=Car.classname,
             version=3,

@@ -102,7 +102,7 @@ class TestFieldDiffContainer(AggregateTestCase):
                         "type": {
                             "fields": [{"name": "name", "type": "string"}, {"name": "value", "type": "int"}],
                             "name": "FieldDiff",
-                            "namespace": "minos.aggregate.events.fields.hola",
+                            "namespace": "minos.aggregate.deltas.fields.hola",
                             "type": "record",
                         },
                     },
@@ -111,13 +111,13 @@ class TestFieldDiffContainer(AggregateTestCase):
                         "type": {
                             "fields": [{"name": "name", "type": "string"}, {"name": "value", "type": "string"}],
                             "name": "FieldDiff",
-                            "namespace": "minos.aggregate.events.fields.adios",
+                            "namespace": "minos.aggregate.deltas.fields.adios",
                             "type": "record",
                         },
                     },
                 ],
                 "name": "FieldDiffContainer",
-                "namespace": "minos.aggregate.events.fields.uno",
+                "namespace": "minos.aggregate.deltas.fields.uno",
                 "type": "record",
             }
         ]

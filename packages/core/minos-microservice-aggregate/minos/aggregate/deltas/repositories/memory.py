@@ -23,18 +23,18 @@ from minos.common import (
 )
 
 from ...exceptions import (
-    EventRepositoryConflictException,
+    DeltaRepositoryConflictException,
 )
 from ..entries import (
-    EventEntry,
+    DeltaEntry,
 )
 from .abc import (
-    EventRepository,
+    DeltaRepository,
 )
 
 
-class InMemoryEventRepository(EventRepository):
-    """Memory-based implementation of the event repository class in ``minos``."""
+class InMemoryDeltaRepository(DeltaRepository):
+    """Memory-based implementation of the delta repository class in ``minos``."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -42,7 +42,7 @@ class InMemoryEventRepository(EventRepository):
         self._id_generator = count()
         self._next_versions = defaultdict(int)
 
-    async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
+    async def _submit(self, entry: DeltaEntry, **kwargs) -> DeltaEntry:
         if entry.uuid == NULL_UUID:
             entry.uuid = uuid4()
 
@@ -50,7 +50,7 @@ class InMemoryEventRepository(EventRepository):
         if entry.version is None:
             entry.version = next_version
         if entry.version < next_version:
-            raise EventRepositoryConflictException(
+            raise DeltaRepositoryConflictException(
                 f"{entry!r} could not be submitted due to a key (uuid, version, transaction) collision",
                 await self.offset,
             )
@@ -65,7 +65,7 @@ class InMemoryEventRepository(EventRepository):
     def _generate_next_id(self) -> int:
         return next(self._id_generator) + 1
 
-    def _get_next_version_id(self, entry: EventEntry) -> int:
+    def _get_next_version_id(self, entry: DeltaEntry) -> int:
         key = (entry.name, entry.uuid, entry.transaction_uuid)
         self._next_versions[key] += 1
         return self._next_versions[key]
@@ -89,10 +89,10 @@ class InMemoryEventRepository(EventRepository):
         transaction_uuid_in: Optional[tuple[UUID, ...]] = None,
         *args,
         **kwargs,
-    ) -> AsyncIterator[EventEntry]:
+    ) -> AsyncIterator[DeltaEntry]:
 
         # noinspection DuplicatedCode
-        def _fn_filter(entry: EventEntry) -> bool:
+        def _fn_filter(entry: DeltaEntry) -> bool:
             if uuid is not None and uuid != entry.uuid:
                 return False
             if name is not None and name != entry.name:

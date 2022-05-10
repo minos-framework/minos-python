@@ -13,7 +13,7 @@ from uuid import (
 from minos.aggregate import (
     Action,
     Aggregate,
-    Event,
+    Delta,
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
@@ -60,7 +60,7 @@ class TestAggregate(AggregateTestCase):
 
     async def test_from_config(self):
         self.assertEqual(self.transaction_repository, self.aggregate.transaction_repository)
-        self.assertEqual(self.event_repository, self.aggregate.event_repository)
+        self.assertEqual(self.delta_repository, self.aggregate.delta_repository)
         self.assertEqual(self.snapshot_repository, self.aggregate.snapshot_repository)
         self.assertEqual(self.broker_publisher, self.aggregate.broker_publisher)
 
@@ -68,7 +68,7 @@ class TestAggregate(AggregateTestCase):
         with patch.object(Config, "get_aggregate", return_value={"publisher": {"client": InMemoryBrokerPublisher}}):
             async with OrderAggregate.from_config(CONFIG_FILE_PATH) as aggregate:
                 self.assertEqual(self.transaction_repository, aggregate.transaction_repository)
-                self.assertEqual(self.event_repository, aggregate.event_repository)
+                self.assertEqual(self.delta_repository, aggregate.delta_repository)
                 self.assertEqual(self.snapshot_repository, aggregate.snapshot_repository)
                 self.assertIsInstance(aggregate.broker_publisher, InMemoryBrokerPublisher)
                 self.assertNotEqual(self.broker_publisher, aggregate.broker_publisher)
@@ -77,7 +77,7 @@ class TestAggregate(AggregateTestCase):
         with self.assertRaises(NotProvidedException):
             OrderAggregate.from_config(CONFIG_FILE_PATH, transaction_repository=None)
         with self.assertRaises(NotProvidedException):
-            OrderAggregate.from_config(CONFIG_FILE_PATH, event_repository=None)
+            OrderAggregate.from_config(CONFIG_FILE_PATH, delta_repository=None)
         with self.assertRaises(NotProvidedException):
             OrderAggregate.from_config(CONFIG_FILE_PATH, snapshot_repository=None)
         with self.assertRaises(NotProvidedException):
@@ -92,7 +92,7 @@ class TestAggregate(AggregateTestCase):
         self.assertEqual(list(), self.broker_publisher.messages)
 
     async def test_publish_domain_event_create(self):
-        delta = Event(
+        delta = Delta(
             uuid=uuid4(),
             name=Car.classname,
             version=1,
@@ -116,7 +116,7 @@ class TestAggregate(AggregateTestCase):
         self.assertEqual(delta, observed[0].content)
 
     async def test_publish_domain_event_update(self):
-        delta = Event(
+        delta = Delta(
             uuid=uuid4(),
             name=Car.classname,
             version=2,
@@ -142,7 +142,7 @@ class TestAggregate(AggregateTestCase):
         self.assertIsInstance(observed[1], BrokerMessageV1)
         self.assertEqual("CarUpdated.color", observed[1].topic)
         self.assertEqual(
-            Event(
+            Delta(
                 uuid=delta.uuid,
                 name=Car.classname,
                 version=2,
@@ -156,7 +156,7 @@ class TestAggregate(AggregateTestCase):
         self.assertIsInstance(observed[2], BrokerMessageV1)
         self.assertEqual("CarUpdated.doors.create", observed[2].topic)
         self.assertEqual(
-            Event(
+            Delta(
                 uuid=delta.uuid,
                 name=Car.classname,
                 version=2,
@@ -168,7 +168,7 @@ class TestAggregate(AggregateTestCase):
         )
 
     async def test_publish_domain_event_delete(self):
-        delta = Event(
+        delta = Delta(
             uuid=uuid4(),
             name=Car.classname,
             version=2,

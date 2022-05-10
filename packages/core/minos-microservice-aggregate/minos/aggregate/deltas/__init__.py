@@ -1,5 +1,5 @@
 from .entries import (
-    EventEntry,
+    DeltaEntry,
 )
 from .fields import (
     FieldDiff,
@@ -7,11 +7,11 @@ from .fields import (
     IncrementalFieldDiff,
 )
 from .models import (
-    Event,
+    Delta,
 )
 from .repositories import (
-    DatabaseEventRepository,
-    EventDatabaseOperationFactory,
-    EventRepository,
-    InMemoryEventRepository,
+    DatabaseDeltaRepository,
+    DeltaDatabaseOperationFactory,
+    DeltaRepository,
+    InMemoryDeltaRepository,
 )

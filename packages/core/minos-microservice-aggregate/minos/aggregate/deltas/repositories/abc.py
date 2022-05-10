@@ -43,14 +43,14 @@ from ...contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
 from ...exceptions import (
-    EventRepositoryConflictException,
-    EventRepositoryException,
+    DeltaRepositoryConflictException,
+    DeltaRepositoryException,
 )
 from ..entries import (
-    EventEntry,
+    DeltaEntry,
 )
 from ..models import (
-    Event,
+    Delta,
 )
 
 if TYPE_CHECKING:
@@ -59,9 +59,9 @@ if TYPE_CHECKING:
     )
 
 
-@Injectable("event_repository")
-class EventRepository(ABC, TransactionalMixin):
-    """Base event repository class in ``minos``."""
+@Injectable("delta_repository")
+class DeltaRepository(ABC, TransactionalMixin):
+    """Base delta repository class in ``minos``."""
 
     _lock_pool: LockPool
 
@@ -91,7 +91,7 @@ class EventRepository(ABC, TransactionalMixin):
         """
         return TransactionEntry(repository=self.transaction_repository, **kwargs)
 
-    async def create(self, entry: Union[Event, EventEntry]) -> EventEntry:
+    async def create(self, entry: Union[Delta, DeltaEntry]) -> DeltaEntry:
         """Store new creation entry into the repository.
 
         :param entry: Entry to be stored.
@@ -101,7 +101,7 @@ class EventRepository(ABC, TransactionalMixin):
         entry.action = Action.CREATE
         return await self.submit(entry)
 
-    async def update(self, entry: Union[Event, EventEntry]) -> EventEntry:
+    async def update(self, entry: Union[Delta, DeltaEntry]) -> DeltaEntry:
         """Store new update entry into the repository.
 
         :param entry: Entry to be stored.
@@ -111,7 +111,7 @@ class EventRepository(ABC, TransactionalMixin):
         entry.action = Action.UPDATE
         return await self.submit(entry)
 
-    async def delete(self, entry: Union[Event, EventEntry]) -> EventEntry:
+    async def delete(self, entry: Union[Delta, DeltaEntry]) -> DeltaEntry:
         """Store new deletion entry into the repository.
 
         :param entry: Entry to be stored.
@@ -121,7 +121,7 @@ class EventRepository(ABC, TransactionalMixin):
         entry.action = Action.DELETE
         return await self.submit(entry)
 
-    async def submit(self, entry: Union[Event, EventEntry], **kwargs) -> EventEntry:
+    async def submit(self, entry: Union[Delta, DeltaEntry], **kwargs) -> DeltaEntry:
         """Store new entry into the repository.
 
         :param entry: The entry to be stored.
@@ -133,15 +133,15 @@ class EventRepository(ABC, TransactionalMixin):
         try:
             transaction = TRANSACTION_CONTEXT_VAR.get()
 
-            if isinstance(entry, Event):
-                entry = EventEntry.from_event(entry, transaction=transaction)
+            if isinstance(entry, Delta):
+                entry = DeltaEntry.from_delta(entry, transaction=transaction)
 
             if not isinstance(entry.action, Action):
-                raise EventRepositoryException("The 'EventEntry.action' attribute must be an 'Action' instance.")
+                raise DeltaRepositoryException("The 'DeltaEntry.action' attribute must be an 'Action' instance.")
 
             async with self.write_lock():
                 if not await self.validate(entry, **kwargs):
-                    raise EventRepositoryConflictException(f"{entry!r} could not be committed!", await self.offset)
+                    raise DeltaRepositoryConflictException(f"{entry!r} could not be committed!", await self.offset)
 
                 entry = await self._submit(entry, **kwargs)
 
@@ -151,7 +151,7 @@ class EventRepository(ABC, TransactionalMixin):
         return entry
 
     # noinspection PyUnusedLocal
-    async def validate(self, entry: EventEntry, transaction_uuid_ne: Optional[UUID] = None, **kwargs) -> bool:
+    async def validate(self, entry: DeltaEntry, transaction_uuid_ne: Optional[UUID] = None, **kwargs) -> bool:
         """Check if it is able to submit the given entry.
 
         :param entry: The entry to be validated.
@@ -178,7 +178,7 @@ class EventRepository(ABC, TransactionalMixin):
         return True
 
     @abstractmethod
-    async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
+    async def _submit(self, entry: DeltaEntry, **kwargs) -> DeltaEntry:
         raise NotImplementedError
 
     # noinspection PyShadowingBuiltins
@@ -200,7 +200,7 @@ class EventRepository(ABC, TransactionalMixin):
         transaction_uuid_ne: Optional[UUID] = None,
         transaction_uuid_in: Optional[tuple[UUID, ...]] = None,
         **kwargs,
-    ) -> AsyncIterator[EventEntry]:
+    ) -> AsyncIterator[DeltaEntry]:
         """Perform a selection query of entries stored in to the repository.
 
         :param uuid: The identifier must be equal to the given value.
@@ -245,7 +245,7 @@ class EventRepository(ABC, TransactionalMixin):
             yield entry
 
     @abstractmethod
-    async def _select(self, *args, **kwargs) -> AsyncIterator[EventEntry]:
+    async def _select(self, *args, **kwargs) -> AsyncIterator[DeltaEntry]:
         """Perform a selection query of entries stored in to the repository."""
 
     @property
@@ -266,7 +266,7 @@ class EventRepository(ABC, TransactionalMixin):
 
         :return: An asynchronous context manager.
         """
-        return self._lock_pool.acquire("aggregate_event_write_lock")
+        return self._lock_pool.acquire("aggregate_delta_write_lock")
 
     async def get_collided_transactions(self, transaction_uuid: UUID) -> set[UUID]:
         """Get the set of collided transaction identifiers.
@@ -295,5 +295,5 @@ class EventRepository(ABC, TransactionalMixin):
         :return: This method does not return anything.
         """
         async for entry in self.select(transaction_uuid=transaction_uuid):
-            new = EventEntry.from_another(entry, transaction_uuid=destination_transaction_uuid)
+            new = DeltaEntry.from_another(entry, transaction_uuid=destination_transaction_uuid)
             await self.submit(new, transaction_uuid_ne=transaction_uuid)

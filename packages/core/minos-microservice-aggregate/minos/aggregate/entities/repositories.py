@@ -17,13 +17,13 @@ from minos.common import (
     NotProvidedException,
 )
 
-from ..events import (
-    Event,
-    EventEntry,
-    EventRepository,
+from ..deltas import (
+    Delta,
+    DeltaEntry,
+    DeltaRepository,
 )
 from ..exceptions import (
-    EventRepositoryException,
+    DeltaRepositoryException,
 )
 from ..queries import (
     _Condition,
@@ -44,25 +44,25 @@ T = TypeVar("T", bound=RootEntity)
 class EntityRepository:
     """Entity Repository class."""
 
-    _event_repository: EventRepository
+    _delta_repository: DeltaRepository
     _snapshot_repository: SnapshotRepository
 
     # noinspection PyUnusedLocal
     @Inject()
     def __init__(
         self,
-        event_repository: EventRepository,
+        delta_repository: DeltaRepository,
         snapshot_repository: SnapshotRepository,
         *args,
         **kwargs,
     ):
 
-        if event_repository is None:
-            raise NotProvidedException(f"A {EventRepository!r} instance is required.")
+        if delta_repository is None:
+            raise NotProvidedException(f"A {DeltaRepository!r} instance is required.")
         if snapshot_repository is None:
             raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
 
-        self._event_repository = event_repository
+        self._delta_repository = delta_repository
         self._snapshot_repository = snapshot_repository
 
     async def get(self, type_: type[T], uuid: UUID, **kwargs) -> T:
@@ -115,7 +115,7 @@ class EntityRepository:
         # noinspection PyTypeChecker
         return self._snapshot_repository.find(type_, condition, ordering, limit, **kwargs)
 
-    async def create(self, type_or_instance: Union[T, type[T]], *args, **kwargs) -> tuple[T, Event]:
+    async def create(self, type_or_instance: Union[T, type[T]], *args, **kwargs) -> tuple[T, Delta]:
         """Create a new ``RootEntity`` instance.
 
         :param type_or_instance: The instance to be created. If it is a ``type`` then the instance is created internally
@@ -125,19 +125,19 @@ class EntityRepository:
         :return: A new ``RootEntity`` instance.
         """
         if "uuid" in kwargs:
-            raise EventRepositoryException(
+            raise DeltaRepositoryException(
                 f"The identifier must be computed internally on the repository. Obtained: {kwargs['uuid']}"
             )
         if "version" in kwargs:
-            raise EventRepositoryException(
+            raise DeltaRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
         if "created_at" in kwargs:
-            raise EventRepositoryException(
+            raise DeltaRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['created_at']}"
             )
         if "updated_at" in kwargs:
-            raise EventRepositoryException(
+            raise DeltaRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['updated_at']}"
             )
         if isinstance(type_or_instance, type):
@@ -145,20 +145,20 @@ class EntityRepository:
         else:
             instance = type_or_instance
             if len(args) or len(kwargs):
-                raise EventRepositoryException(
+                raise DeltaRepositoryException(
                     f"Additional parameters are not provided when passing an already built {RootEntity!r} instance. "
                     f"Obtained: args={args!r}, kwargs={kwargs!r}"
                 )
 
-        event = Event.from_root_entity(instance)
-        entry = await self._event_repository.submit(event)
+        delta = Delta.from_root_entity(instance)
+        entry = await self._delta_repository.submit(delta)
 
         self._update_from_repository_entry(instance, entry)
 
-        return instance, entry.event
+        return instance, entry.delta
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
-    async def update(self, instance: T, **kwargs) -> tuple[T, Optional[Event]]:
+    async def update(self, instance: T, **kwargs) -> tuple[T, Optional[Delta]]:
         """Update an existing ``RootEntity`` instance.
 
         :param instance: The instance to be updated.
@@ -167,15 +167,15 @@ class EntityRepository:
         """
 
         if "version" in kwargs:
-            raise EventRepositoryException(
+            raise DeltaRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
         if "created_at" in kwargs:
-            raise EventRepositoryException(
+            raise DeltaRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['created_at']}"
             )
         if "updated_at" in kwargs:
-            raise EventRepositoryException(
+            raise DeltaRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['updated_at']}"
             )
 
@@ -183,17 +183,17 @@ class EntityRepository:
             setattr(instance, key, value)
 
         previous = await self.get(type(instance), instance.uuid)
-        event = instance.diff(previous)
-        if not len(event.fields_diff):
+        delta = instance.diff(previous)
+        if not len(delta.fields_diff):
             return instance
 
-        entry = await self._event_repository.submit(event)
+        entry = await self._delta_repository.submit(delta)
 
         self._update_from_repository_entry(instance, entry)
 
-        return instance, entry.event
+        return instance, entry.delta
 
-    async def save(self, instance: T) -> Optional[Event]:
+    async def save(self, instance: T) -> Optional[Delta]:
         """Store the current instance on the repository.
 
         If didn't exist previously creates a new one, otherwise updates the existing one.
@@ -201,11 +201,11 @@ class EntityRepository:
         is_creation = instance.uuid == NULL_UUID
         if is_creation != (instance.version == 0):
             if is_creation:
-                raise EventRepositoryException(
+                raise DeltaRepositoryException(
                     f"The version must be computed internally on the repository. Obtained: {instance.version}"
                 )
             else:
-                raise EventRepositoryException(
+                raise DeltaRepositoryException(
                     f"The uuid must be computed internally on the repository. Obtained: {instance.uuid}"
                 )
 
@@ -215,11 +215,11 @@ class EntityRepository:
             if k not in {"uuid", "version", "created_at", "updated_at"}
         }
         if is_creation:
-            new, event = await self.create(type(instance), **values)
+            new, delta = await self.create(type(instance), **values)
             instance._fields |= new.fields
         else:
-            _, event = await self.update(instance, **values)
-        return event
+            _, delta = await self.update(instance, **values)
+        return delta
 
     async def refresh(self, instance: T) -> None:
         """Refresh the state of the given instance.
@@ -229,19 +229,19 @@ class EntityRepository:
         new = await self.get(type(instance), instance.uuid)
         instance._fields |= new.fields
 
-    async def delete(self, instance: T) -> Event:
+    async def delete(self, instance: T) -> Delta:
         """Delete the given root entity instance.
 
         :return: This method does not return anything.
         """
-        event = Event.from_deleted_root_entity(instance)
-        entry = await self._event_repository.submit(event)
+        delta = Delta.from_deleted_root_entity(instance)
+        entry = await self._delta_repository.submit(delta)
 
         self._update_from_repository_entry(instance, entry)
-        return entry.event
+        return entry.delta
 
     @staticmethod
-    def _update_from_repository_entry(instance: T, entry: EventEntry) -> None:
+    def _update_from_repository_entry(instance: T, entry: DeltaEntry) -> None:
         instance.uuid = entry.uuid
         instance.version = entry.version
         if entry.action.is_create:

@@ -31,14 +31,14 @@ from minos.transactions import (
 from .actions import (
     Action,
 )
+from .deltas import (
+    Delta,
+    DeltaRepository,
+    IncrementalFieldDiff,
+)
 from .entities import (
     EntityRepository,
     RootEntity,
-)
-from .events import (
-    Event,
-    EventRepository,
-    IncrementalFieldDiff,
 )
 from .snapshots import (
     SnapshotRepository,
@@ -52,7 +52,7 @@ class Aggregate(Generic[RT], SetupMixin):
     """Base Service class"""
 
     transaction_repository: TransactionRepository
-    event_repository: EventRepository
+    delta_repository: DeltaRepository
     snapshot_repository: SnapshotRepository
     repository: EntityRepository
     broker_publisher: BrokerPublisher
@@ -61,7 +61,7 @@ class Aggregate(Generic[RT], SetupMixin):
     def __init__(
         self,
         transaction_repository: TransactionRepository,
-        event_repository: EventRepository,
+        delta_repository: DeltaRepository,
         snapshot_repository: SnapshotRepository,
         broker_publisher: BrokerPublisher,
         *args,
@@ -69,8 +69,8 @@ class Aggregate(Generic[RT], SetupMixin):
     ):
         if transaction_repository is None:
             raise NotProvidedException(f"A {TransactionRepository!r} object must be provided.")
-        if event_repository is None:
-            raise NotProvidedException(f"A {EventRepository!r} object must be provided.")
+        if delta_repository is None:
+            raise NotProvidedException(f"A {DeltaRepository!r} object must be provided.")
         if snapshot_repository is None:
             raise NotProvidedException(f"A {SnapshotRepository!r} object must be provided.")
         if broker_publisher is None:
@@ -80,10 +80,10 @@ class Aggregate(Generic[RT], SetupMixin):
 
         self._check_root()
 
-        self.repository = EntityRepository(event_repository, snapshot_repository)
+        self.repository = EntityRepository(delta_repository, snapshot_repository)
 
         self.transaction_repository = transaction_repository
-        self.event_repository = event_repository
+        self.delta_repository = delta_repository
         self.snapshot_repository = snapshot_repository
         self.broker_publisher = broker_publisher
 
@@ -131,8 +131,8 @@ class Aggregate(Generic[RT], SetupMixin):
             raise TypeError(f"{type(self)!r} must contain a {RootEntity!r} as generic value.")
         return root
 
-    async def publish_domain_event(self, delta: Optional[Event]) -> None:
-        """Send a domain event message containing a delta.
+    async def publish_domain_event(self, delta: Optional[Delta]) -> None:
+        """Send a domain delta message containing a delta.
 
         :param delta: The delta to be sent.
         :return: This method does not return anything.
@@ -151,13 +151,13 @@ class Aggregate(Generic[RT], SetupMixin):
         futures = [self.broker_publisher.send(message)]
 
         if delta.action == Action.UPDATE:
-            for decomposed_event in delta.decompose():
-                diff = next(iter(decomposed_event.fields_diff.flatten_values()))
+            for decomposed_delta in delta.decompose():
+                diff = next(iter(decomposed_delta.fields_diff.flatten_values()))
                 composed_topic = f"{topic}.{diff.name}"
                 if isinstance(diff, IncrementalFieldDiff):
                     composed_topic += f".{diff.action.value}"
 
-                message = BrokerMessageV1(composed_topic, BrokerMessageV1Payload(decomposed_event))
+                message = BrokerMessageV1(composed_topic, BrokerMessageV1Payload(decomposed_delta))
                 futures.append(self.broker_publisher.send(message))
 
         await gather(*futures)

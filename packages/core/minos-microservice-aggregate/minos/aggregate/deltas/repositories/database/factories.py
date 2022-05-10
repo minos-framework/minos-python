@@ -25,12 +25,12 @@ from ....actions import (
 )
 
 
-class EventDatabaseOperationFactory(DatabaseOperationFactory, ABC):
-    """Event Database Operation Factory base class."""
+class DeltaDatabaseOperationFactory(DatabaseOperationFactory, ABC):
+    """Delta Database Operation Factory base class."""
 
     @abstractmethod
     def build_create(self) -> DatabaseOperation:
-        """Build the database operation to create the event table.
+        """Build the database operation to create the delta table.
 
         :return: A ``DatabaseOperation`` instance.s
         """
@@ -49,14 +49,14 @@ class EventDatabaseOperationFactory(DatabaseOperationFactory, ABC):
         lock: Optional[int],
         **kwargs,
     ) -> DatabaseOperation:
-        """Build the database operation to submit a row into the event table.
+        """Build the database operation to submit a row into the delta table.
 
-        :param transaction_uuids: The sequence of nested transaction in on top of the current event's transaction.
+        :param transaction_uuids: The sequence of nested transaction in on top of the current delta's transaction.
         :param uuid: The identifier of the entity.
-        :param action: The action of the event.
+        :param action: The action of the delta.
         :param name: The name of the entity.
         :param version: The version of the entity
-        :param data: The data of the event.
+        :param data: The data of the delta.
         :param created_at: The creation datetime.
         :param transaction_uuid: The identifier of the transaction.
         :param lock: The lock identifier.

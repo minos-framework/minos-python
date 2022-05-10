@@ -23,8 +23,8 @@ from minos.common import (
     import_module,
 )
 
-from ..events import (
-    EventEntry,
+from ..deltas import (
+    DeltaEntry,
 )
 from ..exceptions import (
     AlreadyDeletedException,
@@ -96,10 +96,10 @@ class SnapshotEntry:
         )
 
     @classmethod
-    def from_event_entry(cls, entry: EventEntry) -> SnapshotEntry:
-        """Build a new ``SnapshotEntry`` from a deletion event.
+    def from_delta_entry(cls, entry: DeltaEntry) -> SnapshotEntry:
+        """Build a new ``SnapshotEntry`` from a deletion delta.
 
-        :param entry: The event entry containing the delete information.
+        :param entry: The delta entry containing the delete information.
         :return: A new ``SnapshotEntry`` instance.
         """
         return cls(

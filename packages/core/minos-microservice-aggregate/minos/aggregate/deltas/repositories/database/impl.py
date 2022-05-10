@@ -15,25 +15,25 @@ from minos.common import (
 )
 
 from ....exceptions import (
-    EventRepositoryConflictException,
+    DeltaRepositoryConflictException,
 )
 from ...entries import (
-    EventEntry,
+    DeltaEntry,
 )
 from ..abc import (
-    EventRepository,
+    DeltaRepository,
 )
 from .factories import (
-    EventDatabaseOperationFactory,
+    DeltaDatabaseOperationFactory,
 )
 
 
-class DatabaseEventRepository(DatabaseMixin[EventDatabaseOperationFactory], EventRepository):
-    """Database-based implementation of the event repository class."""
+class DatabaseDeltaRepository(DatabaseMixin[DeltaDatabaseOperationFactory], DeltaRepository):
+    """Database-based implementation of the delta repository class."""
 
     def __init__(self, *args, database_key: Optional[tuple[str]] = None, **kwargs):
         if database_key is None:
-            database_key = ("aggregate", "event")
+            database_key = ("aggregate", "delta")
         super().__init__(*args, database_key=database_key, **kwargs)
 
     async def _setup(self) -> None:
@@ -41,13 +41,13 @@ class DatabaseEventRepository(DatabaseMixin[EventDatabaseOperationFactory], Even
         operation = self.database_operation_factory.build_create()
         await self.execute_on_database(operation)
 
-    async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
+    async def _submit(self, entry: DeltaEntry, **kwargs) -> DeltaEntry:
         operation = await self._build_submit_operation(entry)
 
         try:
             response = await self.execute_on_database_and_fetch_one(operation)
         except IntegrityException:
-            raise EventRepositoryConflictException(
+            raise DeltaRepositoryConflictException(
                 f"{entry!r} could not be submitted due to a key (uuid, version, transaction) collision",
                 await self.offset,
             )
@@ -55,7 +55,7 @@ class DatabaseEventRepository(DatabaseMixin[EventDatabaseOperationFactory], Even
         entry.id, entry.uuid, entry.version, entry.created_at = response
         return entry
 
-    async def _build_submit_operation(self, entry: EventEntry) -> DatabaseOperation:
+    async def _build_submit_operation(self, entry: DeltaEntry) -> DatabaseOperation:
         lock = None
         if entry.uuid != NULL_UUID:
             lock = entry.uuid.int & (1 << 32) - 1
@@ -70,10 +70,10 @@ class DatabaseEventRepository(DatabaseMixin[EventDatabaseOperationFactory], Even
             transaction_uuids=transaction_uuids, **entry.as_raw(), lock=lock
         )
 
-    async def _select(self, streaming_mode: Optional[bool] = None, **kwargs) -> AsyncIterator[EventEntry]:
+    async def _select(self, streaming_mode: Optional[bool] = None, **kwargs) -> AsyncIterator[DeltaEntry]:
         operation = self.database_operation_factory.build_query(**kwargs)
         async for row in self.execute_on_database_and_fetch_all(operation, streaming_mode=streaming_mode):
-            yield EventEntry(*row)
+            yield DeltaEntry(*row)
 
     @property
     async def _offset(self) -> int:

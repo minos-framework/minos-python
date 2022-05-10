@@ -13,7 +13,7 @@ from .factories import (
     AiopgBrokerQueueDatabaseOperationFactory,
     AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     AiopgBrokerSubscriberQueueDatabaseOperationFactory,
-    AiopgEventDatabaseOperationFactory,
+    AiopgDeltaDatabaseOperationFactory,
     AiopgLockDatabaseOperationFactory,
     AiopgManagementDatabaseOperationFactory,
     AiopgSnapshotDatabaseOperationFactory,

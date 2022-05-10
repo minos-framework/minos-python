@@ -1,5 +1,5 @@
 from .aggregate import (
-    AiopgEventDatabaseOperationFactory,
+    AiopgDeltaDatabaseOperationFactory,
     AiopgSnapshotDatabaseOperationFactory,
     AiopgSnapshotQueryDatabaseOperationBuilder,
 )

@@ -28,7 +28,7 @@ from .fields import (
     FieldDiffContainer,
 )
 from .models import (
-    Event,
+    Delta,
 )
 
 if TYPE_CHECKING:
@@ -40,8 +40,8 @@ if TYPE_CHECKING:
     )
 
 
-class EventEntry:
-    """Class that represents an entry (or row) on the event repository database which stores the root entity changes."""
+class DeltaEntry:
+    """Class that represents an entry (or row) on the delta repository database which stores the root entity changes."""
 
     __slots__ = (
         "uuid",
@@ -82,33 +82,33 @@ class EventEntry:
         self.transaction_uuid = transaction_uuid
 
     @classmethod
-    def from_event(cls, event: Event, *, transaction: Optional[TransactionEntry] = None, **kwargs) -> EventEntry:
+    def from_delta(cls, delta: Delta, *, transaction: Optional[TransactionEntry] = None, **kwargs) -> DeltaEntry:
         """Build a new instance from a ``RootEntity``.
 
-        :param event: The event.
+        :param delta: The delta.
         :param transaction: Optional transaction.
         :param kwargs: Additional named arguments.
-        :return: A new ``EventEntry`` instance.
+        :return: A new ``DeltaEntry`` instance.
         """
         if transaction is not None:
             kwargs["transaction_uuid"] = transaction.uuid
 
         # noinspection PyTypeChecker
         return cls(
-            uuid=event.uuid,
-            name=event.name,
-            data=event.fields_diff.avro_bytes,
-            action=event.action,
+            uuid=delta.uuid,
+            name=delta.name,
+            data=delta.fields_diff.avro_bytes,
+            action=delta.action,
             **kwargs,
         )
 
     @classmethod
-    def from_another(cls, another: EventEntry, **kwargs) -> EventEntry:
-        """Build a new instance from another ``EventEntry``.
+    def from_another(cls, another: DeltaEntry, **kwargs) -> DeltaEntry:
+        """Build a new instance from another ``DeltaEntry``.
 
-        :param another: The ``EventEntry``.
+        :param another: The ``DeltaEntry``.
         :param kwargs: Additional named arguments.
-        :return: A new ``EventEntry`` instance.
+        :return: A new ``DeltaEntry`` instance.
         """
         return cls(**(another.as_raw() | kwargs | {"id": None}))
 
@@ -138,12 +138,12 @@ class EventEntry:
         return import_module(self.name)
 
     @property
-    def event(self) -> Event:
-        """Get the stored ``Event`` instance.
+    def delta(self) -> Delta:
+        """Get the stored ``Delta`` instance.
 
-        :return: An ``Event`` instance.
+        :return: An ``Delta`` instance.
         """
-        return Event(
+        return Delta(
             self.uuid,
             self.name,
             self.version,
@@ -163,7 +163,7 @@ class EventEntry:
 
         return FieldDiffContainer.from_avro_bytes(self.data)
 
-    def __eq__(self, other: "EventEntry") -> bool:
+    def __eq__(self, other: "DeltaEntry") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
     def __hash__(self) -> int:

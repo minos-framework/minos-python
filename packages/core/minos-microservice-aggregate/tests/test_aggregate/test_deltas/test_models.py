@@ -9,7 +9,7 @@ from uuid import (
 
 from minos.aggregate import (
     Action,
-    Event,
+    Delta,
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
@@ -25,7 +25,7 @@ from tests.utils import (
 )
 
 
-class TestEvent(AggregateTestCase):
+class TestDelta(AggregateTestCase):
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
 
@@ -36,7 +36,7 @@ class TestEvent(AggregateTestCase):
         self.final = Car(5, "yellow", uuid=self.uuid, version=3)
         self.another = Car(3, "blue", uuid=self.uuid_another, version=1)
 
-        self.diff = Event(
+        self.diff = Delta(
             uuid=self.uuid,
             name=Car.classname,
             version=1,
@@ -56,27 +56,27 @@ class TestEvent(AggregateTestCase):
 
     def test_total_ordering(self):
         observed = [
-            Event.from_root_entity(Car(3, "blue", version=4)),
-            Event.from_root_entity(Car(3, "blue", version=1)),
-            Event.from_root_entity(Car(3, "blue", version=3)),
-            Event.from_root_entity(Car(3, "blue", version=2)),
+            Delta.from_root_entity(Car(3, "blue", version=4)),
+            Delta.from_root_entity(Car(3, "blue", version=1)),
+            Delta.from_root_entity(Car(3, "blue", version=3)),
+            Delta.from_root_entity(Car(3, "blue", version=2)),
         ]
         observed.sort()
 
         expected = [
-            Event.from_root_entity(Car(3, "blue", version=1)),
-            Event.from_root_entity(Car(3, "blue", version=2)),
-            Event.from_root_entity(Car(3, "blue", version=3)),
-            Event.from_root_entity(Car(3, "blue", version=4)),
+            Delta.from_root_entity(Car(3, "blue", version=1)),
+            Delta.from_root_entity(Car(3, "blue", version=2)),
+            Delta.from_root_entity(Car(3, "blue", version=3)),
+            Delta.from_root_entity(Car(3, "blue", version=4)),
         ]
         self.assertEqual(expected, observed)
 
     def test_from_root_entity(self):
-        observed = Event.from_root_entity(self.initial)
+        observed = Delta.from_root_entity(self.initial)
         self.assertEqual(self.diff, observed)
 
     def test_from_deleted_root_entity(self):
-        expected = Event(
+        expected = Delta(
             uuid=self.uuid,
             name=Car.classname,
             version=1,
@@ -84,11 +84,11 @@ class TestEvent(AggregateTestCase):
             created_at=self.initial.updated_at,
             fields_diff=FieldDiffContainer.empty(),
         )
-        observed = Event.from_deleted_root_entity(self.initial)
+        observed = Delta.from_deleted_root_entity(self.initial)
         self.assertEqual(expected, observed)
 
     def test_from_difference(self):
-        expected = Event(
+        expected = Delta(
             uuid=self.uuid,
             name=Car.classname,
             version=3,
@@ -96,22 +96,22 @@ class TestEvent(AggregateTestCase):
             created_at=self.final.updated_at,
             fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]),
         )
-        observed = Event.from_difference(self.final, self.initial)
+        observed = Delta.from_difference(self.final, self.initial)
         self.assertEqual(expected, observed)
 
     def test_from_difference_raises(self):
         with self.assertRaises(ValueError):
-            Event.from_difference(self.initial, self.another)
+            Delta.from_difference(self.initial, self.another)
 
     def test_avro_serialization(self):
         serialized = self.diff.avro_bytes
         self.assertIsInstance(serialized, bytes)
 
-        deserialized = Event.from_avro_bytes(serialized)
+        deserialized = Delta.from_avro_bytes(serialized)
         self.assertEqual(self.diff, deserialized)
 
     def test_decompose(self):
-        aggr = Event(
+        aggr = Delta(
             uuid=self.uuid,
             name=Car.classname,
             version=3,
@@ -121,7 +121,7 @@ class TestEvent(AggregateTestCase):
         )
 
         expected = [
-            Event(
+            Delta(
                 uuid=self.uuid,
                 name=Car.classname,
                 version=3,
@@ -129,7 +129,7 @@ class TestEvent(AggregateTestCase):
                 created_at=aggr.created_at,
                 fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5)]),
             ),
-            Event(
+            Delta(
                 uuid=self.uuid,
                 name=Car.classname,
                 version=3,
@@ -143,9 +143,9 @@ class TestEvent(AggregateTestCase):
         self.assertEqual(expected, observed)
 
 
-class TestEventAccessors(unittest.TestCase):
+class TestDeltaAccessors(unittest.TestCase):
     def setUp(self) -> None:
-        self.diff = Event(
+        self.diff = Delta(
             uuid=uuid4(),
             name="src.domain.Car",
             version=1,

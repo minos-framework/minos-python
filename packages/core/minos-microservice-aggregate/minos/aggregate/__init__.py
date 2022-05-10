@@ -15,6 +15,17 @@ from .collections import (
 from .contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
+from .deltas import (
+    DatabaseDeltaRepository,
+    Delta,
+    DeltaDatabaseOperationFactory,
+    DeltaEntry,
+    DeltaRepository,
+    FieldDiff,
+    FieldDiffContainer,
+    IncrementalFieldDiff,
+    InMemoryDeltaRepository,
+)
 from .entities import (
     Entity,
     EntityRepository,
@@ -26,22 +37,11 @@ from .entities import (
     RefResolver,
     RootEntity,
 )
-from .events import (
-    DatabaseEventRepository,
-    Event,
-    EventDatabaseOperationFactory,
-    EventEntry,
-    EventRepository,
-    FieldDiff,
-    FieldDiffContainer,
-    IncrementalFieldDiff,
-    InMemoryEventRepository,
-)
 from .exceptions import (
     AggregateException,
     AlreadyDeletedException,
-    EventRepositoryConflictException,
-    EventRepositoryException,
+    DeltaRepositoryConflictException,
+    DeltaRepositoryException,
     NotFoundException,
     RefException,
     SnapshotRepositoryConflictException,
