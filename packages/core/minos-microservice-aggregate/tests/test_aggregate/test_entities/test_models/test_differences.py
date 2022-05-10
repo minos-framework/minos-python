@@ -20,6 +20,8 @@ from tests.utils import (
 
 class TestEntityDifferences(AggregateTestCase):
     async def asyncSetUp(self) -> None:
+        await super().asyncSetUp()
+
         self.uuid = uuid4()
         self.uuid_another = uuid4()
 

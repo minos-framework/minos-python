@@ -116,6 +116,14 @@ class FieldDiffContainer(BucketModel):
         """
         yield from self._mapper.keys()
 
+    def has_one(self, name: str) -> bool:
+        """Check if the field identified is present in the container.
+
+        :param name: The name of the field.
+        :return: ``True`` if the field is present or ``False`` otherwise.
+        """
+        return name in self._mapper
+
     def get_one(self, name: str, return_diff: bool = True) -> Union[FieldDiff, Any, list[FieldDiff], list[Any]]:
         """Get first field diff with given name.
 
