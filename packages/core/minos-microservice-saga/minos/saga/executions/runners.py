@@ -79,14 +79,6 @@ class SagaRunner(SetupMixin):
 
         self.broker_pool = broker_pool
 
-    async def _setup(self) -> None:
-        await super()._setup()
-        await self.storage.setup()
-
-    async def _destroy(self) -> None:
-        await self.storage.destroy()
-        await super()._destroy()
-
     async def run(
         self,
         definition: Optional[Saga] = None,
@@ -109,7 +101,7 @@ class SagaRunner(SetupMixin):
         :param response: The reply that relaunches a saga execution.
         :param user: The user identifier to be injected on remote steps.
         :param autocommit: If ``True`` the transactions are committed/rejected automatically. Otherwise, the ``commit``
-            or ``reject`` must to be called manually.
+            or ``reject`` must be called manually.
         :param pause_on_disk: If ``True`` the pauses until remote steps' responses are paused on disk (background,
             non-blocking the execution). Otherwise, the pauses are waited on memory (online, blocking the execution)
         :param raise_on_error: If ``True`` exceptions are raised on error. Otherwise, the execution is returned normally
