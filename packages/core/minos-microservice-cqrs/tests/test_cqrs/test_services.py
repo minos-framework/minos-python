@@ -16,6 +16,7 @@ from minos.common.testing import (
 )
 from minos.cqrs import (
     MinosIllegalHandlingException,
+    PreEventHandler,
     Service,
 )
 from minos.networks import (
@@ -47,6 +48,7 @@ class TestService(DatabaseMinosTestCase):
 
     def tearDown(self) -> None:
         self.injector.unwire_injections()
+        super().tearDown()
 
     async def test_constructor(self):
         self.assertEqual(self.config, self.service.config)
@@ -57,7 +59,7 @@ class TestService(DatabaseMinosTestCase):
             self.service.delta_repository
 
     async def test_pre_event(self):
-        with patch("minos.cqrs.PreEventHandler.handle") as mock:
+        with patch.object(PreEventHandler, "handle") as mock:
             mock.return_value = "bar"
             observed = self.service._pre_event_handle(InMemoryRequest("foo"))
             self.assertIsInstance(observed, WrappedRequest)
