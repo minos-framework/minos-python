@@ -45,6 +45,7 @@ from ....types import (
     NoneType,
     TypeHintBuilder,
     is_model_subclass,
+    is_model_type,
     is_type_subclass,
     unpack_typevar,
 )
@@ -79,9 +80,9 @@ class AvroDataDecoder(DataDecoder):
 
     def _build(self, type_: type, data: Any, **kwargs) -> Any:
         origin = get_origin(type_)
-        if origin is not Union:
-            return self._build_single(type_, data, **kwargs)
-        return self._build_union(type_, data, **kwargs)
+        if origin is Union:
+            return self._build_union(type_, data, **kwargs)
+        return self._build_single(type_, data, **kwargs)
 
     def _build_union(self, type_: type, data: Any, **kwargs) -> Any:
         alternatives = get_args(type_)
@@ -100,10 +101,7 @@ class AvroDataDecoder(DataDecoder):
 
     def _build_single(self, type_: type, data: Any, **kwargs) -> Any:
         if type_ is Any:
-            type_ = TypeHintBuilder(data).build()
-        if isinstance(type_, TypeVar):
-            unpacked_type = unpack_typevar(type_)
-            return self._build(unpacked_type, data, **kwargs)
+            return self._build_any(data, **kwargs)
 
         if type_ is NoneType:
             return self._build_none(type_, data, **kwargs)
@@ -113,6 +111,12 @@ class AvroDataDecoder(DataDecoder):
 
         if data is MissingSentinel:
             raise DataDecoderRequiredValueException("Value is missing.")
+
+        if isinstance(type_, TypeVar):
+            return self._build_typevar(type_, data, **kwargs)
+
+        if isinstance(type_, ModelType):
+            return self._build_model_type(type_, data, **kwargs)
 
         if is_model_subclass(type_):
             # noinspection PyTypeChecker
@@ -149,10 +153,16 @@ class AvroDataDecoder(DataDecoder):
             if issubclass(type_, UUID):
                 return self._build_uuid(data, **kwargs)
 
-            if isinstance(type_, ModelType):
-                return self._build_model_type(type_, data, **kwargs)
-
         return self._build_collection(type_, data, **kwargs)
+
+    def _build_any(self, data: Any, **kwargs) -> Any:
+        type_ = TypeHintBuilder(data).build()
+        return self._build(type_, data, **kwargs)
+
+    # noinspection SpellCheckingInspection
+    def _build_typevar(self, type_: TypeVar, data: Any, **kwargs) -> Any:
+        unpacked_type = unpack_typevar(type_)
+        return self._build(unpacked_type, data, **kwargs)
 
     @staticmethod
     def _build_none(type_: type, data: Any, **kwargs) -> Any:
@@ -247,9 +257,8 @@ class AvroDataDecoder(DataDecoder):
         return self._build_model_type(ModelType.from_model(type_), data, **kwargs)
 
     def _build_model_type(self, type_: ModelType, data: Any, **kwargs) -> Any:
-        if hasattr(data, "model_type"):
-            if ModelType.from_model(data) >= type_:
-                return data
+        if is_model_type(data) and ModelType.from_model(data) >= type_:
+            return data
 
         if (ans := type_.model_cls.decode_data(self, data, type_, **kwargs)) is not MissingSentinel:
             return ans

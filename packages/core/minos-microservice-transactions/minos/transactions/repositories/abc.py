@@ -105,7 +105,7 @@ class TransactionRepository(ABC, SetupMixin):
     async def get(self, uuid: UUID, **kwargs) -> TransactionEntry:
         """Get a ``TransactionEntry`` from its identifier.
 
-        :param uuid: Identifier of the ``RootEntity``.
+        :param uuid: Identifier of the ``TransactionEntry``.
         :param kwargs: Additional named arguments.
         :return: The ``TransactionEntry`` instance.
         """

@@ -3,6 +3,9 @@ from __future__ import (
 )
 
 import logging
+from asyncio import (
+    gather,
+)
 from contextlib import (
     suppress,
 )
@@ -145,11 +148,14 @@ class TransactionEntry:
             await self.save(status=TransactionStatus.COMMITTED)
 
     async def _commit(self) -> None:
-        for subscriber in self._repository.observers:
-            await subscriber.commit_transaction(
+        futures = (
+            subscriber.commit_transaction(
                 transaction_uuid=self.uuid,
                 destination_transaction_uuid=self.destination_uuid,
             )
+            for subscriber in self._repository.observers
+        )
+        await gather(*futures)
 
     async def reserve(self) -> None:
         """Reserve transaction changes to be ensured that they can be applied.
@@ -234,8 +240,10 @@ class TransactionEntry:
             )
 
         async with self._repository.write_lock():
-            for subscriber in self._repository.observers:
-                await subscriber.reject_transaction(transaction_uuid=self.uuid)
+            futures = (
+                subscriber.reject_transaction(transaction_uuid=self.uuid) for subscriber in self._repository.observers
+            )
+            await gather(*futures)
 
             await self.save(status=TransactionStatus.REJECTED)
 

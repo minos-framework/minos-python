@@ -19,6 +19,7 @@ from uuid import (
 
 from minos.common import (
     Injectable,
+    ModelType,
     SetupMixin,
     classname,
 )
@@ -42,7 +43,7 @@ from ..entries import (
 
 if TYPE_CHECKING:
     from ...entities import (
-        RootEntity,
+        Entity,
     )
 
 
@@ -50,36 +51,36 @@ if TYPE_CHECKING:
 class SnapshotRepository(ABC, SetupMixin):
     """Base Snapshot class.
 
-    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as deltas by the delta repository
+    The snapshot provides a direct accessor to the ``Entity`` instances stored as deltas by the delta repository
     class.
     """
 
     async def get(
         self,
-        name: Union[str, type[RootEntity]],
+        name: Union[str, type[Entity], ModelType],
         uuid: UUID,
         transaction: Optional[TransactionEntry] = None,
         **kwargs,
-    ) -> RootEntity:
-        """Get a ``RootEntity`` instance from its identifier.
+    ) -> Entity:
+        """Get a ``Entity`` instance from its identifier.
 
-        :param name: Class name of the ``RootEntity``.
-        :param uuid: Identifier of the ``RootEntity``.
+        :param name: Class name of the ``Entity``.
+        :param uuid: Identifier of the ``Entity``.
         :param transaction: The transaction within the operation is performed. If not any value is provided, then the
             transaction is extracted from the context var. If not any transaction is being scoped then the query is
             performed to the global snapshot.
         :param kwargs: Additional named arguments.
-        :return: The ``RootEntity`` instance.
+        :return: The ``Entity`` instance.
         """
         snapshot_entry = await self.get_entry(name, uuid, transaction=transaction, **kwargs)
         instance = snapshot_entry.build(**kwargs)
         return instance
 
-    async def get_entry(self, name: str, uuid: UUID, **kwargs) -> SnapshotEntry:
+    async def get_entry(self, name: Union[str, type[Entity], ModelType], uuid: UUID, **kwargs) -> SnapshotEntry:
         """Get a ``SnapshotEntry`` from its identifier.
 
-        :param name: Class name of the ``RootEntity``.
-        :param uuid: Identifier of the ``RootEntity``.
+        :param name: Class name of the ``Entity``.
+        :param uuid: Identifier of the ``Entity``.
         :param kwargs: Additional named arguments.
         :return: The ``SnapshotEntry`` instance.
         """
@@ -93,16 +94,16 @@ class SnapshotRepository(ABC, SetupMixin):
 
     def get_all(
         self,
-        name: str,
+        name: Union[str, type[Entity], ModelType],
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
         transaction: Optional[TransactionEntry] = None,
         **kwargs,
-    ) -> AsyncIterator[RootEntity]:
-        """Get all ``RootEntity`` instances.
+    ) -> AsyncIterator[Entity]:
+        """Get all ``Entity`` instances.
 
-        :param name: Class name of the ``RootEntity``.
+        :param name: Class name of the ``Entity``.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
@@ -113,7 +114,7 @@ class SnapshotRepository(ABC, SetupMixin):
             transaction is extracted from the context var. If not any transaction is being scoped then the query is
             performed to the global snapshot.
         :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that containing the ``RootEntity`` instances.
+        :return: An asynchronous iterator that containing the ``Entity`` instances.
         """
         return self.find(
             name,
@@ -127,18 +128,18 @@ class SnapshotRepository(ABC, SetupMixin):
 
     async def find(
         self,
-        name: Union[str, type[RootEntity]],
+        name: Union[str, type[Entity], ModelType],
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
         transaction: Optional[TransactionEntry] = None,
         **kwargs,
-    ) -> AsyncIterator[RootEntity]:
-        """Find a collection of ``RootEntity`` instances based on a ``Condition``.
+    ) -> AsyncIterator[Entity]:
+        """Find a collection of ``Entity`` instances based on a ``Condition``.
 
-        :param name: Class name of the ``RootEntity``.
-        :param condition: The condition that must be satisfied by the ``RootEntity`` instances.
+        :param name: Class name of the ``Entity``.
+        :param condition: The condition that must be satisfied by the ``Entity`` instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
@@ -149,7 +150,7 @@ class SnapshotRepository(ABC, SetupMixin):
             transaction is extracted from the context var. If not any transaction is being scoped then the query is
             performed to the global snapshot.
         :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that containing the ``RootEntity`` instances.
+        :return: An asynchronous iterator that containing the ``Entity`` instances.
         """
         iterable = self.find_entries(
             name=name,
@@ -165,7 +166,7 @@ class SnapshotRepository(ABC, SetupMixin):
 
     async def find_entries(
         self,
-        name: str,
+        name: Union[str, type[Entity], ModelType],
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
@@ -177,8 +178,8 @@ class SnapshotRepository(ABC, SetupMixin):
     ) -> AsyncIterator[SnapshotEntry]:
         """Find a collection of ``SnapshotEntry`` instances based on a ``Condition``.
 
-        :param name: Class name of the ``RootEntity``.
-        :param condition: The condition that must be satisfied by the ``RootEntity`` instances.
+        :param name: Class name of the ``Entity``.
+        :param condition: The condition that must be satisfied by the ``Entity`` instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
@@ -188,13 +189,15 @@ class SnapshotRepository(ABC, SetupMixin):
         :param transaction: The transaction within the operation is performed. If not any value is provided, then the
             transaction is extracted from the context var. If not any transaction is being scoped then the query is
             performed to the global snapshot.
-        :param exclude_deleted: If ``True``, deleted ``RootEntity`` entries are included, otherwise deleted
-            ``RootEntity`` entries are filtered.
+        :param exclude_deleted: If ``True``, deleted ``Entity`` entries are included, otherwise deleted
+            ``Entity`` entries are filtered.
         :param synchronize: If ``True`` a synchronization is performed before processing the query, otherwise the query
             is performed without any synchronization step.
         :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that containing the ``RootEntity`` instances.
+        :return: An asynchronous iterator that containing the ``Entity`` instances.
         """
+        if isinstance(name, ModelType):
+            name = name.model_cls
         if isinstance(name, type):
             name = classname(name)
 

@@ -56,14 +56,14 @@ from .factories import (
 
 if TYPE_CHECKING:
     from ....entities import (
-        RootEntity,
+        Entity,
     )
 
 
 class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatabaseOperationFactory]):
     """Database Snapshot Repository class.
 
-    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as deltas by the delta repository
+    The snapshot provides a direct accessor to the ``Entity`` instances stored as deltas by the delta repository
     class.
     """
 
@@ -119,9 +119,9 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
             yield SnapshotEntry(*row)
 
     async def is_synced(self, name: str, **kwargs) -> bool:
-        """Check if the snapshot has the latest version of a ``RootEntity`` instance.
+        """Check if the snapshot has the latest version of a ``Entity`` instance.
 
-        :param name: Class name of the ``RootEntity`` to be checked.
+        :param name: Class name of the ``Entity`` to be checked.
         :return: ``True`` if it has the latest version for the identifier or ``False`` otherwise.
         """
         offset = await self._load_offset()
@@ -175,11 +175,11 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
     async def _submit_update_or_create(self, delta_entry: DeltaEntry, **kwargs) -> SnapshotEntry:
         instance = await self._build_instance(delta_entry, **kwargs)
 
-        snapshot_entry = SnapshotEntry.from_root_entity(instance, transaction_uuid=delta_entry.transaction_uuid)
+        snapshot_entry = SnapshotEntry.from_entity(instance, transaction_uuid=delta_entry.transaction_uuid)
         snapshot_entry = await self._submit_entry(snapshot_entry)
         return snapshot_entry
 
-    async def _build_instance(self, delta_entry: DeltaEntry, **kwargs) -> RootEntity:
+    async def _build_instance(self, delta_entry: DeltaEntry, **kwargs) -> Entity:
         diff = delta_entry.delta
 
         try:
@@ -190,7 +190,7 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         instance = await self._update_instance_if_exists(diff, transaction=transaction, **kwargs)
         return instance
 
-    async def _update_instance_if_exists(self, delta: Delta, **kwargs) -> RootEntity:
+    async def _update_instance_if_exists(self, delta: Delta, **kwargs) -> Entity:
         # noinspection PyBroadException
         try:
             # noinspection PyTypeChecker
@@ -206,7 +206,7 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         previous.apply_diff(delta)
         return previous
 
-    async def _select_one_instance(self, name: str, uuid: UUID, **kwargs) -> RootEntity:
+    async def _select_one_instance(self, name: str, uuid: UUID, **kwargs) -> Entity:
         snapshot_entry = await self.get_entry(name, uuid, **kwargs)
         return snapshot_entry.build(**kwargs)
 

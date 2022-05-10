@@ -79,7 +79,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                         FakeAsyncIterator(
                             [
                                 tuple(
-                                    SnapshotEntry.from_root_entity(
+                                    SnapshotEntry.from_entity(
                                         SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_1, version=1)
                                     )
                                     .as_raw()
@@ -106,7 +106,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 created_at=current_datetime(),
                 updated_at=current_datetime(),
             ),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
@@ -116,7 +116,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                     updated_at=current_datetime(),
                 )
             ),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
@@ -144,7 +144,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 created_at=current_datetime(),
                 updated_at=current_datetime(),
             ),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
@@ -154,7 +154,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                     updated_at=current_datetime(),
                 )
             ),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
@@ -189,7 +189,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 created_at=current_datetime(),
                 updated_at=current_datetime(),
             ),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
@@ -217,7 +217,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 created_at=current_datetime(),
                 updated_at=current_datetime(),
             ),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
@@ -227,7 +227,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                     updated_at=current_datetime(),
                 )
             ),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 SnapshotRepositoryTestCase.Car(
                     3,
                     "blue",
@@ -276,7 +276,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                     FakeAsyncIterator(
                         [
                             tuple(
-                                SnapshotEntry.from_root_entity(
+                                SnapshotEntry.from_entity(
                                     SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_1, version=5)
                                 )
                                 .as_raw()
@@ -325,7 +325,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_root_entity(entity).as_raw().values()) for entity in entities]
+                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
                 ),
             ):
                 await super().test_find_by_uuid()
@@ -340,7 +340,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_root_entity(entity).as_raw().values()) for entity in entities]
+                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
                 ),
             ):
                 await super().test_find_with_transaction()
@@ -352,7 +352,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_root_entity(entity).as_raw().values()) for entity in entities]
+                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
                 ),
             ):
                 await super().test_find_with_transaction_delete()
@@ -367,7 +367,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_root_entity(entity).as_raw().values()) for entity in entities]
+                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
                 ),
             ):
                 await super().test_find_with_transaction_reverted()
@@ -382,7 +382,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_root_entity(entity).as_raw().values()) for entity in entities]
+                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
                 ),
             ):
                 await super().test_find_streaming_true()
@@ -397,7 +397,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_root_entity(entity).as_raw().values()) for entity in entities]
+                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
                 ),
             ):
                 await super().test_find_with_duplicates()
@@ -409,7 +409,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_root_entity(entity).as_raw().values()) for entity in entities]
+                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
                 ),
             ):
                 await super().test_find_empty()
@@ -423,7 +423,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_root_entity(entity).as_raw().values()) for entity in entities]
+                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
                 ),
             ):
                 await super().test_get()
@@ -435,7 +435,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_root_entity(entity).as_raw().values()) for entity in entities]
+                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
                 ),
             ):
                 await super().test_get_with_transaction()
@@ -481,7 +481,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_root_entity(entity).as_raw().values()) for entity in entities]
+                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
                 ),
             ):
                 await super().test_find()
@@ -496,7 +496,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_root_entity(entity).as_raw().values()) for entity in entities]
+                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
                 ),
             ):
                 await super().test_find_all()

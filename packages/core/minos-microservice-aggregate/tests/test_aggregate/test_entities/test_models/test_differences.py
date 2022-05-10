@@ -18,7 +18,7 @@ from tests.utils import (
 )
 
 
-class TestRootEntityDifferences(AggregateTestCase):
+class TestEntityDifferences(AggregateTestCase):
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
 

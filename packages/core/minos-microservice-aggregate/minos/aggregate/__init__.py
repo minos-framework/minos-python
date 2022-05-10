@@ -30,12 +30,10 @@ from .entities import (
     Entity,
     EntityRepository,
     EntitySet,
-    ExternalEntity,
     Ref,
     RefExtractor,
     RefInjector,
     RefResolver,
-    RootEntity,
 )
 from .exceptions import (
     AggregateException,

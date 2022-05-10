@@ -56,26 +56,26 @@ class TestDelta(AggregateTestCase):
 
     def test_total_ordering(self):
         observed = [
-            Delta.from_root_entity(Car(3, "blue", version=4)),
-            Delta.from_root_entity(Car(3, "blue", version=1)),
-            Delta.from_root_entity(Car(3, "blue", version=3)),
-            Delta.from_root_entity(Car(3, "blue", version=2)),
+            Delta.from_entity(Car(3, "blue", version=4)),
+            Delta.from_entity(Car(3, "blue", version=1)),
+            Delta.from_entity(Car(3, "blue", version=3)),
+            Delta.from_entity(Car(3, "blue", version=2)),
         ]
         observed.sort()
 
         expected = [
-            Delta.from_root_entity(Car(3, "blue", version=1)),
-            Delta.from_root_entity(Car(3, "blue", version=2)),
-            Delta.from_root_entity(Car(3, "blue", version=3)),
-            Delta.from_root_entity(Car(3, "blue", version=4)),
+            Delta.from_entity(Car(3, "blue", version=1)),
+            Delta.from_entity(Car(3, "blue", version=2)),
+            Delta.from_entity(Car(3, "blue", version=3)),
+            Delta.from_entity(Car(3, "blue", version=4)),
         ]
         self.assertEqual(expected, observed)
 
-    def test_from_root_entity(self):
-        observed = Delta.from_root_entity(self.initial)
+    def test_from_entity(self):
+        observed = Delta.from_entity(self.initial)
         self.assertEqual(self.diff, observed)
 
-    def test_from_deleted_root_entity(self):
+    def test_from_entity_deleted(self):
         expected = Delta(
             uuid=self.uuid,
             name=Car.classname,
@@ -84,7 +84,7 @@ class TestDelta(AggregateTestCase):
             created_at=self.initial.updated_at,
             fields_diff=FieldDiffContainer.empty(),
         )
-        observed = Delta.from_deleted_root_entity(self.initial)
+        observed = Delta.from_entity(self.initial, action=Action.DELETE)
         self.assertEqual(expected, observed)
 
     def test_from_difference(self):
