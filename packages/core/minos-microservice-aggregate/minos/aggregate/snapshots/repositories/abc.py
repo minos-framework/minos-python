@@ -126,6 +126,28 @@ class SnapshotRepository(ABC, SetupMixin):
             **kwargs,
         )
 
+    async def find_one(
+        self,
+        name: Union[str, type[Entity]],
+        condition: _Condition,
+        transaction: Optional[TransactionEntry] = None,
+        **kwargs,
+    ) -> Entity:
+        """Find a ``Entity`` instance based on a ``Condition``.
+
+        :param name: Class name of the ``Entity``.
+        :param condition: The condition that must be satisfied by the ``Entity`` instances.
+        :param transaction: The transaction within the operation is performed. If not any value is provided, then the
+            transaction is extracted from the context var. If not any transaction is being scoped then the query is
+            performed to the global snapshot.
+        :param kwargs: Additional named arguments.
+        :return: An asynchronous iterator that containing the ``Entity`` instances.
+        """
+        try:
+            return await self.find(name, condition=condition, limit=1, transaction=transaction, **kwargs).__anext__()
+        except StopAsyncIteration:
+            raise NotFoundException(f"There are not any instance matching the given condition: {condition}")
+
     async def find(
         self,
         name: Union[str, type[Entity], ModelType],
