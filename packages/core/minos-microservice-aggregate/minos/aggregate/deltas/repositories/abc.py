@@ -55,7 +55,7 @@ from ..models import (
 
 if TYPE_CHECKING:
     from ...entities import (
-        RootEntity,
+        Entity,
     )
 
 
@@ -185,7 +185,7 @@ class DeltaRepository(ABC, TransactionalMixin):
     async def select(
         self,
         uuid: Optional[UUID] = None,
-        name: Optional[Union[str, type[RootEntity]]] = None,
+        name: Optional[Union[str, type[Entity]]] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
         version_gt: Optional[int] = None,

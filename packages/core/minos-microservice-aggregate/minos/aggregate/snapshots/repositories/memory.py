@@ -52,7 +52,7 @@ from .abc import (
 class InMemorySnapshotRepository(SnapshotRepository):
     """InMemory Snapshot class.
 
-    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as deltas by the delta repository
+    The snapshot provides a direct accessor to the ``Entity`` instances stored as deltas by the delta repository
     class.
     """
 
@@ -178,7 +178,7 @@ class InMemorySnapshotRepository(SnapshotRepository):
         for entry in entries[1:]:
             instance.apply_diff(entry.delta)
 
-        snapshot = SnapshotEntry.from_root_entity(instance)
+        snapshot = SnapshotEntry.from_entity(instance)
 
         return snapshot
 

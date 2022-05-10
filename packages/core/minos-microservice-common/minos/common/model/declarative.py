@@ -3,6 +3,9 @@ from __future__ import (
 )
 
 import logging
+from collections import (
+    ChainMap,
+)
 from functools import (
     lru_cache,
 )
@@ -56,9 +59,8 @@ class DeclarativeModel(Model):
         return cls(*args, **kwargs)
 
     def _build_fields(self, *args, additional_type_hints: Optional[dict[str, type]] = None, **kwargs) -> None:
-        for (name, type_val), value in zip_longest(
-            self._type_hints(additional_type_hints), args, fillvalue=MissingSentinel
-        ):
+        iterable = zip_longest(self._type_hints(additional_type_hints), args, fillvalue=MissingSentinel)
+        for (name, type_val), value in iterable:
             if name in kwargs and value is not MissingSentinel:
                 raise TypeError(f"got multiple values for argument {repr(name)}")
 
@@ -72,28 +74,35 @@ class DeclarativeModel(Model):
     # noinspection PyMethodParameters
     @self_or_classmethod
     def _type_hints(self_or_cls, additional_type_hints: Optional[dict[str, type]] = None) -> Iterator[tuple[str, Any]]:
-        type_hints = dict()
         if isinstance(self_or_cls, type):
             cls = self_or_cls
         else:
             cls = type(self_or_cls)
-        for b in cls.__mro__[::-1]:
-            list_fields = _get_class_type_hints(b)
-            type_hints |= list_fields
-        logger.debug(f"The obtained type hints are: {type_hints!r}")
 
+        base = _get_class_type_hints(cls)
+
+        additional = dict()
         if additional_type_hints:
             for name, hint in additional_type_hints.items():
-                if name not in type_hints or TypeHintComparator(hint, type_hints[name]).match():
-                    type_hints[name] = hint
+                if name not in base or TypeHintComparator(hint, base[name]).match():
+                    additional[name] = hint
 
-        type_hints |= super()._type_hints()
-        yield from type_hints.items()
+        real = dict(super()._type_hints())
+
+        full = ChainMap(real, additional, base)
+
+        yield from full.items()
 
 
 @lru_cache()
-def _get_class_type_hints(b: type) -> dict[str, type]:
-    return {k: v for k, v in get_type_hints(b).items() if not k.startswith("_")}
+def _get_class_type_hints(cls: type) -> dict[str, type]:
+    type_hints = dict()
+    for b in cls.__mro__[::-1]:
+        list_fields = {k: v for k, v in get_type_hints(b).items() if not k.startswith("_")}
+        type_hints |= list_fields
+
+    logger.debug(f"The obtained type hints for {cls!r} are: {type_hints!r}")
+    return type_hints
 
 
 T = TypeVar("T", bound=DeclarativeModel)

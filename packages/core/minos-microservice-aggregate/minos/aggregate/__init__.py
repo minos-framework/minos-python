@@ -35,7 +35,6 @@ from .entities import (
     RefExtractor,
     RefInjector,
     RefResolver,
-    RootEntity,
 )
 from .exceptions import (
     AggregateException,

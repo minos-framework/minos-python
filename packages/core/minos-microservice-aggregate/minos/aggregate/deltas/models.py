@@ -36,7 +36,7 @@ from .fields import (
 
 if TYPE_CHECKING:
     from ..entities import (
-        RootEntity,
+        Entity,
     )
 
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ class Delta(DeclarativeModel):
 
     @property
     def simplified_name(self) -> str:
-        """Get the RootEntity's simplified name.
+        """Get the Entity's simplified name.
 
         :return: An string value.
         """
@@ -126,12 +126,12 @@ class Delta(DeclarativeModel):
         return self.fields_diff.get_all(return_diff)
 
     @classmethod
-    def from_difference(cls, a: RootEntity, b: RootEntity, action: Action = Action.UPDATE) -> Delta:
+    def from_difference(cls, a: Entity, b: Entity, action: Action = Action.UPDATE) -> Delta:
         """Build an ``Delta`` instance from the difference of two instances.
 
-        :param a: One ``RootEntity`` instance.
-        :param b: Another ``RootEntity`` instance.
-        :param action: The action that generates the ``RootEntity`` difference.
+        :param a: One ``Entity`` instance.
+        :param b: Another ``Entity`` instance.
+        :param action: The action that generates the ``Entity`` difference.
         :return: An ``Delta`` instance.
         """
         logger.debug(f"Computing the {cls!r} between {a!r} and {b!r}...")
@@ -155,15 +155,20 @@ class Delta(DeclarativeModel):
         )
 
     @classmethod
-    def from_root_entity(cls, instance: RootEntity, action: Action = Action.CREATE) -> Delta:
-        """Build an ``Delta`` from a ``RootEntity`` (considering all fields as differences).
+    def from_entity(cls, instance: Entity, action: Action = Action.CREATE) -> Delta:
+        """Build an ``Delta`` from a ``Entity`` (considering all fields as differences).
 
-        :param instance: A ``RootEntity`` instance.
+        :param instance: A ``Entity`` instance.
         :param action: The action that generates the delta.
         :return: An ``Delta`` instance.
         """
+        if action != Action.DELETE:
+            fields_diff = FieldDiffContainer.from_model(
+                instance, ignore={"uuid", "version", "created_at", "updated_at"}
+            )
+        else:
+            fields_diff = FieldDiffContainer.empty()
 
-        fields_diff = FieldDiffContainer.from_model(instance, ignore={"uuid", "version", "created_at", "updated_at"})
         return cls(
             uuid=instance.uuid,
             name=instance.classname,
@@ -171,23 +176,6 @@ class Delta(DeclarativeModel):
             action=action,
             created_at=instance.updated_at,
             fields_diff=fields_diff,
-        )
-
-    @classmethod
-    def from_deleted_root_entity(cls, instance: RootEntity, action: Action = Action.DELETE) -> Delta:
-        """Build an ``Delta`` from a ``RootEntity`` (considering all fields as differences).
-
-        :param instance: A ``RootEntity`` instance.
-        :param action: The action that generates the delta.
-        :return: An ``Delta`` instance.
-        """
-        return cls(
-            uuid=instance.uuid,
-            name=instance.classname,
-            version=instance.version,
-            action=action,
-            created_at=instance.updated_at,
-            fields_diff=FieldDiffContainer.empty(),
         )
 
     def decompose(self) -> list[Delta]:

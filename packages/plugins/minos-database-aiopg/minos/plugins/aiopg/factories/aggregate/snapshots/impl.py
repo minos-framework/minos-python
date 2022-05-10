@@ -35,7 +35,7 @@ from .queries import (
 )
 
 
-# noinspection SqlNoDataSourceInspection,SqlResolve
+# noinspection SqlNoDataSourceInspection,SqlDialectInspection
 class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
     """Aiopg Snapshot Database Operation Factory class."""
 
@@ -174,8 +174,8 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
     ) -> DatabaseOperation:
         """Build the query database operation.
 
-        :param name: Class name of the ``RootEntity``.
-        :param condition: The condition that must be satisfied by the ``RootEntity`` instances.
+        :param name: Class name of the ``Entity``.
+        :param condition: The condition that must be satisfied by the ``Entity`` instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
@@ -183,8 +183,8 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         :param transaction_uuids: The transaction within the operation is performed. If not any value is provided, then
             the transaction is extracted from the context var. If not any transaction is being scoped then the query is
             performed to the global snapshot.
-        :param exclude_deleted: If ``True``, deleted ``RootEntity`` entries are included, otherwise deleted
-            ``RootEntity`` entries are filtered.
+        :param exclude_deleted: If ``True``, deleted ``Entity`` entries are included, otherwise deleted
+            ``Entity`` entries are filtered.
         :return: A ``DatabaseOperation`` instance.
         """
         builder = AiopgSnapshotQueryDatabaseOperationBuilder(

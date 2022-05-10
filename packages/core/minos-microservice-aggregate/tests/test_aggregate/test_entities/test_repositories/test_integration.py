@@ -1,4 +1,7 @@
 import unittest
+from uuid import (
+    uuid4,
+)
 
 from minos.aggregate import (
     AlreadyDeletedException,
@@ -55,7 +58,7 @@ class IntegrationTestEntityRepository(AggregateTestCase, DatabaseMinosTestCase):
 
     async def test_entity_set_value_object_set(self):
         order, _ = await self.repository.create(Order, products=EntitySet(), reviews=ValueObjectSet())
-        item = OrderItem("foo")
+        item = OrderItem("foo", uuid=uuid4())
         order.products.add(item)
 
         await self.repository.save(order)

@@ -52,7 +52,7 @@ class TestSnapshotRepository(AggregateTestCase):
         super().setUp()
 
         self.snapshot_repository = _SnapshotRepository()
-        self.entries = [SnapshotEntry.from_root_entity(Car(3, "red"))] * 5
+        self.entries = [SnapshotEntry.from_entity(Car(3, "red"))] * 5
         self.synchronize_mock = AsyncMock()
         self.find_mock = MagicMock(return_value=FakeAsyncIterator(self.entries))
 
