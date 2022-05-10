@@ -2,7 +2,6 @@ from .aggregate import (
     AiopgEventDatabaseOperationFactory,
     AiopgSnapshotDatabaseOperationFactory,
     AiopgSnapshotQueryDatabaseOperationBuilder,
-    AiopgTransactionDatabaseOperationFactory,
 )
 from .common import (
     AiopgLockDatabaseOperationFactory,
@@ -13,4 +12,7 @@ from .networks import (
     AiopgBrokerQueueDatabaseOperationFactory,
     AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     AiopgBrokerSubscriberQueueDatabaseOperationFactory,
+)
+from .transactions import (
+    AiopgTransactionDatabaseOperationFactory,
 )

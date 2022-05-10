@@ -24,6 +24,12 @@ from minos.common import (
     ProgrammingException,
     import_module,
 )
+from minos.transactions import (
+    TransactionEntry,
+    TransactionNotFoundException,
+    TransactionRepository,
+    TransactionStatus,
+)
 
 from ....events import (
     Event,
@@ -33,16 +39,10 @@ from ....events import (
 from ....exceptions import (
     NotFoundException,
     SnapshotRepositoryConflictException,
-    TransactionNotFoundException,
 )
 from ....queries import (
     _Condition,
     _Ordering,
-)
-from ....transactions import (
-    TransactionEntry,
-    TransactionRepository,
-    TransactionStatus,
 )
 from ...entries import (
     SnapshotEntry,

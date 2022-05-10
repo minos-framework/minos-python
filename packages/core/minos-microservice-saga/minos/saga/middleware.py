@@ -9,14 +9,14 @@ from uuid import (
     UUID,
 )
 
-from minos.aggregate import (
-    TransactionEntry,
-)
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
     BrokerRequest,
     Request,
     Response,
+)
+from minos.transactions import (
+    TransactionEntry,
 )
 
 from .utils import (

@@ -15,18 +15,20 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    TRANSACTION_CONTEXT_VAR,
     Condition,
     Ordering,
     SnapshotEntry,
     SnapshotRepository,
-    TransactionEntry,
 )
 from minos.aggregate.queries import (
     _EqualCondition,
 )
 from minos.common import (
     SetupMixin,
+)
+from minos.transactions import (
+    TRANSACTION_CONTEXT_VAR,
+    TransactionEntry,
 )
 from tests.utils import (
     AggregateTestCase,

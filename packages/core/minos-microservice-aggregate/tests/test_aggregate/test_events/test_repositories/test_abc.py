@@ -18,7 +18,6 @@ from uuid import (
 
 from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
-    TRANSACTION_CONTEXT_VAR,
     Action,
     Event,
     EventEntry,
@@ -28,8 +27,6 @@ from minos.aggregate import (
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
-    TransactionEntry,
-    TransactionStatus,
 )
 from minos.common import (
     NULL_UUID,
@@ -40,6 +37,11 @@ from minos.common import (
 )
 from minos.networks import (
     BrokerMessageV1,
+)
+from minos.transactions import (
+    TRANSACTION_CONTEXT_VAR,
+    TransactionEntry,
+    TransactionStatus,
 )
 from tests.utils import (
     AggregateTestCase,

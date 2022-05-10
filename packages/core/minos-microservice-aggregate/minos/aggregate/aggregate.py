@@ -14,6 +14,9 @@ from minos.common import (
     NotProvidedException,
     SetupMixin,
 )
+from minos.transactions import (
+    TransactionRepository,
+)
 
 from .entities import (
     RootEntity,
@@ -23,9 +26,6 @@ from .events import (
 )
 from .snapshots import (
     SnapshotRepository,
-)
-from .transactions import (
-    TransactionRepository,
 )
 
 RT = TypeVar("RT", bound=RootEntity)

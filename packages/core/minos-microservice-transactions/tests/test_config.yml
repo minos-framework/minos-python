@@ -1,0 +1,9 @@
+service:
+    name: Order
+repository:
+    client: minos.common.testing.MockedDatabaseClient
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
