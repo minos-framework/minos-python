@@ -3,7 +3,6 @@ from .collections import (
 )
 from .models import (
     Entity,
-    ExternalEntity,
 )
 from .refs import (
     Ref,

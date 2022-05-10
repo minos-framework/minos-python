@@ -30,7 +30,6 @@ from .entities import (
     Entity,
     EntityRepository,
     EntitySet,
-    ExternalEntity,
     Ref,
     RefExtractor,
     RefInjector,

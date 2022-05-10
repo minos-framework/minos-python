@@ -103,11 +103,4 @@ class Entity(DeclarativeModel):
         )
 
 
-class ExternalEntity(DeclarativeModel):
-    """External Entity class."""
-
-    uuid: UUID
-    version: int
-
-
 T = TypeVar("T", bound=Entity)
