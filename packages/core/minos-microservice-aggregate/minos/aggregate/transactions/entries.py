@@ -34,7 +34,7 @@ from minos.common import (
 )
 
 from ..exceptions import (
-    EventRepositoryConflictException,
+    TransactionRepositoryConflictException,
 )
 from .contextvars import (
     TRANSACTION_CONTEXT_VAR,
@@ -57,7 +57,6 @@ class TransactionEntry:
     __slots__ = (
         "uuid",
         "status",
-        "event_offset",
         "destination_uuid",
         "updated_at",
         "_autocommit",
@@ -70,7 +69,6 @@ class TransactionEntry:
         self,
         uuid: Optional[UUID] = None,
         status: Union[str, TransactionStatus] = None,
-        event_offset: Optional[int] = None,
         destination_uuid: Optional[UUID] = None,
         updated_at: Optional[datetime] = None,
         autocommit: bool = True,
@@ -108,7 +106,6 @@ class TransactionEntry:
 
         self.uuid = uuid
         self.status = status
-        self.event_offset = event_offset
         self.destination_uuid = destination_uuid
         self.updated_at = updated_at
 
@@ -152,8 +149,7 @@ class TransactionEntry:
         async with self._transaction_repository.write_lock():
             await self.save(status=TransactionStatus.COMMITTING)
             await self._commit()
-            event_offset = 1 + await self._event_repository.offset
-            await self.save(event_offset=event_offset, status=TransactionStatus.COMMITTED)
+            await self.save(status=TransactionStatus.COMMITTED)
 
     async def _commit(self) -> None:
         from ..events import (
@@ -179,10 +175,9 @@ class TransactionEntry:
                 committable = await self.validate()
 
                 status = TransactionStatus.RESERVED if committable else TransactionStatus.REJECTED
-                event_offset = 1 + await self._event_repository.offset
-                await self.save(event_offset=event_offset, status=status)
+                await self.save(status=status)
                 if not committable:
-                    raise EventRepositoryConflictException(f"{self!r} could not be reserved!", event_offset)
+                    raise TransactionRepositoryConflictException(f"{self!r} could not be reserved!")
 
     async def validate(self) -> bool:
         """Check if the transaction is committable.
@@ -248,19 +243,15 @@ class TransactionEntry:
             )
 
         async with self._transaction_repository.write_lock():
-            event_offset = 1 + await self._event_repository.offset
-            await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
+            await self.save(status=TransactionStatus.REJECTED)
 
-    async def save(self, *, event_offset: Optional[int] = None, status: Optional[TransactionStatus] = None) -> None:
+    async def save(self, *, status: Optional[TransactionStatus] = None) -> None:
         """Saves the transaction into the repository.
 
-        :param event_offset: The event offset.
         :param status: The status.
         :return: This method does not return anything.
         """
 
-        if event_offset is not None:
-            self.event_offset = event_offset
         if status is not None:
             self.status = status
 
@@ -307,13 +298,12 @@ class TransactionEntry:
         yield from (
             self.uuid,
             self.status,
-            self.event_offset,
             self.destination_uuid,
         )
 
     def __repr__(self):
         return (
-            f"{type(self).__name__}(uuid={self.uuid!r}, status={self.status!r}, event_offset={self.event_offset!r}, "
+            f"{type(self).__name__}(uuid={self.uuid!r}, status={self.status!r}, "
             f"destination_uuid={self.destination_uuid!r}, updated_at={self.updated_at!r})"
         )
 
@@ -325,7 +315,6 @@ class TransactionEntry:
         return {
             "uuid": self.uuid,
             "status": self.status,
-            "event_offset": self.event_offset,
             "destination_uuid": self.destination_uuid,
             "updated_at": self.updated_at,
         }

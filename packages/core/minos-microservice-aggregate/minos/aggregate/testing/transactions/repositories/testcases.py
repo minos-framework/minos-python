@@ -33,21 +33,19 @@ class TransactionRepositoryTestCase(MinosTestCase, ABC):
         self.uuid_5 = uuid4()
 
         self.entries = [
-            TransactionEntry(self.uuid_1, TransactionStatus.PENDING, 12),
-            TransactionEntry(self.uuid_2, TransactionStatus.PENDING, 15),
-            TransactionEntry(self.uuid_3, TransactionStatus.REJECTED, 16),
-            TransactionEntry(self.uuid_4, TransactionStatus.COMMITTED, 20),
-            TransactionEntry(self.uuid_5, TransactionStatus.PENDING, 20, self.uuid_1),
+            TransactionEntry(self.uuid_1, TransactionStatus.PENDING),
+            TransactionEntry(self.uuid_2, TransactionStatus.PENDING),
+            TransactionEntry(self.uuid_3, TransactionStatus.REJECTED),
+            TransactionEntry(self.uuid_4, TransactionStatus.COMMITTED),
+            TransactionEntry(self.uuid_5, TransactionStatus.PENDING, self.uuid_1),
         ]
 
     async def populate(self) -> None:
-        await self.transaction_repository.submit(TransactionEntry(self.uuid_1, TransactionStatus.PENDING, 12))
-        await self.transaction_repository.submit(TransactionEntry(self.uuid_2, TransactionStatus.PENDING, 15))
-        await self.transaction_repository.submit(TransactionEntry(self.uuid_3, TransactionStatus.REJECTED, 16))
-        await self.transaction_repository.submit(TransactionEntry(self.uuid_4, TransactionStatus.COMMITTED, 20))
-        await self.transaction_repository.submit(
-            TransactionEntry(self.uuid_5, TransactionStatus.PENDING, 20, self.uuid_1)
-        )
+        await self.transaction_repository.submit(TransactionEntry(self.uuid_1, TransactionStatus.PENDING))
+        await self.transaction_repository.submit(TransactionEntry(self.uuid_2, TransactionStatus.PENDING))
+        await self.transaction_repository.submit(TransactionEntry(self.uuid_3, TransactionStatus.REJECTED))
+        await self.transaction_repository.submit(TransactionEntry(self.uuid_4, TransactionStatus.COMMITTED))
+        await self.transaction_repository.submit(TransactionEntry(self.uuid_5, TransactionStatus.PENDING, self.uuid_1))
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -68,82 +66,82 @@ class TransactionRepositoryTestCase(MinosTestCase, ABC):
         self.assertTrue(isinstance(self.transaction_repository, TransactionRepository))
 
     async def test_submit(self):
-        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
-        expected = [TransactionEntry(self.uuid, TransactionStatus.PENDING, 34)]
+        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING))
+        expected = [TransactionEntry(self.uuid, TransactionStatus.PENDING)]
         observed = [v async for v in self.transaction_repository.select()]
         self.assertEqual(expected, observed)
 
     async def test_submit_pending_raises(self):
-        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
+        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED))
 
     async def test_submit_reserving_raises(self):
-        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING, 34))
+        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED))
 
     async def test_submit_reserved_raises(self):
-        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
+        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED))
 
     async def test_submit_committing_raises(self):
-        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
+        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED))
 
     async def test_submit_committed_raises(self):
-        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
+        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED))
 
     async def test_submit_rejected_raises(self):
-        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
+        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED))
         with self.assertRaises(TransactionRepositoryConflictException):
-            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED))
 
     async def test_select_empty(self):
         expected = []
@@ -195,36 +193,6 @@ class TransactionRepositoryTestCase(MinosTestCase, ABC):
                 status_in=(TransactionStatus.COMMITTED, TransactionStatus.REJECTED)
             )
         ]
-        self.assertEqual(expected, observed)
-
-    async def test_select_event_offset(self):
-        await self.populate()
-        expected = [self.entries[1]]
-        observed = [v async for v in self.transaction_repository.select(event_offset=15)]
-        self.assertEqual(expected, observed)
-
-    async def test_select_event_offset_lt(self):
-        await self.populate()
-        expected = [self.entries[0]]
-        observed = [v async for v in self.transaction_repository.select(event_offset_lt=15)]
-        self.assertEqual(expected, observed)
-
-    async def test_select_event_offset_gt(self):
-        await self.populate()
-        expected = [self.entries[2], self.entries[3], self.entries[4]]
-        observed = [v async for v in self.transaction_repository.select(event_offset_gt=15)]
-        self.assertEqual(expected, observed)
-
-    async def test_select_event_offset_le(self):
-        await self.populate()
-        expected = [self.entries[0], self.entries[1]]
-        observed = [v async for v in self.transaction_repository.select(event_offset_le=15)]
-        self.assertEqual(expected, observed)
-
-    async def test_select_event_offset_ge(self):
-        await self.populate()
-        expected = [self.entries[1], self.entries[2], self.entries[3], self.entries[4]]
-        observed = [v async for v in self.transaction_repository.select(event_offset_ge=15)]
         self.assertEqual(expected, observed)
 
     async def test_select_updated_at(self):

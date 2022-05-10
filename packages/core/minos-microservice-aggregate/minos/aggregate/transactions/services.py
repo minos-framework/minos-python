@@ -16,7 +16,6 @@ from minos.networks import (
 )
 
 from ..exceptions import (
-    EventRepositoryConflictException,
     TransactionNotFoundException,
     TransactionRepositoryConflictException,
 )
@@ -58,7 +57,7 @@ class TransactionService:
 
         try:
             await transaction.reserve()
-        except EventRepositoryConflictException:
+        except TransactionRepositoryConflictException:
             raise ResponseException("The transaction could not be reserved.")
 
     async def __reject__(self, request: Request) -> None:

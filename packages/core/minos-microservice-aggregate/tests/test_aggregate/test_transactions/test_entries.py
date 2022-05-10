@@ -18,8 +18,8 @@ from minos.aggregate import (
     TRANSACTION_CONTEXT_VAR,
     Action,
     EventEntry,
-    EventRepositoryConflictException,
     TransactionEntry,
+    TransactionRepositoryConflictException,
     TransactionStatus,
 )
 from minos.common import (
@@ -37,7 +37,6 @@ class TestTransactionEntry(AggregateTestCase):
 
         self.assertIsInstance(transaction.uuid, UUID)
         self.assertEqual(TransactionStatus.PENDING, transaction.status)
-        self.assertEqual(None, transaction.event_offset)
         self.assertEqual(True, transaction._autocommit)
 
         self.assertEqual(self.event_repository, transaction._event_repository)
@@ -46,11 +45,9 @@ class TestTransactionEntry(AggregateTestCase):
     def test_constructor_extended(self):
         uuid = uuid4()
         status = TransactionStatus.PENDING
-        event_offset = 56
-        transaction = TransactionEntry(uuid, status, event_offset, autocommit=False)
+        transaction = TransactionEntry(uuid, status, autocommit=False)
         self.assertEqual(uuid, transaction.uuid)
         self.assertEqual(status, transaction.status)
-        self.assertEqual(event_offset, transaction.event_offset)
         self.assertEqual(False, transaction._autocommit)
 
         self.assertEqual(self.event_repository, transaction._event_repository)
@@ -125,7 +122,7 @@ class TestTransactionEntry(AggregateTestCase):
         self.assertEqual(call(), validate_mock.call_args)
 
         self.assertEqual(
-            [call(status=TransactionStatus.RESERVING), call(event_offset=56, status=TransactionStatus.RESERVED)],
+            [call(status=TransactionStatus.RESERVING), call(status=TransactionStatus.RESERVED)],
             save_mock.call_args_list,
         )
 
@@ -138,14 +135,14 @@ class TestTransactionEntry(AggregateTestCase):
         ), patch("minos.aggregate.TransactionEntry.save") as save_mock, patch(
             "minos.aggregate.TransactionEntry.validate", return_value=False
         ) as validate_mock:
-            with self.assertRaises(EventRepositoryConflictException):
+            with self.assertRaises(TransactionRepositoryConflictException):
                 await transaction.reserve()
 
         self.assertEqual(1, validate_mock.call_count)
         self.assertEqual(call(), validate_mock.call_args)
 
         self.assertEqual(
-            [call(status=TransactionStatus.RESERVING), call(event_offset=56, status=TransactionStatus.REJECTED)],
+            [call(status=TransactionStatus.RESERVING), call(status=TransactionStatus.REJECTED)],
             save_mock.call_args_list,
         )
 
@@ -389,7 +386,7 @@ class TestTransactionEntry(AggregateTestCase):
             await transaction.reject()
 
         self.assertEqual(1, save_mock.call_count)
-        self.assertEqual(call(event_offset=56, status=TransactionStatus.REJECTED), save_mock.call_args)
+        self.assertEqual(call(status=TransactionStatus.REJECTED), save_mock.call_args)
 
     async def test_reject_raises(self) -> None:
         with self.assertRaises(ValueError):
@@ -430,7 +427,7 @@ class TestTransactionEntry(AggregateTestCase):
         )
 
         self.assertEqual(
-            [call(status=TransactionStatus.COMMITTING), call(event_offset=56, status=TransactionStatus.COMMITTED)],
+            [call(status=TransactionStatus.COMMITTING), call(status=TransactionStatus.COMMITTED)],
             save_mock.call_args_list,
         )
 
@@ -457,7 +454,7 @@ class TestTransactionEntry(AggregateTestCase):
         self.assertEqual(call(), commit_mock.call_args)
 
         self.assertEqual(
-            [call(status=TransactionStatus.COMMITTING), call(event_offset=56, status=TransactionStatus.COMMITTED)],
+            [call(status=TransactionStatus.COMMITTING), call(status=TransactionStatus.COMMITTED)],
             save_mock.call_args_list,
         )
 
@@ -481,10 +478,10 @@ class TestTransactionEntry(AggregateTestCase):
         self.assertEqual(1, submit_mock.call_count)
         self.assertEqual(call(TransactionEntry(uuid, TransactionStatus.COMMITTED)), submit_mock.call_args)
 
-        submit_mock.reset_mock()
-        await TransactionEntry(uuid, TransactionStatus.PENDING).save(event_offset=56)
-        self.assertEqual(1, submit_mock.call_count)
-        self.assertEqual(call(TransactionEntry(uuid, TransactionStatus.PENDING, 56)), submit_mock.call_args)
+        # submit_mock.reset_mock()
+        # await TransactionEntry(uuid, TransactionStatus.PENDING).save(event_offset=56)
+        # self.assertEqual(1, submit_mock.call_count)
+        # self.assertEqual(call(TransactionEntry(uuid, TransactionStatus.PENDING, 56)), submit_mock.call_args)
 
     async def test_uuids(self):
         first = TransactionEntry()
@@ -504,24 +501,23 @@ class TestTransactionEntry(AggregateTestCase):
 
     def test_equals(self):
         uuid = uuid4()
-        base = TransactionEntry(uuid, TransactionStatus.PENDING, 56)
-        self.assertEqual(TransactionEntry(uuid, TransactionStatus.PENDING, 56), base)
-        self.assertNotEqual(TransactionEntry(uuid4(), TransactionStatus.PENDING, 56), base)
-        self.assertNotEqual(TransactionEntry(uuid, TransactionStatus.COMMITTED, 56), base)
-        self.assertNotEqual(TransactionEntry(uuid, TransactionStatus.PENDING, 12), base)
+        base = TransactionEntry(uuid, TransactionStatus.PENDING)
+        self.assertEqual(TransactionEntry(uuid, TransactionStatus.PENDING), base)
+        self.assertNotEqual(TransactionEntry(uuid4(), TransactionStatus.PENDING), base)
+        self.assertNotEqual(TransactionEntry(uuid, TransactionStatus.COMMITTED), base)
 
     def test_iter(self):
         uuid = uuid4()
         destination_uuid = uuid4()
-        transaction = TransactionEntry(uuid, TransactionStatus.PENDING, 56, destination_uuid)
-        self.assertEqual([uuid, TransactionStatus.PENDING, 56, destination_uuid], list(transaction))
+        transaction = TransactionEntry(uuid, TransactionStatus.PENDING, destination_uuid)
+        self.assertEqual([uuid, TransactionStatus.PENDING, destination_uuid], list(transaction))
 
     def test_repr(self):
         uuid = uuid4()
         destination_uuid = uuid4()
-        transaction = TransactionEntry(uuid, TransactionStatus.PENDING, 56, destination_uuid)
+        transaction = TransactionEntry(uuid, TransactionStatus.PENDING, destination_uuid)
         expected = (
-            f"TransactionEntry(uuid={uuid!r}, status={TransactionStatus.PENDING!r}, event_offset={56!r}, "
+            f"TransactionEntry(uuid={uuid!r}, status={TransactionStatus.PENDING!r}, "
             f"destination_uuid={destination_uuid!r}, updated_at={None!r})"
         )
         self.assertEqual(expected, repr(transaction))
@@ -529,15 +525,13 @@ class TestTransactionEntry(AggregateTestCase):
     def test_as_raw(self):
         uuid = uuid4()
         status = TransactionStatus.PENDING
-        event_offset = 56
         updated_at = datetime(2020, 10, 13, 8, 45, 32)
         destination_uuid = uuid4()
 
-        entry = TransactionEntry(uuid, status, event_offset, destination_uuid, updated_at)
+        entry = TransactionEntry(uuid, status, destination_uuid, updated_at)
         expected = {
             "uuid": uuid,
             "status": status,
-            "event_offset": event_offset,
             "destination_uuid": destination_uuid,
             "updated_at": updated_at,
         }

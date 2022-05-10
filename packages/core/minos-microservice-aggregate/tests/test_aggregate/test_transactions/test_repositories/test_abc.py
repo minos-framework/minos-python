@@ -98,7 +98,7 @@ class TestTransactionRepository(AggregateTestCase):
         self.transaction_repository._select = mock
 
         iterable = self.transaction_repository.select(
-            uuid=uuid, status_in=(TransactionStatus.REJECTED, TransactionStatus.COMMITTED), event_offset_gt=56
+            uuid=uuid, status_in=(TransactionStatus.REJECTED, TransactionStatus.COMMITTED)
         )
         observed = [v async for v in iterable]
 
@@ -111,11 +111,6 @@ class TestTransactionRepository(AggregateTestCase):
             destination_uuid=None,
             status=None,
             status_in=(TransactionStatus.REJECTED, TransactionStatus.COMMITTED),
-            event_offset=None,
-            event_offset_lt=None,
-            event_offset_gt=56,
-            event_offset_le=None,
-            event_offset_ge=None,
             updated_at=None,
             updated_at_lt=None,
             updated_at_gt=None,
