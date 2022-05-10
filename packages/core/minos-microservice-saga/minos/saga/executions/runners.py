@@ -69,7 +69,9 @@ class SagaRunner(SetupMixin):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        self.storage = storage
+
+        if storage is None:
+            raise NotProvidedException(f"A {SagaExecutionRepository!r} instance is required.")
 
         if broker_pool is None and pool_factory is not None:
             broker_pool = pool_factory.get_pool("broker")
@@ -77,6 +79,7 @@ class SagaRunner(SetupMixin):
         if broker_pool is None:
             raise NotProvidedException(f"A {BrokerClientPool!r} instance is required.")
 
+        self.storage = storage
         self.broker_pool = broker_pool
 
     async def run(

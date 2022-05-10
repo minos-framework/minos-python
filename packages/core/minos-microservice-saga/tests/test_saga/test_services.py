@@ -22,14 +22,18 @@ from minos.networks import (
     BrokerRequest,
     InMemoryRequest,
     PeriodicEventEnrouteDecorator,
+    Response,
     ResponseException,
     RestCommandEnrouteDecorator,
 )
 from minos.saga import (
+    SagaContext,
+    SagaExecution,
     SagaManager,
     SagaResponse,
     SagaResponseStatus,
     SagaService,
+    SagaStatus,
 )
 from minos.transactions import (
     TransactionEntry,
@@ -39,6 +43,7 @@ from minos.transactions import (
     TransactionStatus,
 )
 from tests.utils import (
+    ADD_ORDER,
     CONFIG_FILE_PATH,
     FakeAsyncIterator,
     SagaTestCase,
@@ -81,7 +86,7 @@ class TestSagaService(SagaTestCase):
 
     async def test_reply(self):
         uuid = uuid4()
-        with patch("minos.saga.SagaManager.run") as run_mock:
+        with patch.object(SagaManager, "run") as run_mock:
             reply = BrokerMessageV1(
                 "orderReply",
                 BrokerMessageV1Payload(
@@ -101,6 +106,33 @@ class TestSagaService(SagaTestCase):
             ],
             run_mock.call_args_list,
         )
+
+    async def test_get(self):
+        uuid = uuid4()
+        execution = SagaExecution.from_definition(ADD_ORDER, SagaContext(foo="bar"), uuid)
+        with patch.object(SagaManager, "get", return_value=execution):
+            observed = await self.service._handle_get(InMemoryRequest(content={"uuid": uuid}))
+
+        expected = Response({"uuid": uuid, "status": SagaStatus.Created})
+        self.assertEqual(expected, observed)
+
+    async def test_get_from_params(self):
+        uuid = uuid4()
+        execution = SagaExecution.from_definition(ADD_ORDER, SagaContext(foo="bar"), uuid)
+        with patch.object(SagaManager, "get", return_value=execution):
+            observed = await self.service._handle_get(InMemoryRequest(params={"uuid": uuid}))
+
+        expected = Response({"uuid": uuid, "status": SagaStatus.Created})
+        self.assertEqual(expected, observed)
+
+    async def test_get_finished(self):
+        uuid = uuid4()
+        execution = SagaExecution.from_definition(ADD_ORDER, SagaContext(foo="bar"), uuid, status=SagaStatus.Finished)
+        with patch.object(SagaManager, "get", return_value=execution):
+            observed = await self.service._handle_get(InMemoryRequest(content={"uuid": uuid}))
+
+        expected = Response({"uuid": uuid, "status": SagaStatus.Finished, "context": SagaContext(foo="bar")})
+        self.assertEqual(expected, observed)
 
     async def test_reserve(self):
         uuid = uuid4()

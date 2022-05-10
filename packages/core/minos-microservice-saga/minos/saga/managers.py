@@ -45,12 +45,13 @@ class SagaManager(SetupMixin):
     def __init__(
         self,
         storage: SagaExecutionRepository,
+        runner: SagaRunner,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.storage = storage
-        self.runner = SagaRunner(storage=storage, *args, **kwargs)
+        self.runner = runner
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> SagaManager:
@@ -61,8 +62,12 @@ class SagaManager(SetupMixin):
         :param kwargs: Additional named arguments.
         :return: A new ``SagaManager`` instance.
         """
-        storage = DatabaseSagaExecutionRepository.from_config(config, **kwargs)
-        return cls(storage=storage, **kwargs)
+        if "storage" not in kwargs:
+            kwargs["storage"] = DatabaseSagaExecutionRepository.from_config(config, **kwargs)
+        if "runner" not in kwargs:
+            kwargs["runner"] = SagaRunner.from_config(config, **kwargs)
+        # noinspection PyTypeChecker
+        return super()._from_config(config, **kwargs)
 
     async def _setup(self) -> None:
         await super()._setup()
