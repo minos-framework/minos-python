@@ -1,11 +1,11 @@
 import unittest
 
 from minos.aggregate import (
-    DatabaseEventRepository,
-    EventRepository,
+    DatabaseDeltaRepository,
+    DeltaRepository,
 )
 from minos.aggregate.testing import (
-    EventRepositoryTestCase,
+    DeltaRepositoryTestCase,
 )
 from minos.common import (
     DatabaseClientPool,
@@ -20,21 +20,21 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestDatabaseEventRepositorySubmit(AiopgTestCase, EventRepositoryTestCase):
+class TestDatabaseDeltaRepositorySubmit(AiopgTestCase, DeltaRepositoryTestCase):
     __test__ = True
 
-    def build_event_repository(self) -> EventRepository:
+    def build_delta_repository(self) -> DeltaRepository:
         """Fort testing purposes."""
-        return DatabaseEventRepository.from_config(self.config)
+        return DatabaseDeltaRepository.from_config(self.config)
 
     def test_constructor(self):
         pool = DatabaseClientPool.from_config(self.config)
-        repository = DatabaseEventRepository(pool)
-        self.assertIsInstance(repository, DatabaseEventRepository)
+        repository = DatabaseDeltaRepository(pool)
+        self.assertIsInstance(repository, DatabaseDeltaRepository)
         self.assertIsInstance(repository.database_pool, DatabaseClientPool)
 
     def test_from_config(self):
-        repository = DatabaseEventRepository.from_config(self.config)
+        repository = DatabaseDeltaRepository.from_config(self.config)
         self.assertIsInstance(repository.database_pool, DatabaseClientPool)
 
     async def test_setup(self):

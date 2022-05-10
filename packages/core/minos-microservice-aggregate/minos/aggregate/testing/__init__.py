@@ -1,6 +1,6 @@
-from .events import (
-    EventRepositoryTestCase,
-    MockedEventDatabaseOperationFactory,
+from .deltas import (
+    DeltaRepositoryTestCase,
+    MockedDeltaDatabaseOperationFactory,
 )
 from .snapshots import (
     MockedSnapshotDatabaseOperationFactory,

@@ -24,7 +24,9 @@ from minos.aggregate.queries import (
     _EqualCondition,
 )
 from minos.common import (
+    ModelType,
     SetupMixin,
+    classname,
 )
 from minos.transactions import (
     TRANSACTION_CONTEXT_VAR,
@@ -52,14 +54,14 @@ class TestSnapshotRepository(AggregateTestCase):
         super().setUp()
 
         self.snapshot_repository = _SnapshotRepository()
-        self.entries = [SnapshotEntry.from_root_entity(Car(3, "red"))] * 5
+        self.entries = [SnapshotEntry.from_entity(Car(3, "red"))] * 5
         self.synchronize_mock = AsyncMock()
         self.find_mock = MagicMock(return_value=FakeAsyncIterator(self.entries))
 
         self.snapshot_repository._find_entries = self.find_mock
         self.snapshot_repository._synchronize = self.synchronize_mock
 
-        self.classname = "path.to.Product"
+        self.type_ = ModelType.from_model(Car)
 
     def test_subclass(self):
         self.assertTrue(issubclass(SnapshotRepository, (ABC, SetupMixin)))
@@ -71,7 +73,7 @@ class TestSnapshotRepository(AggregateTestCase):
     async def test_get(self):
         transaction = TransactionEntry()
         uuid = uuid4()
-        observed = await self.snapshot_repository.get(self.classname, uuid, transaction)
+        observed = await self.snapshot_repository.get(self.type_, uuid, transaction)
         self.assertEqual(self.entries[0].build(), observed)
 
         self.assertEqual(1, self.synchronize_mock.call_count)
@@ -79,7 +81,7 @@ class TestSnapshotRepository(AggregateTestCase):
 
         self.assertEqual(1, self.find_mock.call_count)
         args = call(
-            name=self.classname,
+            name=classname(Car),
             condition=_EqualCondition("uuid", uuid),
             ordering=None,
             limit=None,
@@ -90,7 +92,7 @@ class TestSnapshotRepository(AggregateTestCase):
         self.assertEqual(args, self.find_mock.call_args)
 
     async def test_get_transaction_null(self):
-        await self.snapshot_repository.get(self.classname, uuid4())
+        await self.snapshot_repository.get(self.type_, uuid4())
 
         self.assertEqual(1, self.find_mock.call_count)
         self.assertEqual(None, self.find_mock.call_args.kwargs["transaction"])
@@ -98,7 +100,7 @@ class TestSnapshotRepository(AggregateTestCase):
     async def test_get_transaction_context(self):
         transaction = TransactionEntry()
         TRANSACTION_CONTEXT_VAR.set(transaction)
-        await self.snapshot_repository.get(self.classname, uuid4())
+        await self.snapshot_repository.get(self.type_, uuid4())
 
         self.assertEqual(1, self.find_mock.call_count)
         self.assertEqual(transaction, self.find_mock.call_args.kwargs["transaction"])
@@ -106,14 +108,14 @@ class TestSnapshotRepository(AggregateTestCase):
     async def test_get_all(self):
         transaction = TransactionEntry()
 
-        iterable = self.snapshot_repository.get_all(self.classname, Ordering.ASC("name"), 10, True, transaction)
+        iterable = self.snapshot_repository.get_all(self.type_, Ordering.ASC("name"), 10, True, transaction)
         observed = [a async for a in iterable]
         self.assertEqual([e.build() for e in self.entries], observed)
 
         self.assertEqual(
             [
                 call(
-                    name=self.classname,
+                    name=classname(Car),
                     condition=Condition.TRUE,
                     ordering=Ordering.ASC("name"),
                     limit=10,
@@ -128,7 +130,7 @@ class TestSnapshotRepository(AggregateTestCase):
     async def test_find(self):
         transaction = TransactionEntry()
         iterable = self.snapshot_repository.find(
-            self.classname, Condition.TRUE, Ordering.ASC("name"), 10, True, transaction
+            self.type_, Condition.TRUE, Ordering.ASC("name"), 10, True, transaction
         )
         observed = [a async for a in iterable]
         self.assertEqual([e.build() for e in self.entries], observed)
@@ -138,7 +140,7 @@ class TestSnapshotRepository(AggregateTestCase):
 
         self.assertEqual(1, self.find_mock.call_count)
         args = call(
-            name=self.classname,
+            name=classname(Car),
             condition=Condition.TRUE,
             ordering=Ordering.ASC("name"),
             limit=10,
@@ -149,7 +151,7 @@ class TestSnapshotRepository(AggregateTestCase):
         self.assertEqual(args, self.find_mock.call_args)
 
     async def test_find_transaction_null(self):
-        [a async for a in self.snapshot_repository.find(self.classname, Condition.TRUE)]
+        [a async for a in self.snapshot_repository.find(self.type_, Condition.TRUE)]
 
         self.assertEqual(1, self.find_mock.call_count)
         self.assertEqual(None, self.find_mock.call_args.kwargs["transaction"])
@@ -157,7 +159,7 @@ class TestSnapshotRepository(AggregateTestCase):
     async def test_find_transaction_context(self):
         transaction = TransactionEntry()
         TRANSACTION_CONTEXT_VAR.set(transaction)
-        [a async for a in self.snapshot_repository.find(self.classname, Condition.TRUE)]
+        [a async for a in self.snapshot_repository.find(self.type_, Condition.TRUE)]
 
         self.assertEqual(1, self.find_mock.call_count)
         self.assertEqual(transaction, self.find_mock.call_args.kwargs["transaction"])

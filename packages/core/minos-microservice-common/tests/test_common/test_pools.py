@@ -36,12 +36,17 @@ class TestPoolFactory(CommonTestCase):
         super().setUp()
         self.factory = PoolFactory(self.config, {"lock": FakeLockPool})
 
-    def test_from_config(self):
-        self.assertIsInstance(PoolFactory.from_config(self.config), PoolFactory)
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.factory.setup()
 
     async def asyncTearDown(self):
         await self.factory.destroy()
         await super().asyncTearDown()
+
+    async def test_from_config(self):
+        async with PoolFactory.from_config(self.config) as pool_factory:
+            self.assertIsInstance(pool_factory, PoolFactory)
 
     def test_get_pool(self):
         lock = self.factory.get_pool("lock")
@@ -119,11 +124,11 @@ class TestMinosPool(unittest.IsolatedAsyncioTestCase):
     def test_is_subclass(self):
         self.assertTrue(issubclass(MinosPool, SetupMixin))
 
-    def test_warnings(self):
+    async def test_warnings(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
-            setup = _MinosPool()
-            self.assertIsInstance(setup, SetupMixin)
+            async with _MinosPool() as setup:
+                self.assertIsInstance(setup, SetupMixin)
 
 
 class _MinosPool(MinosPool):

@@ -9,10 +9,11 @@ from .clients import (
 )
 from .factories import (
     AiopgBrokerPublisherQueueDatabaseOperationFactory,
+    AiopgBrokerPublisherTransactionDatabaseOperationFactory,
     AiopgBrokerQueueDatabaseOperationFactory,
     AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     AiopgBrokerSubscriberQueueDatabaseOperationFactory,
-    AiopgEventDatabaseOperationFactory,
+    AiopgDeltaDatabaseOperationFactory,
     AiopgLockDatabaseOperationFactory,
     AiopgManagementDatabaseOperationFactory,
     AiopgSnapshotDatabaseOperationFactory,

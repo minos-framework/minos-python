@@ -7,9 +7,6 @@ __version__ = "0.7.0.dev4"
 from .actions import (
     Action,
 )
-from .aggregate import (
-    Aggregate,
-)
 from .collections import (
     IncrementalSet,
     IncrementalSetDiff,
@@ -18,37 +15,39 @@ from .collections import (
 from .contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
+from .deltas import (
+    DatabaseDeltaRepository,
+    Delta,
+    DeltaDatabaseOperationFactory,
+    DeltaEntry,
+    DeltaRepository,
+    FieldDiff,
+    FieldDiffContainer,
+    IncrementalFieldDiff,
+    InMemoryDeltaRepository,
+)
 from .entities import (
     Entity,
+    EntityRepository,
     EntitySet,
-    ExternalEntity,
     Ref,
     RefExtractor,
     RefInjector,
     RefResolver,
-    RootEntity,
-)
-from .events import (
-    DatabaseEventRepository,
-    Event,
-    EventDatabaseOperationFactory,
-    EventEntry,
-    EventRepository,
-    FieldDiff,
-    FieldDiffContainer,
-    IncrementalFieldDiff,
-    InMemoryEventRepository,
 )
 from .exceptions import (
     AggregateException,
     AlreadyDeletedException,
-    EventRepositoryConflictException,
-    EventRepositoryException,
+    DeltaRepositoryConflictException,
+    DeltaRepositoryException,
     NotFoundException,
     RefException,
     SnapshotRepositoryConflictException,
     SnapshotRepositoryException,
     ValueObjectException,
+)
+from .impl import (
+    Aggregate,
 )
 from .queries import (
     Condition,

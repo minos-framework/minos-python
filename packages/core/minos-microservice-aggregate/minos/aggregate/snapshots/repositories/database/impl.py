@@ -31,10 +31,10 @@ from minos.transactions import (
     TransactionStatus,
 )
 
-from ....events import (
-    Event,
-    EventEntry,
-    EventRepository,
+from ....deltas import (
+    Delta,
+    DeltaEntry,
+    DeltaRepository,
 )
 from ....exceptions import (
     NotFoundException,
@@ -56,14 +56,14 @@ from .factories import (
 
 if TYPE_CHECKING:
     from ....entities import (
-        RootEntity,
+        Entity,
     )
 
 
 class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatabaseOperationFactory]):
     """Database Snapshot Repository class.
 
-    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
+    The snapshot provides a direct accessor to the ``Entity`` instances stored as deltas by the delta repository
     class.
     """
 
@@ -71,7 +71,7 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
     def __init__(
         self,
         *args,
-        event_repository: EventRepository,
+        delta_repository: DeltaRepository,
         transaction_repository: TransactionRepository,
         database_key: Optional[tuple[str]] = None,
         **kwargs,
@@ -80,13 +80,13 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
             database_key = ("aggregate", "snapshot")
         super().__init__(*args, database_key=database_key, **kwargs)
 
-        if event_repository is None:
-            raise NotProvidedException("An event repository instance is required.")
+        if delta_repository is None:
+            raise NotProvidedException("An delta repository instance is required.")
 
         if transaction_repository is None:
             raise NotProvidedException("A transaction repository instance is required.")
 
-        self._event_repository = event_repository
+        self._delta_repository = delta_repository
         self._transaction_repository = transaction_repository
 
     async def _setup(self) -> None:
@@ -119,13 +119,13 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
             yield SnapshotEntry(*row)
 
     async def is_synced(self, name: str, **kwargs) -> bool:
-        """Check if the snapshot has the latest version of a ``RootEntity`` instance.
+        """Check if the snapshot has the latest version of a ``Entity`` instance.
 
-        :param name: Class name of the ``RootEntity`` to be checked.
+        :param name: Class name of the ``Entity`` to be checked.
         :return: ``True`` if it has the latest version for the identifier or ``False`` otherwise.
         """
         offset = await self._load_offset()
-        iterable = self._event_repository.select(id_gt=offset, name=name, **kwargs)
+        iterable = self._delta_repository.select(id_gt=offset, name=name, **kwargs)
         try:
             await iterable.__anext__()
             return False
@@ -137,12 +137,12 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
 
         transaction_uuids = set()
         offset = initial_offset
-        async for event_entry in self._event_repository.select(id_gt=offset, **kwargs):
+        async for delta_entry in self._delta_repository.select(id_gt=offset, **kwargs):
             with suppress(SnapshotRepositoryConflictException):
-                await self._dispatch_one(event_entry, **kwargs)
+                await self._dispatch_one(delta_entry, **kwargs)
 
-            offset = max(event_entry.id, offset)
-            transaction_uuids.add(event_entry.transaction_uuid)
+            offset = max(delta_entry.id, offset)
+            transaction_uuids.add(delta_entry.transaction_uuid)
 
         await self._clean_transactions(transaction_uuids)
 
@@ -161,52 +161,52 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         operation = self.database_operation_factory.build_submit_offset(offset)
         await self.execute_on_database(operation)
 
-    async def _dispatch_one(self, event_entry: EventEntry, **kwargs) -> SnapshotEntry:
-        if event_entry.action.is_delete:
-            return await self._submit_delete(event_entry)
+    async def _dispatch_one(self, delta_entry: DeltaEntry, **kwargs) -> SnapshotEntry:
+        if delta_entry.action.is_delete:
+            return await self._submit_delete(delta_entry)
 
-        return await self._submit_update_or_create(event_entry, **kwargs)
+        return await self._submit_update_or_create(delta_entry, **kwargs)
 
-    async def _submit_delete(self, event_entry: EventEntry) -> SnapshotEntry:
-        snapshot_entry = SnapshotEntry.from_event_entry(event_entry)
+    async def _submit_delete(self, delta_entry: DeltaEntry) -> SnapshotEntry:
+        snapshot_entry = SnapshotEntry.from_delta_entry(delta_entry)
         snapshot_entry = await self._submit_entry(snapshot_entry)
         return snapshot_entry
 
-    async def _submit_update_or_create(self, event_entry: EventEntry, **kwargs) -> SnapshotEntry:
-        instance = await self._build_instance(event_entry, **kwargs)
+    async def _submit_update_or_create(self, delta_entry: DeltaEntry, **kwargs) -> SnapshotEntry:
+        instance = await self._build_instance(delta_entry, **kwargs)
 
-        snapshot_entry = SnapshotEntry.from_root_entity(instance, transaction_uuid=event_entry.transaction_uuid)
+        snapshot_entry = SnapshotEntry.from_entity(instance, transaction_uuid=delta_entry.transaction_uuid)
         snapshot_entry = await self._submit_entry(snapshot_entry)
         return snapshot_entry
 
-    async def _build_instance(self, event_entry: EventEntry, **kwargs) -> RootEntity:
-        diff = event_entry.event
+    async def _build_instance(self, delta_entry: DeltaEntry, **kwargs) -> Entity:
+        diff = delta_entry.delta
 
         try:
-            transaction = await self._transaction_repository.get(uuid=event_entry.transaction_uuid)
+            transaction = await self._transaction_repository.get(uuid=delta_entry.transaction_uuid)
         except TransactionNotFoundException:
             transaction = None
 
         instance = await self._update_instance_if_exists(diff, transaction=transaction, **kwargs)
         return instance
 
-    async def _update_instance_if_exists(self, event: Event, **kwargs) -> RootEntity:
+    async def _update_instance_if_exists(self, delta: Delta, **kwargs) -> Entity:
         # noinspection PyBroadException
         try:
             # noinspection PyTypeChecker
-            previous = await self._select_one_instance(event.name, event.uuid, **kwargs)
+            previous = await self._select_one_instance(delta.name, delta.uuid, **kwargs)
         except NotFoundException:
             # noinspection PyTypeChecker
-            cls = import_module(event.name)
-            return cls.from_diff(event, **kwargs)
+            cls = import_module(delta.name)
+            return cls.from_diff(delta, **kwargs)
 
-        if previous.version >= event.version:
-            raise SnapshotRepositoryConflictException(previous, event)
+        if previous.version >= delta.version:
+            raise SnapshotRepositoryConflictException(previous, delta)
 
-        previous.apply_diff(event)
+        previous.apply_diff(delta)
         return previous
 
-    async def _select_one_instance(self, name: str, uuid: UUID, **kwargs) -> RootEntity:
+    async def _select_one_instance(self, name: str, uuid: UUID, **kwargs) -> Entity:
         snapshot_entry = await self.get_entry(name, uuid, **kwargs)
         return snapshot_entry.build(**kwargs)
 
