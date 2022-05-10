@@ -9,6 +9,7 @@ from .common import (
 )
 from .networks import (
     AiopgBrokerPublisherQueueDatabaseOperationFactory,
+    AiopgBrokerPublisherTransactionDatabaseOperationFactory,
     AiopgBrokerQueueDatabaseOperationFactory,
     AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     AiopgBrokerSubscriberQueueDatabaseOperationFactory,

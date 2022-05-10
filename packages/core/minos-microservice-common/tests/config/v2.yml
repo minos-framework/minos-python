@@ -57,6 +57,10 @@ discovery:
 saga:
   manager: tests.utils.FakeSagaManager
 aggregate:
+  client: tests.utils.FakeAggregate
+  publisher:
+    client: builtins.bytes
+    foo: bar
   entities:
     - builtins.int
   repositories:

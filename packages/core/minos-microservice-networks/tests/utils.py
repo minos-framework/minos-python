@@ -18,10 +18,14 @@ from typing import (
     Any,
     Callable,
     Optional,
+    Union,
 )
 
 from minos.common import (
     DeclarativeModel,
+    InjectableMixin,
+    Lock,
+    LockPool,
 )
 from minos.common.testing import (
     MinosTestCase,
@@ -35,6 +39,9 @@ from minos.networks import (
     enroute,
     testing,
 )
+from minos.transactions import (
+    InMemoryTransactionRepository,
+)
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
@@ -45,6 +52,38 @@ class NetworksTestCase(MinosTestCase, ABC):
 
     def get_config_file_path(self):
         return CONFIG_FILE_PATH
+
+    def get_injections(self) -> list[Union[InjectableMixin, type[InjectableMixin], str]]:
+        injections = [
+            InMemoryTransactionRepository(lock_pool=FakeLockPool()),
+        ]
+        # noinspection PyTypeChecker
+        return super().get_injections() + injections
+
+
+class FakeLock(Lock):
+    """For testing purposes."""
+
+    def __init__(self, key=None, *args, **kwargs):
+        if key is None:
+            key = "fake"
+        super().__init__(key, *args, **kwargs)
+
+    async def acquire(self) -> None:
+        """For testing purposes."""
+
+    async def release(self):
+        """For testing purposes."""
+
+
+class FakeLockPool(LockPool):
+    """For testing purposes."""
+
+    async def _create_instance(self):
+        return FakeLock()
+
+    async def _destroy_instance(self, instance) -> None:
+        """For testing purposes."""
 
 
 @total_ordering

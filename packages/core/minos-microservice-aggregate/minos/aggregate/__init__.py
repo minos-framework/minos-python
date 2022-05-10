@@ -7,9 +7,6 @@ __version__ = "0.7.0.dev4"
 from .actions import (
     Action,
 )
-from .aggregate import (
-    Aggregate,
-)
 from .collections import (
     IncrementalSet,
     IncrementalSetDiff,
@@ -49,6 +46,9 @@ from .exceptions import (
     SnapshotRepositoryConflictException,
     SnapshotRepositoryException,
     ValueObjectException,
+)
+from .impl import (
+    Aggregate,
 )
 from .queries import (
     Condition,

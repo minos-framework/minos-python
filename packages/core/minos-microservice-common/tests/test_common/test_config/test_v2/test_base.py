@@ -11,6 +11,7 @@ from minos.common import (
 )
 from tests.utils import (
     BASE_PATH,
+    FakeAggregate,
     FakeBrokerClientPool,
     FakeBrokerPort,
     FakeBrokerPublisher,
@@ -40,6 +41,8 @@ class TestConfigV2(unittest.TestCase):
 
     def test_aggregate(self):
         expected = {
+            "client": FakeAggregate,
+            "publisher": {"client": bytes, "foo": "bar"},
             "entities": [int],
             "repositories": {
                 "event": FakeEventRepository,
@@ -61,11 +64,12 @@ class TestConfigV2(unittest.TestCase):
             FakeHttpConnector,
             FakeBrokerPublisher,
             FakeBrokerSubscriberBuilder(FakeBrokerSubscriber),
+            FakeDiscoveryConnector,
+            FakeSagaManager,
             FakeEventRepository,
             FakeSnapshotRepository,
             FakeTransactionRepository,
-            FakeDiscoveryConnector,
-            FakeSagaManager,
+            FakeAggregate,
             FakeCustomInjection,
         ]
         self.assertEqual(expected, self.config.get_injections())
