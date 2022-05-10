@@ -90,11 +90,9 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         self._transaction_repository = transaction_repository
 
     async def _setup(self) -> None:
+        await super()._setup()
         operation = self.database_operation_factory.build_create()
         await self.execute_on_database(operation)
-
-    async def _destroy(self) -> None:
-        await super()._destroy()
 
     # noinspection PyUnusedLocal
     async def _find_entries(

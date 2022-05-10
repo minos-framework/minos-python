@@ -54,8 +54,7 @@ class InMemoryTransactionRepository(TransactionRepository):
             destination_uuid=transaction.destination_uuid,
             status=transaction.status,
             updated_at=transaction.updated_at,
-            event_repository=transaction._event_repository,
-            transaction_repository=transaction._transaction_repository,
+            repository=transaction.repository,
         )
 
         return transaction

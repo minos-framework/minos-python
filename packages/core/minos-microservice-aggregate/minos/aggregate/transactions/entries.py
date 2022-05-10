@@ -41,9 +41,6 @@ from .contextvars import (
 )
 
 if TYPE_CHECKING:
-    from ..events import (
-        EventRepository,
-    )
     from .repositories import (
         TransactionRepository,
     )
@@ -60,8 +57,7 @@ class TransactionEntry:
         "destination_uuid",
         "updated_at",
         "_autocommit",
-        "_event_repository",
-        "_transaction_repository",
+        "_repository",
         "_token",
     )
 
@@ -72,25 +68,15 @@ class TransactionEntry:
         destination_uuid: Optional[UUID] = None,
         updated_at: Optional[datetime] = None,
         autocommit: bool = True,
-        event_repository: Optional[EventRepository] = None,
-        transaction_repository: Optional[TransactionRepository] = None,
+        repository: Optional[TransactionRepository] = None,
     ):
-
-        if event_repository is None:
-            from ..events import (
-                EventRepository,
-            )
-
-            with suppress(NotProvidedException):
-                event_repository = Inject.resolve(EventRepository)
-
-        if transaction_repository is None:
+        if repository is None:
             from .repositories import (
                 TransactionRepository,
             )
 
             with suppress(NotProvidedException):
-                transaction_repository = Inject.resolve(TransactionRepository)
+                repository = Inject.resolve(TransactionRepository)
 
         if uuid is None:
             uuid = uuid4()
@@ -110,10 +96,17 @@ class TransactionEntry:
         self.updated_at = updated_at
 
         self._autocommit = autocommit
-        self._event_repository = event_repository
-        self._transaction_repository = transaction_repository
+        self._repository = repository
 
         self._token = None
+
+    @property
+    def repository(self) -> TransactionRepository:
+        """Get the repository.
+
+        :return: A ``TransactionRepository``.
+        """
+        return self._repository
 
     async def __aenter__(self):
         if self.status != TransactionStatus.PENDING:
@@ -146,19 +139,17 @@ class TransactionEntry:
         if self.status != TransactionStatus.RESERVED:
             raise ValueError(f"Current status is not {TransactionStatus.RESERVED!r}. Obtained: {self.status!r}")
 
-        async with self._transaction_repository.write_lock():
+        async with self._repository.write_lock():
             await self.save(status=TransactionStatus.COMMITTING)
             await self._commit()
             await self.save(status=TransactionStatus.COMMITTED)
 
     async def _commit(self) -> None:
-        from ..events import (
-            EventEntry,
-        )
-
-        async for entry in self._event_repository.select(transaction_uuid=self.uuid):
-            new = EventEntry.from_another(entry, transaction_uuid=self.destination_uuid)
-            await self._event_repository.submit(new, transaction_uuid_ne=self.uuid)
+        for subscriber in self._repository.observers:
+            await subscriber.commit_transaction(
+                transaction_uuid=self.uuid,
+                destination_transaction_uuid=self.destination_uuid,
+            )
 
     async def reserve(self) -> None:
         """Reserve transaction changes to be ensured that they can be applied.
@@ -168,8 +159,9 @@ class TransactionEntry:
         if self.status != TransactionStatus.PENDING:
             raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
 
-        async with self._transaction_repository.write_lock():
-            async with self._event_repository.write_lock():
+        async with self._repository.write_lock():
+
+            async with self._get_observer_locks():
                 await self.save(status=TransactionStatus.RESERVING)
 
                 committable = await self.validate()
@@ -179,13 +171,19 @@ class TransactionEntry:
                 if not committable:
                     raise TransactionRepositoryConflictException(f"{self!r} could not be reserved!")
 
+    def _get_observer_locks(self) -> _MultiAsyncContextManager:
+        locks = (subscriber.write_lock() for subscriber in self._repository.observers)
+        locks = (lock for lock in locks if lock is not None)
+        locks = _MultiAsyncContextManager(locks)
+        return locks
+
     async def validate(self) -> bool:
         """Check if the transaction is committable.
 
         :return: ``True`` if the transaction is valid or ``False`` otherwise.
         """
         with suppress(StopAsyncIteration):
-            iterable = self._transaction_repository.select(
+            iterable = self._repository.select(
                 uuid=self.destination_uuid,
                 status_in=(
                     TransactionStatus.RESERVING,
@@ -199,23 +197,16 @@ class TransactionEntry:
 
             return False
 
-        entries = dict()
-        async for entry in self._event_repository.select(transaction_uuid=self.uuid):
-            if entry.uuid in entries and entry.version < entries[entry.uuid]:
-                continue
-            entries[entry.uuid] = entry.version
-
         transaction_uuids = set()
-        for uuid, version in entries.items():
-            async for entry in self._event_repository.select(uuid=uuid, version=version):
-                if entry.transaction_uuid == self.destination_uuid:
-                    return False
-                if entry.transaction_uuid != self.uuid:
-                    transaction_uuids.add(entry.transaction_uuid)
+        for subscriber in self._repository.observers:
+            transaction_uuids |= await subscriber.get_collided_transactions(transaction_uuid=self.uuid)
 
         if len(transaction_uuids):
+            if self.destination_uuid in transaction_uuids:
+                return False
+
             with suppress(StopAsyncIteration):
-                iterable = self._transaction_repository.select(
+                iterable = self._repository.select(
                     destination_uuid=self.destination_uuid,
                     uuid_in=tuple(transaction_uuids),
                     status_in=(
@@ -242,7 +233,10 @@ class TransactionEntry:
                 f"Obtained: {self.status!r}"
             )
 
-        async with self._transaction_repository.write_lock():
+        async with self._repository.write_lock():
+            for subscriber in self._repository.observers:
+                await subscriber.reject_transaction(transaction_uuid=self.uuid)
+
             await self.save(status=TransactionStatus.REJECTED)
 
     async def save(self, *, status: Optional[TransactionStatus] = None) -> None:
@@ -255,7 +249,7 @@ class TransactionEntry:
         if status is not None:
             self.status = status
 
-        await self._transaction_repository.submit(self)
+        await self._repository.submit(self)
 
     @property
     async def uuids(self) -> tuple[UUID, ...]:
@@ -286,7 +280,7 @@ class TransactionEntry:
         destination = getattr(self._token, "old_value", Token.MISSING)
 
         if destination == Token.MISSING:
-            destination = await self._transaction_repository.get(uuid=self.destination_uuid)
+            destination = await self._repository.get(uuid=self.destination_uuid)
 
         return destination
 
@@ -337,3 +331,14 @@ class TransactionStatus(str, Enum):
             if item.value == value:
                 return item
         raise ValueError(f"The given value does not match with any enum items. Obtained {value}")
+
+
+class _MultiAsyncContextManager(tuple):
+    async def __aenter__(self):
+        for value in self:
+            await value.__aenter__()
+        return self
+
+    async def __aexit__(self, *exc):
+        for value in self:
+            await value.__aexit__(*exc)

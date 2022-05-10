@@ -31,7 +31,6 @@ from minos.common import (
     LockPool,
     NotProvidedException,
     PoolFactory,
-    SetupMixin,
     classname,
 )
 from minos.networks import (
@@ -53,8 +52,8 @@ from ...exceptions import (
 )
 from ...transactions import (
     TRANSACTION_CONTEXT_VAR,
+    TransactionalMixin,
     TransactionEntry,
-    TransactionRepository,
     TransactionStatus,
 )
 from ..entries import (
@@ -74,14 +73,15 @@ if TYPE_CHECKING:
 
 
 @Injectable("event_repository")
-class EventRepository(ABC, SetupMixin):
+class EventRepository(ABC, TransactionalMixin):
     """Base event repository class in ``minos``."""
+
+    _lock_pool: LockPool
 
     @Inject()
     def __init__(
         self,
         broker_publisher: BrokerPublisher,
-        transaction_repository: TransactionRepository,
         lock_pool: Optional[LockPool] = None,
         pool_factory: Optional[PoolFactory] = None,
         *args,
@@ -95,14 +95,10 @@ class EventRepository(ABC, SetupMixin):
         if broker_publisher is None:
             raise NotProvidedException("A broker instance is required.")
 
-        if transaction_repository is None:
-            raise NotProvidedException("A transaction repository instance is required.")
-
         if lock_pool is None:
             raise NotProvidedException("A lock pool instance is required.")
 
         self._broker_publisher = broker_publisher
-        self._transaction_repository = transaction_repository
         self._lock_pool = lock_pool
 
     def transaction(self, **kwargs) -> TransactionEntry:
@@ -111,7 +107,7 @@ class EventRepository(ABC, SetupMixin):
         :param kwargs: Additional named arguments.
         :return: A new ``TransactionEntry`` instance.
         """
-        return TransactionEntry(event_repository=self, transaction_repository=self._transaction_repository, **kwargs)
+        return TransactionEntry(repository=self.transaction_repository, **kwargs)
 
     async def create(self, entry: Union[Event, EventEntry]) -> EventEntry:
         """Store new creation entry into the repository.
@@ -184,7 +180,7 @@ class EventRepository(ABC, SetupMixin):
         :param kwargs: Additional named arguments.
         :return: ``True`` if the entry can be submitted or ``False`` otherwise.
         """
-        iterable = self._transaction_repository.select(
+        iterable = self.transaction_repository.select(
             destination_uuid=entry.transaction_uuid,
             uuid_ne=transaction_uuid_ne,
             status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING),
@@ -317,8 +313,38 @@ class EventRepository(ABC, SetupMixin):
         raise NotImplementedError
 
     def write_lock(self) -> Lock:
-        """Get a write lock.
+        """Get a lock.
 
         :return: An asynchronous context manager.
         """
         return self._lock_pool.acquire("aggregate_event_write_lock")
+
+    async def get_collided_transactions(self, transaction_uuid: UUID) -> set[UUID]:
+        """Get the set of collided transaction identifiers.
+
+        :param transaction_uuid: The identifier of the transaction to be committed.
+        :return: A ``set`` or ``UUID`` values.
+        """
+        entries = dict()
+        async for entry in self.select(transaction_uuid=transaction_uuid):
+            if entry.uuid in entries and entry.version < entries[entry.uuid]:
+                continue
+            entries[entry.uuid] = entry.version
+
+        transaction_uuids = set()
+        for uuid, version in entries.items():
+            async for entry in self.select(uuid=uuid, version=version):
+                if entry.transaction_uuid != transaction_uuid:
+                    transaction_uuids.add(entry.transaction_uuid)
+        return transaction_uuids
+
+    async def commit_transaction(self, transaction_uuid: UUID, destination_transaction_uuid: UUID) -> None:
+        """Commit the transaction with given identifier.
+
+        :param transaction_uuid: The identifier of the transaction to be committed.
+        :param destination_transaction_uuid: The identifier of the destination transaction.
+        :return: This method does not return anything.
+        """
+        async for entry in self.select(transaction_uuid=transaction_uuid):
+            new = EventEntry.from_another(entry, transaction_uuid=destination_transaction_uuid)
+            await self.submit(new, transaction_uuid_ne=transaction_uuid)

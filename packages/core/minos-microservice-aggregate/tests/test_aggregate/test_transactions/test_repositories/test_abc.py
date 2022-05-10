@@ -15,6 +15,7 @@ from uuid import (
 )
 
 from minos.aggregate import (
+    TransactionalMixin,
     TransactionEntry,
     TransactionNotFoundException,
     TransactionRepository,
@@ -55,6 +56,23 @@ class TestTransactionRepository(AggregateTestCase):
         self.assertTrue(issubclass(TransactionRepository, (ABC, SetupMixin)))
         # noinspection PyUnresolvedReferences
         self.assertEqual({"_submit", "_select"}, TransactionRepository.__abstractmethods__)
+
+    def test_observers_empty(self):
+        self.assertEqual(set(), self.transaction_repository.observers)
+
+    def test_register_observer(self):
+        observer1, observer2 = TransactionalMixin(), TransactionalMixin()
+        self.transaction_repository.register_observer(observer1)
+        self.transaction_repository.register_observer(observer2)
+        self.assertEqual({observer1, observer2}, self.transaction_repository.observers)
+
+    def test_unregister_observer(self):
+        observer1, observer2 = TransactionalMixin(), TransactionalMixin()
+        self.transaction_repository.register_observer(observer1)
+        self.transaction_repository.register_observer(observer2)
+        self.assertEqual({observer1, observer2}, self.transaction_repository.observers)
+        self.transaction_repository.unregister_observer(observer2)
+        self.assertEqual({observer1}, self.transaction_repository.observers)
 
     async def test_submit(self):
         transaction = TransactionEntry()
