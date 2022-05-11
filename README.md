@@ -6,7 +6,7 @@
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/minos-framework/minos-python?label=GitHub)]
 [![PyPI Latest Release](https://img.shields.io/pypi/v/minos-microservice-common.svg)](https://pypi.org/project/minos-microservice-common/)
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/minos-framework/minos-python/pages%20build%20and%20deployment?label=docs)](https://github.com/minos-framework/minos-python/tree/main)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/minos-framework/minos-python/pages%20build%20and%20deployment?label=docs)](https://minos-framework.github.io/minos-python)
 [![License](https://img.shields.io/github/license/minos-framework/minos-python.svg)](https://github.com/minos-framework/minos-python/blob/main/LICENSE)
 [![Coverage](https://codecov.io/github/minos-framework/minos-python/coverage.svg?branch=main)](https://codecov.io/gh/minos-framework/minos-python)
 [![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-Ask%20a%20question-green)](https://stackoverflow.com/questions/tagged/minos)
@@ -62,7 +62,7 @@ For more information, visit the [`minos-cli`](https://github.com/minos-framework
 
 ## Documentation
 
-The best place to start learning how to use the Minos Framework is at [Minos Learn](https://www.minos.run/learn/). The official API Reference is publicly available at the [GitHub Pages](https://github.com/minos-framework/minos-python/tree/main).
+The best place to start learning how to use the Minos Framework is at [Minos Learn](https://www.minos.run/learn/). The official API Reference is publicly available at the [GitHub Pages](https://minos-framework.github.io/minos-python).
 
 ## QuickStart
 
