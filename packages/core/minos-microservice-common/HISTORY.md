@@ -303,3 +303,21 @@ routers:
 ## 0.6.1 (2022-04-01)
 
 * Fix bug that didn't show the correct exception traceback when microservice failures occurred.
+
+## 0.7.0 (2022-05-11)
+
+* Add `DatabaseClient`, `DatabaseClientBuilder` as the base client to execute operation over a database and the builder class.
+* Rename `PostgreSqlPool` as `DatabaseClientPool`.
+* Add `DatabaseOperation`, `ComposedDatabaseOperation` and `DatabaseOperationFactory` as the classes to build operations to be executed over the database.
+* Add `ConnectionException`, `DatabaseClientException`, `IntegrityException`, `ProgrammingException` as the base exceptions to be raised by the `DatabaseClient`.
+* Rename `PostgreSqlLock` and `PostgreSqlLockPool` as `DatabaseLock` and `DatabaseLockPool`.
+* Rename `PostgreSqlMinosDatabase` as `DatabaseMixin`.
+* Add `LockDatabaseOperationFactory` as the base operation factory for locking operations.
+* Add `ManagementDatabaseOperationFactory` as the base operation factory for management operations (creation, deletion, etc.).
+* Add `TypeHintParser` to unify `ModelType`'s type hints.
+* Add `PoolException` as the base exception for pools.
+* Add `PoolFactory` as the class with the purpose to build and manage `Pool` instances.
+* Remove `MinosStorage` and move `MinosStorageLmdb` to the `minos-database-lmdb` package.
+* Unify documentation building pipeline across all `minos-python` packages.
+* Fix documentation building warnings.
+* Fix bug related with package building and additional files like `AUTHORS.md`, `HISTORY.md`, etc.

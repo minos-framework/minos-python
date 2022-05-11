@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-broker-rabbitmq"
-version = "0.7.0.dev4"
+version = "0.7.0"
 description = "The rabbitmq plugin of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
@@ -31,8 +31,8 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = { version ="^0.7.0*", allow-prereleases = true }
-minos-microservice-networks = { version ="^0.7.0*", allow-prereleases = true }
+minos-microservice-common = { version ="^0.7.0*", allow-prereleases = false }
+minos-microservice-networks = { version ="^0.7.0*", allow-prereleases = false }
 aio-pika = "^7.1.0"
 
 [tool.poetry.dev-dependencies]
