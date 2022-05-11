@@ -1,4 +1,5 @@
 import unittest
+import uuid
 import warnings
 from unittest.mock import (
     AsyncMock,
@@ -17,6 +18,7 @@ from minos.common import (
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_USER_CONTEXT_VAR,
+    BrokerClient,
     BrokerMessage,
     BrokerMessageV1,
     BrokerMessageV1Payload,
@@ -97,10 +99,15 @@ class TestSagaRunner(SagaTestCase):
             ]
         )
 
-        with patch("uuid.uuid4", return_value=self.uuid):
+        store_mock = AsyncMock()
+        self.storage.store = store_mock
+
+        with patch.object(uuid, "uuid4", return_value=self.uuid):
             execution = await self.runner.run(ADD_ORDER)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
+        self.assertEqual(len(execution.executed_steps), store_mock.call_count)
+        self.assertEqual(call(execution), store_mock.call_args)
 
         observed = self.broker_publisher.messages
         expected = self._build_expected_messages(observed)
@@ -109,7 +116,7 @@ class TestSagaRunner(SagaTestCase):
     async def test_run_with_pause_on_memory_without_commit(self):
         self.broker_subscriber_builder.with_messages(self.receive_messages)
 
-        with patch("uuid.uuid4", return_value=self.uuid), patch("minos.saga.SagaExecution.commit") as commit_mock:
+        with patch.object(uuid, "uuid4", return_value=self.uuid), patch.object(SagaExecution, "commit") as commit_mock:
             execution = await self.runner.run(ADD_ORDER, autocommit=False)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
@@ -122,7 +129,7 @@ class TestSagaRunner(SagaTestCase):
         request_headers = {"hello": "world"}
         REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
 
-        with patch("uuid.uuid4", return_value=self.uuid):
+        with patch.object(uuid, "uuid4", return_value=self.uuid):
             await self.runner.run(ADD_ORDER, autocommit=False)
 
         self.assertEqual({"hello", "related_services"}, request_headers.keys())
@@ -134,7 +141,7 @@ class TestSagaRunner(SagaTestCase):
         request_headers = {"hello": "world", "related_services": "order,one"}
         REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
 
-        with patch("uuid.uuid4", return_value=self.uuid):
+        with patch.object(uuid, "uuid4", return_value=self.uuid):
             await self.runner.run(ADD_ORDER, autocommit=False)
 
         self.assertEqual({"hello", "related_services"}, request_headers.keys())
@@ -142,21 +149,21 @@ class TestSagaRunner(SagaTestCase):
         self.assertEqual({"foo", "one", "order"}, set(request_headers["related_services"].split(",")))
 
     async def test_run_with_pause_on_memory_with_error(self):
-        with patch("minos.networks.BrokerClient.receive", side_effect=ValueError):
-            with patch("minos.saga.SagaExecution.reject") as reject_mock:
+        with patch.object(BrokerClient, "receive", side_effect=ValueError):
+            with patch.object(SagaExecution, "reject") as reject_mock:
                 execution = await self.runner.run(ADD_ORDER, raise_on_error=False)
             self.assertEqual(SagaStatus.Errored, execution.status)
             self.assertEqual([call()], reject_mock.call_args_list)
 
     async def test_run_with_pause_on_memory_without_autocommit(self):
-        with patch("minos.networks.BrokerClient.receive", side_effect=ValueError):
-            with patch("minos.saga.SagaExecution.reject") as reject_mock:
+        with patch.object(BrokerClient, "receive", side_effect=ValueError):
+            with patch.object(SagaExecution, "reject") as reject_mock:
                 execution = await self.runner.run(ADD_ORDER, autocommit=False, raise_on_error=False)
             self.assertEqual(SagaStatus.Errored, execution.status)
             self.assertEqual(0, reject_mock.call_count)
 
     async def test_run_with_pause_on_memory_with_error_raises(self):
-        with patch("minos.networks.BrokerClient.receive", side_effect=ValueError):
+        with patch.object(BrokerClient, "receive", side_effect=ValueError):
             with self.assertRaises(SagaFailedExecutionException):
                 await self.runner.run(ADD_ORDER)
 
@@ -165,19 +172,28 @@ class TestSagaRunner(SagaTestCase):
             [BrokerMessageV1("", BrokerMessageV1Payload()), BrokerMessageV1("", BrokerMessageV1Payload())]
         )
 
-        with patch("uuid.uuid4", return_value=self.uuid):
+        store_mock = AsyncMock()
+        self.storage.store = store_mock
+
+        with patch.object(uuid, "uuid4", return_value=self.uuid):
             execution = await self.runner.run(ADD_ORDER, pause_on_disk=True)
             self.assertEqual(SagaStatus.Paused, execution.status)
+            self.assertEqual([call(execution)], store_mock.call_args_list)
+            store_mock.reset_mock()
 
             response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
             with patch.object(DatabaseClient, "fetch_one", side_effect=[execution.raw]):
                 execution = await self.runner.run(response=response, pause_on_disk=True)
             self.assertEqual(SagaStatus.Paused, execution.status)
+            self.assertEqual([call(execution)], store_mock.call_args_list)
+            store_mock.reset_mock()
 
             response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
             with patch.object(DatabaseClient, "fetch_one", side_effect=[execution.raw]):
                 execution = await self.runner.run(response=response, pause_on_disk=True)
             self.assertEqual(SagaStatus.Finished, execution.status)
+            self.assertEqual([call(execution)], store_mock.call_args_list)
+            store_mock.reset_mock()
 
         observed = self.broker_publisher.messages
         expected = self._build_expected_messages(observed)
@@ -196,7 +212,7 @@ class TestSagaRunner(SagaTestCase):
 
         response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
 
-        with patch("minos.saga.SagaExecution.commit") as commit_mock:
+        with patch.object(SagaExecution, "commit") as commit_mock:
             with patch.object(DatabaseClient, "fetch_one", side_effect=[execution.raw]):
                 execution = await self.runner.run(response=response, pause_on_disk=True, autocommit=False)
         self.assertEqual(SagaStatus.Finished, execution.status)
@@ -251,7 +267,7 @@ class TestSagaRunner(SagaTestCase):
     async def test_run_with_pause_on_disk_with_error(self):
         self.broker_publisher.send = AsyncMock(side_effect=ValueError)
 
-        with patch("minos.saga.SagaExecution.reject") as reject_mock:
+        with patch.object(SagaExecution, "reject") as reject_mock:
             execution = await self.runner.run(DELETE_ORDER, pause_on_disk=True, raise_on_error=False)
 
         self.assertEqual(SagaStatus.Errored, execution.status)
@@ -260,7 +276,7 @@ class TestSagaRunner(SagaTestCase):
     async def test_run_with_pause_on_disk_without_autocommit(self):
         self.broker_publisher.send = AsyncMock(side_effect=ValueError)
 
-        with patch("minos.saga.SagaExecution.reject") as reject_mock:
+        with patch.object(SagaExecution, "reject") as reject_mock:
             execution = await self.runner.run(DELETE_ORDER, pause_on_disk=True, raise_on_error=False, autocommit=False)
         self.assertEqual(SagaStatus.Errored, execution.status)
         self.assertEqual(0, reject_mock.call_count)

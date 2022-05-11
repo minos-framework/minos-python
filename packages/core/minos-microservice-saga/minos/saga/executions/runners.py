@@ -165,33 +165,40 @@ class SagaRunner(SetupMixin):
             else:
                 await self._run_with_pause_on_memory(execution, **kwargs)
         except SagaFailedExecutionException as exc:
-            await self.storage.store(execution)
             if raise_on_error:
                 raise exc
             logger.exception(f"The execution identified by {execution.uuid!s} failed")
         finally:
-            if (headers := REQUEST_HEADERS_CONTEXT_VAR.get()) is not None:
-                related_services = reduce(or_, (s.related_services for s in execution.executed_steps), set())
-                if execution.paused_step is not None:
-                    related_services.update(execution.paused_step.related_services)
-
-                if raw_related_services := headers.get("related_services"):
-                    related_services.update(raw_related_services.split(","))
-
-                headers["related_services"] = ",".join(related_services)
+            await self.storage.store(execution)
+            self._update_request_headers(execution)
 
         if return_execution:
             return execution
 
         return execution.uuid
 
-    async def _run_with_pause_on_disk(self, execution: SagaExecution, autocommit: bool = True, **kwargs) -> None:
+    @staticmethod
+    def _update_request_headers(execution: SagaExecution) -> None:
+        if (headers := REQUEST_HEADERS_CONTEXT_VAR.get()) is None:
+            return
+
+        related_services = reduce(or_, (s.related_services for s in execution.executed_steps), set())
+        if execution.paused_step is not None:
+            related_services.update(execution.paused_step.related_services)
+
+        if raw_related_services := headers.get("related_services"):
+            related_services.update(raw_related_services.split(","))
+
+        headers["related_services"] = ",".join(related_services)
+
+    @staticmethod
+    async def _run_with_pause_on_disk(execution: SagaExecution, autocommit: bool = True, **kwargs) -> None:
         try:
             await execution.execute(autocommit=False, **kwargs)
             if autocommit:
                 await execution.commit(**kwargs)
         except SagaPausedExecutionStepException:
-            await self.storage.store(execution)
+            return
         except SagaFailedExecutionException as exc:
             if autocommit:
                 await execution.reject(**kwargs)
@@ -208,8 +215,8 @@ class SagaRunner(SetupMixin):
                     try:
                         await execution.execute(response=response, autocommit=False, **kwargs)
                     except SagaPausedExecutionStepException:
+                        await self.storage.store(execution)
                         response = await self._get_response(broker, execution, **kwargs)
-                    await self.storage.store(execution)
             if autocommit:
                 await execution.commit(**kwargs)
         except SagaFailedExecutionException as exc:
