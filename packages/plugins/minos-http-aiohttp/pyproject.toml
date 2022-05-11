@@ -31,8 +31,8 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = { version ="^0.7.0*", allow-prereleases = false }
-minos-microservice-networks = { version ="^0.7.0*", allow-prereleases = false }
+minos-microservice-common = "^0.7.0"
+minos-microservice-networks = "^0.7.0"
 aiohttp = "^3.8.1"
 orjson = "^3.6.7"
 cached-property = "^1.5.2"

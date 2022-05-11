@@ -31,7 +31,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = { version ="^0.7.0*", allow-prereleases = false }
+minos-microservice-common = "^0.7.0"
 crontab = "^0.23.0"
 
 [tool.poetry.dev-dependencies]
