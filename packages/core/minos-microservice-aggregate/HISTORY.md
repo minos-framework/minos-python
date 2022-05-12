@@ -78,24 +78,35 @@
 * Rename `TransactionService` command topics to avoid collisions with application-level topics. 
 * Minor changes.
 
-0.5.3 (2022-03-04)
-------------------
+## 0.5.3 (2022-03-04)
 
 * Add `RefException` to be raised when some reference cannot be resolved.
 * Improve attribute and item accessors of `Ref`, `Event` and `FieldDiffContainer`
 * Deprecate `Event.get_one` in favor of `Event.get_field`.
 * Deprecate `Event.get_all` in favor of `Event.get_fields`.
 
-0.5.4 (2022-03-07)
-------------------
+## 0.5.4 (2022-03-07)
 
 * Fix bug related with `Ref.resolve`.
 * Add `RefResolver.build_topic_name` static method.
 * Remove `SnapshotService.__get_one__` method.
 * Minor changes.
 
-0.6.0 (2022-03-28)
-------------------
+## 0.6.0 (2022-03-28)
 
 * Replace `dependency-injector`'s injection classes by the ones provided by the `minos.common.injections` module.
 * Be compatible with latest `minos.common.Config` API.
+
+## 0.7.0 (2022-05-11)
+
+* Rename `PostgreSqlEventRepository` as `DatabaseEventRepository`.
+* Add `EventDatabaseOperationFactory` as the abstract class to be implemented by database clients.
+* Move `PostgreSqlSnapshotQueryBuilder` to the `minos-database-aiopg` package.
+* Rename `PostgreSqlSnapshotRepository` as `DatabaseSnapshotRepository`.
+* Add `SnapshotDatabaseOperationFactory` as the abstract class to be implemented by database clients.
+* Remove `PostgreSqlSnapshotReader`, `PostgreSqlSnapshotSetup` and `PostgreSqlSnapshotWriter`.
+* Rename `PostgreSqlTransactionRepository` as `DatabaseTransactionRepository`.
+* Add `TransactionDatabaseOperationFactory` as the abstract class to be implemented by database clients.
+* Unify documentation building pipeline across all `minos-python` packages.
+* Fix documentation building warnings.
+* Fix bug related with package building and additional files like `AUTHORS.md`, `HISTORY.md`, etc.

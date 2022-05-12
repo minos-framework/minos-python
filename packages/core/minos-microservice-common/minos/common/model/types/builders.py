@@ -6,6 +6,9 @@ import logging
 from collections.abc import (
     Iterable,
 )
+from functools import (
+    lru_cache,
+)
 from typing import (
     Any,
     Optional,
@@ -16,6 +19,7 @@ from typing import (
 
 from .comparators import (
     TypeHintComparator,
+    is_model_subclass,
     is_model_type,
 )
 from .model_types import (
@@ -87,3 +91,30 @@ class TypeHintBuilder:
     @staticmethod
     def _build_from_dynamic(dynamic: type, static: Optional[type]) -> type:
         return dynamic if not len(get_args(static)) and TypeHintComparator(dynamic, static).match() else static
+
+
+class TypeHintParser:
+    """Type Hint Parser class."""
+
+    def __init__(self, type_: Optional[type] = None):
+        self.type_ = type_
+
+    def build(self) -> type:
+        """Parse type hint.
+
+        :return: A type.
+        """
+        return self._build(self.type_)
+
+    @classmethod
+    @lru_cache()
+    def _build(cls, type_: Optional[type]) -> type:
+        if is_model_subclass(type_):
+            # noinspection PyTypeChecker
+            return ModelType.from_model(type_)
+
+        origin = get_origin(type_)
+        if origin is None:
+            return type_
+        args = get_args(type_)
+        return cls._build(origin)[tuple(cls._build(arg) for arg in args)]

@@ -13,12 +13,12 @@ from minos.common import (
     current_datetime,
 )
 from tests.utils import (
+    AggregateTestCase,
     Car,
-    MinosTestCase,
 )
 
 
-class TestRootEntityDifferences(MinosTestCase):
+class TestRootEntityDifferences(AggregateTestCase):
     async def asyncSetUp(self) -> None:
         self.uuid = uuid4()
         self.uuid_another = uuid4()

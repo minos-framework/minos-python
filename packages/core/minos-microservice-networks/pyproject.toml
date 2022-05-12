@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-microservice-networks"
-version = "0.6.0"
+version = "0.7.0"
 description = "The networks core of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
@@ -21,34 +21,26 @@ keywords = [
     "saga",
 ]
 packages = [
-    { include = "minos" }
+    { include = "minos" },
 ]
 include = [
-    "AUTHORS.md",
-    "HISTORY.md",
-    "LICENSE",
+    { path = "AUTHORS.md", format = "sdist" },
+    { path = "HISTORY.md", format = "sdist" },
+    { path = "LICENSE", format = "sdist" },
 ]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.6.0"
-aiopg = "^1.2.1"
+minos-microservice-common = "^0.7.0"
 crontab = "^0.23.0"
-psycopg2-binary = "^2.9.3"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }
-black = "^22.1"
+black = "^22.3"
 isort = "^5.8.0"
-pytest = "^7.0.1"
+pytest = "^7.1.2"
 coverage = "^6.3"
 flake8 = "^4.0.1"
-Sphinx = "^4.0.1"
-pre-commit = "^2.12.1"
-sphinx-autodoc-typehints = "^1.17.0"
-sphinxcontrib-apidoc = "^0.3.0"
-sphinx-rtd-theme = "^1.0.0"
-m2r2 = "^0.3.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -121,6 +121,27 @@ class ConfigV1(Config):
         return saga
 
     def _get_injections(self) -> list[type[InjectableMixin]]:
+        from ..pools import (
+            Pool,
+            PoolFactory,
+        )
+
+        injections = self._get_raw_injections()
+        injections = [
+            injection
+            for injection in injections
+            if not (issubclass(injection, Pool) or issubclass(injection, PoolFactory))
+        ]
+        with suppress(MinosConfigException):
+            pool_factory = self._get_pools().get("factory")
+            if pool_factory is not None:
+                # noinspection PyTypeChecker
+                injections.insert(0, pool_factory)
+
+        # noinspection PyTypeChecker
+        return injections
+
+    def _get_raw_injections(self) -> list[type[InjectableMixin]]:
         try:
             injections = self.get_by_key("service.injections")
             if isinstance(injections, dict):
@@ -217,7 +238,31 @@ class ConfigV1(Config):
         return services
 
     def _get_pools(self) -> dict[str, type]:
-        return dict()
+        from ..pools import (
+            Pool,
+            PoolFactory,
+        )
+
+        factory = next(
+            (injection for injection in self._get_raw_injections() if issubclass(injection, PoolFactory)), PoolFactory
+        )
+        injections = [injection for injection in self._get_raw_injections() if issubclass(injection, Pool)]
+        if not len(injections):
+            return dict()
+
+        types = dict()
+        for injection in injections:
+            if "lock" in injection.__name__.lower():
+                types["lock"] = injection
+            elif "database" in injection.__name__.lower():
+                types["database"] = injection
+            elif "broker" in injection.__name__.lower():
+                types["broker"] = injection
+
+        return {
+            "factory": factory,
+            "types": types,
+        }
 
     def _get_routers(self) -> list[type]:
         try:
@@ -266,7 +311,7 @@ class ConfigV1(Config):
         return self._get_database_by_name("broker.queue")
 
     def _get_database_saga(self) -> dict[str, Any]:
-        raw = self.get_by_key("saga.storage")
+        raw = self._get_database_by_name("saga.storage")
         return raw
 
     def _get_database_event(self) -> dict[str, Any]:
@@ -282,6 +327,8 @@ class ConfigV1(Config):
         data = self.get_by_key(prefix)
         data.pop("records", None)
         data.pop("retry", None)
+        if "client" in data:
+            data["client"] = import_module(data["client"])
         return data
 
     def _get_discovery(self) -> dict[str, Any]:

@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "minos-database-aiopg"
+version = "0.7.0"
+description = "The aiopg plugin of the Minos Framework"
+readme = "README.md"
+repository = "https://github.com/minos-framework/minos-python"
+homepage = "https://www.minos.run/"
+authors = ["Minos Framework Devs <hey@minos.run>"]
+license = "MIT"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+]
+keywords = [
+    "clariteia",
+    "minos",
+    "microservice",
+    "saga",
+]
+packages = [
+    { include = "minos" },
+]
+include = [
+    { path = "AUTHORS.md", format = "sdist" },
+    { path = "HISTORY.md", format = "sdist" },
+    { path = "LICENSE", format = "sdist" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+minos-microservice-common = "^0.7.0"
+minos-microservice-networks = "^0.7.0"
+minos-microservice-aggregate = "^0.7.0"
+aiopg = "^1.2.1"
+psycopg2-binary = "^2.9.3"
+
+[tool.poetry.dev-dependencies]
+minos-microservice-common = { path = "../../core/minos-microservice-common", develop = true }
+minos-microservice-networks = { path = "../../core/minos-microservice-networks", develop = true }
+minos-microservice-aggregate = { path = "../../core/minos-microservice-aggregate", develop = true }
+black = "^22.3"
+isort = "^5.8.0"
+pytest = "^7.0.1"
+coverage = "^6.3"
+flake8 = "^4.0.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

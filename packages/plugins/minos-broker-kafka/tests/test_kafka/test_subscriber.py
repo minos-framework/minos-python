@@ -1,5 +1,4 @@
 import unittest
-import warnings
 from collections import (
     namedtuple,
 )
@@ -26,15 +25,10 @@ from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerSubscriber,
-    InMemoryBrokerSubscriberQueue,
-    PostgreSqlBrokerSubscriberQueue,
-    QueuedBrokerSubscriber,
 )
 from minos.plugins.kafka import (
-    InMemoryQueuedKafkaBrokerSubscriberBuilder,
     KafkaBrokerSubscriber,
     KafkaBrokerSubscriberBuilder,
-    PostgreSqlQueuedKafkaBrokerSubscriberBuilder,
 )
 from tests.utils import (
     CONFIG_FILE_PATH,
@@ -207,20 +201,12 @@ class TestKafkaBrokerSubscriber(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(messages[0], await subscriber.receive())
             self.assertEqual(messages[1], await subscriber.receive())
 
-    async def test_receive_already_stopped_raises(self):
-        subscriber = KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"})
-        get_mock = AsyncMock(side_effect=ConsumerStoppedError)
-        subscriber.client.getone = get_mock
-
-        with self.assertRaises(StopAsyncIteration):
-            await subscriber.receive()
-
     async def test_receive_stopped(self):
         async with KafkaBrokerSubscriber.from_config(CONFIG_FILE_PATH, topics={"foo", "bar"}) as subscriber:
             get_mock = AsyncMock(side_effect=ConsumerStoppedError)
             subscriber.client.getone = get_mock
 
-            with self.assertRaises(ConsumerStoppedError):
+            with self.assertRaises(StopAsyncIteration):
                 await subscriber.receive()
 
 
@@ -248,40 +234,6 @@ class TestKafkaBrokerSubscriberBuilder(unittest.TestCase):
         self.assertEqual({"one", "two"}, subscriber.topics)
         self.assertEqual(common_config["host"], subscriber.host)
         self.assertEqual(common_config["port"], subscriber.port)
-
-
-class TestPostgreSqlQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
-    def setUp(self) -> None:
-        self.config = Config(CONFIG_FILE_PATH)
-
-    def test_build(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            builder = (
-                PostgreSqlQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
-            )
-
-        subscriber = builder.build()
-
-        self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
-        self.assertIsInstance(subscriber.impl, KafkaBrokerSubscriber)
-        self.assertIsInstance(subscriber.queue, PostgreSqlBrokerSubscriberQueue)
-
-
-class TestInMemoryQueuedKafkaBrokerSubscriberBuilder(unittest.TestCase):
-    def setUp(self) -> None:
-        self.config = Config(CONFIG_FILE_PATH)
-
-    def test_build(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            builder = InMemoryQueuedKafkaBrokerSubscriberBuilder().with_config(self.config).with_topics({"one", "two"})
-
-        subscriber = builder.build()
-
-        self.assertIsInstance(subscriber, QueuedBrokerSubscriber)
-        self.assertIsInstance(subscriber.impl, KafkaBrokerSubscriber)
-        self.assertIsInstance(subscriber.queue, InMemoryBrokerSubscriberQueue)
 
 
 if __name__ == "__main__":

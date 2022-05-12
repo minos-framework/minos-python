@@ -4,6 +4,7 @@
 
 # minos-python: The framework which helps you create reactive microservices in Python
 
+[![GitHub Repo stars](https://img.shields.io/github/stars/minos-framework/minos-python?label=GitHub)](https://github.com/minos-framework/minos-python/stargazers)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/minos-microservice-common.svg)](https://pypi.org/project/minos-microservice-common/)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/minos-framework/minos-python/pages%20build%20and%20deployment?label=docs)](https://minos-framework.github.io/minos-python)
 [![License](https://img.shields.io/github/license/minos-framework/minos-python.svg)](https://github.com/minos-framework/minos-python/blob/main/LICENSE)
@@ -135,7 +136,9 @@ pip install \
   minos-microservice-networks \
   minos-microservice-saga \ 
   minos-broker-kafka \
-  minos-http-aiohttp
+  minos-http-aiohttp \
+  minos-http-aiopg \
+  minos-http-lmbdb
 ```
 
 ### Configure a Microservice
@@ -164,26 +167,28 @@ aggregate:
   entities:
     - main.Foo
   repositories:
-    transaction: minos.aggregate.PostgreSqlTransactionRepository
-    event: minos.aggregate.PostgreSqlEventRepository
-    snapshot: minos.aggregate.PostgreSqlSnapshotRepository
+    transaction: minos.aggregate.DatabaseTransactionRepository
+    event: minos.aggregate.DatabaseEventRepository
+    snapshot: minos.aggregate.DatabaseSnapshotRepository
 databases:
   default:
+    client: minos.plugins.aiopg.AiopgDatabaseClient
     database: foo_db
     user: minos
     password: min0s
   saga:
+    client: minos.plugins.lmdb.LmdbDatabaseClient
     path: "./foo.lmdb"
 interfaces:
   broker:
     port: minos.networks.BrokerPort
     publisher:
       client: minos.plugins.kafka.KafkaBrokerPublisher
-      queue: minos.networks.PostgreSqlBrokerPublisherQueue
+      queue: minos.networks.DatabaseBrokerPublisherQueue
     subscriber:
       client: minos.plugins.kafka.KafkaBrokerSubscriber
-      queue: minos.networks.PostgreSqlBrokerSubscriberQueue
-      validator: minos.networks.PostgreSqlBrokerSubscriberDuplicateValidator
+      queue: minos.networks.DatabaseBrokerSubscriberQueue
+      validator: minos.networks.DatabaseBrokerSubscriberDuplicateValidator
   http:
     port: minos.networks.HttpPort
     connector:
@@ -192,8 +197,8 @@ interfaces:
   periodic:
     port: minos.networks.PeriodicPort
 pools:
-  lock: minos.common.PostgreSqlLockPool
-  databasse: minos.common.PostgreSqlPool
+  lock: minos.common.DatabaseLockPool
+  database: minos.common.DatabaseClientPool
   broker: minos.networks.BrokerClientPool
 saga:
   manager: minos.saga.SagaManager
@@ -980,26 +985,28 @@ aggregate:
   entities:
     - main.FooBar
   repositories:
-    transaction: minos.aggregate.PostgreSqlTransactionRepository
-    event: minos.aggregate.PostgreSqlEventRepository
-    snapshot: minos.aggregate.PostgreSqlSnapshotRepository
+    transaction: minos.aggregate.DatabaseTransactionRepository
+    event: minos.aggregate.DatabaseEventRepository
+    snapshot: minos.aggregate.DatabaseSnapshotRepository
 databases:
   default:
+    client: minos.plugins.aiopg.AiopgDatabaseClient
     database: foobar_db
     user: minos
     password: min0s
   saga:
+    client: minos.plugins.lmdb.LmdbDatabaseClient
     path: "./foobar.lmdb"
 interfaces:
   broker:
     port: minos.networks.BrokerPort
     publisher:
       client: minos.plugins.kafka.KafkaBrokerPublisher
-      queue: minos.networks.PostgreSqlBrokerPublisherQueue
+      queue: minos.networks.DatabaseBrokerPublisherQueue
     subscriber:
       client: minos.plugins.kafka.KafkaBrokerSubscriber
-      queue: minos.networks.PostgreSqlBrokerSubscriberQueue
-      validator: minos.networks.PostgreSqlBrokerSubscriberDuplicateValidator
+      queue: minos.networks.DatabaseBrokerSubscriberQueue
+      validator: minos.networks.DatabaseBrokerSubscriberDuplicateValidator
   http:
     port: minos.networks.HttpPort
     connector:
@@ -1008,8 +1015,8 @@ interfaces:
   periodic:
     port: minos.networks.PeriodicPort
 pools:
-  lock: minos.common.PostgreSqlLockPool
-  databasse: minos.common.PostgreSqlPool
+  lock: minos.common.DatabaseLockPool
+  database: minos.common.DatabaseClientPool
   broker: minos.networks.BrokerClientPool
 saga:
   manager: minos.saga.SagaManager
@@ -1122,21 +1129,24 @@ This project follows a modular structure based on python packages.
 
 The core packages provide the base implementation of the framework.
 
-* [minos-microservice-aggregate](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-aggregate): The Aggregate pattern implementation.
-* [minos-microservice-common](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-common): The common core package.
-* [minos-microservice-cqrs](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-cqrs): The CQRS pattern implementation.
-* [minos-microservice-networks](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-networks): The networks core package.
-* [minos-microservice-saga](https://minos-framework.github.io/minos-python/packages/core/minos-microservice-saga): The SAGA pattern implementation.
+* [minos-microservice-aggregate](https://github.com/minos-framework/minos-python/tree/main/packages/core/minos-microservice-aggregate): The Aggregate pattern implementation.
+* [minos-microservice-common](https://github.com/minos-framework/minos-python/tree/main/packages/core/minos-microservice-common): The common core package.
+* [minos-microservice-cqrs](https://github.com/minos-framework/minos-python/tree/main/packages/core/minos-microservice-cqrs): The CQRS pattern implementation.
+* [minos-microservice-networks](https://github.com/minos-framework/minos-python/tree/main/packages/core/minos-microservice-networks): The networks core package.
+* [minos-microservice-saga](https://github.com/minos-framework/minos-python/tree/main/packages/core/minos-microservice-saga): The SAGA pattern implementation.
 
 ### Plugins
 
 The plugin packages provide connectors to external technologies like brokers, discovery services, databases, serializers and so on.
 
-* [minos-broker-kafka](https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-kafka): The `kafka` plugin package.
-* [minos-broker-rabbitmq](https://minos-framework.github.io/minos-python/packages/plugins/minos-broker-rabbitmq): The `rabbitmq` plugin package.
-* [minos-discovery-minos](https://minos-framework.github.io/minos-python/packages/plugins/minos-discovery-minos): The `minos-discovery` plugin package.
-* [minos-http-aiohttp](https://minos-framework.github.io/minos-python/packages/plugins/minos-http-aiohttp): The `aiohttp` plugin package.
-* [minos-router-graphql](https://minos-framework.github.io/minos-python/packages/plugins/minos-router-graphql): The `grapqhl` plugin package.
+* [minos-broker-kafka](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-broker-kafka): The `kafka` plugin package.
+* [minos-broker-rabbitmq](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-broker-rabbitmq): The `rabbitmq` plugin package.
+* [minos-database-aiopg](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-database-aiopg): The `aiopg` plugin package.
+* [minos-database-lmdb](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-database-lmdb): The `lmdb` plugin package.
+* [minos-discovery-kong](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-discovery-kong): The `kong` plugin package.
+* [minos-discovery-minos](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-discovery-minos): The `minos-discovery` plugin package.
+* [minos-http-aiohttp](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-http-aiohttp): The `aiohttp` plugin package.
+* [minos-router-graphql](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-router-graphql): The `grapqhl` plugin package.
 
 ## Source Code
 
