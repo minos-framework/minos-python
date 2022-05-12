@@ -212,3 +212,20 @@
 * Add `SystemService` as the service that implements System Health checker.
 * Replace `dependency-injector`'s injection classes by the ones provided by the `minos.common.injections` module.
 * Be compatible with latest `minos.common.Config` API.
+
+## 0.7.0 (2022-05-11)
+
+* Rename `PostgreSqlBrokerPublisherQueue` as `DatabaseBrokerPublisherQueue`.
+* Rename `PostgreSqlBrokerPublisherQueueQueryFactory` as `BrokerPublisherQueueDatabaseOperationFactory`.
+* Rename `PostgreSqlBrokerQueue` as `DatabaseBrokerQueue`.
+* Rename `PostgreSqlBrokerQueueBuilder` as `DatabaseBrokerQueueBuilder`.
+* Rename `PostgreSqlBrokerSubscriberDuplicateValidator` as `DatabaseBrokerSubscriberDuplicateValidator`.
+* Rename `PostgreSqlBrokerSubscriberDuplicateValidatorBuilder` as `DatabaseBrokerSubscriberDuplicateValidatorBuilder`.
+* Rename `PostgreSqlBrokerSubscriberDuplicateValidatorQueryFactory` as `BrokerSubscriberDuplicateValidatorDatabaseOperationFactory`.
+* Rename `PostgreSqlBrokerSubscriberQueue` as `DatabaseBrokerSubscriberQueue`.
+* Rename `PostgreSqlBrokerSubscriberQueueBuilder` as `DatabaseBrokerSubscriberQueueBuilder`.
+* Rename `PostgreSqlBrokerSubscriberQueueQueryFactory` as `BrokerSubscriberQueueDatabaseOperationFactory`.
+* Move `Builder` to the `minos-microservice-common` package.
+* Unify documentation building pipeline across all `minos-python` packages.
+* Fix documentation building warnings.
+* Fix bug related with package building and additional files like `AUTHORS.md`, `HISTORY.md`, etc.

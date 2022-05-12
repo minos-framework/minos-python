@@ -23,3 +23,10 @@
 ## 0.6.1 (2022-04-01)
 
 * Improve `KafkaBrokerSubscriber`'s destroying process.
+
+## 0.7.0 (2022-05-11)
+
+* Remove `InMemoryQueuedKafkaBrokerPublisher`, `PostgreSqlQueuedKafkaBrokerPublisher`, `InMemoryQueuedKafkaBrokerSubscriberBuilder` and `PostgreSqlQueuedKafkaBrokerSubscriberBuilder` in favor of the use of `minos.networks.BrokerPublisherBuilder` and `minos.networks.BrokerSubscriberBuilder`.
+* Unify documentation building pipeline across all `minos-python` packages.
+* Fix documentation building warnings.
+* Fix bug related with package building and additional files like `AUTHORS.md`, `HISTORY.md`, etc.
