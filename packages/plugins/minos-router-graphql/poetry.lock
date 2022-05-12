@@ -207,7 +207,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.7.0.dev4"
+version = "0.7.0"
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
@@ -229,7 +229,7 @@ url = "../../core/minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.7.0.dev4"
+version = "0.7.0"
 description = "The networks core of the Minos Framework"
 category = "main"
 optional = false
@@ -329,7 +329,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pyparsing"
-version = "3.0.8"
+version = "3.0.9"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
 category = "dev"
 optional = false
@@ -415,7 +415,7 @@ test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "4e128a7d215b0b372007e4d0eb730675ac7998a38c17ead9ce794683f29a3941"
+content-hash = "167e12c889eba2e0981bd549009fdbcbc5c46cefbc19b919181666e78be3bdb2"
 
 [metadata.files]
 aiomisc = [
@@ -662,8 +662,8 @@ pyflakes = [
     {file = "pyflakes-2.4.0.tar.gz", hash = "sha256:05a85c2872edf37a4ed30b0cce2f6093e1d0581f8c19d7393122da7e25b2b24c"},
 ]
 pyparsing = [
-    {file = "pyparsing-3.0.8-py3-none-any.whl", hash = "sha256:ef7b523f6356f763771559412c0d7134753f037822dad1b16945b7b846f7ad06"},
-    {file = "pyparsing-3.0.8.tar.gz", hash = "sha256:7bf433498c016c4314268d95df76c81b842a4cb2b276fa3312cfb1e1d85f6954"},
+    {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
+    {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
 pytest = [
     {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},

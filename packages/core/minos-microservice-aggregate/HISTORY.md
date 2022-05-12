@@ -96,3 +96,17 @@
 
 * Replace `dependency-injector`'s injection classes by the ones provided by the `minos.common.injections` module.
 * Be compatible with latest `minos.common.Config` API.
+
+## 0.7.0 (2022-05-11)
+
+* Rename `PostgreSqlEventRepository` as `DatabaseEventRepository`.
+* Add `EventDatabaseOperationFactory` as the abstract class to be implemented by database clients.
+* Move `PostgreSqlSnapshotQueryBuilder` to the `minos-database-aiopg` package.
+* Rename `PostgreSqlSnapshotRepository` as `DatabaseSnapshotRepository`.
+* Add `SnapshotDatabaseOperationFactory` as the abstract class to be implemented by database clients.
+* Remove `PostgreSqlSnapshotReader`, `PostgreSqlSnapshotSetup` and `PostgreSqlSnapshotWriter`.
+* Rename `PostgreSqlTransactionRepository` as `DatabaseTransactionRepository`.
+* Add `TransactionDatabaseOperationFactory` as the abstract class to be implemented by database clients.
+* Unify documentation building pipeline across all `minos-python` packages.
+* Fix documentation building warnings.
+* Fix bug related with package building and additional files like `AUTHORS.md`, `HISTORY.md`, etc.
