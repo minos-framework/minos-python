@@ -7,9 +7,8 @@ from pathlib import (
 )
 
 from minos.aggregate import (
-    ExternalEntity,
+    Entity,
     Ref,
-    RootEntity,
 )
 from minos.cqrs import (
     CommandService,
@@ -45,13 +44,7 @@ class FakeCommandService(CommandService):
         """For testing purpose"""
 
 
-class Foo(RootEntity):
+class Foo(Entity):
     """For testing purposes"""
 
-    bar: Ref[Bar]
-
-
-class Bar(ExternalEntity):
-    """For testing purposes"""
-
-    name: str
+    bar: Ref["Bar"]

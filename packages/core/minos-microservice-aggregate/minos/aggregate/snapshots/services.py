@@ -36,7 +36,7 @@ from .repositories import (
 
 if TYPE_CHECKING:
     from ..entities import (
-        RootEntity,
+        Entity,
     )
 
 logger = logging.getLogger(__name__)
@@ -73,7 +73,7 @@ class SnapshotService:
         }
 
     async def __get_many__(self, request: Request) -> Response:
-        """Get many ``RootEntity`` instances.
+        """Get many ``Entity`` instances.
 
         :param request: The ``Request`` instance that contains the instance identifiers.
         :return: A ``Response`` instance containing the requested instances.
@@ -84,15 +84,16 @@ class SnapshotService:
             raise ResponseException(f"There was a problem while parsing the given request: {exc!r}")
 
         try:
-            instances = await gather(*(self.type_.get(uuid) for uuid in content["uuids"]))
+            futures = (self.snapshot_repository.get(self.type_, uuid) for uuid in content["uuids"])
+            instances = await gather(*futures)
         except Exception as exc:
             raise ResponseException(f"There was a problem while getting the instances: {exc!r}")
 
         return Response(instances)
 
     @cached_property
-    def type_(self) -> type[RootEntity]:
-        """Load the concrete ``RootEntity`` class.
+    def type_(self) -> type[Entity]:
+        """Load the concrete ``Entity`` class.
 
         :return: A ``Type`` object.
         """

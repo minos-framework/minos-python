@@ -24,17 +24,15 @@ from minos.aggregate import (
     Action,
     AlreadyDeletedException,
     Condition,
-    EventEntry,
+    DeltaEntry,
+    Entity,
     FieldDiff,
     FieldDiffContainer,
     NotFoundException,
     Ordering,
     Ref,
-    RootEntity,
     SnapshotEntry,
     SnapshotRepository,
-    TransactionEntry,
-    TransactionStatus,
 )
 from minos.common import (
     classname,
@@ -43,6 +41,10 @@ from minos.common import (
 from minos.common.testing import (
     MinosTestCase,
 )
+from minos.transactions import (
+    TransactionEntry,
+    TransactionStatus,
+)
 
 
 class SnapshotRepositoryTestCase(MinosTestCase, ABC):
@@ -50,14 +52,14 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
 
     snapshot_repository: SnapshotRepository
 
-    class Owner(RootEntity):
+    class Owner(Entity):
         """For testing purposes"""
 
         name: str
         surname: str
         age: Optional[int]
 
-    class Car(RootEntity):
+    class Car(Entity):
         """For testing purposes"""
 
         doors: int
@@ -85,38 +87,30 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         name: str = classname(self.Car)
 
-        await self.event_repository.create(EventEntry(self.uuid_1, name, 1, diff.avro_bytes))
-        await self.event_repository.update(EventEntry(self.uuid_1, name, 2, diff.avro_bytes))
-        await self.event_repository.create(EventEntry(self.uuid_2, name, 1, diff.avro_bytes))
-        await self.event_repository.update(EventEntry(self.uuid_1, name, 3, diff.avro_bytes))
-        await self.event_repository.delete(EventEntry(self.uuid_1, name, 4))
-        await self.event_repository.update(EventEntry(self.uuid_2, name, 2, diff.avro_bytes))
-        await self.event_repository.update(
-            EventEntry(self.uuid_2, name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
+        await self.delta_repository.create(DeltaEntry(self.uuid_1, name, 1, diff.avro_bytes))
+        await self.delta_repository.update(DeltaEntry(self.uuid_1, name, 2, diff.avro_bytes))
+        await self.delta_repository.create(DeltaEntry(self.uuid_2, name, 1, diff.avro_bytes))
+        await self.delta_repository.update(DeltaEntry(self.uuid_1, name, 3, diff.avro_bytes))
+        await self.delta_repository.delete(DeltaEntry(self.uuid_1, name, 4))
+        await self.delta_repository.update(DeltaEntry(self.uuid_2, name, 2, diff.avro_bytes))
+        await self.delta_repository.update(
+            DeltaEntry(self.uuid_2, name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
-        await self.event_repository.delete(
-            EventEntry(self.uuid_2, name, 3, bytes(), transaction_uuid=self.transaction_2)
+        await self.delta_repository.delete(
+            DeltaEntry(self.uuid_2, name, 3, bytes(), transaction_uuid=self.transaction_2)
         )
-        await self.event_repository.update(
-            EventEntry(self.uuid_2, name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
+        await self.delta_repository.update(
+            DeltaEntry(self.uuid_2, name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
-        await self.event_repository.create(EventEntry(self.uuid_3, name, 1, diff.avro_bytes))
-        await self.event_repository.delete(
-            EventEntry(self.uuid_2, name, 3, bytes(), transaction_uuid=self.transaction_3)
+        await self.delta_repository.create(DeltaEntry(self.uuid_3, name, 1, diff.avro_bytes))
+        await self.delta_repository.delete(
+            DeltaEntry(self.uuid_2, name, 3, bytes(), transaction_uuid=self.transaction_3)
         )
+        await self.transaction_repository.submit(TransactionEntry(self.transaction_1, TransactionStatus.PENDING))
+        await self.transaction_repository.submit(TransactionEntry(self.transaction_2, TransactionStatus.PENDING))
+        await self.transaction_repository.submit(TransactionEntry(self.transaction_3, TransactionStatus.REJECTED))
         await self.transaction_repository.submit(
-            TransactionEntry(self.transaction_1, TransactionStatus.PENDING, await self.event_repository.offset)
-        )
-        await self.transaction_repository.submit(
-            TransactionEntry(self.transaction_2, TransactionStatus.PENDING, await self.event_repository.offset)
-        )
-        await self.transaction_repository.submit(
-            TransactionEntry(self.transaction_3, TransactionStatus.REJECTED, await self.event_repository.offset)
-        )
-        await self.transaction_repository.submit(
-            TransactionEntry(
-                self.transaction_4, TransactionStatus.REJECTED, await self.event_repository.offset, self.transaction_3
-            )
+            TransactionEntry(self.transaction_4, TransactionStatus.REJECTED, self.transaction_3)
         )
 
     async def populate_and_synchronize(self):
@@ -161,7 +155,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(self.uuid_1, self.Car.classname, 4),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",
@@ -171,7 +165,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
                     updated_at=observed[1].updated_at,
                 )
             ),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",
@@ -200,7 +194,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(self.uuid_1, self.Car.classname, 4),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",
@@ -210,7 +204,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
                     updated_at=observed[1].updated_at,
                 )
             ),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",
@@ -240,7 +234,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         expected = [
             SnapshotEntry(self.uuid_1, self.Car.classname, 4),
             SnapshotEntry(self.uuid_2, self.Car.classname, 4),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",
@@ -269,7 +263,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(self.uuid_1, self.Car.classname, 4),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",
@@ -279,7 +273,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
                     updated_at=observed[1].updated_at,
                 )
             ),
-            SnapshotEntry.from_root_entity(
+            SnapshotEntry.from_entity(
                 self.Car(
                     3,
                     "blue",
@@ -302,11 +296,11 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         async def _fn(*args, id_gt: Optional[int] = None, **kwargs):
             if id_gt is not None and id_gt > 0:
                 return
-            yield EventEntry(self.uuid_1, name, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())
-            yield EventEntry(self.uuid_1, name, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
-            yield EventEntry(self.uuid_1, name, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
+            yield DeltaEntry(self.uuid_1, name, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())
+            yield DeltaEntry(self.uuid_1, name, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
+            yield DeltaEntry(self.uuid_1, name, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
 
-        self.event_repository.select = MagicMock(side_effect=_fn)
+        self.delta_repository.select = MagicMock(side_effect=_fn)
         await self.snapshot_repository.synchronize()
 
         observed = [v async for v in self.snapshot_repository.find_entries(name, condition)]
@@ -328,8 +322,8 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
     async def test_dispatch_with_offset(self):
         await self.populate()
 
-        mock = MagicMock(side_effect=self.event_repository.select)
-        self.event_repository.select = mock
+        mock = MagicMock(side_effect=self.delta_repository.select)
+        self.delta_repository.select = mock
 
         await self.snapshot_repository.synchronize()
         self.assertEqual(1, mock.call_count)
@@ -337,12 +331,12 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         mock.reset_mock()
 
         # noinspection PyTypeChecker
-        entry = EventEntry(
+        entry = DeltaEntry(
             uuid=self.uuid_3,
             name=self.Car.classname,
             data=FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")]).avro_bytes,
         )
-        await self.event_repository.create(entry)
+        await self.delta_repository.create(entry)
 
         await self.snapshot_repository.synchronize()
         self.assertEqual(1, mock.call_count)
@@ -536,6 +530,39 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         observed = {v async for v in self.snapshot_repository.find(self.Car, Condition.FALSE)}
 
         expected = set()
+        self.assertEqual(expected, observed)
+
+    async def test_find_one(self):
+        await self.populate_and_synchronize()
+        condition = Condition.IN("uuid", {self.uuid_2})
+
+        observed = await self.snapshot_repository.find_one(self.Car, condition)
+
+        expected = self.Car(
+            3,
+            "blue",
+            uuid=self.uuid_2,
+            version=2,
+            created_at=observed.created_at,
+            updated_at=observed.updated_at,
+        )
+        self.assertEqual(expected, observed)
+
+    async def test_find_one_raises(self):
+        await self.populate_and_synchronize()
+        condition = Condition.FALSE
+
+        with self.assertRaises(NotFoundException):
+            await self.snapshot_repository.find_one(self.Car, condition)
+
+    async def test_get_all(self):
+        await self.populate_and_synchronize()
+        iterable = self.snapshot_repository.find(self.Car, Condition.TRUE, ordering=Ordering.ASC("updated_at"))
+        expected = [v async for v in iterable]
+
+        iterable = self.snapshot_repository.get_all(self.Car, ordering=Ordering.ASC("updated_at"))
+        observed = [v async for v in iterable]
+
         self.assertEqual(expected, observed)
 
     async def test_get(self):

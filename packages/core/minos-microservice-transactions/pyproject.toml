@@ -1,0 +1,47 @@
+[tool.poetry]
+name = "minos-microservice-transactions"
+version = "0.0.0"
+description = "The transactions core of the Minos Framework"
+readme = "README.md"
+repository = "https://github.com/minos-framework/minos-python"
+homepage = "https://www.minos.run"
+authors = ["Minos Framework Devs <hey@minos.run>"]
+license = "MIT"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+]
+keywords = [
+    "clariteia",
+    "minos",
+    "microservice",
+    "saga",
+]
+packages = [
+    { include = "minos" },
+]
+include = [
+    { path = "AUTHORS.md", format = "sdist" },
+    { path = "HISTORY.md", format = "sdist" },
+    { path = "LICENSE", format = "sdist" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+minos-microservice-common = { version ="^0.8.0*", allow-prereleases = true }
+cached-property = "^1.5.2"
+
+[tool.poetry.dev-dependencies]
+minos-microservice-common = { path = "../minos-microservice-common", develop = true }
+black = "^22.3"
+isort = "^5.8.0"
+pytest = "^7.0.1"
+coverage = "^6.3"
+flake8 = "^4.0.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

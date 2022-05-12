@@ -2,13 +2,10 @@
 
 __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
-__version__ = "0.7.0"
+__version__ = "0.8.0.dev1"
 
 from .actions import (
     Action,
-)
-from .aggregate import (
-    Aggregate,
 )
 from .collections import (
     IncrementalSet,
@@ -18,40 +15,39 @@ from .collections import (
 from .contextvars import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
+from .deltas import (
+    DatabaseDeltaRepository,
+    Delta,
+    DeltaDatabaseOperationFactory,
+    DeltaEntry,
+    DeltaRepository,
+    FieldDiff,
+    FieldDiffContainer,
+    IncrementalFieldDiff,
+    InMemoryDeltaRepository,
+)
 from .entities import (
     Entity,
+    EntityRepository,
     EntitySet,
-    ExternalEntity,
     Ref,
     RefExtractor,
     RefInjector,
     RefResolver,
-    RootEntity,
-)
-from .events import (
-    DatabaseEventRepository,
-    Event,
-    EventDatabaseOperationFactory,
-    EventEntry,
-    EventRepository,
-    FieldDiff,
-    FieldDiffContainer,
-    IncrementalFieldDiff,
-    InMemoryEventRepository,
 )
 from .exceptions import (
     AggregateException,
     AlreadyDeletedException,
-    EventRepositoryConflictException,
-    EventRepositoryException,
+    DeltaRepositoryConflictException,
+    DeltaRepositoryException,
     NotFoundException,
     RefException,
     SnapshotRepositoryConflictException,
     SnapshotRepositoryException,
-    TransactionNotFoundException,
-    TransactionRepositoryConflictException,
-    TransactionRepositoryException,
     ValueObjectException,
+)
+from .impl import (
+    Aggregate,
 )
 from .queries import (
     Condition,
@@ -64,16 +60,6 @@ from .snapshots import (
     SnapshotEntry,
     SnapshotRepository,
     SnapshotService,
-)
-from .transactions import (
-    TRANSACTION_CONTEXT_VAR,
-    DatabaseTransactionRepository,
-    InMemoryTransactionRepository,
-    TransactionDatabaseOperationFactory,
-    TransactionEntry,
-    TransactionRepository,
-    TransactionService,
-    TransactionStatus,
 )
 from .value_objects import (
     ValueObject,

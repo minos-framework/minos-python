@@ -9,11 +9,6 @@ from typing import (
     Any,
 )
 
-from minos.aggregate import (
-    InMemoryEventRepository,
-    InMemorySnapshotRepository,
-    InMemoryTransactionRepository,
-)
 from minos.common import (
     DeclarativeModel,
     Lock,
@@ -36,6 +31,9 @@ from minos.saga import (
     SagaResponse,
     testing,
 )
+from minos.transactions import (
+    InMemoryTransactionRepository,
+)
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "config.yml"
@@ -55,21 +53,11 @@ class SagaTestCase(MinosTestCase):
         broker_publisher = InMemoryBrokerPublisher()
         broker_subscriber_builder = InMemoryBrokerSubscriberBuilder()
         transaction_repository = InMemoryTransactionRepository(lock_pool=pool_factory.get_pool("lock"))
-        event_repository = InMemoryEventRepository(
-            broker_publisher=broker_publisher,
-            transaction_repository=transaction_repository,
-            lock_pool=pool_factory.get_pool("lock"),
-        )
-        snapshot_repository = InMemorySnapshotRepository(
-            event_repository=event_repository, transaction_repository=transaction_repository
-        )
         return [
             pool_factory,
             broker_publisher,
             broker_subscriber_builder,
             transaction_repository,
-            event_repository,
-            snapshot_repository,
         ]
 
 
@@ -78,6 +66,22 @@ class FakeBrokerPublisher(SetupMixin):
 
     async def send(self, data: Any, **kwargs) -> None:
         """For testing purposes."""
+
+
+class FakeAsyncIterator:
+    """For testing purposes."""
+
+    def __init__(self, seq):
+        self.iter = iter(seq)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        try:
+            return next(self.iter)
+        except StopIteration:
+            raise StopAsyncIteration
 
 
 class FakeLock(Lock):

@@ -19,12 +19,9 @@ from minos.aggregate import (
     Aggregate,
     Entity,
     EntitySet,
-    ExternalEntity,
-    InMemoryEventRepository,
+    InMemoryDeltaRepository,
     InMemorySnapshotRepository,
-    InMemoryTransactionRepository,
     Ref,
-    RootEntity,
     ValueObject,
     ValueObjectSet,
     testing,
@@ -43,13 +40,20 @@ from minos.networks import (
     InMemoryBrokerPublisher,
     InMemoryBrokerSubscriberBuilder,
 )
+from minos.transactions import (
+    InMemoryTransactionRepository,
+)
+from minos.transactions import testing as transactions_testing
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
 
 class AggregateTestCase(MinosTestCase, ABC):
-    testing_module = testing
+    testing_module = {
+        "aggregate": testing,
+        "transactions": transactions_testing,
+    }
 
     def get_config_file_path(self):
         return CONFIG_FILE_PATH
@@ -62,20 +66,20 @@ class AggregateTestCase(MinosTestCase, ABC):
         broker_publisher = InMemoryBrokerPublisher()
         broker_subscriber_builder = InMemoryBrokerSubscriberBuilder()
         transaction_repository = InMemoryTransactionRepository(lock_pool=pool_factory.get_pool("lock"))
-        event_repository = InMemoryEventRepository(
+        delta_repository = InMemoryDeltaRepository(
             broker_publisher=broker_publisher,
             transaction_repository=transaction_repository,
             lock_pool=pool_factory.get_pool("lock"),
         )
         snapshot_repository = InMemorySnapshotRepository(
-            event_repository=event_repository, transaction_repository=transaction_repository
+            delta_repository=delta_repository, transaction_repository=transaction_repository
         )
         return [
             pool_factory,
             broker_publisher,
             broker_subscriber_builder,
             transaction_repository,
-            event_repository,
+            delta_repository,
             snapshot_repository,
         ]
 
@@ -121,7 +125,7 @@ class FakeLockPool(LockPool):
         """For testing purposes."""
 
 
-class Owner(RootEntity):
+class Owner(Entity):
     """For testing purposes"""
 
     name: str
@@ -129,7 +133,7 @@ class Owner(RootEntity):
     age: Optional[int]
 
 
-class Car(RootEntity):
+class Car(Entity):
     """For testing purposes"""
 
     doors: int
@@ -137,7 +141,7 @@ class Car(RootEntity):
     owner: Optional[Ref[Owner]]
 
 
-class Order(RootEntity):
+class Order(Entity):
     """For testing purposes"""
 
     products: EntitySet[OrderItem]
@@ -156,19 +160,11 @@ class Review(ValueObject):
     message: str
 
 
-class Product(ExternalEntity):
-    """For testing purposes."""
-
-    title: str
-    quantity: int
-
-
 class OrderAggregate(Aggregate[Order]):
     """For testing purposes."""
 
-    @staticmethod
-    async def create_order() -> UUID:
+    async def create_order(self) -> UUID:
         """For testing purposes."""
 
-        order = await Order.create(products=EntitySet(), reviews=ValueObjectSet())
+        order, _ = await self.repository.create(Order, products=EntitySet(), reviews=ValueObjectSet())
         return order.uuid

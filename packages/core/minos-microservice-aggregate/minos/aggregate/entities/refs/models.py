@@ -39,6 +39,20 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
 
     data: Union[MT, UUID]
 
+    @classmethod
+    def __class_getitem__(cls, params: Union[type, TypeVar, str]):
+        if not isinstance(params, tuple):
+            params = (params,)
+
+        def _parse(param: Union[type, TypeVar, str]) -> Union[type, TypeVar]:
+            if isinstance(param, str):
+                param = ModelType.build(param, uuid=UUID, version=int)
+            return param
+
+        params = tuple(_parse(param) for param in params)
+
+        return super().__class_getitem__(params)
+
     def __init__(self, data: Union[MT, UUID], *args, **kwargs):
         if not isinstance(data, UUID) and not hasattr(data, "uuid"):
             raise ValueError(f"data must be an {UUID!r} instance or have 'uuid' as one of its fields")

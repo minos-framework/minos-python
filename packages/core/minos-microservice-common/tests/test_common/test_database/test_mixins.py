@@ -20,25 +20,25 @@ from tests.utils import (
 
 # noinspection SqlNoDataSourceInspection,SqlResolve
 class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
-    def test_constructor(self):
-        pool = DatabaseClientPool.from_config(self.config)
-        # noinspection PyTypeChecker
-        database = DatabaseMixin(pool)
-        self.assertEqual(pool, database.database_pool)
+    async def test_constructor(self):
+        async with DatabaseClientPool.from_config(self.config) as pool:
+            # noinspection PyTypeChecker
+            database = DatabaseMixin(pool)
+            self.assertEqual(pool, database.database_pool)
 
     async def test_constructor_with_pool_factory(self):
-        pool_factory = PoolFactory(self.config, {"database": DatabaseClientPool})
-        # noinspection PyTypeChecker
-        database = DatabaseMixin(pool_factory=pool_factory)
-        # noinspection PyUnresolvedReferences
-        self.assertEqual(pool_factory.get_pool("database"), database.database_pool)
+        async with PoolFactory(self.config, {"database": DatabaseClientPool}) as pool_factory:
+            # noinspection PyTypeChecker
+            database = DatabaseMixin(pool_factory=pool_factory)
+            # noinspection PyUnresolvedReferences
+            self.assertEqual(pool_factory.get_pool("database"), database.database_pool)
 
     async def test_constructor_with_pool_factory_and_database_key(self):
-        pool_factory = PoolFactory(self.config, {"database": DatabaseClientPool})
-        # noinspection PyTypeChecker
-        database = DatabaseMixin(pool_factory=pool_factory, database_key=("query", "unknown"))
-        # noinspection PyUnresolvedReferences
-        self.assertEqual(pool_factory.get_pool("database", "query"), database.database_pool)
+        async with PoolFactory(self.config, {"database": DatabaseClientPool}) as pool_factory:
+            # noinspection PyTypeChecker
+            database = DatabaseMixin(pool_factory=pool_factory, database_key=("query", "unknown"))
+            # noinspection PyUnresolvedReferences
+            self.assertEqual(pool_factory.get_pool("database", "query"), database.database_pool)
 
     async def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):

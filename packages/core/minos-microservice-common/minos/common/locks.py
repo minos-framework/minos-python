@@ -7,6 +7,7 @@ from abc import (
     abstractmethod,
 )
 from collections.abc import (
+    Callable,
     Hashable,
 )
 
@@ -64,3 +65,5 @@ class Lock(ABC):
 
 class LockPool(Pool[Lock], ABC):
     """Lock Pool class."""
+
+    acquire: Callable[[str], Lock]
