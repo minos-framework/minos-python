@@ -4,7 +4,7 @@
 
 # minos-python: The framework which helps you create reactive microservices in Python
 
-[![GitHub Repo stars](https://img.shields.io/github/stars/minos-framework/minos-python?label=GitHub)]
+[![GitHub Repo stars](https://img.shields.io/github/stars/minos-framework/minos-python?label=GitHub)](https://github.com/minos-framework/minos-python/stargazers)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/minos-microservice-common.svg)](https://pypi.org/project/minos-microservice-common/)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/minos-framework/minos-python/pages%20build%20and%20deployment?label=docs)](https://minos-framework.github.io/minos-python)
 [![License](https://img.shields.io/github/license/minos-framework/minos-python.svg)](https://github.com/minos-framework/minos-python/blob/main/LICENSE)
