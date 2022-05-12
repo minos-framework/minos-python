@@ -157,3 +157,12 @@
 
 * Replace `dependency-injector`'s injection classes by the ones provided by the `minos.common.injections` module.
 * Be compatible with latest `minos.common.Config` API.
+
+## 0.7.0 (2022-05-11)
+
+* Rename `SagaExecutionStorage` as `SagaExecutionRepository`.
+* Add `DatabaseSagaExecutionRepository` as the implementation of the `SagaExecutionRepository` over a database.
+* Add `SagaExecutionDatabaseOperationFactory` as the base operation factory to store saga executions.
+* Unify documentation building pipeline across all `minos-python` packages.
+* Fix documentation building warnings.
+* Fix bug related with package building and additional files like `AUTHORS.md`, `HISTORY.md`, etc.
