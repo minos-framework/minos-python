@@ -1,7 +1,0 @@
-minos.networks.brokers.subscribers.memory module
-================================================
-
-.. automodule:: minos.networks.brokers.subscribers.memory
-   :members:
-   :undoc-members:
-   :show-inheritance:

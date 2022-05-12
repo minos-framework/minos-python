@@ -1,7 +1,0 @@
-minos.networks.brokers.publishers.memory module
-===============================================
-
-.. automodule:: minos.networks.brokers.publishers.memory
-   :members:
-   :undoc-members:
-   :show-inheritance:

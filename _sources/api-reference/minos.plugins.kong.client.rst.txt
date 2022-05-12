@@ -1,0 +1,29 @@
+minos.plugins.kong.client
+=========================
+
+.. automodule:: minos.plugins.kong.client
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      KongClient
+   
+   
+
+   
+   
+   
+
+
+

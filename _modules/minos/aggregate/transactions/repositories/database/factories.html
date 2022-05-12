@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.aggregate.transactions.repositories.database.factories &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" />
+    <link href="../../../../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.aggregate.transactions.repositories.database.factories</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.aggregate.transactions.repositories.database.factories</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ABC</span><span class="p">,</span>
+    <span class="n">abstractmethod</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">datetime</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UUID</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DatabaseOperation</span><span class="p">,</span>
+    <span class="n">DatabaseOperationFactory</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">...entries</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">TransactionStatus</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="TransactionDatabaseOperationFactory"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.transactions.repositories.database.factories.html#minos.aggregate.transactions.repositories.database.factories.TransactionDatabaseOperationFactory">[docs]</a><span class="k">class</span> <span class="nc">TransactionDatabaseOperationFactory</span><span class="p">(</span><span class="n">DatabaseOperationFactory</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Transaction Database Operation Factory base class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TransactionDatabaseOperationFactory.build_create"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.transactions.repositories.database.factories.html#minos.aggregate.transactions.repositories.database.factories.TransactionDatabaseOperationFactory.build_create">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">build_create</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to create the snapshot table.</span>
+
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="TransactionDatabaseOperationFactory.build_submit"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.transactions.repositories.database.factories.html#minos.aggregate.transactions.repositories.database.factories.TransactionDatabaseOperationFactory.build_submit">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">build_submit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">destination_uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="n">TransactionStatus</span><span class="p">,</span> <span class="n">event_offset</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to submit a row.</span>
+
+<span class="sd">        :param uuid: The identifier of the transaction.</span>
+<span class="sd">        :param destination_uuid: The identifier of the destination transaction.</span>
+<span class="sd">        :param status: The status of the transaction.</span>
+<span class="sd">        :param event_offset: The event offset of the transaction.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="TransactionDatabaseOperationFactory.build_query"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.transactions.repositories.database.factories.html#minos.aggregate.transactions.repositories.database.factories.TransactionDatabaseOperationFactory.build_query">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">build_query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">uuid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">uuid_ne</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">uuid_in</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">UUID</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">destination_uuid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">status_in</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">event_offset</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">event_offset_lt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">event_offset_gt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">event_offset_le</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">event_offset_ge</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">updated_at</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">updated_at_lt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">updated_at_gt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">updated_at_le</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">updated_at_ge</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to select rows.</span>
+
+<span class="sd">        :param uuid: Transaction identifier equal to the given value.</span>
+<span class="sd">        :param uuid_ne: Transaction identifier not equal to the given value</span>
+<span class="sd">        :param uuid_in: Transaction identifier within the given values.</span>
+<span class="sd">        :param destination_uuid: Destination Transaction identifier equal to the given value.</span>
+<span class="sd">        :param status: Transaction status equal to the given value.</span>
+<span class="sd">        :param status_in: Transaction status within the given values</span>
+<span class="sd">        :param event_offset: Event offset equal to the given value.</span>
+<span class="sd">        :param event_offset_lt: Event Offset lower than the given value</span>
+<span class="sd">        :param event_offset_gt: Event Offset greater than the given value</span>
+<span class="sd">        :param event_offset_le: Event Offset lower or equal to the given value</span>
+<span class="sd">        :param event_offset_ge: Event Offset greater or equal to the given value</span>
+<span class="sd">        :param updated_at: Updated at equal to the given value.</span>
+<span class="sd">        :param updated_at_lt: Updated at lower than the given value.</span>
+<span class="sd">        :param updated_at_gt: Updated at greater than the given value.</span>
+<span class="sd">        :param updated_at_le: Updated at lower or equal to the given value.</span>
+<span class="sd">        :param updated_at_ge: Updated at greater or equal to the given value.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

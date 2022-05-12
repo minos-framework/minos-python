@@ -1,7 +1,0 @@
-minos.saga.executions.steps.conditional module
-==============================================
-
-.. automodule:: minos.saga.executions.steps.conditional
-   :members:
-   :undoc-members:
-   :show-inheritance:

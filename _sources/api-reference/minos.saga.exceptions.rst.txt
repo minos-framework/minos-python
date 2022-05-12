@@ -1,0 +1,54 @@
+minos.saga.exceptions
+=====================
+
+.. automodule:: minos.saga.exceptions
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      AlreadyCommittedException
+      AlreadyOnSagaException
+      EmptySagaException
+      EmptySagaStepException
+      ExecutorException
+      MultipleElseThenException
+      MultipleOnErrorException
+      MultipleOnExecuteException
+      MultipleOnFailureException
+      MultipleOnSuccessException
+      SagaException
+      SagaExecutionAlreadyExecutedException
+      SagaExecutionException
+      SagaExecutionNotFoundException
+      SagaFailedCommitCallbackException
+      SagaFailedExecutionException
+      SagaFailedExecutionStepException
+      SagaNotCommittedException
+      SagaNotDefinedException
+      SagaPausedExecutionStepException
+      SagaResponseException
+      SagaRollbackExecutionException
+      SagaRollbackExecutionStepException
+      SagaStepException
+      SagaStepExecutionException
+      UndefinedOnExecuteException
+   
+   
+
+
+

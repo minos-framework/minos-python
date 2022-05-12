@@ -1,0 +1,29 @@
+minos.networks.decorators.definitions.abc
+=========================================
+
+.. automodule:: minos.networks.decorators.definitions.abc
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EnrouteDecorator
+   
+   
+
+   
+   
+   
+
+
+

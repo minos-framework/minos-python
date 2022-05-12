@@ -1,7 +1,0 @@
-minos.plugins.kafka.publisher module
-====================================
-
-.. automodule:: minos.plugins.kafka.publisher
-   :members:
-   :undoc-members:
-   :show-inheritance:

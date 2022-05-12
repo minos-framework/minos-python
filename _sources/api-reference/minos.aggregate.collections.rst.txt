@@ -1,0 +1,30 @@
+minos.aggregate.collections
+===========================
+
+.. automodule:: minos.aggregate.collections
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      IncrementalSet
+      IncrementalSetDiff
+   
+   
+
+   
+   
+   
+
+
+

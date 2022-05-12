@@ -1,7 +1,0 @@
-minos.common.object module
-==========================
-
-.. automodule:: minos.common.object
-   :members:
-   :undoc-members:
-   :show-inheritance:

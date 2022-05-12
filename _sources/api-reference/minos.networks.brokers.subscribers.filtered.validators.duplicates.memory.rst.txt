@@ -1,0 +1,29 @@
+minos.networks.brokers.subscribers.filtered.validators.duplicates.memory
+========================================================================
+
+.. automodule:: minos.networks.brokers.subscribers.filtered.validators.duplicates.memory
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InMemoryBrokerSubscriberDuplicateValidator
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,32 @@
+minos.common.database.clients.exceptions
+========================================
+
+.. automodule:: minos.common.database.clients.exceptions
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      ConnectionException
+      DatabaseClientException
+      IntegrityException
+      ProgrammingException
+   
+   
+
+
+

@@ -1,0 +1,32 @@
+minos.cqrs.exceptions
+=====================
+
+.. automodule:: minos.cqrs.exceptions
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      MinosCqrsException
+      MinosIllegalHandlingException
+      MinosNotAnyMissingReferenceException
+      MinosQueryServiceException
+   
+   
+
+
+

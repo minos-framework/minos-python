@@ -1,0 +1,29 @@
+minos.aggregate.entities.refs.resolvers
+=======================================
+
+.. automodule:: minos.aggregate.entities.refs.resolvers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      RefResolver
+   
+   
+
+   
+   
+   
+
+
+

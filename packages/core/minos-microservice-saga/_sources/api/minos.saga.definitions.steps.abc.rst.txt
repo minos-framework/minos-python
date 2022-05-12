@@ -1,7 +1,0 @@
-minos.saga.definitions.steps.abc module
-=======================================
-
-.. automodule:: minos.saga.definitions.steps.abc
-   :members:
-   :undoc-members:
-   :show-inheritance:

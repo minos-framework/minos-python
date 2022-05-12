@@ -1,7 +1,0 @@
-minos.common.setup module
-=========================
-
-.. automodule:: minos.common.setup
-   :members:
-   :undoc-members:
-   :show-inheritance:

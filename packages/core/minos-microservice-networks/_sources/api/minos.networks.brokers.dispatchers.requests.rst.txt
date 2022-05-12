@@ -1,7 +1,0 @@
-minos.networks.brokers.dispatchers.requests module
-==================================================
-
-.. automodule:: minos.networks.brokers.dispatchers.requests
-   :members:
-   :undoc-members:
-   :show-inheritance:

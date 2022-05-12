@@ -1,7 +1,0 @@
-minos.common.model.types.comparators module
-===========================================
-
-.. automodule:: minos.common.model.types.comparators
-   :members:
-   :undoc-members:
-   :show-inheritance:

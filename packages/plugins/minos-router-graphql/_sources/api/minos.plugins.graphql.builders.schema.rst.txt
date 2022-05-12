@@ -1,7 +1,0 @@
-minos.plugins.graphql.builders.schema module
-============================================
-
-.. automodule:: minos.plugins.graphql.builders.schema
-   :members:
-   :undoc-members:
-   :show-inheritance:

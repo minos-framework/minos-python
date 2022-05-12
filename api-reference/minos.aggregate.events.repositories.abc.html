@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.aggregate.events.repositories.abc &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.aggregate.events.repositories.database" href="minos.aggregate.events.repositories.database.html" />
+    <link rel="prev" title="minos.aggregate.events.repositories" href="minos.aggregate.events.repositories.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="minos.aggregate.html">minos.aggregate</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.actions.html">minos.aggregate.actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.aggregate.html">minos.aggregate.aggregate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.collections.html">minos.aggregate.collections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.contextvars.html">minos.aggregate.contextvars</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.entities.html">minos.aggregate.entities</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="minos.aggregate.events.html">minos.aggregate.events</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.events.entries.html">minos.aggregate.events.entries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.events.fields.html">minos.aggregate.events.fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.events.models.html">minos.aggregate.events.models</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="minos.aggregate.events.repositories.html">minos.aggregate.events.repositories</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">minos.aggregate.events.repositories.abc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="minos.aggregate.events.repositories.database.html">minos.aggregate.events.repositories.database</a></li>
+<li class="toctree-l4"><a class="reference internal" href="minos.aggregate.events.repositories.memory.html">minos.aggregate.events.repositories.memory</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.exceptions.html">minos.aggregate.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.queries.html">minos.aggregate.queries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.snapshots.html">minos.aggregate.snapshots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.testing.html">minos.aggregate.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.transactions.html">minos.aggregate.transactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.value_objects.html">minos.aggregate.value_objects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="minos.aggregate.html">minos.aggregate</a> &raquo;</li>
+          <li><a href="minos.aggregate.events.html">minos.aggregate.events</a> &raquo;</li>
+          <li><a href="minos.aggregate.events.repositories.html">minos.aggregate.events.repositories</a> &raquo;</li>
+      <li>minos.aggregate.events.repositories.abc</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/minos.aggregate.events.repositories.abc.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-minos.aggregate.events.repositories.abc">
+<span id="minos-aggregate-events-repositories-abc"></span><h1>minos.aggregate.events.repositories.abc<a class="headerlink" href="#module-minos.aggregate.events.repositories.abc" title="Permalink to this headline"></a></h1>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#minos.aggregate.events.repositories.abc.EventRepository" title="minos.aggregate.events.repositories.abc.EventRepository"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventRepository</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">EventRepository</span></span><a class="reference internal" href="../_modules/minos/aggregate/events/repositories/abc.html#EventRepository"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#minos.aggregate.events.repositories.abc.EventRepository" title="minos.aggregate.events.repositories.abc.EventRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventRepository</span></code></a>, <a class="reference internal" href="minos.common.injections.mixins.html#minos.common.injections.mixins.InjectableMixin" title="minos.common.injections.mixins.InjectableMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">InjectableMixin</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">broker_publisher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_repository</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_pool</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pool_factory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/events/repositories/abc.html#EventRepository.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>broker_publisher</strong> (<a class="reference internal" href="minos.networks.brokers.publishers.abc.html#minos.networks.brokers.publishers.abc.BrokerPublisher" title="minos.networks.brokers.publishers.abc.BrokerPublisher"><em>BrokerPublisher</em></a>) – </p></li>
+<li><p><strong>transaction_repository</strong> (<a class="reference internal" href="minos.aggregate.transactions.repositories.abc.html#minos.aggregate.transactions.repositories.abc.TransactionRepository" title="minos.aggregate.transactions.repositories.abc.TransactionRepository"><em>TransactionRepository</em></a>) – </p></li>
+<li><p><strong>lock_pool</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference internal" href="minos.common.locks.html#minos.common.locks.LockPool" title="minos.common.locks.LockPool"><em>LockPool</em></a><em>]</em>) – </p></li>
+<li><p><strong>pool_factory</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference internal" href="minos.common.pools.html#minos.common.pools.PoolFactory" title="minos.common.pools.PoolFactory"><em>PoolFactory</em></a><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.transaction">
+<span class="sig-name descname"><span class="pre">transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/events/repositories/abc.html#EventRepository.transaction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.transaction" title="Permalink to this definition"></a></dt>
+<dd><p>Build a transaction instance related to the repository.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Additional named arguments.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new <code class="docutils literal notranslate"><span class="pre">TransactionEntry</span></code> instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.aggregate.transactions.entries.html#minos.aggregate.transactions.entries.TransactionEntry" title="minos.aggregate.transactions.entries.TransactionEntry"><em>TransactionEntry</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.create">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/events/repositories/abc.html#EventRepository.create"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.create" title="Permalink to this definition"></a></dt>
+<dd><p>Store new creation entry into the repository.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>entry</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><em>Union</em></a><em>[</em><a class="reference internal" href="minos.aggregate.events.models.html#minos.aggregate.events.models.Event" title="minos.aggregate.events.models.Event"><em>Event</em></a><em>, </em><a class="reference internal" href="minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry" title="minos.aggregate.events.entries.EventEntry"><em>EventEntry</em></a><em>]</em>) – Entry to be stored.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The repository entry containing the stored information.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry" title="minos.aggregate.events.entries.EventEntry"><em>EventEntry</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.update">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/events/repositories/abc.html#EventRepository.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.update" title="Permalink to this definition"></a></dt>
+<dd><p>Store new update entry into the repository.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>entry</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><em>Union</em></a><em>[</em><a class="reference internal" href="minos.aggregate.events.models.html#minos.aggregate.events.models.Event" title="minos.aggregate.events.models.Event"><em>Event</em></a><em>, </em><a class="reference internal" href="minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry" title="minos.aggregate.events.entries.EventEntry"><em>EventEntry</em></a><em>]</em>) – Entry to be stored.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The repository entry containing the stored information.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry" title="minos.aggregate.events.entries.EventEntry"><em>EventEntry</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.delete">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/events/repositories/abc.html#EventRepository.delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.delete" title="Permalink to this definition"></a></dt>
+<dd><p>Store new deletion entry into the repository.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>entry</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><em>Union</em></a><em>[</em><a class="reference internal" href="minos.aggregate.events.models.html#minos.aggregate.events.models.Event" title="minos.aggregate.events.models.Event"><em>Event</em></a><em>, </em><a class="reference internal" href="minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry" title="minos.aggregate.events.entries.EventEntry"><em>EventEntry</em></a><em>]</em>) – Entry to be stored.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The repository entry containing the stored information.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry" title="minos.aggregate.events.entries.EventEntry"><em>EventEntry</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.submit">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">submit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/events/repositories/abc.html#EventRepository.submit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.submit" title="Permalink to this definition"></a></dt>
+<dd><p>Store new entry into the repository.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>entry</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><em>Union</em></a><em>[</em><a class="reference internal" href="minos.aggregate.events.models.html#minos.aggregate.events.models.Event" title="minos.aggregate.events.models.Event"><em>Event</em></a><em>, </em><a class="reference internal" href="minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry" title="minos.aggregate.events.entries.EventEntry"><em>EventEntry</em></a><em>]</em>) – The entry to be stored.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The repository entry containing the stored information.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry" title="minos.aggregate.events.entries.EventEntry"><em>EventEntry</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.validate">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_uuid_ne</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/events/repositories/abc.html#EventRepository.validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.validate" title="Permalink to this definition"></a></dt>
+<dd><p>Check if it is able to submit the given entry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>entry</strong> (<a class="reference internal" href="minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry" title="minos.aggregate.events.entries.EventEntry"><em>EventEntry</em></a>) – The entry to be validated.</p></li>
+<li><p><strong>transaction_uuid_ne</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>UUID</em></a><em>]</em>) – Optional transaction identifier to skip it from the validation.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the entry can be submitted or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.select">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uuid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version_lt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version_gt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version_le</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version_ge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_lt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_gt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_le</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_ge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_uuid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_uuid_ne</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_uuid_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/events/repositories/abc.html#EventRepository.select"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.select" title="Permalink to this definition"></a></dt>
+<dd><p>Perform a selection query of entries stored in to the repository.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>uuid</strong> (<em>Optional</em><em>[</em><em>UUID</em><em>]</em>) – The identifier must be equal to the given value.</p></li>
+<li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>[</em><a class="reference internal" href="minos.aggregate.entities.models.html#minos.aggregate.entities.models.RootEntity" title="minos.aggregate.entities.models.RootEntity"><em>RootEntity</em></a><em>]</em><em>]</em><em>]</em>) – The classname must be equal to the given value.</p></li>
+<li><p><strong>version</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The version must be equal to the given value.</p></li>
+<li><p><strong>version_lt</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The version must be lower than the given value.</p></li>
+<li><p><strong>version_gt</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The version must be greater than the given value.</p></li>
+<li><p><strong>version_le</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The version must be lower or equal to the given value.</p></li>
+<li><p><strong>version_ge</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The version must be greater or equal to the given value.</p></li>
+<li><p><strong>id</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The entry identifier must be equal to the given value.</p></li>
+<li><p><strong>id_lt</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The entry identifier must be lower than the given value.</p></li>
+<li><p><strong>id_gt</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The entry identifier must be greater than the given value.</p></li>
+<li><p><strong>id_le</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The entry identifier must be lower or equal to the given value.</p></li>
+<li><p><strong>id_ge</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The entry identifier must be greater or equal to the given value.</p></li>
+<li><p><strong>transaction_uuid</strong> (<em>Optional</em><em>[</em><em>UUID</em><em>]</em>) – The transaction identifier must be equal to the given value.</p></li>
+<li><p><strong>transaction_uuid_ne</strong> (<em>Optional</em><em>[</em><em>UUID</em><em>]</em>) – The transaction identifier must be distinct of the given value.</p></li>
+<li><p><strong>transaction_uuid_in</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a><em>[</em><em>UUID</em><em>, </em><em>...</em><em>]</em><em>]</em>) – The destination transaction identifier must be equal to one of the given values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of entries.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>AsyncIterator[<a class="reference internal" href="minos.aggregate.events.entries.html#minos.aggregate.events.entries.EventEntry" title="minos.aggregate.events.entries.EventEntry">EventEntry</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Awaitable</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.offset" title="Permalink to this definition"></a></dt>
+<dd><p>Get the current repository offset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An awaitable containing an integer value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.write_lock">
+<span class="sig-name descname"><span class="pre">write_lock</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/events/repositories/abc.html#EventRepository.write_lock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.write_lock" title="Permalink to this definition"></a></dt>
+<dd><p>Get a write lock.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An asynchronous context manager.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="minos.common.locks.html#minos.common.locks.Lock" title="minos.common.locks.Lock"><em>Lock</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.already_destroyed">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_destroyed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.already_destroyed" title="Permalink to this definition"></a></dt>
+<dd><p>Already Destroy getter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A boolean value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.already_setup">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_setup</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.already_setup" title="Permalink to this definition"></a></dt>
+<dd><p>Already Setup getter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A boolean value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.destroy">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.destroy" title="Permalink to this definition"></a></dt>
+<dd><p>Destroy miscellaneous repository things.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.from_config">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.from_config" title="Permalink to this definition"></a></dt>
+<dd><p>Build a new instance from config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference internal" href="minos.common.config.abc.html#minos.common.config.abc.Config" title="minos.common.config.abc.Config"><em>Config</em></a><em>, </em><em>Path</em><em>]</em><em>]</em>) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A instance of the called class.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>S</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.get_injectable_name">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_injectable_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.get_injectable_name" title="Permalink to this definition"></a></dt>
+<dd><p>Get the injectable name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">str</span></code> value.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.events.repositories.abc.EventRepository.setup">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.events.repositories.abc.EventRepository.setup" title="Permalink to this definition"></a></dt>
+<dd><p>Setup miscellaneous repository things.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.aggregate.events.repositories.html" class="btn btn-neutral float-left" title="minos.aggregate.events.repositories" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.aggregate.events.repositories.database.html" class="btn btn-neutral float-right" title="minos.aggregate.events.repositories.database" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

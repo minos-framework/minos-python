@@ -1,0 +1,31 @@
+minos.common.database.operations
+================================
+
+.. automodule:: minos.common.database.operations
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ComposedDatabaseOperation
+      DatabaseOperation
+      DatabaseOperationFactory
+   
+   
+
+   
+   
+   
+
+
+

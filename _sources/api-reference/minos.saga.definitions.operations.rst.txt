@@ -1,0 +1,29 @@
+minos.saga.definitions.operations
+=================================
+
+.. automodule:: minos.saga.definitions.operations
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SagaOperation
+   
+   
+
+   
+   
+   
+
+
+

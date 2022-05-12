@@ -1,0 +1,29 @@
+minos.aggregate.transactions.repositories.abc
+=============================================
+
+.. automodule:: minos.aggregate.transactions.repositories.abc
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TransactionRepository
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.common.database.clients.abc &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.common.database.clients.exceptions" href="minos.common.database.clients.exceptions.html" />
+    <link rel="prev" title="minos.common.database.clients" href="minos.common.database.clients.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="minos.common.html">minos.common</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="minos.common.builders.html">minos.common.builders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.config.html">minos.common.config</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="minos.common.database.html">minos.common.database</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="minos.common.database.clients.html">minos.common.database.clients</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">minos.common.database.clients.abc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="minos.common.database.clients.exceptions.html">minos.common.database.clients.exceptions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="minos.common.database.locks.html">minos.common.database.locks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.common.database.managements.html">minos.common.database.managements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.common.database.mixins.html">minos.common.database.mixins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.common.database.operations.html">minos.common.database.operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.common.database.pools.html">minos.common.database.pools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.datetime.html">minos.common.datetime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.exceptions.html">minos.common.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.importlib.html">minos.common.importlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.injections.html">minos.common.injections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.launchers.html">minos.common.launchers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.locks.html">minos.common.locks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.meta.html">minos.common.meta</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.model.html">minos.common.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.object.html">minos.common.object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.pools.html">minos.common.pools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.ports.html">minos.common.ports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.protocol.html">minos.common.protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.retries.html">minos.common.retries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.setup.html">minos.common.setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.testing.html">minos.common.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.uuid.html">minos.common.uuid</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="minos.common.html">minos.common</a> &raquo;</li>
+          <li><a href="minos.common.database.html">minos.common.database</a> &raquo;</li>
+          <li><a href="minos.common.database.clients.html">minos.common.database.clients</a> &raquo;</li>
+      <li>minos.common.database.clients.abc</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/minos.common.database.clients.abc.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-minos.common.database.clients.abc">
+<span id="minos-common-database-clients-abc"></span><h1>minos.common.database.clients.abc<a class="headerlink" href="#module-minos.common.database.clients.abc" title="Permalink to this headline"></a></h1>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#minos.common.database.clients.abc.DatabaseClient" title="minos.common.database.clients.abc.DatabaseClient"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DatabaseClient</span></code></a></p></td>
+<td><p>Database Client base class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#minos.common.database.clients.abc.DatabaseClientBuilder" title="minos.common.database.clients.abc.DatabaseClientBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DatabaseClientBuilder</span></code></a></p></td>
+<td><p>Database Client Builder class.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DatabaseClient</span></span><a class="reference internal" href="../_modules/minos/common/database/clients/abc.html#DatabaseClient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a>, <a class="reference internal" href="minos.common.builders.html#minos.common.builders.BuildableMixin" title="minos.common.builders.BuildableMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">BuildableMixin</span></code></a></p>
+<p>Database Client base class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/database/clients/abc.html#DatabaseClient.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.__init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.is_valid">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/database/clients/abc.html#DatabaseClient.is_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.is_valid" title="Permalink to this definition"></a></dt>
+<dd><p>Check if the instance is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if it is valid or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.reset">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/database/clients/abc.html#DatabaseClient.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Reset the current instance status.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Additional named parameters.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.execute">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/database/clients/abc.html#DatabaseClient.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.execute" title="Permalink to this definition"></a></dt>
+<dd><p>Execute an operation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>operation</strong> (<a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a>) – The operation to be executed.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.lock">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lock</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="minos.common.database.locks.impl.html#minos.common.database.locks.impl.DatabaseLock" title="minos.common.database.locks.impl.DatabaseLock"><span class="pre">DatabaseLock</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.lock" title="Permalink to this definition"></a></dt>
+<dd><p>Get the lock.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">DatabaseLock</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.fetch_one">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fetch_one</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/database/clients/abc.html#DatabaseClient.fetch_one"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.fetch_one" title="Permalink to this definition"></a></dt>
+<dd><p>Fetch one value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.fetch_all">
+<span class="sig-name descname"><span class="pre">fetch_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/database/clients/abc.html#DatabaseClient.fetch_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.fetch_all" title="Permalink to this definition"></a></dt>
+<dd><p>Fetch all values with an asynchronous iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncIterator" title="(in Python v3.10)"><em>AsyncIterator</em></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.set_factory">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_factory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impl</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/database/clients/abc.html#DatabaseClient.set_factory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.set_factory" title="Permalink to this definition"></a></dt>
+<dd><p>Register an operation factory implementation for an operation factory interface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>[</em><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperationFactory" title="minos.common.database.operations.DatabaseOperationFactory"><em>minos.common.database.operations.DatabaseOperationFactory</em></a><em>]</em>) – The operation factory interface.</p></li>
+<li><p><strong>impl</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>[</em><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperationFactory" title="minos.common.database.operations.DatabaseOperationFactory"><em>minos.common.database.operations.DatabaseOperationFactory</em></a><em>]</em>) – The operation factory implementation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.get_factory">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_factory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/database/clients/abc.html#DatabaseClient.get_factory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.get_factory" title="Permalink to this definition"></a></dt>
+<dd><p>Get an operation factory implementation for an operation factory interface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>base</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>[</em><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperationFactory" title="minos.common.database.operations.DatabaseOperationFactory"><em>minos.common.database.operations.DatabaseOperationFactory</em></a><em>]</em>) – The operation factory interface.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The operation factory implementation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperationFactory" title="minos.common.database.operations.DatabaseOperationFactory"><em>DatabaseOperationFactory</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.already_destroyed">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_destroyed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.already_destroyed" title="Permalink to this definition"></a></dt>
+<dd><p>Already Destroy getter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A boolean value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.already_setup">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_setup</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.already_setup" title="Permalink to this definition"></a></dt>
+<dd><p>Already Setup getter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A boolean value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.destroy">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.destroy" title="Permalink to this definition"></a></dt>
+<dd><p>Destroy miscellaneous repository things.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.from_config">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.from_config" title="Permalink to this definition"></a></dt>
+<dd><p>Build a new instance from config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference internal" href="minos.common.config.abc.html#minos.common.config.abc.Config" title="minos.common.config.abc.Config"><em>Config</em></a><em>, </em><em>Path</em><em>]</em><em>]</em>) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A instance of the called class.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>S</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.get_builder">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_builder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.get_builder" title="Permalink to this definition"></a></dt>
+<dd><p>Get the builder class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">Builder</span></code> instance.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="minos.common.builders.html#minos.common.builders.Builder" title="minos.common.builders.Builder"><em>Builder</em></a>[<em>Ins</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.set_builder">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">builder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.set_builder" title="Permalink to this definition"></a></dt>
+<dd><p>Set a builder class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>builder</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><em>Union</em></a><em>[</em><a class="reference internal" href="minos.common.builders.html#minos.common.builders.Builder" title="minos.common.builders.Builder"><em>Builder</em></a><em>[</em><em>Ins</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>[</em><a class="reference internal" href="minos.common.builders.html#minos.common.builders.Builder" title="minos.common.builders.Builder"><em>minos.common.builders.Builder</em></a><em>[</em><em>~Ins</em><em>]</em><em>]</em><em>]</em>) – The builder class to be set.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClient.setup">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClient.setup" title="Permalink to this definition"></a></dt>
+<dd><p>Setup miscellaneous repository things.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DatabaseClientBuilder</span></span><a class="reference internal" href="../_modules/minos/common/database/clients/abc.html#DatabaseClientBuilder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.common.builders.html#minos.common.builders.Builder" title="minos.common.builders.Builder"><code class="xref py py-class docutils literal notranslate"><span class="pre">Builder</span></code></a>[<a class="reference internal" href="#minos.common.database.clients.abc.DatabaseClient" title="minos.common.database.clients.abc.DatabaseClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseClient</span></code></a>]</p>
+<p>Database Client Builder class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder.with_name">
+<span class="sig-name descname"><span class="pre">with_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/database/clients/abc.html#DatabaseClientBuilder.with_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder.with_name" title="Permalink to this definition"></a></dt>
+<dd><p>Set name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The name to be added.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method return the builder instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#minos.common.database.clients.abc.DatabaseClientBuilder" title="minos.common.database.clients.abc.DatabaseClientBuilder"><em>DatabaseClientBuilder</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance_cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>instance_cls</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>[</em><em>~Instance</em><em>]</em><em>]</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder.already_destroyed">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_destroyed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder.already_destroyed" title="Permalink to this definition"></a></dt>
+<dd><p>Already Destroy getter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A boolean value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder.already_setup">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_setup</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder.already_setup" title="Permalink to this definition"></a></dt>
+<dd><p>Already Setup getter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A boolean value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder.build">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder.build" title="Permalink to this definition"></a></dt>
+<dd><p>Build the instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">Instance</span></code> instance.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>Instance</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder.copy" title="Permalink to this definition"></a></dt>
+<dd><p>Get a copy of the instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">Builder</span></code> instance.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>self</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>[</em><em>~B</em><em>]</em>) – </p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>B</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder.destroy">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder.destroy" title="Permalink to this definition"></a></dt>
+<dd><p>Destroy miscellaneous repository things.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder.from_config">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder.from_config" title="Permalink to this definition"></a></dt>
+<dd><p>Build a new instance from config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference internal" href="minos.common.config.abc.html#minos.common.config.abc.Config" title="minos.common.config.abc.Config"><em>Config</em></a><em>, </em><em>Path</em><em>]</em><em>]</em>) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A instance of the called class.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>S</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder.new">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">new</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder.new" title="Permalink to this definition"></a></dt>
+<dd><p>Get a new instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">Builder</span></code> instance.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>B</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder.setup">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder.setup" title="Permalink to this definition"></a></dt>
+<dd><p>Setup miscellaneous repository things.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder.with_cls">
+<span class="sig-name descname"><span class="pre">with_cls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder.with_cls" title="Permalink to this definition"></a></dt>
+<dd><p>Set class to be built.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a>) – The class to be set.</p></li>
+<li><p><strong>self</strong> (<em>B</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method return the builder instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>B</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder.with_config">
+<span class="sig-name descname"><span class="pre">with_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/database/clients/abc.html#DatabaseClientBuilder.with_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder.with_config" title="Permalink to this definition"></a></dt>
+<dd><p>Set config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> (<a class="reference internal" href="minos.common.config.abc.html#minos.common.config.abc.Config" title="minos.common.config.abc.Config"><em>Config</em></a>) – The config to be set.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method return the builder instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#minos.common.database.clients.abc.DatabaseClientBuilder" title="minos.common.database.clients.abc.DatabaseClientBuilder"><em>DatabaseClientBuilder</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.database.clients.abc.DatabaseClientBuilder.with_kwargs">
+<span class="sig-name descname"><span class="pre">with_kwargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.common.database.clients.abc.DatabaseClientBuilder.with_kwargs" title="Permalink to this definition"></a></dt>
+<dd><p>Set kwargs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a><em>]</em>) – The kwargs to be set.</p></li>
+<li><p><strong>self</strong> (<em>B</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method return the builder instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>B</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.common.database.clients.html" class="btn btn-neutral float-left" title="minos.common.database.clients" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.common.database.clients.exceptions.html" class="btn btn-neutral float-right" title="minos.common.database.clients.exceptions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

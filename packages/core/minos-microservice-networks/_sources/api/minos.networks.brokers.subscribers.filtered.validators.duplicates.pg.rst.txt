@@ -1,7 +1,0 @@
-minos.networks.brokers.subscribers.filtered.validators.duplicates.pg module
-===========================================================================
-
-.. automodule:: minos.networks.brokers.subscribers.filtered.validators.duplicates.pg
-   :members:
-   :undoc-members:
-   :show-inheritance:

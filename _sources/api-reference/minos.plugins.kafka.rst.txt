@@ -1,0 +1,33 @@
+﻿minos.plugins.kafka
+===================
+
+.. automodule:: minos.plugins.kafka
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.plugins.kafka.common
+   minos.plugins.kafka.publisher
+   minos.plugins.kafka.subscriber
+

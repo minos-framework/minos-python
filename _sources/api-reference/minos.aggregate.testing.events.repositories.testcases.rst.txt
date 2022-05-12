@@ -1,0 +1,29 @@
+minos.aggregate.testing.events.repositories.testcases
+=====================================================
+
+.. automodule:: minos.aggregate.testing.events.repositories.testcases
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EventRepositoryTestCase
+   
+   
+
+   
+   
+   
+
+
+

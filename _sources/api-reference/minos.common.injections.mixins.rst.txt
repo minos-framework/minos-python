@@ -1,0 +1,29 @@
+minos.common.injections.mixins
+==============================
+
+.. automodule:: minos.common.injections.mixins
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InjectableMixin
+   
+   
+
+   
+   
+   
+
+
+

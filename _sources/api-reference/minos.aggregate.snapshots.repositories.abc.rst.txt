@@ -1,0 +1,29 @@
+minos.aggregate.snapshots.repositories.abc
+==========================================
+
+.. automodule:: minos.aggregate.snapshots.repositories.abc
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SnapshotRepository
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,7 +1,0 @@
-minos.saga.messages module
-==========================
-
-.. automodule:: minos.saga.messages
-   :members:
-   :undoc-members:
-   :show-inheritance:

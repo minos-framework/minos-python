@@ -1,0 +1,31 @@
+minos.aggregate.events.fields
+=============================
+
+.. automodule:: minos.aggregate.events.fields
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FieldDiff
+      FieldDiffContainer
+      IncrementalFieldDiff
+   
+   
+
+   
+   
+   
+
+
+

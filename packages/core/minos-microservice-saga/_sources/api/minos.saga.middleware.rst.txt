@@ -1,7 +1,0 @@
-minos.saga.middleware module
-============================
-
-.. automodule:: minos.saga.middleware
-   :members:
-   :undoc-members:
-   :show-inheritance:

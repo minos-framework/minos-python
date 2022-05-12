@@ -1,0 +1,34 @@
+﻿minos.plugins.kong
+==================
+
+.. automodule:: minos.plugins.kong
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.plugins.kong.client
+   minos.plugins.kong.discovery
+   minos.plugins.kong.middleware
+   minos.plugins.kong.utils
+

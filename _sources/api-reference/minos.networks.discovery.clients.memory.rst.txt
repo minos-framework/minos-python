@@ -1,0 +1,29 @@
+minos.networks.discovery.clients.memory
+=======================================
+
+.. automodule:: minos.networks.discovery.clients.memory
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InMemoryDiscoveryClient
+   
+   
+
+   
+   
+   
+
+
+

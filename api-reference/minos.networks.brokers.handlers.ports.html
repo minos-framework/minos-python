@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.networks.brokers.handlers.ports &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.networks.brokers.messages" href="minos.networks.brokers.messages.html" />
+    <link rel="prev" title="minos.networks.brokers.handlers.impl" href="minos.networks.brokers.handlers.impl.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="minos.networks.html">minos.networks</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="minos.networks.brokers.html">minos.networks.brokers</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.clients.html">minos.networks.brokers.clients</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.collections.html">minos.networks.brokers.collections</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.dispatchers.html">minos.networks.brokers.dispatchers</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="minos.networks.brokers.handlers.html">minos.networks.brokers.handlers</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="minos.networks.brokers.handlers.impl.html">minos.networks.brokers.handlers.impl</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">minos.networks.brokers.handlers.ports</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.messages.html">minos.networks.brokers.messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.pools.html">minos.networks.brokers.pools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.publishers.html">minos.networks.brokers.publishers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.subscribers.html">minos.networks.brokers.subscribers</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.decorators.html">minos.networks.decorators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.discovery.html">minos.networks.discovery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.exceptions.html">minos.networks.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.http.html">minos.networks.http</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.requests.html">minos.networks.requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.routers.html">minos.networks.routers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.scheduling.html">minos.networks.scheduling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.specs.html">minos.networks.specs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.system.html">minos.networks.system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.testing.html">minos.networks.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.utils.html">minos.networks.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="minos.networks.html">minos.networks</a> &raquo;</li>
+          <li><a href="minos.networks.brokers.html">minos.networks.brokers</a> &raquo;</li>
+          <li><a href="minos.networks.brokers.handlers.html">minos.networks.brokers.handlers</a> &raquo;</li>
+      <li>minos.networks.brokers.handlers.ports</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/minos.networks.brokers.handlers.ports.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-minos.networks.brokers.handlers.ports">
+<span id="minos-networks-brokers-handlers-ports"></span><h1>minos.networks.brokers.handlers.ports<a class="headerlink" href="#module-minos.networks.brokers.handlers.ports" title="Permalink to this headline"></a></h1>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#minos.networks.brokers.handlers.ports.BrokerHandlerService" title="minos.networks.brokers.handlers.ports.BrokerHandlerService"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BrokerHandlerService</span></code></a></p></td>
+<td><p>Broker Handler Service class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#minos.networks.brokers.handlers.ports.BrokerPort" title="minos.networks.brokers.handlers.ports.BrokerPort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BrokerPort</span></code></a></p></td>
+<td><p>Broker Port class.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerPort">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BrokerPort</span></span><a class="reference internal" href="../_modules/minos/networks/brokers/handlers/ports.html#BrokerPort"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerPort" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.common.ports.html#minos.common.ports.Port" title="minos.common.ports.Port"><code class="xref py py-class docutils literal notranslate"><span class="pre">Port</span></code></a></p>
+<p>Broker Port class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerPort.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/brokers/handlers/ports.html#BrokerPort.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerPort.__init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerPort.handler">
+<span class="sig-name descname"><span class="pre">handler</span></span><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerPort.handler" title="Permalink to this definition"></a></dt>
+<dd><p>Get the service handler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">Handler</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerPort.context">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">context</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">aiomisc.context.Context</span></em><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerPort.context" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerPort.set_loop">
+<span class="sig-name descname"><span class="pre">set_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loop</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerPort.set_loop" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>loop</strong> (<em>AbstractEventLoop</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerPort.start">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerPort.start" title="Permalink to this definition"></a></dt>
+<dd><p>Start the port execution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerPort.start_event">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start_event</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">asyncio.locks.Event</span></em><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerPort.start_event" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerPort.stop">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerPort.stop" title="Permalink to this definition"></a></dt>
+<dd><p>Stop the port execution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>err</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.10)"><em>Exception</em></a><em>]</em>) – Optional exception that stopped the execution.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerHandlerService">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BrokerHandlerService</span></span><a class="reference internal" href="../_modules/minos/networks/brokers/handlers/ports.html#BrokerHandlerService"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerHandlerService" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#minos.networks.brokers.handlers.ports.BrokerPort" title="minos.networks.brokers.handlers.ports.BrokerPort"><code class="xref py py-class docutils literal notranslate"><span class="pre">BrokerPort</span></code></a></p>
+<p>Broker Handler Service class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerHandlerService.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/networks/brokers/handlers/ports.html#BrokerHandlerService.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerHandlerService.__init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerHandlerService.context">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">context</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">aiomisc.context.Context</span></em><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerHandlerService.context" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerHandlerService.handler">
+<span class="sig-name descname"><span class="pre">handler</span></span><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerHandlerService.handler" title="Permalink to this definition"></a></dt>
+<dd><p>Get the service handler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">Handler</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerHandlerService.set_loop">
+<span class="sig-name descname"><span class="pre">set_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loop</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerHandlerService.set_loop" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>loop</strong> (<em>AbstractEventLoop</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerHandlerService.start">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerHandlerService.start" title="Permalink to this definition"></a></dt>
+<dd><p>Start the port execution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerHandlerService.start_event">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start_event</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">asyncio.locks.Event</span></em><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerHandlerService.start_event" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.handlers.ports.BrokerHandlerService.stop">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.handlers.ports.BrokerHandlerService.stop" title="Permalink to this definition"></a></dt>
+<dd><p>Stop the port execution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>err</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.10)"><em>Exception</em></a><em>]</em>) – Optional exception that stopped the execution.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.networks.brokers.handlers.impl.html" class="btn btn-neutral float-left" title="minos.networks.brokers.handlers.impl" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.networks.brokers.messages.html" class="btn btn-neutral float-right" title="minos.networks.brokers.messages" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

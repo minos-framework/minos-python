@@ -1,0 +1,31 @@
+minos.networks.decorators.definitions.http.rest
+===============================================
+
+.. automodule:: minos.networks.decorators.definitions.http.rest
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      RestCommandEnrouteDecorator
+      RestEnrouteDecorator
+      RestQueryEnrouteDecorator
+   
+   
+
+   
+   
+   
+
+
+

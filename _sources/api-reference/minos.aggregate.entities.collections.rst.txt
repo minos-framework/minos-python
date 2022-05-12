@@ -1,0 +1,29 @@
+minos.aggregate.entities.collections
+====================================
+
+.. automodule:: minos.aggregate.entities.collections
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EntitySet
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,32 @@
+minos.common.model.serializers.avro
+===================================
+
+.. automodule:: minos.common.model.serializers.avro
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.common.model.serializers.avro.data
+   minos.common.model.serializers.avro.schema
+

@@ -1,0 +1,29 @@
+minos.networks.decorators.definitions.kinds
+===========================================
+
+.. automodule:: minos.networks.decorators.definitions.kinds
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EnrouteDecoratorKind
+   
+   
+
+   
+   
+   
+
+
+

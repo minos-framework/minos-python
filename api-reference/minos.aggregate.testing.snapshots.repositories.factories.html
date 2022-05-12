@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.aggregate.testing.snapshots.repositories.factories &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.aggregate.testing.snapshots.repositories.testcases" href="minos.aggregate.testing.snapshots.repositories.testcases.html" />
+    <link rel="prev" title="minos.aggregate.testing.snapshots.repositories" href="minos.aggregate.testing.snapshots.repositories.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="minos.aggregate.html">minos.aggregate</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.actions.html">minos.aggregate.actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.aggregate.html">minos.aggregate.aggregate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.collections.html">minos.aggregate.collections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.contextvars.html">minos.aggregate.contextvars</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.entities.html">minos.aggregate.entities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.events.html">minos.aggregate.events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.exceptions.html">minos.aggregate.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.queries.html">minos.aggregate.queries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.snapshots.html">minos.aggregate.snapshots</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="minos.aggregate.testing.html">minos.aggregate.testing</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.testing.events.html">minos.aggregate.testing.events</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="minos.aggregate.testing.snapshots.html">minos.aggregate.testing.snapshots</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="minos.aggregate.testing.snapshots.repositories.html">minos.aggregate.testing.snapshots.repositories</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.testing.transactions.html">minos.aggregate.testing.transactions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.transactions.html">minos.aggregate.transactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.value_objects.html">minos.aggregate.value_objects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="minos.aggregate.html">minos.aggregate</a> &raquo;</li>
+          <li><a href="minos.aggregate.testing.html">minos.aggregate.testing</a> &raquo;</li>
+          <li><a href="minos.aggregate.testing.snapshots.html">minos.aggregate.testing.snapshots</a> &raquo;</li>
+          <li><a href="minos.aggregate.testing.snapshots.repositories.html">minos.aggregate.testing.snapshots.repositories</a> &raquo;</li>
+      <li>minos.aggregate.testing.snapshots.repositories.factories</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/minos.aggregate.testing.snapshots.repositories.factories.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-minos.aggregate.testing.snapshots.repositories.factories">
+<span id="minos-aggregate-testing-snapshots-repositories-factories"></span><h1>minos.aggregate.testing.snapshots.repositories.factories<a class="headerlink" href="#module-minos.aggregate.testing.snapshots.repositories.factories" title="Permalink to this headline"></a></h1>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory" title="minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MockedSnapshotDatabaseOperationFactory</span></code></a></p></td>
+<td><p>For testing purposes.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MockedSnapshotDatabaseOperationFactory</span></span><a class="reference internal" href="../_modules/minos/aggregate/testing/snapshots/repositories/factories.html#MockedSnapshotDatabaseOperationFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.aggregate.snapshots.repositories.database.factories.html#minos.aggregate.snapshots.repositories.database.factories.SnapshotDatabaseOperationFactory" title="minos.aggregate.snapshots.repositories.database.factories.SnapshotDatabaseOperationFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">SnapshotDatabaseOperationFactory</span></code></a></p>
+<p>For testing purposes.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_create">
+<span class="sig-name descname"><span class="pre">build_create</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/snapshots/repositories/factories.html#MockedSnapshotDatabaseOperationFactory.build_create"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_create" title="Permalink to this definition"></a></dt>
+<dd><p>For testing purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_delete">
+<span class="sig-name descname"><span class="pre">build_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transaction_uuids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/snapshots/repositories/factories.html#MockedSnapshotDatabaseOperationFactory.build_delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_delete" title="Permalink to this definition"></a></dt>
+<dd><p>For testing purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>transaction_uuids</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.10)"><em>Iterable</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>UUID</em></a><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_submit">
+<span class="sig-name descname"><span class="pre">build_submit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uuid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created_at</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">updated_at</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_uuid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/snapshots/repositories/factories.html#MockedSnapshotDatabaseOperationFactory.build_submit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_submit" title="Permalink to this definition"></a></dt>
+<dd><p>For testing purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>UUID</em></a>) – </p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>version</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p></li>
+<li><p><strong>schema</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.10)"><em>bytes</em></a>) – </p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a><em>]</em>) – </p></li>
+<li><p><strong>created_at</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><em>datetime</em></a>) – </p></li>
+<li><p><strong>updated_at</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><em>datetime</em></a>) – </p></li>
+<li><p><strong>transaction_uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>UUID</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_query">
+<span class="sig-name descname"><span class="pre">build_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ordering</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_uuids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_deleted</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/snapshots/repositories/factories.html#MockedSnapshotDatabaseOperationFactory.build_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_query" title="Permalink to this definition"></a></dt>
+<dd><p>For testing purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>condition</strong> (<em>_Condition</em>) – </p></li>
+<li><p><strong>ordering</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><em>_Ordering</em><em>]</em>) – </p></li>
+<li><p><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – </p></li>
+<li><p><strong>transaction_uuids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>uuid.UUID</em></a><em>, </em><em>...</em><em>]</em>) – </p></li>
+<li><p><strong>exclude_deleted</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_submit_offset">
+<span class="sig-name descname"><span class="pre">build_submit_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/snapshots/repositories/factories.html#MockedSnapshotDatabaseOperationFactory.build_submit_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_submit_offset" title="Permalink to this definition"></a></dt>
+<dd><p>For testing purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_query_offset">
+<span class="sig-name descname"><span class="pre">build_query_offset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/snapshots/repositories/factories.html#MockedSnapshotDatabaseOperationFactory.build_query_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_query_offset" title="Permalink to this definition"></a></dt>
+<dd><p>For testing purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.aggregate.testing.snapshots.repositories.html" class="btn btn-neutral float-left" title="minos.aggregate.testing.snapshots.repositories" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.aggregate.testing.snapshots.repositories.testcases.html" class="btn btn-neutral float-right" title="minos.aggregate.testing.snapshots.repositories.testcases" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

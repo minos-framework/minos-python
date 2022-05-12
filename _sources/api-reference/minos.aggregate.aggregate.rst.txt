@@ -1,0 +1,29 @@
+minos.aggregate.aggregate
+=========================
+
+.. automodule:: minos.aggregate.aggregate
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Aggregate
+   
+   
+
+   
+   
+   
+
+
+

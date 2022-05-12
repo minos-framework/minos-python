@@ -1,0 +1,29 @@
+minos.plugins.graphql.builders.schema
+=====================================
+
+.. automodule:: minos.plugins.graphql.builders.schema
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GraphQLSchemaBuilder
+   
+   
+
+   
+   
+   
+
+
+

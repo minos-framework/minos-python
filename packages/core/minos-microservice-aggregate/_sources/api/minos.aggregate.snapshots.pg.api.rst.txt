@@ -1,7 +1,0 @@
-minos.aggregate.snapshots.pg.api module
-=======================================
-
-.. automodule:: minos.aggregate.snapshots.pg.api
-   :members:
-   :undoc-members:
-   :show-inheritance:

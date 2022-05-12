@@ -1,7 +1,0 @@
-minos.networks.brokers.handlers.impl module
-===========================================
-
-.. automodule:: minos.networks.brokers.handlers.impl
-   :members:
-   :undoc-members:
-   :show-inheritance:

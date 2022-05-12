@@ -1,7 +1,0 @@
-minos.networks.brokers.dispatchers.impl module
-==============================================
-
-.. automodule:: minos.networks.brokers.dispatchers.impl
-   :members:
-   :undoc-members:
-   :show-inheritance:

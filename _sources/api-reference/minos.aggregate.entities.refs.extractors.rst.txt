@@ -1,0 +1,29 @@
+minos.aggregate.entities.refs.extractors
+========================================
+
+.. automodule:: minos.aggregate.entities.refs.extractors
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      RefExtractor
+   
+   
+
+   
+   
+   
+
+
+

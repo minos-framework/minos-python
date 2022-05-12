@@ -1,0 +1,32 @@
+minos.aggregate.testing.snapshots.repositories
+==============================================
+
+.. automodule:: minos.aggregate.testing.snapshots.repositories
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.aggregate.testing.snapshots.repositories.factories
+   minos.aggregate.testing.snapshots.repositories.testcases
+

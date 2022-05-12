@@ -1,7 +1,0 @@
-minos.plugins.kafka.common module
-=================================
-
-.. automodule:: minos.plugins.kafka.common
-   :members:
-   :undoc-members:
-   :show-inheritance:

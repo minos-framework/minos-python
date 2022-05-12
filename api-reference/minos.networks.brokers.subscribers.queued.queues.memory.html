@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.networks.brokers.subscribers.queued.queues.memory &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.networks.decorators" href="minos.networks.decorators.html" />
+    <link rel="prev" title="minos.networks.brokers.subscribers.queued.queues.database.impl" href="minos.networks.brokers.subscribers.queued.queues.database.impl.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="minos.networks.html">minos.networks</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="minos.networks.brokers.html">minos.networks.brokers</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.clients.html">minos.networks.brokers.clients</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.collections.html">minos.networks.brokers.collections</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.dispatchers.html">minos.networks.brokers.dispatchers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.handlers.html">minos.networks.brokers.handlers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.messages.html">minos.networks.brokers.messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.pools.html">minos.networks.brokers.pools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.networks.brokers.publishers.html">minos.networks.brokers.publishers</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="minos.networks.brokers.subscribers.html">minos.networks.brokers.subscribers</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="minos.networks.brokers.subscribers.abc.html">minos.networks.brokers.subscribers.abc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="minos.networks.brokers.subscribers.filtered.html">minos.networks.brokers.subscribers.filtered</a></li>
+<li class="toctree-l4"><a class="reference internal" href="minos.networks.brokers.subscribers.memory.html">minos.networks.brokers.subscribers.memory</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="minos.networks.brokers.subscribers.queued.html">minos.networks.brokers.subscribers.queued</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.decorators.html">minos.networks.decorators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.discovery.html">minos.networks.discovery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.exceptions.html">minos.networks.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.http.html">minos.networks.http</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.requests.html">minos.networks.requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.routers.html">minos.networks.routers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.scheduling.html">minos.networks.scheduling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.specs.html">minos.networks.specs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.system.html">minos.networks.system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.testing.html">minos.networks.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.utils.html">minos.networks.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="minos.networks.html">minos.networks</a> &raquo;</li>
+          <li><a href="minos.networks.brokers.html">minos.networks.brokers</a> &raquo;</li>
+          <li><a href="minos.networks.brokers.subscribers.html">minos.networks.brokers.subscribers</a> &raquo;</li>
+          <li><a href="minos.networks.brokers.subscribers.queued.html">minos.networks.brokers.subscribers.queued</a> &raquo;</li>
+          <li><a href="minos.networks.brokers.subscribers.queued.queues.html">minos.networks.brokers.subscribers.queued.queues</a> &raquo;</li>
+      <li>minos.networks.brokers.subscribers.queued.queues.memory</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/minos.networks.brokers.subscribers.queued.queues.memory.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-minos.networks.brokers.subscribers.queued.queues.memory">
+<span id="minos-networks-brokers-subscribers-queued-queues-memory"></span><h1>minos.networks.brokers.subscribers.queued.queues.memory<a class="headerlink" href="#module-minos.networks.brokers.subscribers.queued.queues.memory" title="Permalink to this headline"></a></h1>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue" title="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InMemoryBrokerSubscriberQueue</span></code></a></p></td>
+<td><p>In Memory Broker Subscriber Queue class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder" title="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InMemoryBrokerSubscriberQueueBuilder</span></code></a></p></td>
+<td><p>In Memory Broker Subscriber Queue Builder class.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">InMemoryBrokerSubscriberQueue</span></span><a class="reference internal" href="../_modules/minos/networks/brokers/subscribers/queued/queues/memory.html#InMemoryBrokerSubscriberQueue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.networks.brokers.collections.queues.memory.html#minos.networks.brokers.collections.queues.memory.InMemoryBrokerQueue" title="minos.networks.brokers.collections.queues.memory.InMemoryBrokerQueue"><code class="xref py py-class docutils literal notranslate"><span class="pre">InMemoryBrokerQueue</span></code></a>, <a class="reference internal" href="minos.networks.brokers.subscribers.queued.queues.abc.html#minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueue" title="minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueue"><code class="xref py py-class docutils literal notranslate"><span class="pre">BrokerSubscriberQueue</span></code></a></p>
+<p>In Memory Broker Subscriber Queue class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.__init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.already_destroyed">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_destroyed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.already_destroyed" title="Permalink to this definition"></a></dt>
+<dd><p>Already Destroy getter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A boolean value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.already_setup">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_setup</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.already_setup" title="Permalink to this definition"></a></dt>
+<dd><p>Already Setup getter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A boolean value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.dequeue">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dequeue</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.dequeue" title="Permalink to this definition"></a></dt>
+<dd><p>Dequeue method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.networks.brokers.messages.models.abc.html#minos.networks.brokers.messages.models.abc.BrokerMessage" title="minos.networks.brokers.messages.models.abc.BrokerMessage"><em>BrokerMessage</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.destroy">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.destroy" title="Permalink to this definition"></a></dt>
+<dd><p>Destroy miscellaneous repository things.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.enqueue">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">enqueue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.enqueue" title="Permalink to this definition"></a></dt>
+<dd><p>Enqueue method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>message</strong> (<a class="reference internal" href="minos.networks.brokers.messages.models.abc.html#minos.networks.brokers.messages.models.abc.BrokerMessage" title="minos.networks.brokers.messages.models.abc.BrokerMessage"><em>BrokerMessage</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.from_config">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.from_config" title="Permalink to this definition"></a></dt>
+<dd><p>Build a new instance from config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference internal" href="minos.common.config.abc.html#minos.common.config.abc.Config" title="minos.common.config.abc.Config"><em>Config</em></a><em>, </em><em>Path</em><em>]</em><em>]</em>) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A instance of the called class.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>S</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.get_builder">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_builder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.get_builder" title="Permalink to this definition"></a></dt>
+<dd><p>Get the builder class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">Builder</span></code> instance.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="minos.common.builders.html#minos.common.builders.Builder" title="minos.common.builders.Builder"><em>Builder</em></a>[<em>Ins</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.set_builder">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">builder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.set_builder" title="Permalink to this definition"></a></dt>
+<dd><p>Set a builder class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>builder</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><em>Union</em></a><em>[</em><a class="reference internal" href="minos.common.builders.html#minos.common.builders.Builder" title="minos.common.builders.Builder"><em>Builder</em></a><em>[</em><em>Ins</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>[</em><a class="reference internal" href="minos.common.builders.html#minos.common.builders.Builder" title="minos.common.builders.Builder"><em>minos.common.builders.Builder</em></a><em>[</em><em>~Ins</em><em>]</em><em>]</em><em>]</em>) – The builder class to be set.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.setup">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.setup" title="Permalink to this definition"></a></dt>
+<dd><p>Setup miscellaneous repository things.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.topics">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">topics</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.10)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.topics" title="Permalink to this definition"></a></dt>
+<dd><p>Topics getter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A list of string values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">InMemoryBrokerSubscriberQueueBuilder</span></span><a class="reference internal" href="../_modules/minos/networks/brokers/subscribers/queued/queues/memory.html#InMemoryBrokerSubscriberQueueBuilder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.networks.brokers.subscribers.queued.queues.abc.html#minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder" title="minos.networks.brokers.subscribers.queued.queues.abc.BrokerSubscriberQueueBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">BrokerSubscriberQueueBuilder</span></code></a>[<a class="reference internal" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue" title="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue"><code class="xref py py-class docutils literal notranslate"><span class="pre">InMemoryBrokerSubscriberQueue</span></code></a>]</p>
+<p>In Memory Broker Subscriber Queue Builder class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance_cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>instance_cls</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>[</em><em>~Instance</em><em>]</em><em>]</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.already_destroyed">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_destroyed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.already_destroyed" title="Permalink to this definition"></a></dt>
+<dd><p>Already Destroy getter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A boolean value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.already_setup">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">already_setup</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.already_setup" title="Permalink to this definition"></a></dt>
+<dd><p>Already Setup getter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A boolean value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.build">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.build" title="Permalink to this definition"></a></dt>
+<dd><p>Build the instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">Instance</span></code> instance.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>Instance</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.copy" title="Permalink to this definition"></a></dt>
+<dd><p>Get a copy of the instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">Builder</span></code> instance.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>self</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>[</em><em>~B</em><em>]</em>) – </p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>B</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.destroy">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.destroy" title="Permalink to this definition"></a></dt>
+<dd><p>Destroy miscellaneous repository things.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.from_config">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.from_config" title="Permalink to this definition"></a></dt>
+<dd><p>Build a new instance from config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference internal" href="minos.common.config.abc.html#minos.common.config.abc.Config" title="minos.common.config.abc.Config"><em>Config</em></a><em>, </em><em>Path</em><em>]</em><em>]</em>) – Config instance. If <cite>None</cite> is provided, default config is chosen.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A instance of the called class.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>S</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.new">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">new</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.new" title="Permalink to this definition"></a></dt>
+<dd><p>Get a new instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">Builder</span></code> instance.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>B</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.setup">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.setup" title="Permalink to this definition"></a></dt>
+<dd><p>Setup miscellaneous repository things.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method does not return anything.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.with_cls">
+<span class="sig-name descname"><span class="pre">with_cls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.with_cls" title="Permalink to this definition"></a></dt>
+<dd><p>Set class to be built.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a>) – The class to be set.</p></li>
+<li><p><strong>self</strong> (<em>B</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method return the builder instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>B</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.with_config">
+<span class="sig-name descname"><span class="pre">with_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.with_config" title="Permalink to this definition"></a></dt>
+<dd><p>Set config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<a class="reference internal" href="minos.common.config.abc.html#minos.common.config.abc.Config" title="minos.common.config.abc.Config"><em>Config</em></a>) – The config to be set.</p></li>
+<li><p><strong>self</strong> (<em>B</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method return the builder instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>B</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.with_kwargs">
+<span class="sig-name descname"><span class="pre">with_kwargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.with_kwargs" title="Permalink to this definition"></a></dt>
+<dd><p>Set kwargs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a><em>]</em>) – The kwargs to be set.</p></li>
+<li><p><strong>self</strong> (<em>B</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method return the builder instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>B</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.with_topics">
+<span class="sig-name descname"><span class="pre">with_topics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topics</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueueBuilder.with_topics" title="Permalink to this definition"></a></dt>
+<dd><p>Set topics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>topics</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.10)"><em>Iterable</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – The topics to be set.</p></li>
+<li><p><strong>self</strong> (<em>B</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This method return the builder instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>B</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.networks.brokers.subscribers.queued.queues.database.impl.html" class="btn btn-neutral float-left" title="minos.networks.brokers.subscribers.queued.queues.database.impl" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.networks.decorators.html" class="btn btn-neutral float-right" title="minos.networks.decorators" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

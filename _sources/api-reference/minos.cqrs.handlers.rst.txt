@@ -1,0 +1,29 @@
+minos.cqrs.handlers
+===================
+
+.. automodule:: minos.cqrs.handlers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PreEventHandler
+   
+   
+
+   
+   
+   
+
+
+

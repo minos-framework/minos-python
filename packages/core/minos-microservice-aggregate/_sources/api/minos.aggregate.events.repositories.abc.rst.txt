@@ -1,7 +1,0 @@
-minos.aggregate.events.repositories.abc module
-==============================================
-
-.. automodule:: minos.aggregate.events.repositories.abc
-   :members:
-   :undoc-members:
-   :show-inheritance:

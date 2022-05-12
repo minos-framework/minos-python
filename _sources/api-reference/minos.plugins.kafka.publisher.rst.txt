@@ -1,0 +1,30 @@
+minos.plugins.kafka.publisher
+=============================
+
+.. automodule:: minos.plugins.kafka.publisher
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      KafkaBrokerPublisher
+      KafkaBrokerPublisherBuilder
+   
+   
+
+   
+   
+   
+
+
+

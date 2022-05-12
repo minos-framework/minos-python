@@ -1,7 +1,0 @@
-minos.saga.executions.saga module
-=================================
-
-.. automodule:: minos.saga.executions.saga
-   :members:
-   :undoc-members:
-   :show-inheritance:

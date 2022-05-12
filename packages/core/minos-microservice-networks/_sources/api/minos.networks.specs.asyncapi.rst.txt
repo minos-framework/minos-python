@@ -1,7 +1,0 @@
-minos.networks.specs.asyncapi module
-====================================
-
-.. automodule:: minos.networks.specs.asyncapi
-   :members:
-   :undoc-members:
-   :show-inheritance:

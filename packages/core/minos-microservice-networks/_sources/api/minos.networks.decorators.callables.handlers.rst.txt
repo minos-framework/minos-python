@@ -1,7 +1,0 @@
-minos.networks.decorators.callables.handlers module
-===================================================
-
-.. automodule:: minos.networks.decorators.callables.handlers
-   :members:
-   :undoc-members:
-   :show-inheritance:

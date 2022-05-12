@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.networks &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.networks.brokers" href="minos.networks.brokers.html" />
+    <link rel="prev" title="minos.cqrs.services" href="minos.cqrs.services.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">minos.networks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.brokers.html">minos.networks.brokers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.decorators.html">minos.networks.decorators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.discovery.html">minos.networks.discovery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.exceptions.html">minos.networks.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.http.html">minos.networks.http</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.requests.html">minos.networks.requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.routers.html">minos.networks.routers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.scheduling.html">minos.networks.scheduling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.specs.html">minos.networks.specs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.system.html">minos.networks.system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.testing.html">minos.networks.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.networks.utils.html">minos.networks.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>minos.networks</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/minos.networks.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-minos.networks">
+<span id="minos-networks"></span><h1>minos.networks<a class="headerlink" href="#module-minos.networks" title="Permalink to this headline"></a></h1>
+<p>The networks core of the Minos Framework.</p>
+<p class="rubric">Modules</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.networks.brokers.html#module-minos.networks.brokers" title="minos.networks.brokers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.brokers</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.networks.decorators.html#module-minos.networks.decorators" title="minos.networks.decorators"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.decorators</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.networks.discovery.html#module-minos.networks.discovery" title="minos.networks.discovery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.discovery</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.networks.exceptions.html#module-minos.networks.exceptions" title="minos.networks.exceptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.exceptions</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.networks.http.html#module-minos.networks.http" title="minos.networks.http"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.http</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.networks.requests.html#module-minos.networks.requests" title="minos.networks.requests"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.requests</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.networks.routers.html#module-minos.networks.routers" title="minos.networks.routers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.routers</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.networks.scheduling.html#module-minos.networks.scheduling" title="minos.networks.scheduling"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.scheduling</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.networks.specs.html#module-minos.networks.specs" title="minos.networks.specs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.specs</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.networks.system.html#module-minos.networks.system" title="minos.networks.system"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.system</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.networks.testing.html#module-minos.networks.testing" title="minos.networks.testing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.testing</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.networks.utils.html#module-minos.networks.utils" title="minos.networks.utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.networks.utils</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.cqrs.services.html" class="btn btn-neutral float-left" title="minos.cqrs.services" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.networks.brokers.html" class="btn btn-neutral float-right" title="minos.networks.brokers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,7 +1,0 @@
-minos.networks.http.adapters module
-===================================
-
-.. automodule:: minos.networks.http.adapters
-   :members:
-   :undoc-members:
-   :show-inheritance:

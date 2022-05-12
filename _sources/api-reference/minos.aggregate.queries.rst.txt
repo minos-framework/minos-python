@@ -1,0 +1,30 @@
+minos.aggregate.queries
+=======================
+
+.. automodule:: minos.aggregate.queries
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Condition
+      Ordering
+   
+   
+
+   
+   
+   
+
+
+

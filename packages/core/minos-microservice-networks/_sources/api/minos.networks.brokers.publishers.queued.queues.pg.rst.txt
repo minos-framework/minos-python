@@ -1,7 +1,0 @@
-minos.networks.brokers.publishers.queued.queues.pg module
-=========================================================
-
-.. automodule:: minos.networks.brokers.publishers.queued.queues.pg
-   :members:
-   :undoc-members:
-   :show-inheritance:

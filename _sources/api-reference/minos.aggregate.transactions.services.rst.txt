@@ -1,0 +1,29 @@
+minos.aggregate.transactions.services
+=====================================
+
+.. automodule:: minos.aggregate.transactions.services
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TransactionService
+   
+   
+
+   
+   
+   
+
+
+

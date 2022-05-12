@@ -1,0 +1,29 @@
+minos.networks.decorators.factories
+===================================
+
+.. automodule:: minos.networks.decorators.factories
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EnrouteFactory
+   
+   
+
+   
+   
+   
+
+
+

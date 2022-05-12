@@ -1,0 +1,30 @@
+minos.common.model.types.model\_types
+=====================================
+
+.. automodule:: minos.common.model.types.model_types
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FieldType
+      ModelType
+   
+   
+
+   
+   
+   
+
+
+

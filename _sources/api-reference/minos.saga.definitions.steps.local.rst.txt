@@ -1,0 +1,29 @@
+minos.saga.definitions.steps.local
+==================================
+
+.. automodule:: minos.saga.definitions.steps.local
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LocalSagaStep
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+minos.saga.definitions.steps.remote
+===================================
+
+.. automodule:: minos.saga.definitions.steps.remote
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      RemoteSagaStep
+   
+   
+
+   
+   
+   
+
+
+

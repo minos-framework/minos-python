@@ -1,7 +1,0 @@
-minos.networks.brokers.publishers.queued.queues.abc module
-==========================================================
-
-.. automodule:: minos.networks.brokers.publishers.queued.queues.abc
-   :members:
-   :undoc-members:
-   :show-inheritance:

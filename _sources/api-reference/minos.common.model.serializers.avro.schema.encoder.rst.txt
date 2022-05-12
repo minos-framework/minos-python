@@ -1,0 +1,29 @@
+minos.common.model.serializers.avro.schema.encoder
+==================================================
+
+.. automodule:: minos.common.model.serializers.avro.schema.encoder
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AvroSchemaEncoder
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,7 +1,0 @@
-minos.networks.decorators.definitions.checkers module
-=====================================================
-
-.. automodule:: minos.networks.decorators.definitions.checkers
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,0 +1,33 @@
+﻿minos.cqrs
+==========
+
+.. automodule:: minos.cqrs
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.cqrs.exceptions
+   minos.cqrs.handlers
+   minos.cqrs.services
+

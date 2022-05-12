@@ -1,7 +1,0 @@
-minos.networks.discovery.connectors module
-==========================================
-
-.. automodule:: minos.networks.discovery.connectors
-   :members:
-   :undoc-members:
-   :show-inheritance:

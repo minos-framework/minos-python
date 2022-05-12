@@ -1,0 +1,29 @@
+minos.aggregate.testing.snapshots.repositories.factories
+========================================================
+
+.. automodule:: minos.aggregate.testing.snapshots.repositories.factories
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MockedSnapshotDatabaseOperationFactory
+   
+   
+
+   
+   
+   
+
+
+

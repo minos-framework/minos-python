@@ -1,0 +1,29 @@
+minos.aggregate.transactions.repositories.memory
+================================================
+
+.. automodule:: minos.aggregate.transactions.repositories.memory
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InMemoryTransactionRepository
+   
+   
+
+   
+   
+   
+
+
+

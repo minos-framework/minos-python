@@ -1,7 +1,0 @@
-minos.aggregate.entities.refs.models module
-===========================================
-
-.. automodule:: minos.aggregate.entities.refs.models
-   :members:
-   :undoc-members:
-   :show-inheritance:

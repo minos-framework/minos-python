@@ -1,0 +1,32 @@
+minos.common.model.serializers.abc
+==================================
+
+.. automodule:: minos.common.model.serializers.abc
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DataDecoder
+      DataEncoder
+      SchemaDecoder
+      SchemaEncoder
+   
+   
+
+   
+   
+   
+
+
+

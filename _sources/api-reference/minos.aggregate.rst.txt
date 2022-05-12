@@ -1,0 +1,42 @@
+﻿minos.aggregate
+===============
+
+.. automodule:: minos.aggregate
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.aggregate.actions
+   minos.aggregate.aggregate
+   minos.aggregate.collections
+   minos.aggregate.contextvars
+   minos.aggregate.entities
+   minos.aggregate.events
+   minos.aggregate.exceptions
+   minos.aggregate.queries
+   minos.aggregate.snapshots
+   minos.aggregate.testing
+   minos.aggregate.transactions
+   minos.aggregate.value_objects
+

@@ -1,0 +1,32 @@
+minos.aggregate.testing.events.repositories
+===========================================
+
+.. automodule:: minos.aggregate.testing.events.repositories
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.aggregate.testing.events.repositories.factories
+   minos.aggregate.testing.events.repositories.testcases
+

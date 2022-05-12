@@ -1,7 +1,0 @@
-minos.networks.brokers.subscribers.queued.queues.memory module
-==============================================================
-
-.. automodule:: minos.networks.brokers.subscribers.queued.queues.memory
-   :members:
-   :undoc-members:
-   :show-inheritance:

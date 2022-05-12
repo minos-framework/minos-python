@@ -1,0 +1,30 @@
+minos.common.model.declarative
+==============================
+
+.. automodule:: minos.common.model.declarative
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DeclarativeModel
+      MinosModel
+   
+   
+
+   
+   
+   
+
+
+

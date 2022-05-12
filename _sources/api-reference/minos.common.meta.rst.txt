@@ -1,0 +1,36 @@
+minos.common.meta
+=================
+
+.. automodule:: minos.common.meta
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      classproperty
+      property_or_classproperty
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      self_or_classmethod
+   
+   
+
+   
+   
+   
+
+
+

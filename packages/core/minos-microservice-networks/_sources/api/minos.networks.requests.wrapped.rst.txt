@@ -1,7 +1,0 @@
-minos.networks.requests.wrapped module
-======================================
-
-.. automodule:: minos.networks.requests.wrapped
-   :members:
-   :undoc-members:
-   :show-inheritance:

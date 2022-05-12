@@ -1,7 +1,0 @@
-minos.common.ports module
-=========================
-
-.. automodule:: minos.common.ports
-   :members:
-   :undoc-members:
-   :show-inheritance:

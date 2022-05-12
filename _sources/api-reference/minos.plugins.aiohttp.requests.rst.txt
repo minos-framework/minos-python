@@ -1,0 +1,36 @@
+minos.plugins.aiohttp.requests
+==============================
+
+.. automodule:: minos.plugins.aiohttp.requests
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AioHttpRequest
+      AioHttpResponse
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      AioHttpResponseException
+   
+   
+
+
+

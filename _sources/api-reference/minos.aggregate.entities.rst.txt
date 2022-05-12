@@ -1,0 +1,33 @@
+minos.aggregate.entities
+========================
+
+.. automodule:: minos.aggregate.entities
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.aggregate.entities.collections
+   minos.aggregate.entities.models
+   minos.aggregate.entities.refs
+

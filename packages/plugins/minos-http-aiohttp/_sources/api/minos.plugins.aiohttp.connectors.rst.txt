@@ -1,7 +1,0 @@
-minos.plugins.aiohttp.connectors module
-=======================================
-
-.. automodule:: minos.plugins.aiohttp.connectors
-   :members:
-   :undoc-members:
-   :show-inheritance:

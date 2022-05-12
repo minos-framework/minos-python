@@ -1,7 +1,0 @@
-minos.common.builders module
-============================
-
-.. automodule:: minos.common.builders
-   :members:
-   :undoc-members:
-   :show-inheritance:

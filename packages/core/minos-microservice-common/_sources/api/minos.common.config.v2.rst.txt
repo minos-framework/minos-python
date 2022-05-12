@@ -1,7 +1,0 @@
-minos.common.config.v2 module
-=============================
-
-.. automodule:: minos.common.config.v2
-   :members:
-   :undoc-members:
-   :show-inheritance:

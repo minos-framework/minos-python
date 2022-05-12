@@ -1,0 +1,29 @@
+minos.aggregate.entities.refs.models
+====================================
+
+.. automodule:: minos.aggregate.entities.refs.models
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Ref
+   
+   
+
+   
+   
+   
+
+
+

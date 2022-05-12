@@ -1,0 +1,29 @@
+minos.saga.middleware
+=====================
+
+.. automodule:: minos.saga.middleware
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      transactional_command
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

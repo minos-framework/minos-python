@@ -1,0 +1,33 @@
+﻿minos.plugins.rabbitmq
+======================
+
+.. automodule:: minos.plugins.rabbitmq
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.plugins.rabbitmq.common
+   minos.plugins.rabbitmq.publisher
+   minos.plugins.rabbitmq.subscriber
+

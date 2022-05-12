@@ -1,0 +1,37 @@
+minos.common.model.types.comparators
+====================================
+
+.. automodule:: minos.common.model.types.comparators
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      is_model_subclass
+      is_model_type
+      is_type_subclass
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TypeHintComparator
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,7 +1,0 @@
-minos.saga.definitions.steps.remote module
-==========================================
-
-.. automodule:: minos.saga.definitions.steps.remote
-   :members:
-   :undoc-members:
-   :show-inheritance:

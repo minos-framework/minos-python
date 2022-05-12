@@ -1,7 +1,0 @@
-minos.networks.decorators.definitions.abc module
-================================================
-
-.. automodule:: minos.networks.decorators.definitions.abc
-   :members:
-   :undoc-members:
-   :show-inheritance:

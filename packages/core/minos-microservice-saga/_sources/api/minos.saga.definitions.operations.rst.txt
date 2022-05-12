@@ -1,7 +1,0 @@
-minos.saga.definitions.operations module
-========================================
-
-.. automodule:: minos.saga.definitions.operations
-   :members:
-   :undoc-members:
-   :show-inheritance:

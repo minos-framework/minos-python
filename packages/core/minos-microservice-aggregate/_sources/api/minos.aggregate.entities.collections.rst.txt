@@ -1,7 +1,0 @@
-minos.aggregate.entities.collections module
-===========================================
-
-.. automodule:: minos.aggregate.entities.collections
-   :members:
-   :undoc-members:
-   :show-inheritance:

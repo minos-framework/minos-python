@@ -1,0 +1,30 @@
+minos.common.setup
+==================
+
+.. automodule:: minos.common.setup
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MinosSetup
+      SetupMixin
+   
+   
+
+   
+   
+   
+
+
+

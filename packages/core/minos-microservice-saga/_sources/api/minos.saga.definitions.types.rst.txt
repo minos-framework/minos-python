@@ -1,7 +1,0 @@
-minos.saga.definitions.types module
-===================================
-
-.. automodule:: minos.saga.definitions.types
-   :members:
-   :undoc-members:
-   :show-inheritance:

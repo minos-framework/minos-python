@@ -1,0 +1,30 @@
+minos.networks.decorators.callables.handlers
+============================================
+
+.. automodule:: minos.networks.decorators.callables.handlers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      HandlerMeta
+      HandlerWrapper
+   
+   
+
+   
+   
+   
+
+
+

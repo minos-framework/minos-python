@@ -1,0 +1,29 @@
+minos.aggregate.testing.events.repositories.factories
+=====================================================
+
+.. automodule:: minos.aggregate.testing.events.repositories.factories
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MockedEventDatabaseOperationFactory
+   
+   
+
+   
+   
+   
+
+
+

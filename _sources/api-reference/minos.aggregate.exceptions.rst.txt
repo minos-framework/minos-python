@@ -1,0 +1,40 @@
+minos.aggregate.exceptions
+==========================
+
+.. automodule:: minos.aggregate.exceptions
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      AggregateException
+      AlreadyDeletedException
+      EventRepositoryConflictException
+      EventRepositoryException
+      NotFoundException
+      RefException
+      SnapshotRepositoryConflictException
+      SnapshotRepositoryException
+      TransactionNotFoundException
+      TransactionRepositoryConflictException
+      TransactionRepositoryException
+      ValueObjectException
+   
+   
+
+
+

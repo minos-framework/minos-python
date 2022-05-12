@@ -1,0 +1,30 @@
+minos.aggregate.value\_objects
+==============================
+
+.. automodule:: minos.aggregate.value_objects
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ValueObject
+      ValueObjectSet
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,7 +1,0 @@
-minos.networks.brokers.clients module
-=====================================
-
-.. automodule:: minos.networks.brokers.clients
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,0 +1,29 @@
+minos.plugins.rabbitmq.common
+=============================
+
+.. automodule:: minos.plugins.rabbitmq.common
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      RabbitMQBrokerBuilderMixin
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+minos.networks.specs.openapi
+============================
+
+.. automodule:: minos.networks.specs.openapi
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OpenAPIService
+   
+   
+
+   
+   
+   
+
+
+

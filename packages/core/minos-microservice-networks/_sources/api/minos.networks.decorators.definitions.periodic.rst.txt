@@ -1,7 +1,0 @@
-minos.networks.decorators.definitions.periodic module
-=====================================================
-
-.. automodule:: minos.networks.decorators.definitions.periodic
-   :members:
-   :undoc-members:
-   :show-inheritance:

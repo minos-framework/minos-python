@@ -1,0 +1,29 @@
+minos.aggregate.snapshots.services
+==================================
+
+.. automodule:: minos.aggregate.snapshots.services
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SnapshotService
+   
+   
+
+   
+   
+   
+
+
+

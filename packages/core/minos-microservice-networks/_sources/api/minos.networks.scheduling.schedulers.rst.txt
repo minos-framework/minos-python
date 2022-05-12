@@ -1,7 +1,0 @@
-minos.networks.scheduling.schedulers module
-===========================================
-
-.. automodule:: minos.networks.scheduling.schedulers
-   :members:
-   :undoc-members:
-   :show-inheritance:

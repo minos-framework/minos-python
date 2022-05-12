@@ -1,0 +1,34 @@
+minos.aggregate.events
+======================
+
+.. automodule:: minos.aggregate.events
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.aggregate.events.entries
+   minos.aggregate.events.fields
+   minos.aggregate.events.models
+   minos.aggregate.events.repositories
+

@@ -1,0 +1,6 @@
+minos.plugins.kong.middleware
+=============================
+
+.. currentmodule:: minos.plugins.kong
+
+.. autofunction:: middleware

@@ -1,0 +1,33 @@
+minos.aggregate.transactions.repositories
+=========================================
+
+.. automodule:: minos.aggregate.transactions.repositories
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.aggregate.transactions.repositories.abc
+   minos.aggregate.transactions.repositories.database
+   minos.aggregate.transactions.repositories.memory
+

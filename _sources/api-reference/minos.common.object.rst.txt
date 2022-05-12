@@ -1,0 +1,29 @@
+minos.common.object
+===================
+
+.. automodule:: minos.common.object
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Object
+   
+   
+
+   
+   
+   
+
+
+

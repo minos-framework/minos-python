@@ -1,7 +1,0 @@
-minos.networks.decorators.definitions.kinds module
-==================================================
-
-.. automodule:: minos.networks.decorators.definitions.kinds
-   :members:
-   :undoc-members:
-   :show-inheritance:

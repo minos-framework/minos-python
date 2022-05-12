@@ -1,0 +1,32 @@
+minos.plugins.graphql.decorators
+================================
+
+.. automodule:: minos.plugins.graphql.decorators
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GraphQlCommandEnrouteDecorator
+      GraphQlEnroute
+      GraphQlEnrouteDecorator
+      GraphQlQueryEnrouteDecorator
+   
+   
+
+   
+   
+   
+
+
+

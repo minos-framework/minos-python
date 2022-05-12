@@ -1,7 +1,0 @@
-minos.networks.scheduling.crontab module
-========================================
-
-.. automodule:: minos.networks.scheduling.crontab
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,7 +1,0 @@
-minos.aggregate.snapshots.services module
-=========================================
-
-.. automodule:: minos.aggregate.snapshots.services
-   :members:
-   :undoc-members:
-   :show-inheritance:

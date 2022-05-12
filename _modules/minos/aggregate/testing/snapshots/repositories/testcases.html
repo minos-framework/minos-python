@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.aggregate.testing.snapshots.repositories.testcases &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" />
+    <link href="../../../../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.aggregate.testing.snapshots.repositories.testcases</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.aggregate.testing.snapshots.repositories.testcases</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ABC</span><span class="p">,</span>
+    <span class="n">abstractmethod</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">timedelta</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Optional</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MagicMock</span><span class="p">,</span>
+    <span class="n">call</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">uuid4</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.aggregate</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Action</span><span class="p">,</span>
+    <span class="n">AlreadyDeletedException</span><span class="p">,</span>
+    <span class="n">Condition</span><span class="p">,</span>
+    <span class="n">EventEntry</span><span class="p">,</span>
+    <span class="n">FieldDiff</span><span class="p">,</span>
+    <span class="n">FieldDiffContainer</span><span class="p">,</span>
+    <span class="n">NotFoundException</span><span class="p">,</span>
+    <span class="n">Ordering</span><span class="p">,</span>
+    <span class="n">Ref</span><span class="p">,</span>
+    <span class="n">RootEntity</span><span class="p">,</span>
+    <span class="n">SnapshotEntry</span><span class="p">,</span>
+    <span class="n">SnapshotRepository</span><span class="p">,</span>
+    <span class="n">TransactionEntry</span><span class="p">,</span>
+    <span class="n">TransactionStatus</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">classname</span><span class="p">,</span>
+    <span class="n">current_datetime</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.common.testing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MinosTestCase</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase">[docs]</a><span class="k">class</span> <span class="nc">SnapshotRepositoryTestCase</span><span class="p">(</span><span class="n">MinosTestCase</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="n">__test__</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">snapshot_repository</span><span class="p">:</span> <span class="n">SnapshotRepository</span>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.Owner"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.Owner">[docs]</a>    <span class="k">class</span> <span class="nc">Owner</span><span class="p">(</span><span class="n">RootEntity</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For testing purposes&quot;&quot;&quot;</span>
+
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="n">surname</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="n">age</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.Car"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.Car">[docs]</a>    <span class="k">class</span> <span class="nc">Car</span><span class="p">(</span><span class="n">RootEntity</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For testing purposes&quot;&quot;&quot;</span>
+
+        <span class="n">doors</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="n">color</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Ref</span><span class="p">[</span><span class="n">SnapshotRepositoryTestCase</span><span class="o">.</span><span class="n">Owner</span><span class="p">]]</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.setUp"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_snapshot_repository</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">transaction_1</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transaction_2</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transaction_3</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transaction_4</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.build_snapshot_repository"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.build_snapshot_repository">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">build_snapshot_repository</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SnapshotRepository</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.populate"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.populate">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">FieldDiffContainer</span><span class="p">([</span><span class="n">FieldDiff</span><span class="p">(</span><span class="s2">&quot;doors&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">FieldDiff</span><span class="p">(</span><span class="s2">&quot;color&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">)])</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">classname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">)</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">))</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">))</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">))</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">))</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">))</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">,</span> <span class="n">transaction_uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span>
+            <span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">(),</span> <span class="n">transaction_uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_2</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">,</span> <span class="n">transaction_uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">))</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span>
+            <span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">(),</span> <span class="n">transaction_uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_3</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction_repository</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+            <span class="n">TransactionEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_1</span><span class="p">,</span> <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">,</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction_repository</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+            <span class="n">TransactionEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_2</span><span class="p">,</span> <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">,</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction_repository</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+            <span class="n">TransactionEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_3</span><span class="p">,</span> <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">REJECTED</span><span class="p">,</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction_repository</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+            <span class="n">TransactionEntry</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">transaction_4</span><span class="p">,</span> <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">REJECTED</span><span class="p">,</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction_3</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.populate_and_synchronize"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.populate_and_synchronize">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">populate_and_synchronize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">()</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.synchronize"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.synchronize">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">synchronize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.asyncSetUp"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.asyncSetUp">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">asyncSetUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">asyncSetUp</span><span class="p">()</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.asyncTearDown"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.asyncTearDown">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">asyncTearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">asyncTearDown</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.assert_equal_snapshot_entries"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.assert_equal_snapshot_entries">[docs]</a>    <span class="k">def</span> <span class="nf">assert_equal_snapshot_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expected</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SnapshotEntry</span><span class="p">],</span> <span class="n">observed</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SnapshotEntry</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">expected</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">exp</span><span class="p">,</span> <span class="n">obs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">AlreadyDeletedException</span><span class="p">):</span>
+                    <span class="c1"># noinspection PyStatementEffect</span>
+                    <span class="n">obs</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">build</span><span class="p">(),</span> <span class="n">obs</span><span class="o">.</span><span class="n">build</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">created_at</span> <span class="ow">or</span> <span class="n">current_datetime</span><span class="p">(),</span> <span class="n">obs</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">updated_at</span> <span class="ow">or</span> <span class="n">current_datetime</span><span class="p">(),</span> <span class="n">obs</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_type"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_type">[docs]</a>    <span class="k">def</span> <span class="nf">test_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="p">,</span> <span class="n">SnapshotRepository</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_dispatch"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_dispatch">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find_entries</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="o">.</span><span class="n">classname</span><span class="p">,</span> <span class="n">Condition</span><span class="o">.</span><span class="n">TRUE</span><span class="p">,</span> <span class="n">Ordering</span><span class="o">.</span><span class="n">ASC</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">),</span> <span class="n">exclude_deleted</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">]</span>
+
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">SnapshotEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="o">.</span><span class="n">classname</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+            <span class="n">SnapshotEntry</span><span class="o">.</span><span class="n">from_root_entity</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                    <span class="mi">3</span><span class="p">,</span>
+                    <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                    <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span>
+                    <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                    <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">SnapshotEntry</span><span class="o">.</span><span class="n">from_root_entity</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                    <span class="mi">3</span><span class="p">,</span>
+                    <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                    <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span>
+                    <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                    <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assert_equal_snapshot_entries</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_dispatch_first_transaction"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_dispatch_first_transaction">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_dispatch_first_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find_entries</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="o">.</span><span class="n">classname</span><span class="p">,</span>
+            <span class="n">Condition</span><span class="o">.</span><span class="n">TRUE</span><span class="p">,</span>
+            <span class="n">Ordering</span><span class="o">.</span><span class="n">ASC</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">),</span>
+            <span class="n">exclude_deleted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">transaction</span><span class="o">=</span><span class="n">TransactionEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_1</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">]</span>
+
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">SnapshotEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="o">.</span><span class="n">classname</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+            <span class="n">SnapshotEntry</span><span class="o">.</span><span class="n">from_root_entity</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                    <span class="mi">3</span><span class="p">,</span>
+                    <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                    <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span>
+                    <span class="n">version</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                    <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                    <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">SnapshotEntry</span><span class="o">.</span><span class="n">from_root_entity</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                    <span class="mi">3</span><span class="p">,</span>
+                    <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                    <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span>
+                    <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                    <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assert_equal_snapshot_entries</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_dispatch_second_transaction"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_dispatch_second_transaction">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_dispatch_second_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find_entries</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="o">.</span><span class="n">classname</span><span class="p">,</span>
+            <span class="n">Condition</span><span class="o">.</span><span class="n">TRUE</span><span class="p">,</span>
+            <span class="n">Ordering</span><span class="o">.</span><span class="n">ASC</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">),</span>
+            <span class="n">exclude_deleted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">transaction</span><span class="o">=</span><span class="n">TransactionEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_2</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">]</span>
+
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">SnapshotEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="o">.</span><span class="n">classname</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+            <span class="n">SnapshotEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="o">.</span><span class="n">classname</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+            <span class="n">SnapshotEntry</span><span class="o">.</span><span class="n">from_root_entity</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                    <span class="mi">3</span><span class="p">,</span>
+                    <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                    <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span>
+                    <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                    <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assert_equal_snapshot_entries</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_dispatch_third_transaction"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_dispatch_third_transaction">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_dispatch_third_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find_entries</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="o">.</span><span class="n">classname</span><span class="p">,</span>
+            <span class="n">Condition</span><span class="o">.</span><span class="n">TRUE</span><span class="p">,</span>
+            <span class="n">Ordering</span><span class="o">.</span><span class="n">ASC</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">),</span>
+            <span class="n">exclude_deleted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">transaction_uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_3</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">]</span>
+
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">SnapshotEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="o">.</span><span class="n">classname</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+            <span class="n">SnapshotEntry</span><span class="o">.</span><span class="n">from_root_entity</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                    <span class="mi">3</span><span class="p">,</span>
+                    <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                    <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span>
+                    <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                    <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">SnapshotEntry</span><span class="o">.</span><span class="n">from_root_entity</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                    <span class="mi">3</span><span class="p">,</span>
+                    <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                    <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span>
+                    <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                    <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assert_equal_snapshot_entries</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_dispatch_ignore_previous_version"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_dispatch_ignore_previous_version">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_dispatch_ignore_previous_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">()</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">FieldDiffContainer</span><span class="p">([</span><span class="n">FieldDiff</span><span class="p">(</span><span class="s2">&quot;doors&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">FieldDiff</span><span class="p">(</span><span class="s2">&quot;color&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">)])</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="o">.</span><span class="n">classname</span>
+        <span class="n">condition</span> <span class="o">=</span> <span class="n">Condition</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">_fn</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">id_gt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">id_gt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">id_gt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="k">yield</span> <span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Action</span><span class="o">.</span><span class="n">CREATE</span><span class="p">,</span> <span class="n">current_datetime</span><span class="p">())</span>
+            <span class="k">yield</span> <span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">Action</span><span class="o">.</span><span class="n">CREATE</span><span class="p">,</span> <span class="n">current_datetime</span><span class="p">())</span>
+            <span class="k">yield</span> <span class="n">EventEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">Action</span><span class="o">.</span><span class="n">CREATE</span><span class="p">,</span> <span class="n">current_datetime</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">select</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">(</span><span class="n">side_effect</span><span class="o">=</span><span class="n">_fn</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find_entries</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">condition</span><span class="p">)]</span>
+
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">SnapshotEntry</span><span class="p">(</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">schema</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="o">.</span><span class="n">avro_schema</span><span class="p">,</span>
+                <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">avro_data</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assert_equal_snapshot_entries</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_dispatch_with_offset"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_dispatch_with_offset">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_dispatch_with_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">()</span>
+
+        <span class="n">mock</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">(</span><span class="n">side_effect</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">select</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">select</span> <span class="o">=</span> <span class="n">mock</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">mock</span><span class="o">.</span><span class="n">call_count</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">call</span><span class="p">(</span><span class="n">id_gt</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">synchronize</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">mock</span><span class="o">.</span><span class="n">call_args</span><span class="p">)</span>
+        <span class="n">mock</span><span class="o">.</span><span class="n">reset_mock</span><span class="p">()</span>
+
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">EventEntry</span><span class="p">(</span>
+            <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="o">.</span><span class="n">classname</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">FieldDiffContainer</span><span class="p">([</span><span class="n">FieldDiff</span><span class="p">(</span><span class="s2">&quot;doors&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">FieldDiff</span><span class="p">(</span><span class="s2">&quot;color&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">avro_bytes</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_repository</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">mock</span><span class="o">.</span><span class="n">call_count</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">call</span><span class="p">(</span><span class="n">id_gt</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">synchronize</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">mock</span><span class="o">.</span><span class="n">call_args</span><span class="p">)</span>
+        <span class="n">mock</span><span class="o">.</span><span class="n">reset_mock</span><span class="p">()</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">mock</span><span class="o">.</span><span class="n">call_count</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">call</span><span class="p">(</span><span class="n">id_gt</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">synchronize</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">mock</span><span class="o">.</span><span class="n">call_args</span><span class="p">)</span>
+        <span class="n">mock</span><span class="o">.</span><span class="n">reset_mock</span><span class="p">()</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">mock</span><span class="o">.</span><span class="n">call_count</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">call</span><span class="p">(</span><span class="n">id_gt</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">synchronize</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">mock</span><span class="o">.</span><span class="n">call_args</span><span class="p">)</span>
+        <span class="n">mock</span><span class="o">.</span><span class="n">reset_mock</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_find_by_uuid"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_find_by_uuid">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_find_by_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+        <span class="n">condition</span> <span class="o">=</span> <span class="n">Condition</span><span class="o">.</span><span class="n">IN</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">])</span>
+
+        <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">ordering</span><span class="o">=</span><span class="n">Ordering</span><span class="o">.</span><span class="n">ASC</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">))</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">]</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_find_with_transaction"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_find_with_transaction">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_find_with_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+        <span class="n">condition</span> <span class="o">=</span> <span class="n">Condition</span><span class="o">.</span><span class="n">IN</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">])</span>
+
+        <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span>
+            <span class="n">condition</span><span class="p">,</span>
+            <span class="n">ordering</span><span class="o">=</span><span class="n">Ordering</span><span class="o">.</span><span class="n">ASC</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">),</span>
+            <span class="n">transaction</span><span class="o">=</span><span class="n">TransactionEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_1</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">]</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_find_with_transaction_delete"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_find_with_transaction_delete">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_find_with_transaction_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+        <span class="n">condition</span> <span class="o">=</span> <span class="n">Condition</span><span class="o">.</span><span class="n">IN</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">])</span>
+
+        <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span>
+            <span class="n">condition</span><span class="p">,</span>
+            <span class="n">ordering</span><span class="o">=</span><span class="n">Ordering</span><span class="o">.</span><span class="n">ASC</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">),</span>
+            <span class="n">transaction</span><span class="o">=</span><span class="n">TransactionEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_2</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">]</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_find_with_transaction_reverted"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_find_with_transaction_reverted">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_find_with_transaction_reverted</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+        <span class="n">condition</span> <span class="o">=</span> <span class="n">Condition</span><span class="o">.</span><span class="n">IN</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">])</span>
+
+        <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span>
+            <span class="n">condition</span><span class="p">,</span>
+            <span class="n">ordering</span><span class="o">=</span><span class="n">Ordering</span><span class="o">.</span><span class="n">ASC</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">),</span>
+            <span class="n">transaction</span><span class="o">=</span><span class="n">TransactionEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_4</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">]</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_find_streaming_true"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_find_streaming_true">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_find_streaming_true</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+        <span class="n">condition</span> <span class="o">=</span> <span class="n">Condition</span><span class="o">.</span><span class="n">IN</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">])</span>
+
+        <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">streaming_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ordering</span><span class="o">=</span><span class="n">Ordering</span><span class="o">.</span><span class="n">ASC</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">]</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_find_with_duplicates"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_find_with_duplicates">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_find_with_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+        <span class="n">uuids</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">]</span>
+        <span class="n">condition</span> <span class="o">=</span> <span class="n">Condition</span><span class="o">.</span><span class="n">IN</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="n">uuids</span><span class="p">)</span>
+
+        <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">ordering</span><span class="o">=</span><span class="n">Ordering</span><span class="o">.</span><span class="n">ASC</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">))</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">]</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_find_empty"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_find_empty">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_find_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span> <span class="n">Condition</span><span class="o">.</span><span class="n">FALSE</span><span class="p">)}</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_get"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_get">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_get</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">)</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+            <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span> <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="o">.</span><span class="n">updated_at</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_get_with_transaction"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_get_with_transaction">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_get_with_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+
+        <span class="n">observed</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="n">transaction</span><span class="o">=</span><span class="n">TransactionEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_1</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+            <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span> <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="o">.</span><span class="n">updated_at</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_get_raises"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_get_raises">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_get_raises</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">AlreadyDeletedException</span><span class="p">):</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid_1</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">NotFoundException</span><span class="p">):</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span> <span class="n">uuid4</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_get_with_transaction_raises"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_get_with_transaction_raises">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_get_with_transaction_raises</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">AlreadyDeletedException</span><span class="p">):</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span> <span class="n">transaction</span><span class="o">=</span><span class="n">TransactionEntry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_2</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_find"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_find">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_find</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+        <span class="n">condition</span> <span class="o">=</span> <span class="n">Condition</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">(</span><span class="s2">&quot;color&quot;</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">)</span>
+        <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">ordering</span><span class="o">=</span><span class="n">Ordering</span><span class="o">.</span><span class="n">ASC</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">))</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">]</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SnapshotRepositoryTestCase.test_find_all"><a class="viewcode-back" href="../../../../../../api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.test_find_all">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">test_find_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_and_synchronize</span><span class="p">()</span>
+        <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_repository</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">,</span> <span class="n">Condition</span><span class="o">.</span><span class="n">TRUE</span><span class="p">,</span> <span class="n">Ordering</span><span class="o">.</span><span class="n">ASC</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">))</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">]</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_2</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid_3</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
+                <span class="n">updated_at</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

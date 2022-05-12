@@ -1,7 +1,0 @@
-minos.aggregate.snapshots.abc module
-====================================
-
-.. automodule:: minos.aggregate.snapshots.abc
-   :members:
-   :undoc-members:
-   :show-inheritance:

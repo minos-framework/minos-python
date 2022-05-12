@@ -1,0 +1,29 @@
+minos.aggregate.events.repositories.database.factories
+======================================================
+
+.. automodule:: minos.aggregate.events.repositories.database.factories
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EventDatabaseOperationFactory
+   
+   
+
+   
+   
+   
+
+
+

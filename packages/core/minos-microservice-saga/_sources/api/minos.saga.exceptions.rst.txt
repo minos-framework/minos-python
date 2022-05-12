@@ -1,7 +1,0 @@
-minos.saga.exceptions module
-============================
-
-.. automodule:: minos.saga.exceptions
-   :members:
-   :undoc-members:
-   :show-inheritance:

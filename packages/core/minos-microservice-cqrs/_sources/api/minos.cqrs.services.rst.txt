@@ -1,7 +1,0 @@
-minos.cqrs.services module
-==========================
-
-.. automodule:: minos.cqrs.services
-   :members:
-   :undoc-members:
-   :show-inheritance:

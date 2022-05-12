@@ -1,0 +1,29 @@
+minos.networks.http.adapters
+============================
+
+.. automodule:: minos.networks.http.adapters
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      HttpAdapter
+   
+   
+
+   
+   
+   
+
+
+

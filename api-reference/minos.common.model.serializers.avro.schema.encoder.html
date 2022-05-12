@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.common.model.serializers.avro.schema.encoder &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.common.model.types" href="minos.common.model.types.html" />
+    <link rel="prev" title="minos.common.model.serializers.avro.schema.decoder" href="minos.common.model.serializers.avro.schema.decoder.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="minos.common.html">minos.common</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="minos.common.builders.html">minos.common.builders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.config.html">minos.common.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.database.html">minos.common.database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.datetime.html">minos.common.datetime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.exceptions.html">minos.common.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.importlib.html">minos.common.importlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.injections.html">minos.common.injections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.launchers.html">minos.common.launchers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.locks.html">minos.common.locks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.meta.html">minos.common.meta</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="minos.common.model.html">minos.common.model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="minos.common.model.abc.html">minos.common.model.abc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.common.model.declarative.html">minos.common.model.declarative</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.common.model.dynamic.html">minos.common.model.dynamic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.common.model.fields.html">minos.common.model.fields</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="minos.common.model.serializers.html">minos.common.model.serializers</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="minos.common.model.serializers.abc.html">minos.common.model.serializers.abc</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="minos.common.model.serializers.avro.html">minos.common.model.serializers.avro</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="minos.common.model.types.html">minos.common.model.types</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.object.html">minos.common.object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.pools.html">minos.common.pools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.ports.html">minos.common.ports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.protocol.html">minos.common.protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.retries.html">minos.common.retries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.setup.html">minos.common.setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.testing.html">minos.common.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.uuid.html">minos.common.uuid</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="minos.common.html">minos.common</a> &raquo;</li>
+          <li><a href="minos.common.model.html">minos.common.model</a> &raquo;</li>
+          <li><a href="minos.common.model.serializers.html">minos.common.model.serializers</a> &raquo;</li>
+          <li><a href="minos.common.model.serializers.avro.html">minos.common.model.serializers.avro</a> &raquo;</li>
+          <li><a href="minos.common.model.serializers.avro.schema.html">minos.common.model.serializers.avro.schema</a> &raquo;</li>
+      <li>minos.common.model.serializers.avro.schema.encoder</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/minos.common.model.serializers.avro.schema.encoder.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-minos.common.model.serializers.avro.schema.encoder">
+<span id="minos-common-model-serializers-avro-schema-encoder"></span><h1>minos.common.model.serializers.avro.schema.encoder<a class="headerlink" href="#module-minos.common.model.serializers.avro.schema.encoder" title="Permalink to this headline"></a></h1>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#minos.common.model.serializers.avro.schema.encoder.AvroSchemaEncoder" title="minos.common.model.serializers.avro.schema.encoder.AvroSchemaEncoder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AvroSchemaEncoder</span></code></a></p></td>
+<td><p>Avro Schema Encoder class.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.common.model.serializers.avro.schema.encoder.AvroSchemaEncoder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AvroSchemaEncoder</span></span><a class="reference internal" href="../_modules/minos/common/model/serializers/avro/schema/encoder.html#AvroSchemaEncoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.model.serializers.avro.schema.encoder.AvroSchemaEncoder" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.common.model.serializers.abc.html#minos.common.model.serializers.abc.SchemaEncoder" title="minos.common.model.serializers.abc.SchemaEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">SchemaEncoder</span></code></a></p>
+<p>Avro Schema Encoder class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.serializers.avro.schema.encoder.AvroSchemaEncoder.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/model/serializers/avro/schema/encoder.html#AvroSchemaEncoder.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.model.serializers.avro.schema.encoder.AvroSchemaEncoder.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>type_</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>]</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.serializers.avro.schema.encoder.AvroSchemaEncoder.build">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MissingSentinel</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/model/serializers/avro/schema/encoder.html#AvroSchemaEncoder.build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.model.serializers.avro.schema.encoder.AvroSchemaEncoder.build" title="Permalink to this definition"></a></dt>
+<dd><p>Build the avro schema for the given field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>type</strong> – The type to be encoded as a schema.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dictionary object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><em>Union</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.model.serializers.avro.schema.encoder.AvroSchemaEncoder.generate_random_str">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_random_str</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/model/serializers/avro/schema/encoder.html#AvroSchemaEncoder.generate_random_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.model.serializers.avro.schema.encoder.AvroSchemaEncoder.generate_random_str" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a random string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A random string value.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.common.model.serializers.avro.schema.decoder.html" class="btn btn-neutral float-left" title="minos.common.model.serializers.avro.schema.decoder" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.common.model.types.html" class="btn btn-neutral float-right" title="minos.common.model.types" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

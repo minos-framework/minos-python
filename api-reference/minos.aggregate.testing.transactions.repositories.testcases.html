@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.aggregate.testing.transactions.repositories.testcases &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.aggregate.transactions" href="minos.aggregate.transactions.html" />
+    <link rel="prev" title="minos.aggregate.testing.transactions.repositories.factories" href="minos.aggregate.testing.transactions.repositories.factories.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="minos.aggregate.html">minos.aggregate</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.actions.html">minos.aggregate.actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.aggregate.html">minos.aggregate.aggregate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.collections.html">minos.aggregate.collections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.contextvars.html">minos.aggregate.contextvars</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.entities.html">minos.aggregate.entities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.events.html">minos.aggregate.events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.exceptions.html">minos.aggregate.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.queries.html">minos.aggregate.queries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.snapshots.html">minos.aggregate.snapshots</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="minos.aggregate.testing.html">minos.aggregate.testing</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.testing.events.html">minos.aggregate.testing.events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.aggregate.testing.snapshots.html">minos.aggregate.testing.snapshots</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="minos.aggregate.testing.transactions.html">minos.aggregate.testing.transactions</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="minos.aggregate.testing.transactions.repositories.html">minos.aggregate.testing.transactions.repositories</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.transactions.html">minos.aggregate.transactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.aggregate.value_objects.html">minos.aggregate.value_objects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="minos.aggregate.html">minos.aggregate</a> &raquo;</li>
+          <li><a href="minos.aggregate.testing.html">minos.aggregate.testing</a> &raquo;</li>
+          <li><a href="minos.aggregate.testing.transactions.html">minos.aggregate.testing.transactions</a> &raquo;</li>
+          <li><a href="minos.aggregate.testing.transactions.repositories.html">minos.aggregate.testing.transactions.repositories</a> &raquo;</li>
+      <li>minos.aggregate.testing.transactions.repositories.testcases</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/minos.aggregate.testing.transactions.repositories.testcases.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-minos.aggregate.testing.transactions.repositories.testcases">
+<span id="minos-aggregate-testing-transactions-repositories-testcases"></span><h1>minos.aggregate.testing.transactions.repositories.testcases<a class="headerlink" href="#module-minos.aggregate.testing.transactions.repositories.testcases" title="Permalink to this headline"></a></h1>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase" title="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionRepositoryTestCase</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TransactionRepositoryTestCase</span></span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.common.testing.testcases.html#minos.common.testing.testcases.MinosTestCase" title="minos.common.testing.testcases.MinosTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">MinosTestCase</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.setUp" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.populate">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">populate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.populate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.populate" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.asyncSetUp">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asyncSetUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.asyncSetUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.asyncSetUp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.asyncTearDown">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asyncTearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.asyncTearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.asyncTearDown" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.tearDown" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.build_transaction_repository">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_transaction_repository</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.build_transaction_repository"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.build_transaction_repository" title="Permalink to this definition"></a></dt>
+<dd><p>For testing purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.aggregate.transactions.repositories.abc.html#minos.aggregate.transactions.repositories.abc.TransactionRepository" title="minos.aggregate.transactions.repositories.abc.TransactionRepository"><em>TransactionRepository</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_subclass">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_subclass</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_subclass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_subclass" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_submit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_submit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit_pending_raises">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_submit_pending_raises</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_submit_pending_raises"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit_pending_raises" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit_reserving_raises">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_submit_reserving_raises</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_submit_reserving_raises"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit_reserving_raises" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit_reserved_raises">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_submit_reserved_raises</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_submit_reserved_raises"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit_reserved_raises" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit_committing_raises">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_submit_committing_raises</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_submit_committing_raises"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit_committing_raises" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit_committed_raises">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_submit_committed_raises</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_submit_committed_raises"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit_committed_raises" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit_rejected_raises">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_submit_rejected_raises</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_submit_rejected_raises"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_submit_rejected_raises" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_empty">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_empty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_empty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_empty" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_uuid">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_uuid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_uuid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_uuid" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_uuid_ne">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_uuid_ne</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_uuid_ne"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_uuid_ne" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_uuid_in">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_uuid_in</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_uuid_in"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_uuid_in" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_destination_uuid">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_destination_uuid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_destination_uuid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_destination_uuid" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_status">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_status" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_status_in">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_status_in</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_status_in"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_status_in" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_event_offset">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_event_offset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_event_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_event_offset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_event_offset_lt">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_event_offset_lt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_event_offset_lt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_event_offset_lt" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_event_offset_gt">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_event_offset_gt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_event_offset_gt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_event_offset_gt" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_event_offset_le">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_event_offset_le</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_event_offset_le"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_event_offset_le" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_event_offset_ge">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_event_offset_ge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_event_offset_ge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_event_offset_ge" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_updated_at">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_updated_at</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_updated_at"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_updated_at" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_updated_at_lt">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_updated_at_lt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_updated_at_lt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_updated_at_lt" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_updated_at_gt">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_updated_at_gt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_updated_at_gt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_updated_at_gt" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_updated_at_le">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_updated_at_le</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_updated_at_le"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_updated_at_le" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_updated_at_ge">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_select_updated_at_ge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/aggregate/testing/transactions/repositories/testcases.html#TransactionRepositoryTestCase.test_select_updated_at_ge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.test_select_updated_at_ge" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – </p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.__new__">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__new__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.__new__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – </p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.get_config">
+<span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.get_config" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.common.config.abc.html#minos.common.config.abc.Config" title="minos.common.config.abc.Config"><em>Config</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.get_config_file_path">
+<span class="sig-name descname"><span class="pre">get_config_file_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.get_config_file_path" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.10)"><em>Path</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.get_injections">
+<span class="sig-name descname"><span class="pre">get_injections</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.get_injections" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><em>Union</em></a>[<a class="reference internal" href="minos.common.injections.mixins.html#minos.common.injections.mixins.InjectableMixin" title="minos.common.injections.mixins.InjectableMixin">minos.common.injections.mixins.InjectableMixin</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)">type</a>[<a class="reference internal" href="minos.common.injections.mixins.html#minos.common.injections.mixins.InjectableMixin" title="minos.common.injections.mixins.InjectableMixin">minos.common.injections.mixins.InjectableMixin</a>], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.CONFIG_FILE_PATH">
+<span class="sig-name descname"><span class="pre">CONFIG_FILE_PATH</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#minos.aggregate.testing.transactions.repositories.testcases.TransactionRepositoryTestCase.CONFIG_FILE_PATH" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.aggregate.testing.transactions.repositories.factories.html" class="btn btn-neutral float-left" title="minos.aggregate.testing.transactions.repositories.factories" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.aggregate.transactions.html" class="btn btn-neutral float-right" title="minos.aggregate.transactions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

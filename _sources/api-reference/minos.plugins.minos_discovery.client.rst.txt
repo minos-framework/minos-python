@@ -1,0 +1,29 @@
+minos.plugins.minos\_discovery.client
+=====================================
+
+.. automodule:: minos.plugins.minos_discovery.client
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MinosDiscoveryClient
+   
+   
+
+   
+   
+   
+
+
+

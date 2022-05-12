@@ -1,0 +1,29 @@
+minos.aggregate.entities.refs.injectors
+=======================================
+
+.. automodule:: minos.aggregate.entities.refs.injectors
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      RefInjector
+   
+   
+
+   
+   
+   
+
+
+

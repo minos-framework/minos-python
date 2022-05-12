@@ -1,0 +1,33 @@
+minos.common.protocol.avro
+==========================
+
+.. automodule:: minos.common.protocol.avro
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.common.protocol.avro.base
+   minos.common.protocol.avro.databases
+   minos.common.protocol.avro.messages
+

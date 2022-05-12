@@ -1,0 +1,29 @@
+minos.aggregate.actions
+=======================
+
+.. automodule:: minos.aggregate.actions
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Action
+   
+   
+
+   
+   
+   
+
+
+

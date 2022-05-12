@@ -1,7 +1,0 @@
-minos.common.database.pools module
-==================================
-
-.. automodule:: minos.common.database.pools
-   :members:
-   :undoc-members:
-   :show-inheritance:

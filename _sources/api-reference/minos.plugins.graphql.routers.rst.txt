@@ -1,0 +1,29 @@
+minos.plugins.graphql.routers
+=============================
+
+.. automodule:: minos.plugins.graphql.routers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GraphQlHttpRouter
+   
+   
+
+   
+   
+   
+
+
+

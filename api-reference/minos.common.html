@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.common &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.common.builders" href="minos.common.builders.html" />
+    <link rel="prev" title="minos.aggregate.value_objects" href="minos.aggregate.value_objects.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">minos.common</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.builders.html">minos.common.builders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.config.html">minos.common.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.database.html">minos.common.database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.datetime.html">minos.common.datetime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.exceptions.html">minos.common.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.importlib.html">minos.common.importlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.injections.html">minos.common.injections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.launchers.html">minos.common.launchers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.locks.html">minos.common.locks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.meta.html">minos.common.meta</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.model.html">minos.common.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.object.html">minos.common.object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.pools.html">minos.common.pools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.ports.html">minos.common.ports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.protocol.html">minos.common.protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.retries.html">minos.common.retries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.setup.html">minos.common.setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.testing.html">minos.common.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.uuid.html">minos.common.uuid</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>minos.common</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/minos.common.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-minos.common">
+<span id="minos-common"></span><h1>minos.common<a class="headerlink" href="#module-minos.common" title="Permalink to this headline"></a></h1>
+<p>The common core of the Minos Framework.</p>
+<p class="rubric">Modules</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.common.builders.html#module-minos.common.builders" title="minos.common.builders"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.builders</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.common.config.html#module-minos.common.config" title="minos.common.config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.config</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.common.database.html#module-minos.common.database" title="minos.common.database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.database</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.common.datetime.html#module-minos.common.datetime" title="minos.common.datetime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.datetime</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.common.exceptions.html#module-minos.common.exceptions" title="minos.common.exceptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.exceptions</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.common.importlib.html#module-minos.common.importlib" title="minos.common.importlib"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.importlib</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.common.injections.html#module-minos.common.injections" title="minos.common.injections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.injections</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.common.launchers.html#module-minos.common.launchers" title="minos.common.launchers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.launchers</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.common.locks.html#module-minos.common.locks" title="minos.common.locks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.locks</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.common.meta.html#module-minos.common.meta" title="minos.common.meta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.meta</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.common.model.html#module-minos.common.model" title="minos.common.model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.model</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.common.object.html#module-minos.common.object" title="minos.common.object"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.object</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.common.pools.html#module-minos.common.pools" title="minos.common.pools"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.pools</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.common.ports.html#module-minos.common.ports" title="minos.common.ports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.ports</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.common.protocol.html#module-minos.common.protocol" title="minos.common.protocol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.protocol</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.common.retries.html#module-minos.common.retries" title="minos.common.retries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.retries</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.common.setup.html#module-minos.common.setup" title="minos.common.setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.setup</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="minos.common.testing.html#module-minos.common.testing" title="minos.common.testing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.testing</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="minos.common.uuid.html#module-minos.common.uuid" title="minos.common.uuid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minos.common.uuid</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.aggregate.value_objects.html" class="btn btn-neutral float-left" title="minos.aggregate.value_objects" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.common.builders.html" class="btn btn-neutral float-right" title="minos.common.builders" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

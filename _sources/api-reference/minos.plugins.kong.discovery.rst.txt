@@ -1,0 +1,29 @@
+minos.plugins.kong.discovery
+============================
+
+.. automodule:: minos.plugins.kong.discovery
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      KongDiscoveryClient
+   
+   
+
+   
+   
+   
+
+
+

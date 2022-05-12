@@ -1,0 +1,30 @@
+minos.plugins.rabbitmq.publisher
+================================
+
+.. automodule:: minos.plugins.rabbitmq.publisher
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      RabbitMQBrokerPublisher
+      RabbitMQBrokerPublisherBuilder
+   
+   
+
+   
+   
+   
+
+
+

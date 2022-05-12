@@ -1,0 +1,31 @@
+minos.saga.messages
+===================
+
+.. automodule:: minos.saga.messages
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SagaRequest
+      SagaResponse
+      SagaResponseStatus
+   
+   
+
+   
+   
+   
+
+
+

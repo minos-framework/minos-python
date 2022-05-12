@@ -1,7 +1,0 @@
-minos.aggregate.transactions.repositories.pg module
-===================================================
-
-.. automodule:: minos.aggregate.transactions.repositories.pg
-   :members:
-   :undoc-members:
-   :show-inheritance:

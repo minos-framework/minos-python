@@ -1,7 +1,0 @@
-minos.common.injections.decorators module
-=========================================
-
-.. automodule:: minos.common.injections.decorators
-   :members:
-   :undoc-members:
-   :show-inheritance:

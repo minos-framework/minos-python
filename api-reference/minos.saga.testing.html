@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.saga.testing &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.saga.utils" href="minos.saga.utils.html" />
+    <link rel="prev" title="minos.saga.services" href="minos.saga.services.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="minos.saga.html">minos.saga</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="minos.saga.context.html">minos.saga.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.saga.definitions.html">minos.saga.definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.saga.exceptions.html">minos.saga.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.saga.executions.html">minos.saga.executions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.saga.manager.html">minos.saga.manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.saga.messages.html">minos.saga.messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.saga.middleware.html">minos.saga.middleware</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.saga.services.html">minos.saga.services</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">minos.saga.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.saga.utils.html">minos.saga.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="minos.saga.html">minos.saga</a> &raquo;</li>
+      <li>minos.saga.testing</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/minos.saga.testing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-minos.saga.testing">
+<span id="minos-saga-testing"></span><h1>minos.saga.testing<a class="headerlink" href="#module-minos.saga.testing" title="Permalink to this headline"></a></h1>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#minos.saga.testing.Foo" title="minos.saga.testing.Foo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Foo</span></code></a></p></td>
+<td><p>For testing purposes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory" title="minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MockedSagaExecutionDatabaseOperationFactory</span></code></a></p></td>
+<td><p>For testing purposes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#minos.saga.testing.SagaExecutionRepositoryTestCase" title="minos.saga.testing.SagaExecutionRepositoryTestCase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SagaExecutionRepositoryTestCase</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MockedSagaExecutionDatabaseOperationFactory</span></span><a class="reference internal" href="../_modules/minos/saga/testing.html#MockedSagaExecutionDatabaseOperationFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.saga.executions.repositories.database.factories.html#minos.saga.executions.repositories.database.factories.SagaExecutionDatabaseOperationFactory" title="minos.saga.executions.repositories.database.factories.SagaExecutionDatabaseOperationFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">SagaExecutionDatabaseOperationFactory</span></code></a></p>
+<p>For testing purposes</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory.build_store">
+<span class="sig-name descname"><span class="pre">build_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uuid</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/saga/testing.html#MockedSagaExecutionDatabaseOperationFactory.build_store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory.build_store" title="Permalink to this definition"></a></dt>
+<dd><p>For testing purposes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>UUID</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory.build_load">
+<span class="sig-name descname"><span class="pre">build_load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uuid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/saga/testing.html#MockedSagaExecutionDatabaseOperationFactory.build_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory.build_load" title="Permalink to this definition"></a></dt>
+<dd><p>For testing purposes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>UUID</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory.build_delete">
+<span class="sig-name descname"><span class="pre">build_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uuid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/saga/testing.html#MockedSagaExecutionDatabaseOperationFactory.build_delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory.build_delete" title="Permalink to this definition"></a></dt>
+<dd><p>For testing purposes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>UUID</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Foo</span></span><a class="reference internal" href="../_modules/minos/saga/testing.html#Foo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.Foo" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.common.model.declarative.html#minos.common.model.declarative.DeclarativeModel" title="minos.common.model.declarative.DeclarativeModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeclarativeModel</span></code></a></p>
+<p>For testing purposes.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.foo">
+<span class="sig-name descname"><span class="pre">foo</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></em><a class="headerlink" href="#minos.saga.testing.Foo.foo" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.Foo.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Class constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Named arguments to be set as model attributes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.avro_bytes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avro_bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.10)"><span class="pre">bytes</span></a></em><a class="headerlink" href="#minos.saga.testing.Foo.avro_bytes" title="Permalink to this definition"></a></dt>
+<dd><p>Generate bytes representation of the current instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A bytes object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.avro_data">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avro_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#minos.saga.testing.Foo.avro_data" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the avro data of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.avro_str">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avro_str</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></em><a class="headerlink" href="#minos.saga.testing.Foo.avro_str" title="Permalink to this definition"></a></dt>
+<dd><p>Generate bytes representation of the current instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A bytes object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.classname">
+<span class="sig-name descname"><span class="pre">classname</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'minos.saga.testing.Foo'</span></em><a class="headerlink" href="#minos.saga.testing.Foo.classname" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.decode_data">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.Foo.decode_data" title="Permalink to this definition"></a></dt>
+<dd><p>Decode data with the given decoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>decoder</strong> (<a class="reference internal" href="minos.common.model.serializers.abc.html#minos.common.model.serializers.abc.DataDecoder" title="minos.common.model.serializers.abc.DataDecoder"><em>DataDecoder</em></a>) – The decoder instance.</p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – The data to be decoded.</p></li>
+<li><p><strong>type</strong> – The data type.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+<li><p><strong>type_</strong> (<a class="reference internal" href="minos.common.model.types.model_types.html#minos.common.model.types.model_types.ModelType" title="minos.common.model.types.model_types.ModelType"><em>ModelType</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A decoded instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.decode_schema">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.Foo.decode_schema" title="Permalink to this definition"></a></dt>
+<dd><p>Decode schema with the given encoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>decoder</strong> (<a class="reference internal" href="minos.common.model.serializers.abc.html#minos.common.model.serializers.abc.SchemaDecoder" title="minos.common.model.serializers.abc.SchemaDecoder"><em>SchemaDecoder</em></a>) – The decoder instance.</p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – The schema to be decoded.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The decoded schema as a type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.encode_data">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">encode_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.Foo.encode_data" title="Permalink to this definition"></a></dt>
+<dd><p>Encode data with the given encoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoder</strong> (<a class="reference internal" href="minos.common.model.serializers.abc.html#minos.common.model.serializers.abc.DataEncoder" title="minos.common.model.serializers.abc.DataEncoder"><em>DataEncoder</em></a>) – The encoder instance.</p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – An optional pre-encoded data.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The encoded data of the instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.encode_schema">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">encode_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.Foo.encode_schema" title="Permalink to this definition"></a></dt>
+<dd><p>Encode schema with the given encoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoder</strong> (<a class="reference internal" href="minos.common.model.serializers.abc.html#minos.common.model.serializers.abc.SchemaEncoder" title="minos.common.model.serializers.abc.SchemaEncoder"><em>SchemaEncoder</em></a>) – The encoder instance.</p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – An optional pre-encoded schema.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The encoded schema of the instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.fields">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="minos.common.model.fields.html#minos.common.model.fields.Field" title="minos.common.model.fields.Field"><span class="pre">minos.common.model.fields.Field</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#minos.saga.testing.Foo.fields" title="Permalink to this definition"></a></dt>
+<dd><p>Fields getter</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.from_avro">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_avro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.Foo.from_avro" title="Permalink to this definition"></a></dt>
+<dd><p>Build a new instance from the <code class="docutils literal notranslate"><span class="pre">avro</span></code> schema and data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>schema</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – The avro schema of the model.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – The avro data of the model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new <code class="docutils literal notranslate"><span class="pre">DynamicModel</span></code> instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>T</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.from_avro_bytes">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_avro_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.Foo.from_avro_bytes" title="Permalink to this definition"></a></dt>
+<dd><p>Build a single instance or a sequence of instances from bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>raw</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.10)"><em>bytes</em></a>) – A <code class="docutils literal notranslate"><span class="pre">bytes</span></code> representation of the model.</p></li>
+<li><p><strong>batch_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the data is processed as a list of models, otherwise the data is processed as a
+single model.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A single instance or a sequence of instances.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><em>Union</em></a>[<em>T</em>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>[~T]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.from_avro_str">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_avro_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.Foo.from_avro_str" title="Permalink to this definition"></a></dt>
+<dd><p>Build a single instance or a sequence of instances from bytes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>raw</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – A <code class="docutils literal notranslate"><span class="pre">str</span></code> representation of the model.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A single instance or a sequence of instances.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><em>Union</em></a>[<em>T</em>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>[~T]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.from_model_type">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_model_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.Foo.from_model_type" title="Permalink to this definition"></a></dt>
+<dd><p>Build a <code class="docutils literal notranslate"><span class="pre">DeclarativeModel</span></code> from a <code class="docutils literal notranslate"><span class="pre">ModelType</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_type</strong> (<a class="reference internal" href="minos.common.model.types.model_types.html#minos.common.model.types.model_types.ModelType" title="minos.common.model.types.model_types.ModelType"><em>ModelType</em></a>) – <code class="docutils literal notranslate"><span class="pre">ModelType</span></code> object containing the model structure.</p></li>
+<li><p><strong>args</strong> – Positional arguments to be passed to the model constructor.</p></li>
+<li><p><strong>kwargs</strong> – Named arguments to be passed to the model constructor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new <code class="docutils literal notranslate"><span class="pre">DeclarativeModel</span></code> instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>T</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.from_typed_dict">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_typed_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">typed_dict</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.Foo.from_typed_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Build a <code class="docutils literal notranslate"><span class="pre">Model</span></code> from a <code class="docutils literal notranslate"><span class="pre">TypeDict</span></code> and <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>typed_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(in Python v3.10)"><em>TypedDict</em></a>) – <code class="docutils literal notranslate"><span class="pre">TypeDict</span></code> object containing the DTO’s structure</p></li>
+<li><p><strong>args</strong> – Positional arguments to be passed to the model constructor.</p></li>
+<li><p><strong>kwargs</strong> – Named arguments to be passed to the model constructor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new <code class="docutils literal notranslate"><span class="pre">DataTransferObject</span></code> instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>T</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">D[k]</span> <span class="pre">if</span> <span class="pre">k</span> <span class="pre">in</span> <span class="pre">D,</span> <span class="pre">else</span> <span class="pre">d.</span>&#160; <span class="pre">d</span> <span class="pre">defaults</span> <span class="pre">to</span> <span class="pre">None.</span></span></span><a class="headerlink" href="#minos.saga.testing.Foo.get" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">set-like</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">items</span></span></span><a class="headerlink" href="#minos.saga.testing.Foo.items" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">set-like</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">keys</span></span></span><a class="headerlink" href="#minos.saga.testing.Foo.keys" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.to_avro_bytes">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_avro_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">models</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.Foo.to_avro_bytes" title="Permalink to this definition"></a></dt>
+<dd><p>Create a <code class="docutils literal notranslate"><span class="pre">bytes</span></code> representation of the given object instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><em>~T</em><em>]</em>) – A sequence of minos models.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A bytes object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.10)">bytes</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.to_avro_str">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_avro_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">models</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.Foo.to_avro_str" title="Permalink to this definition"></a></dt>
+<dd><p>Build the avro string representation of the given object instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>models</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><em>~T</em><em>]</em>) – A sequence of minos models.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A bytes object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.type_hints_parameters">
+<span class="sig-name descname"><span class="pre">type_hints_parameters</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#minos.saga.testing.Foo.type_hints_parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.Foo.values">
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">an</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">values</span></span></span><a class="headerlink" href="#minos.saga.testing.Foo.values" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SagaExecutionRepositoryTestCase</span></span><a class="reference internal" href="../_modules/minos/saga/testing.html#SagaExecutionRepositoryTestCase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.common.testing.testcases.html#minos.common.testing.testcases.MinosTestCase" title="minos.common.testing.testcases.MinosTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">MinosTestCase</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/saga/testing.html#SagaExecutionRepositoryTestCase.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.setUp" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.asyncSetUp">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asyncSetUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/saga/testing.html#SagaExecutionRepositoryTestCase.asyncSetUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.asyncSetUp" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.asyncTearDown">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asyncTearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/saga/testing.html#SagaExecutionRepositoryTestCase.asyncTearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.asyncTearDown" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.build_saga_execution_repository">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_saga_execution_repository</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/saga/testing.html#SagaExecutionRepositoryTestCase.build_saga_execution_repository"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.build_saga_execution_repository" title="Permalink to this definition"></a></dt>
+<dd><p>For testing purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.saga.executions.repositories.abc.html#minos.saga.executions.repositories.abc.SagaExecutionRepository" title="minos.saga.executions.repositories.abc.SagaExecutionRepository"><em>SagaExecutionRepository</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.test_store">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_store</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/saga/testing.html#SagaExecutionRepositoryTestCase.test_store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.test_store" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.test_store_overwrite">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_store_overwrite</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/saga/testing.html#SagaExecutionRepositoryTestCase.test_store_overwrite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.test_store_overwrite" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.test_load_from_str">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_load_from_str</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/saga/testing.html#SagaExecutionRepositoryTestCase.test_load_from_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.test_load_from_str" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.test_load_raises">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_load_raises</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/saga/testing.html#SagaExecutionRepositoryTestCase.test_load_raises"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.test_load_raises" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.test_delete">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_delete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/saga/testing.html#SagaExecutionRepositoryTestCase.test_delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.test_delete" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.test_delete_from_str">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_delete_from_str</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/saga/testing.html#SagaExecutionRepositoryTestCase.test_delete_from_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.test_delete_from_str" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – </p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.__new__">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__new__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.__new__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – </p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.get_config">
+<span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.get_config" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.common.config.abc.html#minos.common.config.abc.Config" title="minos.common.config.abc.Config"><em>Config</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.get_config_file_path">
+<span class="sig-name descname"><span class="pre">get_config_file_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.get_config_file_path" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.10)"><em>Path</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.get_injections">
+<span class="sig-name descname"><span class="pre">get_injections</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.get_injections" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><em>Union</em></a>[<a class="reference internal" href="minos.common.injections.mixins.html#minos.common.injections.mixins.InjectableMixin" title="minos.common.injections.mixins.InjectableMixin">minos.common.injections.mixins.InjectableMixin</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)">type</a>[<a class="reference internal" href="minos.common.injections.mixins.html#minos.common.injections.mixins.InjectableMixin" title="minos.common.injections.mixins.InjectableMixin">minos.common.injections.mixins.InjectableMixin</a>], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.tearDown" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="minos.saga.testing.SagaExecutionRepositoryTestCase.CONFIG_FILE_PATH">
+<span class="sig-name descname"><span class="pre">CONFIG_FILE_PATH</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#minos.saga.testing.SagaExecutionRepositoryTestCase.CONFIG_FILE_PATH" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.saga.services.html" class="btn btn-neutral float-left" title="minos.saga.services" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.saga.utils.html" class="btn btn-neutral float-right" title="minos.saga.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

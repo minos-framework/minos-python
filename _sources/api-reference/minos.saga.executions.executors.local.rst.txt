@@ -1,0 +1,29 @@
+minos.saga.executions.executors.local
+=====================================
+
+.. automodule:: minos.saga.executions.executors.local
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LocalExecutor
+   
+   
+
+   
+   
+   
+
+
+

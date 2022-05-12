@@ -1,7 +1,0 @@
-minos.aggregate.transactions.contextvars module
-===============================================
-
-.. automodule:: minos.aggregate.transactions.contextvars
-   :members:
-   :undoc-members:
-   :show-inheritance:

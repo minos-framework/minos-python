@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.common.retries &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.common.setup" href="minos.common.setup.html" />
+    <link rel="prev" title="minos.common.protocol.json" href="minos.common.protocol.json.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="minos.common.html">minos.common</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="minos.common.builders.html">minos.common.builders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.config.html">minos.common.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.database.html">minos.common.database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.datetime.html">minos.common.datetime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.exceptions.html">minos.common.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.importlib.html">minos.common.importlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.injections.html">minos.common.injections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.launchers.html">minos.common.launchers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.locks.html">minos.common.locks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.meta.html">minos.common.meta</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.model.html">minos.common.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.object.html">minos.common.object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.pools.html">minos.common.pools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.ports.html">minos.common.ports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.protocol.html">minos.common.protocol</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">minos.common.retries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.setup.html">minos.common.setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.testing.html">minos.common.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="minos.common.uuid.html">minos.common.uuid</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="minos.common.html">minos.common</a> &raquo;</li>
+      <li>minos.common.retries</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/minos.common.retries.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-minos.common.retries">
+<span id="minos-common-retries"></span><h1>minos.common.retries<a class="headerlink" href="#module-minos.common.retries" title="Permalink to this headline"></a></h1>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#minos.common.retries.CircuitBreakerMixin" title="minos.common.retries.CircuitBreakerMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CircuitBreakerMixin</span></code></a></p></td>
+<td><p>Circuit Breaker Mixin class.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.common.retries.CircuitBreakerMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CircuitBreakerMixin</span></span><a class="reference internal" href="../_modules/minos/common/retries.html#CircuitBreakerMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.retries.CircuitBreakerMixin" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">E</span></code>], <a class="reference internal" href="minos.common.object.html#minos.common.object.Object" title="minos.common.object.Object"><code class="xref py py-class docutils literal notranslate"><span class="pre">Object</span></code></a></p>
+<p>Circuit Breaker Mixin class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.retries.CircuitBreakerMixin.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit_breaker_error_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">circuit_breaker_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">circuit_breaker_exceptions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(Exception,)</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/retries.html#CircuitBreakerMixin.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.retries.CircuitBreakerMixin.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>circuit_breaker_error_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – </p></li>
+<li><p><strong>circuit_breaker_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><em>Union</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>]</em>) – </p></li>
+<li><p><strong>circuit_breaker_exceptions</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.10)"><em>Iterable</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.10)"><em>Exception</em></a><em>]</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.common.retries.CircuitBreakerMixin.with_circuit_breaker">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">with_circuit_breaker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/common/retries.html#CircuitBreakerMixin.with_circuit_breaker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.common.retries.CircuitBreakerMixin.with_circuit_breaker" title="Permalink to this definition"></a></dt>
+<dd><p>Execute the given function with circuit breaker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.10)"><em>Callable</em></a><em>[</em><em>[</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><em>Union</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable" title="(in Python v3.10)"><em>Awaitable</em></a><em>[</em><em>R</em><em>]</em><em>, </em><em>R</em><em>]</em><em>]</em>) – The function to be executed.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The return of the given function.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>R</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.retries.CircuitBreakerMixin.circuit_breaker">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circuit_breaker</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">aiomisc.circuit_breaker.CircuitBreaker</span></em><a class="headerlink" href="#minos.common.retries.CircuitBreakerMixin.circuit_breaker" title="Permalink to this definition"></a></dt>
+<dd><p>Get the circuit breaker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">CircuitBreaker</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.retries.CircuitBreakerMixin.is_circuit_breaker_passing">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_circuit_breaker_passing</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#minos.common.retries.CircuitBreakerMixin.is_circuit_breaker_passing" title="Permalink to this definition"></a></dt>
+<dd><p>Check if circuit breaker is passing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">bool</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.retries.CircuitBreakerMixin.is_circuit_breaker_broken">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_circuit_breaker_broken</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#minos.common.retries.CircuitBreakerMixin.is_circuit_breaker_broken" title="Permalink to this definition"></a></dt>
+<dd><p>Check if circuit breaker is passing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">bool</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.retries.CircuitBreakerMixin.is_circuit_breaker_recovering">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_circuit_breaker_recovering</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#minos.common.retries.CircuitBreakerMixin.is_circuit_breaker_recovering" title="Permalink to this definition"></a></dt>
+<dd><p>Check if circuit breaker is passing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">bool</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="minos.common.retries.CircuitBreakerMixin.circuit_breaker_exceptions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circuit_breaker_exceptions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.10)"><span class="pre">Exception</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#minos.common.retries.CircuitBreakerMixin.circuit_breaker_exceptions" title="Permalink to this definition"></a></dt>
+<dd><p>Get the circuit breaker exceptions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A tuple of <code class="docutils literal notranslate"><span class="pre">Exception</span></code> types.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.common.protocol.json.html" class="btn btn-neutral float-left" title="minos.common.protocol.json" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.common.setup.html" class="btn btn-neutral float-right" title="minos.common.setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

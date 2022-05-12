@@ -1,4 +1,0 @@
-minos namespace
-===============
-
-.. py:module:: minos

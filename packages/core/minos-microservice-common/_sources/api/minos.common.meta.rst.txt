@@ -1,7 +1,0 @@
-minos.common.meta module
-========================
-
-.. automodule:: minos.common.meta
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,0 +1,29 @@
+minos.aggregate.contextvars
+===========================
+
+.. automodule:: minos.aggregate.contextvars
+
+   
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,7 +1,0 @@
-minos.saga.services module
-==========================
-
-.. automodule:: minos.saga.services
-   :members:
-   :undoc-members:
-   :show-inheritance:

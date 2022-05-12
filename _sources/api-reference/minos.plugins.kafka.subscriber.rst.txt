@@ -1,0 +1,30 @@
+minos.plugins.kafka.subscriber
+==============================
+
+.. automodule:: minos.plugins.kafka.subscriber
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      KafkaBrokerSubscriber
+      KafkaBrokerSubscriberBuilder
+   
+   
+
+   
+   
+   
+
+
+

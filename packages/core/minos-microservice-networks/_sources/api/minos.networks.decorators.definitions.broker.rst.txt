@@ -1,7 +1,0 @@
-minos.networks.decorators.definitions.broker module
-===================================================
-
-.. automodule:: minos.networks.decorators.definitions.broker
-   :members:
-   :undoc-members:
-   :show-inheritance:

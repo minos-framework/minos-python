@@ -1,0 +1,29 @@
+minos.common.model.dynamic.dto
+==============================
+
+.. automodule:: minos.common.model.dynamic.dto
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DataTransferObject
+   
+   
+
+   
+   
+   
+
+
+

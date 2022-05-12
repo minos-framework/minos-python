@@ -1,7 +1,0 @@
-minos.aggregate.transactions.services module
-============================================
-
-.. automodule:: minos.aggregate.transactions.services
-   :members:
-   :undoc-members:
-   :show-inheritance:

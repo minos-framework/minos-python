@@ -1,7 +1,0 @@
-minos.aggregate.events.fields module
-====================================
-
-.. automodule:: minos.aggregate.events.fields
-   :members:
-   :undoc-members:
-   :show-inheritance:

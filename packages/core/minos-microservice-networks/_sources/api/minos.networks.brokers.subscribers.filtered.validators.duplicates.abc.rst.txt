@@ -1,7 +1,0 @@
-minos.networks.brokers.subscribers.filtered.validators.duplicates.abc module
-============================================================================
-
-.. automodule:: minos.networks.brokers.subscribers.filtered.validators.duplicates.abc
-   :members:
-   :undoc-members:
-   :show-inheritance:

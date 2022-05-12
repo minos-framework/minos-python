@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.common.testing.testcases &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link href="../../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-reference/minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-reference/minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-reference/minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-reference/minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-reference/minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-reference/minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-reference/minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-reference/minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-reference/minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-reference/minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-reference/minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.common.testing.testcases</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.common.testing.testcases</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ABC</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">suppress</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Path</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">uuid4</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">..config</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Config</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..database</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DatabaseClient</span><span class="p">,</span>
+    <span class="n">DatabaseClientPool</span><span class="p">,</span>
+    <span class="n">ManagementDatabaseOperationFactory</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..injections</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DependencyInjector</span><span class="p">,</span>
+    <span class="n">InjectableMixin</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..pools</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PoolFactory</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="MinosTestCase"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.MinosTestCase">[docs]</a><span class="k">class</span> <span class="nc">MinosTestCase</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">IsolatedAsyncioTestCase</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="n">CONFIG_FILE_PATH</span><span class="p">:</span> <span class="n">Path</span>
+
+<div class="viewcode-block" id="MinosTestCase.setUp"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.MinosTestCase.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">injector</span> <span class="o">=</span> <span class="n">DependencyInjector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_injections</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">injector</span><span class="o">.</span><span class="n">wire_injections</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MinosTestCase.get_config"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.MinosTestCase.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Config</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config_file_path</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="MinosTestCase.get_config_file_path"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.MinosTestCase.get_config_file_path">[docs]</a>    <span class="k">def</span> <span class="nf">get_config_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">CONFIG_FILE_PATH</span></div>
+
+<div class="viewcode-block" id="MinosTestCase.get_injections"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.MinosTestCase.get_injections">[docs]</a>    <span class="k">def</span> <span class="nf">get_injections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">InjectableMixin</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">InjectableMixin</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="MinosTestCase.asyncSetUp"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.MinosTestCase.asyncSetUp">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">asyncSetUp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">asyncSetUp</span><span class="p">()</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">injector</span><span class="o">.</span><span class="n">setup_injections</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MinosTestCase.asyncTearDown"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.MinosTestCase.asyncTearDown">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">asyncTearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">injector</span><span class="o">.</span><span class="n">destroy_injections</span><span class="p">()</span>
+        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">asyncTearDown</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MinosTestCase.tearDown"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.MinosTestCase.tearDown">[docs]</a>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">injector</span><span class="o">.</span><span class="n">unwire_injections</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">tearDown</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">item</span> <span class="o">!=</span> <span class="s2">&quot;injector&quot;</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">injector</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> does not contain the </span><span class="si">{</span><span class="n">item</span><span class="si">!r}</span><span class="s2"> attribute.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatabaseMinosTestCase"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.DatabaseMinosTestCase">[docs]</a><span class="k">class</span> <span class="nc">DatabaseMinosTestCase</span><span class="p">(</span><span class="n">MinosTestCase</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="DatabaseMinosTestCase.setUp"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.DatabaseMinosTestCase.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config_file_path</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uuid</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_test_db</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;test_db_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid</span><span class="o">.</span><span class="n">hex</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DatabaseMinosTestCase.get_client"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.DatabaseMinosTestCase.get_client">[docs]</a>    <span class="k">def</span> <span class="nf">get_client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseClient</span><span class="p">:</span>
+        <span class="n">default_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_config</span><span class="o">.</span><span class="n">get_default_database</span><span class="p">()</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">default_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;client&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_config</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatabaseMinosTestCase.get_config"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.DatabaseMinosTestCase.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Config</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config_file_path</span><span class="p">())</span>
+
+        <span class="n">base_fn</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_databases</span>
+
+        <span class="k">def</span> <span class="nf">_fn</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="n">v</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_db</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">base_fn</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="n">config</span><span class="o">.</span><span class="n">get_databases</span> <span class="o">=</span> <span class="n">_fn</span>
+        <span class="k">return</span> <span class="n">config</span></div>
+
+<div class="viewcode-block" id="DatabaseMinosTestCase.get_injections"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.DatabaseMinosTestCase.get_injections">[docs]</a>    <span class="k">def</span> <span class="nf">get_injections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">InjectableMixin</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">InjectableMixin</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">PoolFactory</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">default_classes</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="n">DatabaseClientPool</span><span class="p">})]</span></div>
+
+<div class="viewcode-block" id="DatabaseMinosTestCase.asyncSetUp"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.DatabaseMinosTestCase.asyncSetUp">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">asyncSetUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_database</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_test_db</span><span class="p">)</span>
+        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">asyncSetUp</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DatabaseMinosTestCase.asyncTearDown"><a class="viewcode-back" href="../../../../api-reference/minos.common.testing.testcases.html#minos.common.testing.testcases.DatabaseMinosTestCase.asyncTearDown">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">asyncTearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">asyncTearDown</span><span class="p">()</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drop_database</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_test_db</span><span class="p">)</span></div>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_create_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drop_database</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_client</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+            <span class="n">operation</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_factory</span><span class="p">(</span><span class="n">ManagementDatabaseOperationFactory</span><span class="p">)</span><span class="o">.</span><span class="n">build_create</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="s2">&quot;database&quot;</span><span class="p">])</span>
+            <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">operation</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_drop_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_client</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+            <span class="n">operation</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_factory</span><span class="p">(</span><span class="n">ManagementDatabaseOperationFactory</span><span class="p">)</span><span class="o">.</span><span class="n">build_delete</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="s2">&quot;database&quot;</span><span class="p">])</span>
+            <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">operation</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

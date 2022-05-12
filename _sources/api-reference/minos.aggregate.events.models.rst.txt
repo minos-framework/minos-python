@@ -1,0 +1,29 @@
+minos.aggregate.events.models
+=============================
+
+.. automodule:: minos.aggregate.events.models
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Event
+   
+   
+
+   
+   
+   
+
+
+

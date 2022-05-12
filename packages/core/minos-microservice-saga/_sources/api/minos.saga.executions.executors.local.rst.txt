@@ -1,7 +1,0 @@
-minos.saga.executions.executors.local module
-============================================
-
-.. automodule:: minos.saga.executions.executors.local
-   :members:
-   :undoc-members:
-   :show-inheritance:

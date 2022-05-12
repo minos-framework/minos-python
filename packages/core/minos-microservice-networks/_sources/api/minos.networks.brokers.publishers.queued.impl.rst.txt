@@ -1,7 +1,0 @@
-minos.networks.brokers.publishers.queued.impl module
-====================================================
-
-.. automodule:: minos.networks.brokers.publishers.queued.impl
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,0 +1,32 @@
+minos.networks.decorators.definitions.http
+==========================================
+
+.. automodule:: minos.networks.decorators.definitions.http
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.networks.decorators.definitions.http.abc
+   minos.networks.decorators.definitions.http.rest
+

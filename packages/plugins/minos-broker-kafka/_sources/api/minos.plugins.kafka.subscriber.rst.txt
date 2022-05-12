@@ -1,7 +1,0 @@
-minos.plugins.kafka.subscriber module
-=====================================
-
-.. automodule:: minos.plugins.kafka.subscriber
-   :members:
-   :undoc-members:
-   :show-inheritance:

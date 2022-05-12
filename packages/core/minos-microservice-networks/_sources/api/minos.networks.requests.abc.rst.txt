@@ -1,7 +1,0 @@
-minos.networks.requests.abc module
-==================================
-
-.. automodule:: minos.networks.requests.abc
-   :members:
-   :undoc-members:
-   :show-inheritance:

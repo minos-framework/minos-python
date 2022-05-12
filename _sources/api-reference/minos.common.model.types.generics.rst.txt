@@ -1,0 +1,35 @@
+minos.common.model.types.generics
+=================================
+
+.. automodule:: minos.common.model.types.generics
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      unpack_typevar
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GenericTypeProjector
+   
+   
+
+   
+   
+   
+
+
+

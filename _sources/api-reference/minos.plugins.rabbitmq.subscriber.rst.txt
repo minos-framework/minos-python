@@ -1,0 +1,30 @@
+minos.plugins.rabbitmq.subscriber
+=================================
+
+.. automodule:: minos.plugins.rabbitmq.subscriber
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      RabbitMQBrokerSubscriber
+      RabbitMQBrokerSubscriberBuilder
+   
+   
+
+   
+   
+   
+
+
+

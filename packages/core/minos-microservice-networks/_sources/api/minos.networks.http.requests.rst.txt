@@ -1,7 +1,0 @@
-minos.networks.http.requests module
-===================================
-
-.. automodule:: minos.networks.http.requests
-   :members:
-   :undoc-members:
-   :show-inheritance:

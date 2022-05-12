@@ -1,0 +1,29 @@
+minos.common.protocol.avro.messages
+===================================
+
+.. automodule:: minos.common.protocol.avro.messages
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MinosAvroMessageProtocol
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,31 @@
+minos.saga.definitions.steps.conditional
+========================================
+
+.. automodule:: minos.saga.definitions.steps.conditional
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConditionalSagaStep
+      ElseThenAlternative
+      IfThenAlternative
+   
+   
+
+   
+   
+   
+
+
+

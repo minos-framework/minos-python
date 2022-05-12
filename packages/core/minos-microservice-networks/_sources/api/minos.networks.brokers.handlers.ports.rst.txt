@@ -1,7 +1,0 @@
-minos.networks.brokers.handlers.ports module
-============================================
-
-.. automodule:: minos.networks.brokers.handlers.ports
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,0 +1,29 @@
+minos.saga.manager
+==================
+
+.. automodule:: minos.saga.manager
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SagaManager
+   
+   
+
+   
+   
+   
+
+
+

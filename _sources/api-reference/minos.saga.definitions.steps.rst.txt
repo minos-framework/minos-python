@@ -1,0 +1,34 @@
+minos.saga.definitions.steps
+============================
+
+.. automodule:: minos.saga.definitions.steps
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.saga.definitions.steps.abc
+   minos.saga.definitions.steps.conditional
+   minos.saga.definitions.steps.local
+   minos.saga.definitions.steps.remote
+

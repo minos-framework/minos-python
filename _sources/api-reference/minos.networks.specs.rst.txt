@@ -1,0 +1,32 @@
+minos.networks.specs
+====================
+
+.. automodule:: minos.networks.specs
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.networks.specs.asyncapi
+   minos.networks.specs.openapi
+

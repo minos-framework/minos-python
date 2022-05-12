@@ -1,0 +1,31 @@
+﻿minos.plugins.minos\_discovery
+==============================
+
+.. automodule:: minos.plugins.minos_discovery
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.plugins.minos_discovery.client
+

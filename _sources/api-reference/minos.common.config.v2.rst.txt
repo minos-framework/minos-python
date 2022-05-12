@@ -1,0 +1,29 @@
+minos.common.config.v2
+======================
+
+.. automodule:: minos.common.config.v2
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConfigV2
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,7 +1,0 @@
-minos.common.protocol.json module
-=================================
-
-.. automodule:: minos.common.protocol.json
-   :members:
-   :undoc-members:
-   :show-inheritance:

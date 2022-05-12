@@ -1,0 +1,33 @@
+minos.aggregate.snapshots.repositories
+======================================
+
+.. automodule:: minos.aggregate.snapshots.repositories
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.aggregate.snapshots.repositories.abc
+   minos.aggregate.snapshots.repositories.database
+   minos.aggregate.snapshots.repositories.memory
+

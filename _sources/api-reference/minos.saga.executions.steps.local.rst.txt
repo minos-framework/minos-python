@@ -1,0 +1,29 @@
+minos.saga.executions.steps.local
+=================================
+
+.. automodule:: minos.saga.executions.steps.local
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LocalSagaStepExecution
+   
+   
+
+   
+   
+   
+
+
+

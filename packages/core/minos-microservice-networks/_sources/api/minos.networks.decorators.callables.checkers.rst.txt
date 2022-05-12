@@ -1,7 +1,0 @@
-minos.networks.decorators.callables.checkers module
-===================================================
-
-.. automodule:: minos.networks.decorators.callables.checkers
-   :members:
-   :undoc-members:
-   :show-inheritance:

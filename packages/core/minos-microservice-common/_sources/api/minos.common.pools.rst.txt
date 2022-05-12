@@ -1,7 +1,0 @@
-minos.common.pools module
-=========================
-
-.. automodule:: minos.common.pools
-   :members:
-   :undoc-members:
-   :show-inheritance:

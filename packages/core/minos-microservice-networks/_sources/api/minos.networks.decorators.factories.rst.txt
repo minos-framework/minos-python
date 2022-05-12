@@ -1,7 +1,0 @@
-minos.networks.decorators.factories module
-==========================================
-
-.. automodule:: minos.networks.decorators.factories
-   :members:
-   :undoc-members:
-   :show-inheritance:
