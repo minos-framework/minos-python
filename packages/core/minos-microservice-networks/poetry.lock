@@ -221,7 +221,7 @@ url = "../minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-transactions"
-version = "0.0.0"
+version = "0.8.0.dev1"
 description = "The transactions core of the Minos Framework"
 category = "main"
 optional = false
