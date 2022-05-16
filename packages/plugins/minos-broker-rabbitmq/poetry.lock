@@ -237,7 +237,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.7.0"
+version = "0.8.0.dev1"
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
@@ -259,7 +259,7 @@ url = "../../core/minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.7.0"
+version = "0.8.0.dev1"
 description = "The networks core of the Minos Framework"
 category = "main"
 optional = false
@@ -268,8 +268,8 @@ develop = true
 
 [package.dependencies]
 crontab = "^0.23.0"
-minos-microservice-common = "^0.7.0"
-minos-microservice-transactions = "^0.0.0"
+minos-microservice-common = "^0.8.0*"
+minos-microservice-transactions = "^0.8.0*"
 
 [package.source]
 type = "directory"
@@ -281,16 +281,11 @@ version = "0.0.0"
 description = "The transactions core of the Minos Framework"
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = true
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-cached-property = "^1.5.2"
-minos-microservice-common = "^0.7.0*"
-
-[package.source]
-type = "directory"
-url = "../../core/minos-microservice-transactions"
+cached-property = ">=1.5.2,<2.0.0"
+minos-microservice-common = "*"
 
 [[package]]
 name = "multidict"
@@ -495,7 +490,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "273609d0cf7bd4345776c0d9b5c47d93e65c5371cd4d62fa7814673776a2ebfd"
+content-hash = "3a663f9fb62c5546d3c1c6e6dce57d3487da64c0bdfcde8cdf57503573d80c1d"
 
 [metadata.files]
 aio-pika = [
@@ -682,7 +677,10 @@ mccabe = [
 ]
 minos-microservice-common = []
 minos-microservice-networks = []
-minos-microservice-transactions = []
+minos-microservice-transactions = [
+    {file = "minos-microservice-transactions-0.0.0.tar.gz", hash = "sha256:16575627767f4360599c867fef58c59911d1c31b13006eea2d0763361f6dab7f"},
+    {file = "minos_microservice_transactions-0.0.0-py3-none-any.whl", hash = "sha256:eb386c047bbd860d9396172d80d64fa2c60bda54dc42ec0a6260529171828174"},
+]
 multidict = [
     {file = "multidict-6.0.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:0b9e95a740109c6047602f4db4da9949e6c5945cefbad34a1299775ddc9a62e2"},
     {file = "multidict-6.0.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ac0e27844758d7177989ce406acc6a83c16ed4524ebc363c1f748cba184d89d3"},

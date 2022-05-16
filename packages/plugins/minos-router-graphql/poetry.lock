@@ -207,7 +207,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.7.0"
+version = "0.8.0.dev1"
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
@@ -229,7 +229,7 @@ url = "../../core/minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.7.0"
+version = "0.8.0.dev1"
 description = "The networks core of the Minos Framework"
 category = "main"
 optional = false
@@ -238,8 +238,8 @@ develop = true
 
 [package.dependencies]
 crontab = "^0.23.0"
-minos-microservice-common = "^0.7.0"
-minos-microservice-transactions = "^0.0.0"
+minos-microservice-common = "^0.8.0*"
+minos-microservice-transactions = "^0.8.0*"
 
 [package.source]
 type = "directory"
@@ -256,7 +256,7 @@ develop = true
 
 [package.dependencies]
 cached-property = "^1.5.2"
-minos-microservice-common = "^0.7.0*"
+minos-microservice-common = "^0.8.0*"
 
 [package.source]
 type = "directory"
@@ -433,7 +433,7 @@ test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "7cac9df03c35070679132bc6e26f84b73c30fedcffcd31d4caaf8c5f351a6a1f"
+content-hash = "548e08209b9d3de4f60e18ba48bc94fd4ffd27671316183f897f2e53574297e9"
 
 [metadata.files]
 aiomisc = [

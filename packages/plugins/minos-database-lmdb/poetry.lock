@@ -207,7 +207,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.7.0"
+version = "0.8.0.dev1"
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
@@ -229,25 +229,20 @@ url = "../../core/minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.7.0"
+version = "0.8.0.dev1"
 description = "The networks core of the Minos Framework"
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = true
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-crontab = "^0.23.0"
-minos-microservice-common = "^0.7.0"
-minos-microservice-transactions = "^0.0.0"
-
-[package.source]
-type = "directory"
-url = "../../core/minos-microservice-networks"
+crontab = ">=0.23.0,<0.24.0"
+minos-microservice-common = "*"
+minos-microservice-transactions = "*"
 
 [[package]]
 name = "minos-microservice-saga"
-version = "0.7.0"
+version = "0.8.0.dev1"
 description = "The SAGA pattern of the Minos Framework"
 category = "main"
 optional = false
@@ -256,9 +251,9 @@ develop = true
 
 [package.dependencies]
 cached-property = "^1.5.2"
-minos-microservice-common = "^0.7.0"
-minos-microservice-networks = "^0.7.0"
-minos-microservice-transactions = "^0.0.0"
+minos-microservice-common = "^0.8.0*"
+minos-microservice-networks = "^0.8.0*"
+minos-microservice-transactions = "^0.8.0*"
 
 [package.source]
 type = "directory"
@@ -270,16 +265,11 @@ version = "0.0.0"
 description = "The transactions core of the Minos Framework"
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = true
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-cached-property = "^1.5.2"
-minos-microservice-common = "^0.7.0*"
-
-[package.source]
-type = "directory"
-url = "../../core/minos-microservice-transactions"
+cached-property = ">=1.5.2,<2.0.0"
+minos-microservice-common = "*"
 
 [[package]]
 name = "mypy-extensions"
@@ -444,7 +434,7 @@ test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "45f9aa2039be7f4fd22a1cb508009009e0cf0302d049e1d5201b389b56a3cbd2"
+content-hash = "28f25506332e86be884c71a4e31dd7b7b8d1c33386d4fbc57faa8e1eabe75bfe"
 
 [metadata.files]
 aiomisc = [
@@ -648,9 +638,15 @@ mccabe = [
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
 minos-microservice-common = []
-minos-microservice-networks = []
+minos-microservice-networks = [
+    {file = "minos-microservice-networks-0.8.0.dev1.tar.gz", hash = "sha256:79e69cc0011b239ab70aff65612f45ff9726c6e4bfd74524688bda364eef87e1"},
+    {file = "minos_microservice_networks-0.8.0.dev1-py3-none-any.whl", hash = "sha256:b76bbdc5625b8423da31410ccb7302e342bd4f24107550360a6be0a7caf332a9"},
+]
 minos-microservice-saga = []
-minos-microservice-transactions = []
+minos-microservice-transactions = [
+    {file = "minos-microservice-transactions-0.0.0.tar.gz", hash = "sha256:16575627767f4360599c867fef58c59911d1c31b13006eea2d0763361f6dab7f"},
+    {file = "minos_microservice_transactions-0.0.0-py3-none-any.whl", hash = "sha256:eb386c047bbd860d9396172d80d64fa2c60bda54dc42ec0a6260529171828174"},
+]
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
