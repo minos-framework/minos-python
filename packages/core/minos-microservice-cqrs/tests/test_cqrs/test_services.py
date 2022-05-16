@@ -1,18 +1,12 @@
 """tests.test_cqrs.test_services module."""
-import sys
 import unittest
 from unittest.mock import (
     AsyncMock,
     patch,
 )
 
-from minos.common import (
-    DatabaseLockPool,
-    DependencyInjector,
-    PoolFactory,
-)
 from minos.common.testing import (
-    DatabaseMinosTestCase,
+    MinosTestCase,
 )
 from minos.cqrs import (
     MinosIllegalHandlingException,
@@ -20,8 +14,6 @@ from minos.cqrs import (
     Service,
 )
 from minos.networks import (
-    BrokerCommandEnrouteDecorator,
-    BrokerQueryEnrouteDecorator,
     InMemoryRequest,
     WrappedRequest,
 )
@@ -33,35 +25,18 @@ from tests.utils import (
 )
 
 
-class TestService(DatabaseMinosTestCase):
+class TestService(MinosTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
+        self.service = FakeService(config=self.config)
 
-        self.lock_pool = DatabaseLockPool.from_config(self.config)
-
-        self.injector = DependencyInjector(self.config, [PoolFactory])
-        self.injector.wire_injections(modules=[sys.modules[__name__]])
-
-        self.service = FakeService(config=self.config, lock_pool=self.lock_pool)
-
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-        await self.lock_pool.setup()
-
-    async def asyncTearDown(self) -> None:
-        await self.lock_pool.destroy()
-        await super().asyncTearDown()
-
-    def tearDown(self) -> None:
-        self.injector.unwire_injections()
-        super().tearDown()
+    def get_injections(self):
+        return self.config.get_injections()
 
     async def test_constructor(self):
-        self.assertEqual(self.config, self.service.config)
-        self.assertEqual(self.lock_pool, self.service.lock_pool)
-        self.assertEqual(self.injector.pool_factory, self.service.pool_factory)
+        self.assertEqual(self.aggregate, self.service.aggregate)
 
         with self.assertRaises(AttributeError):
             self.service.delta_repository
@@ -77,13 +52,16 @@ class TestService(DatabaseMinosTestCase):
             self.assertEqual(1, mock.call_count)
 
 
-class TestQueryService(DatabaseMinosTestCase):
+class TestQueryService(MinosTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
         self.saga_manager = AsyncMock()
-        self.service = FakeQueryService(config=self.config, saga_manager=self.saga_manager)
+        self.service = FakeQueryService()
+
+    def get_injections(self):
+        return self.config.get_injections()
 
     def test_base(self):
         self.assertIsInstance(self.service, Service)
@@ -96,21 +74,17 @@ class TestQueryService(DatabaseMinosTestCase):
         request = InMemoryRequest("foo")
         self.assertEqual(request, self.service._pre_query_handle(request))
 
-    def test_get_enroute(self):
-        expected = {
-            "find_foo": {BrokerQueryEnrouteDecorator("FindFoo")},
-        }
-        observed = FakeQueryService.__get_enroute__(self.config)
-        self.assertEqual(expected, observed)
 
-
-class TestCommandService(DatabaseMinosTestCase):
+class TestCommandService(MinosTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
         self.saga_manager = AsyncMock()
-        self.service = FakeCommandService(config=self.config, saga_manager=self.saga_manager)
+        self.service = FakeCommandService()
+
+    def get_injections(self):
+        return self.config.get_injections()
 
     def test_base(self):
         self.assertIsInstance(self.service, Service)
@@ -122,13 +96,6 @@ class TestCommandService(DatabaseMinosTestCase):
     def test_pre_query(self):
         with self.assertRaises(MinosIllegalHandlingException):
             self.service._pre_query_handle(InMemoryRequest("foo"))
-
-    def test_get_enroute(self):
-        expected = {
-            "create_foo": {BrokerCommandEnrouteDecorator("CreateFoo")},
-        }
-        observed = FakeCommandService.__get_enroute__(self.config)
-        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":
