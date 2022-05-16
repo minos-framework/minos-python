@@ -63,6 +63,7 @@ class TestAggregate(AggregateTestCase):
         self.assertEqual(self.delta_repository, self.aggregate.delta_repository)
         self.assertEqual(self.snapshot_repository, self.aggregate.snapshot_repository)
         self.assertEqual(self.broker_publisher, self.aggregate.broker_publisher)
+        self.assertEqual(self.saga_manager, self.aggregate.saga_manager)
 
     async def test_from_config_with_custom_publisher(self):
         with patch.object(Config, "get_aggregate", return_value={"publisher": {"client": InMemoryBrokerPublisher}}):
@@ -72,6 +73,7 @@ class TestAggregate(AggregateTestCase):
                 self.assertEqual(self.snapshot_repository, aggregate.snapshot_repository)
                 self.assertIsInstance(aggregate.broker_publisher, InMemoryBrokerPublisher)
                 self.assertNotEqual(self.broker_publisher, aggregate.broker_publisher)
+                self.assertEqual(self.saga_manager, aggregate.saga_manager)
 
     def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):
@@ -82,6 +84,8 @@ class TestAggregate(AggregateTestCase):
             OrderAggregate.from_config(CONFIG_FILE_PATH, snapshot_repository=None)
         with self.assertRaises(NotProvidedException):
             OrderAggregate.from_config(CONFIG_FILE_PATH, broker_publisher=None)
+        with self.assertRaises(NotProvidedException):
+            OrderAggregate.from_config(CONFIG_FILE_PATH, saga_manager=None)
 
     async def test_call(self):
         uuid = await self.aggregate.create_order()
