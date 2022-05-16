@@ -199,7 +199,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-aggregate"
-version = "0.7.0.dev4"
+version = "0.8.0.dev1"
 description = "The Aggregate pattern of the Minos Framework"
 category = "main"
 optional = false
@@ -208,9 +208,9 @@ develop = true
 
 [package.dependencies]
 cached-property = "^1.5.2"
-minos-microservice-common = "^0.7.0*"
-minos-microservice-networks = "^0.7.0*"
-minos-microservice-transactions = "^0.7.0*"
+minos-microservice-common = "^0.8.0*"
+minos-microservice-networks = "^0.8.0*"
+minos-microservice-transactions = "^0.8.0*"
 
 [package.source]
 type = "directory"
@@ -218,7 +218,7 @@ url = "../minos-microservice-aggregate"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.7.0.dev4"
+version = "0.8.0.dev1"
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
@@ -240,7 +240,7 @@ url = "../minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.7.0.dev4"
+version = "0.8.0.dev1"
 description = "The networks core of the Minos Framework"
 category = "main"
 optional = false
@@ -249,7 +249,8 @@ develop = true
 
 [package.dependencies]
 crontab = "^0.23.0"
-minos-microservice-common = "^0.7.0*"
+minos-microservice-common = "^0.8.0*"
+minos-microservice-transactions = "^0.8.0*"
 
 [package.source]
 type = "directory"
@@ -261,16 +262,11 @@ version = "0.0.0"
 description = "The transactions core of the Minos Framework"
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = true
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-cached-property = "^1.5.2"
-minos-microservice-common = "^0.7.0*"
-
-[package.source]
-type = "directory"
-url = "../minos-microservice-transactions"
+cached-property = ">=1.5.2,<2.0.0"
+minos-microservice-common = "*"
 
 [[package]]
 name = "mypy-extensions"
@@ -357,7 +353,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pyparsing"
-version = "3.0.8"
+version = "3.0.9"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
 category = "dev"
 optional = false
@@ -435,7 +431,7 @@ test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "91ea14d5fb3dd6bbedf84d2fbf74fcbab5bcd99c36beda374cff3806e351dab3"
+content-hash = "a0a857b065b2750e3d7986b1efb51c8a573dc1ab8cf3763682cdc8b941f38b5c"
 
 [metadata.files]
 aiomisc = [
@@ -612,7 +608,10 @@ mccabe = [
 minos-microservice-aggregate = []
 minos-microservice-common = []
 minos-microservice-networks = []
-minos-microservice-transactions = []
+minos-microservice-transactions = [
+    {file = "minos-microservice-transactions-0.0.0.tar.gz", hash = "sha256:16575627767f4360599c867fef58c59911d1c31b13006eea2d0763361f6dab7f"},
+    {file = "minos_microservice_transactions-0.0.0-py3-none-any.whl", hash = "sha256:eb386c047bbd860d9396172d80d64fa2c60bda54dc42ec0a6260529171828174"},
+]
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
@@ -680,8 +679,8 @@ pyflakes = [
     {file = "pyflakes-2.4.0.tar.gz", hash = "sha256:05a85c2872edf37a4ed30b0cce2f6093e1d0581f8c19d7393122da7e25b2b24c"},
 ]
 pyparsing = [
-    {file = "pyparsing-3.0.8-py3-none-any.whl", hash = "sha256:ef7b523f6356f763771559412c0d7134753f037822dad1b16945b7b846f7ad06"},
-    {file = "pyparsing-3.0.8.tar.gz", hash = "sha256:7bf433498c016c4314268d95df76c81b842a4cb2b276fa3312cfb1e1d85f6954"},
+    {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
+    {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
 pytest = [
     {file = "pytest-7.1.2-py3-none-any.whl", hash = "sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c"},
