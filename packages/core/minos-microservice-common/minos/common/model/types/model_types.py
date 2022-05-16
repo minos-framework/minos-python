@@ -142,7 +142,7 @@ class ModelType(type):
 
         return (cls == other) or (
             cls._equal_without_types(other)
-            and (cls.namespace == other.namespace or not cls.namespace)
+            and (not cls.namespace or cls.namespace == other.namespace)
             and cls.type_hints.keys() <= other.type_hints.keys()
             and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in cls.type_hints.items())
         )
@@ -154,7 +154,7 @@ class ModelType(type):
 
         return (
             cls._equal_without_types(other)
-            and (cls.namespace == other.namespace or not cls.namespace)
+            and (not cls.namespace or cls.namespace == other.namespace)
             and cls.type_hints.keys() < other.type_hints.keys()
             and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in cls.type_hints.items())
         )
@@ -166,7 +166,7 @@ class ModelType(type):
 
         return (cls == other) or (
             cls._equal_without_types(other)
-            and (cls.namespace == other.namespace or not other.namespace)
+            and (not other.namespace or cls.namespace == other.namespace)
             and cls.type_hints.keys() >= other.type_hints.keys()
             and all(TypeHintComparator(v, cls.type_hints[k]).match() for k, v in other.type_hints.items())
         )
@@ -178,7 +178,7 @@ class ModelType(type):
 
         return (
             cls._equal_without_types(other)
-            and (cls.namespace == other.namespace or not other.namespace)
+            and (not other.namespace or cls.namespace == other.namespace)
             and cls.type_hints.keys() > other.type_hints.keys()
             and all(TypeHintComparator(v, cls.type_hints[k]).match() for k, v in other.type_hints.items())
         )
