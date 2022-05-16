@@ -243,13 +243,18 @@ version = "0.8.0.dev1"
 description = "The SAGA pattern of the Minos Framework"
 category = "main"
 optional = false
-python-versions = ">=3.9,<4.0"
+python-versions = "^3.9"
+develop = true
 
 [package.dependencies]
-cached-property = ">=1.5.2,<2.0.0"
-minos-microservice-common = "*"
-minos-microservice-networks = "*"
-minos-microservice-transactions = "*"
+cached-property = "^1.5.2"
+minos-microservice-common = "^0.8.0*"
+minos-microservice-networks = "^0.8.0*"
+minos-microservice-transactions = "^0.8.0*"
+
+[package.source]
+type = "directory"
+url = "../minos-microservice-saga"
 
 [[package]]
 name = "minos-microservice-transactions"
@@ -431,7 +436,7 @@ test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "6bf1d55c83adb99411c0f46a3b271f8c9717e7436e77e4db29c40b5ccdee3557"
+content-hash = "fdf46b7accbbff26841a2e6f658c39b85f2d17164f9d6c1aac3d7c35b92c9fa3"
 
 [metadata.files]
 aiomisc = [
@@ -607,10 +612,7 @@ mccabe = [
 ]
 minos-microservice-common = []
 minos-microservice-networks = []
-minos-microservice-saga = [
-    {file = "minos-microservice-saga-0.8.0.dev1.tar.gz", hash = "sha256:4bd4a809750fc1f206445809019a84c9b18ad5530f06975a0a62612fbfe9b906"},
-    {file = "minos_microservice_saga-0.8.0.dev1-py3-none-any.whl", hash = "sha256:69cd09909b042f518b37b91073a0f928ac64cc08b083ca3ea7b6aaf8e443843d"},
-]
+minos-microservice-saga = []
 minos-microservice-transactions = []
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
