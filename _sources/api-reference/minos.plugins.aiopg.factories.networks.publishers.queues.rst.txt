@@ -1,0 +1,29 @@
+minos.plugins.aiopg.factories.networks.publishers.queues
+========================================================
+
+.. automodule:: minos.plugins.aiopg.factories.networks.publishers.queues
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AiopgBrokerPublisherQueueDatabaseOperationFactory
+   
+   
+
+   
+   
+   
+
+
+

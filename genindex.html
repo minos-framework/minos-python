@@ -48,6 +48,8 @@
 <li class="toctree-l1"><a class="reference internal" href="api-reference/minos.plugins.kafka.html">minos.plugins.kafka</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api-reference/minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api-reference/minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-reference/minos.plugins.aiopg.html">minos.plugins.aiopg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-reference/minos.plugins.lmdb.html">minos.plugins.lmdb</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api-reference/minos.plugins.kong.html">minos.plugins.kong</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api-reference/minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api-reference/minos.plugins.graphql.html">minos.plugins.graphql</a></li>
@@ -120,6 +122,12 @@
         <li><a href="api-reference/minos.plugins.aiohttp.requests.html#minos.plugins.aiohttp.requests.AioHttpResponse.__init__">(AioHttpResponse method)</a>
 </li>
         <li><a href="api-reference/minos.plugins.aiohttp.requests.html#minos.plugins.aiohttp.requests.AioHttpResponseException.__init__">(AioHttpResponseException method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.__init__">(AiopgDatabaseClient method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.operations.html#minos.plugins.aiopg.operations.AiopgDatabaseOperation.__init__">(AiopgDatabaseOperation method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.queries.html#minos.plugins.aiopg.factories.aggregate.snapshots.queries.AiopgSnapshotQueryDatabaseOperationBuilder.__init__">(AiopgSnapshotQueryDatabaseOperationBuilder method)</a>
 </li>
         <li><a href="api-reference/minos.saga.exceptions.html#minos.saga.exceptions.AlreadyCommittedException.__init__">(AlreadyCommittedException method)</a>
 </li>
@@ -422,6 +430,10 @@
         <li><a href="api-reference/minos.plugins.kong.client.html#minos.plugins.kong.client.KongClient.__init__">(KongClient method)</a>
 </li>
         <li><a href="api-reference/minos.plugins.kong.discovery.html#minos.plugins.kong.discovery.KongDiscoveryClient.__init__">(KongDiscoveryClient method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.__init__">(LmdbDatabaseClient method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.operations.html#minos.plugins.lmdb.operations.LmdbDatabaseOperation.__init__">(LmdbDatabaseOperation method)</a>
 </li>
         <li><a href="api-reference/minos.saga.executions.executors.local.html#minos.saga.executions.executors.local.LocalExecutor.__init__">(LocalExecutor method)</a>
 </li>
@@ -1028,10 +1040,36 @@
 </li>
       <li><a href="api-reference/minos.plugins.aiohttp.requests.html#minos.plugins.aiohttp.requests.AioHttpResponseException">AioHttpResponseException</a>
 </li>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.networks.publishers.queues.html#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory">AiopgBrokerPublisherQueueDatabaseOperationFactory (class in minos.plugins.aiopg.factories.networks.publishers.queues)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.networks.collections.queues.html#minos.plugins.aiopg.factories.networks.collections.queues.AiopgBrokerQueueDatabaseOperationFactory">AiopgBrokerQueueDatabaseOperationFactory (class in minos.plugins.aiopg.factories.networks.collections.queues)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.validators.html#minos.plugins.aiopg.factories.networks.subscribers.validators.AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory">AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory (class in minos.plugins.aiopg.factories.networks.subscribers.validators)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#minos.plugins.aiopg.factories.networks.subscribers.queues.AiopgBrokerSubscriberQueueDatabaseOperationFactory">AiopgBrokerSubscriberQueueDatabaseOperationFactory (class in minos.plugins.aiopg.factories.networks.subscribers.queues)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient">AiopgDatabaseClient (class in minos.plugins.aiopg.clients)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.operations.html#minos.plugins.aiopg.operations.AiopgDatabaseOperation">AiopgDatabaseOperation (class in minos.plugins.aiopg.operations)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.events.html#minos.plugins.aiopg.factories.aggregate.events.AiopgEventDatabaseOperationFactory">AiopgEventDatabaseOperationFactory (class in minos.plugins.aiopg.factories.aggregate.events)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.common.locks.html#minos.plugins.aiopg.factories.common.locks.AiopgLockDatabaseOperationFactory">AiopgLockDatabaseOperationFactory (class in minos.plugins.aiopg.factories.common.locks)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.common.managemens.html#minos.plugins.aiopg.factories.common.managemens.AiopgManagementDatabaseOperationFactory">AiopgManagementDatabaseOperationFactory (class in minos.plugins.aiopg.factories.common.managemens)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory">AiopgSnapshotDatabaseOperationFactory (class in minos.plugins.aiopg.factories.aggregate.snapshots.impl)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.queries.html#minos.plugins.aiopg.factories.aggregate.snapshots.queries.AiopgSnapshotQueryDatabaseOperationBuilder">AiopgSnapshotQueryDatabaseOperationBuilder (class in minos.plugins.aiopg.factories.aggregate.snapshots.queries)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.transactions.html#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory">AiopgTransactionDatabaseOperationFactory (class in minos.plugins.aiopg.factories.aggregate.transactions)</a>
+</li>
       <li><a href="api-reference/minos.aggregate.aggregate.html#minos.aggregate.aggregate.Aggregate.already_destroyed">already_destroyed (Aggregate property)</a>
 
       <ul>
         <li><a href="api-reference/minos.plugins.aiohttp.connectors.html#minos.plugins.aiohttp.connectors.AioHttpConnector.already_destroyed">(AioHttpConnector property)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.already_destroyed">(AiopgDatabaseClient property)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.clients.html#minos.networks.brokers.clients.BrokerClient.already_destroyed">(BrokerClient property)</a>
 </li>
@@ -1163,6 +1201,8 @@
 </li>
         <li><a href="api-reference/minos.plugins.kong.discovery.html#minos.plugins.kong.discovery.KongDiscoveryClient.already_destroyed">(KongDiscoveryClient property)</a>
 </li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.already_destroyed">(LmdbDatabaseClient property)</a>
+</li>
         <li><a href="api-reference/minos.common.locks.html#minos.common.locks.LockPool.already_destroyed">(LockPool property)</a>
 </li>
         <li><a href="api-reference/minos.common.config.abc.html#minos.common.config.abc.MinosConfig.already_destroyed">(MinosConfig property)</a>
@@ -1218,6 +1258,8 @@
 
       <ul>
         <li><a href="api-reference/minos.plugins.aiohttp.connectors.html#minos.plugins.aiohttp.connectors.AioHttpConnector.already_setup">(AioHttpConnector property)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.already_setup">(AiopgDatabaseClient property)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.clients.html#minos.networks.brokers.clients.BrokerClient.already_setup">(BrokerClient property)</a>
 </li>
@@ -1348,6 +1390,8 @@
         <li><a href="api-reference/minos.plugins.kong.client.html#minos.plugins.kong.client.KongClient.already_setup">(KongClient property)</a>
 </li>
         <li><a href="api-reference/minos.plugins.kong.discovery.html#minos.plugins.kong.discovery.KongDiscoveryClient.already_setup">(KongDiscoveryClient property)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.already_setup">(LmdbDatabaseClient property)</a>
 </li>
         <li><a href="api-reference/minos.common.locks.html#minos.common.locks.LockPool.already_setup">(LockPool property)</a>
 </li>
@@ -1928,9 +1972,11 @@
 </li>
       <li><a href="api-reference/minos.common.model.dynamic.bucket.html#minos.common.model.dynamic.bucket.BucketModel">BucketModel (class in minos.common.model.dynamic.bucket)</a>
 </li>
-      <li><a href="api-reference/minos.common.model.serializers.avro.data.decoder.html#minos.common.model.serializers.avro.data.decoder.AvroDataDecoder.build">build() (AvroDataDecoder method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.queries.html#minos.plugins.aiopg.factories.aggregate.snapshots.queries.AiopgSnapshotQueryDatabaseOperationBuilder.build">build() (AiopgSnapshotQueryDatabaseOperationBuilder method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.model.serializers.avro.data.decoder.html#minos.common.model.serializers.avro.data.decoder.AvroDataDecoder.build">(AvroDataDecoder method)</a>
+</li>
         <li><a href="api-reference/minos.common.model.serializers.avro.data.encoder.html#minos.common.model.serializers.avro.data.encoder.AvroDataEncoder.build">(AvroDataEncoder method)</a>
 </li>
         <li><a href="api-reference/minos.common.model.serializers.avro.schema.decoder.html#minos.common.model.serializers.avro.schema.decoder.AvroSchemaDecoder.build">(AvroSchemaDecoder method)</a>
@@ -1996,15 +2042,23 @@
         <li><a href="api-reference/minos.common.model.types.builders.html#minos.common.model.types.builders.TypeHintParser.build">(TypeHintParser method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.common.database.locks.factories.html#minos.common.database.locks.factories.LockDatabaseOperationFactory.build_acquire">build_acquire() (LockDatabaseOperationFactory method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.common.locks.html#minos.plugins.aiopg.factories.common.locks.AiopgLockDatabaseOperationFactory.build_acquire">build_acquire() (AiopgLockDatabaseOperationFactory method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.database.locks.factories.html#minos.common.database.locks.factories.LockDatabaseOperationFactory.build_acquire">(LockDatabaseOperationFactory method)</a>
+</li>
         <li><a href="api-reference/minos.common.testing.database.factories.locks.html#minos.common.testing.database.factories.locks.MockedLockDatabaseOperationFactory.build_acquire">(MockedLockDatabaseOperationFactory method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_count">build_count() (BrokerPublisherQueueDatabaseOperationFactory method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.networks.publishers.queues.html#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_count">build_count() (AiopgBrokerPublisherQueueDatabaseOperationFactory method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.collections.queues.html#minos.plugins.aiopg.factories.networks.collections.queues.AiopgBrokerQueueDatabaseOperationFactory.build_count">(AiopgBrokerQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#minos.plugins.aiopg.factories.networks.subscribers.queues.AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_count">(AiopgBrokerSubscriberQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_count">(BrokerPublisherQueueDatabaseOperationFactory method)</a>
+</li>
         <li><a href="api-reference/minos.networks.brokers.collections.queues.database.factories.html#minos.networks.brokers.collections.queues.database.factories.BrokerQueueDatabaseOperationFactory.build_count">(BrokerQueueDatabaseOperationFactory method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.subscribers.queued.queues.database.factories.html#minos.networks.brokers.subscribers.queued.queues.database.factories.BrokerSubscriberQueueDatabaseOperationFactory.build_count">(BrokerSubscriberQueueDatabaseOperationFactory method)</a>
@@ -2016,9 +2070,25 @@
         <li><a href="api-reference/minos.networks.testing.brokers.subscribers.queues.html#minos.networks.testing.brokers.subscribers.queues.MockedBrokerSubscriberQueueDatabaseOperationFactory.build_count">(MockedBrokerSubscriberQueueDatabaseOperationFactory method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_create">build_create() (BrokerPublisherQueueDatabaseOperationFactory method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.networks.publishers.queues.html#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_create">build_create() (AiopgBrokerPublisherQueueDatabaseOperationFactory method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.collections.queues.html#minos.plugins.aiopg.factories.networks.collections.queues.AiopgBrokerQueueDatabaseOperationFactory.build_create">(AiopgBrokerQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.validators.html#minos.plugins.aiopg.factories.networks.subscribers.validators.AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory.build_create">(AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#minos.plugins.aiopg.factories.networks.subscribers.queues.AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_create">(AiopgBrokerSubscriberQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.events.html#minos.plugins.aiopg.factories.aggregate.events.AiopgEventDatabaseOperationFactory.build_create">(AiopgEventDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.common.managemens.html#minos.plugins.aiopg.factories.common.managemens.AiopgManagementDatabaseOperationFactory.build_create">(AiopgManagementDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_create">(AiopgSnapshotDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.transactions.html#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_create">(AiopgTransactionDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_create">(BrokerPublisherQueueDatabaseOperationFactory method)</a>
+</li>
         <li><a href="api-reference/minos.networks.brokers.collections.queues.database.factories.html#minos.networks.brokers.collections.queues.database.factories.BrokerQueueDatabaseOperationFactory.build_create">(BrokerQueueDatabaseOperationFactory method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.subscribers.filtered.validators.duplicates.database.factories.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.database.factories.BrokerSubscriberDuplicateValidatorDatabaseOperationFactory.build_create">(BrokerSubscriberDuplicateValidatorDatabaseOperationFactory method)</a>
@@ -2050,14 +2120,24 @@
         <li><a href="api-reference/minos.aggregate.transactions.repositories.database.factories.html#minos.aggregate.transactions.repositories.database.factories.TransactionDatabaseOperationFactory.build_create">(TransactionDatabaseOperationFactory method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_delete">build_delete() (BrokerPublisherQueueDatabaseOperationFactory method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.networks.publishers.queues.html#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_delete">build_delete() (AiopgBrokerPublisherQueueDatabaseOperationFactory method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.collections.queues.html#minos.plugins.aiopg.factories.networks.collections.queues.AiopgBrokerQueueDatabaseOperationFactory.build_delete">(AiopgBrokerQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#minos.plugins.aiopg.factories.networks.subscribers.queues.AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_delete">(AiopgBrokerSubscriberQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.common.managemens.html#minos.plugins.aiopg.factories.common.managemens.AiopgManagementDatabaseOperationFactory.build_delete">(AiopgManagementDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_delete">(AiopgSnapshotDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_delete">(BrokerPublisherQueueDatabaseOperationFactory method)</a>
+</li>
         <li><a href="api-reference/minos.networks.brokers.collections.queues.database.factories.html#minos.networks.brokers.collections.queues.database.factories.BrokerQueueDatabaseOperationFactory.build_delete">(BrokerQueueDatabaseOperationFactory method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.subscribers.queued.queues.database.factories.html#minos.networks.brokers.subscribers.queued.queues.database.factories.BrokerSubscriberQueueDatabaseOperationFactory.build_delete">(BrokerSubscriberQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.factories.saga.executions.html#minos.plugins.lmdb.factories.saga.executions.LmdbSagaExecutionDatabaseOperationFactory.build_delete">(LmdbSagaExecutionDatabaseOperationFactory method)</a>
 </li>
         <li><a href="api-reference/minos.common.database.managements.html#minos.common.database.managements.ManagementDatabaseOperationFactory.build_delete">(ManagementDatabaseOperationFactory method)</a>
 </li>
@@ -2078,17 +2158,27 @@
         <li><a href="api-reference/minos.aggregate.snapshots.repositories.database.factories.html#minos.aggregate.snapshots.repositories.database.factories.SnapshotDatabaseOperationFactory.build_delete">(SnapshotDatabaseOperationFactory method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference/minos.aggregate.testing.events.repositories.testcases.html#minos.aggregate.testing.events.repositories.testcases.EventRepositoryTestCase.build_event_repository">build_event_repository() (EventRepositoryTestCase method)</a>
 </li>
-      <li><a href="api-reference/minos.saga.testing.html#minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory.build_load">build_load() (MockedSagaExecutionDatabaseOperationFactory method)</a>
+      <li><a href="api-reference/minos.plugins.lmdb.factories.saga.executions.html#minos.plugins.lmdb.factories.saga.executions.LmdbSagaExecutionDatabaseOperationFactory.build_load">build_load() (LmdbSagaExecutionDatabaseOperationFactory method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.saga.testing.html#minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory.build_load">(MockedSagaExecutionDatabaseOperationFactory method)</a>
+</li>
         <li><a href="api-reference/minos.saga.executions.repositories.database.factories.html#minos.saga.executions.repositories.database.factories.SagaExecutionDatabaseOperationFactory.build_load">(SagaExecutionDatabaseOperationFactory method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_mark_processed">build_mark_processed() (BrokerPublisherQueueDatabaseOperationFactory method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.networks.publishers.queues.html#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_mark_processed">build_mark_processed() (AiopgBrokerPublisherQueueDatabaseOperationFactory method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.collections.queues.html#minos.plugins.aiopg.factories.networks.collections.queues.AiopgBrokerQueueDatabaseOperationFactory.build_mark_processed">(AiopgBrokerQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#minos.plugins.aiopg.factories.networks.subscribers.queues.AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_mark_processed">(AiopgBrokerSubscriberQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_mark_processed">(BrokerPublisherQueueDatabaseOperationFactory method)</a>
+</li>
         <li><a href="api-reference/minos.networks.brokers.collections.queues.database.factories.html#minos.networks.brokers.collections.queues.database.factories.BrokerQueueDatabaseOperationFactory.build_mark_processed">(BrokerQueueDatabaseOperationFactory method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.subscribers.queued.queues.database.factories.html#minos.networks.brokers.subscribers.queued.queues.database.factories.BrokerSubscriberQueueDatabaseOperationFactory.build_mark_processed">(BrokerSubscriberQueueDatabaseOperationFactory method)</a>
@@ -2100,9 +2190,15 @@
         <li><a href="api-reference/minos.networks.testing.brokers.subscribers.queues.html#minos.networks.testing.brokers.subscribers.queues.MockedBrokerSubscriberQueueDatabaseOperationFactory.build_mark_processed">(MockedBrokerSubscriberQueueDatabaseOperationFactory method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_mark_processing">build_mark_processing() (BrokerPublisherQueueDatabaseOperationFactory method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.networks.publishers.queues.html#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_mark_processing">build_mark_processing() (AiopgBrokerPublisherQueueDatabaseOperationFactory method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.collections.queues.html#minos.plugins.aiopg.factories.networks.collections.queues.AiopgBrokerQueueDatabaseOperationFactory.build_mark_processing">(AiopgBrokerQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#minos.plugins.aiopg.factories.networks.subscribers.queues.AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_mark_processing">(AiopgBrokerSubscriberQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_mark_processing">(BrokerPublisherQueueDatabaseOperationFactory method)</a>
+</li>
         <li><a href="api-reference/minos.networks.brokers.collections.queues.database.factories.html#minos.networks.brokers.collections.queues.database.factories.BrokerQueueDatabaseOperationFactory.build_mark_processing">(BrokerQueueDatabaseOperationFactory method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.subscribers.queued.queues.database.factories.html#minos.networks.brokers.subscribers.queued.queues.database.factories.BrokerSubscriberQueueDatabaseOperationFactory.build_mark_processing">(BrokerSubscriberQueueDatabaseOperationFactory method)</a>
@@ -2114,9 +2210,23 @@
         <li><a href="api-reference/minos.networks.testing.brokers.subscribers.queues.html#minos.networks.testing.brokers.subscribers.queues.MockedBrokerSubscriberQueueDatabaseOperationFactory.build_mark_processing">(MockedBrokerSubscriberQueueDatabaseOperationFactory method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_query">build_query() (BrokerPublisherQueueDatabaseOperationFactory method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_offset_table_name">build_offset_table_name() (AiopgSnapshotDatabaseOperationFactory method)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.networks.publishers.queues.html#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_query">build_query() (AiopgBrokerPublisherQueueDatabaseOperationFactory method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.collections.queues.html#minos.plugins.aiopg.factories.networks.collections.queues.AiopgBrokerQueueDatabaseOperationFactory.build_query">(AiopgBrokerQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#minos.plugins.aiopg.factories.networks.subscribers.queues.AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_query">(AiopgBrokerSubscriberQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.events.html#minos.plugins.aiopg.factories.aggregate.events.AiopgEventDatabaseOperationFactory.build_query">(AiopgEventDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_query">(AiopgSnapshotDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.transactions.html#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_query">(AiopgTransactionDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_query">(BrokerPublisherQueueDatabaseOperationFactory method)</a>
+</li>
         <li><a href="api-reference/minos.networks.brokers.collections.queues.database.factories.html#minos.networks.brokers.collections.queues.database.factories.BrokerQueueDatabaseOperationFactory.build_query">(BrokerQueueDatabaseOperationFactory method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.subscribers.queued.queues.database.factories.html#minos.networks.brokers.subscribers.queued.queues.database.factories.BrokerSubscriberQueueDatabaseOperationFactory.build_query">(BrokerSubscriberQueueDatabaseOperationFactory method)</a>
@@ -2140,9 +2250,13 @@
         <li><a href="api-reference/minos.aggregate.transactions.repositories.database.factories.html#minos.aggregate.transactions.repositories.database.factories.TransactionDatabaseOperationFactory.build_query">(TransactionDatabaseOperationFactory method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.aggregate.events.repositories.database.factories.html#minos.aggregate.events.repositories.database.factories.EventDatabaseOperationFactory.build_query_offset">build_query_offset() (EventDatabaseOperationFactory method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.events.html#minos.plugins.aiopg.factories.aggregate.events.AiopgEventDatabaseOperationFactory.build_query_offset">build_query_offset() (AiopgEventDatabaseOperationFactory method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_query_offset">(AiopgSnapshotDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.aggregate.events.repositories.database.factories.html#minos.aggregate.events.repositories.database.factories.EventDatabaseOperationFactory.build_query_offset">(EventDatabaseOperationFactory method)</a>
+</li>
         <li><a href="api-reference/minos.aggregate.testing.events.repositories.factories.html#minos.aggregate.testing.events.repositories.factories.MockedEventDatabaseOperationFactory.build_query_offset">(MockedEventDatabaseOperationFactory method)</a>
 </li>
         <li><a href="api-reference/minos.aggregate.testing.snapshots.repositories.factories.html#minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_query_offset">(MockedSnapshotDatabaseOperationFactory method)</a>
@@ -2150,9 +2264,11 @@
         <li><a href="api-reference/minos.aggregate.snapshots.repositories.database.factories.html#minos.aggregate.snapshots.repositories.database.factories.SnapshotDatabaseOperationFactory.build_query_offset">(SnapshotDatabaseOperationFactory method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.common.database.locks.factories.html#minos.common.database.locks.factories.LockDatabaseOperationFactory.build_release">build_release() (LockDatabaseOperationFactory method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.common.locks.html#minos.plugins.aiopg.factories.common.locks.AiopgLockDatabaseOperationFactory.build_release">build_release() (AiopgLockDatabaseOperationFactory method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.database.locks.factories.html#minos.common.database.locks.factories.LockDatabaseOperationFactory.build_release">(LockDatabaseOperationFactory method)</a>
+</li>
         <li><a href="api-reference/minos.common.testing.database.factories.locks.html#minos.common.testing.database.factories.locks.MockedLockDatabaseOperationFactory.build_release">(MockedLockDatabaseOperationFactory method)</a>
 </li>
       </ul></li>
@@ -2160,15 +2276,31 @@
 </li>
       <li><a href="api-reference/minos.aggregate.testing.snapshots.repositories.testcases.html#minos.aggregate.testing.snapshots.repositories.testcases.SnapshotRepositoryTestCase.build_snapshot_repository">build_snapshot_repository() (SnapshotRepositoryTestCase method)</a>
 </li>
-      <li><a href="api-reference/minos.saga.testing.html#minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory.build_store">build_store() (MockedSagaExecutionDatabaseOperationFactory method)</a>
+      <li><a href="api-reference/minos.plugins.lmdb.factories.saga.executions.html#minos.plugins.lmdb.factories.saga.executions.LmdbSagaExecutionDatabaseOperationFactory.build_store">build_store() (LmdbSagaExecutionDatabaseOperationFactory method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.saga.testing.html#minos.saga.testing.MockedSagaExecutionDatabaseOperationFactory.build_store">(MockedSagaExecutionDatabaseOperationFactory method)</a>
+</li>
         <li><a href="api-reference/minos.saga.executions.repositories.database.factories.html#minos.saga.executions.repositories.database.factories.SagaExecutionDatabaseOperationFactory.build_store">(SagaExecutionDatabaseOperationFactory method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_submit">build_submit() (BrokerPublisherQueueDatabaseOperationFactory method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.networks.publishers.queues.html#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_submit">build_submit() (AiopgBrokerPublisherQueueDatabaseOperationFactory method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.collections.queues.html#minos.plugins.aiopg.factories.networks.collections.queues.AiopgBrokerQueueDatabaseOperationFactory.build_submit">(AiopgBrokerQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.validators.html#minos.plugins.aiopg.factories.networks.subscribers.validators.AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory.build_submit">(AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#minos.plugins.aiopg.factories.networks.subscribers.queues.AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_submit">(AiopgBrokerSubscriberQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.events.html#minos.plugins.aiopg.factories.aggregate.events.AiopgEventDatabaseOperationFactory.build_submit">(AiopgEventDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_submit">(AiopgSnapshotDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.transactions.html#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_submit">(AiopgTransactionDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory.build_submit">(BrokerPublisherQueueDatabaseOperationFactory method)</a>
+</li>
         <li><a href="api-reference/minos.networks.brokers.collections.queues.database.factories.html#minos.networks.brokers.collections.queues.database.factories.BrokerQueueDatabaseOperationFactory.build_submit">(BrokerQueueDatabaseOperationFactory method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.subscribers.filtered.validators.duplicates.database.factories.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.database.factories.BrokerSubscriberDuplicateValidatorDatabaseOperationFactory.build_submit">(BrokerSubscriberDuplicateValidatorDatabaseOperationFactory method)</a>
@@ -2196,10 +2328,30 @@
         <li><a href="api-reference/minos.aggregate.transactions.repositories.database.factories.html#minos.aggregate.transactions.repositories.database.factories.TransactionDatabaseOperationFactory.build_submit">(TransactionDatabaseOperationFactory method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.aggregate.testing.snapshots.repositories.factories.html#minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_submit_offset">build_submit_offset() (MockedSnapshotDatabaseOperationFactory method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_submit_offset">build_submit_offset() (AiopgSnapshotDatabaseOperationFactory method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.aggregate.testing.snapshots.repositories.factories.html#minos.aggregate.testing.snapshots.repositories.factories.MockedSnapshotDatabaseOperationFactory.build_submit_offset">(MockedSnapshotDatabaseOperationFactory method)</a>
+</li>
         <li><a href="api-reference/minos.aggregate.snapshots.repositories.database.factories.html#minos.aggregate.snapshots.repositories.database.factories.SnapshotDatabaseOperationFactory.build_submit_offset">(SnapshotDatabaseOperationFactory method)</a>
+</li>
+      </ul></li>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.networks.publishers.queues.html#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_table_name">build_table_name() (AiopgBrokerPublisherQueueDatabaseOperationFactory method)</a>
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.collections.queues.html#minos.plugins.aiopg.factories.networks.collections.queues.AiopgBrokerQueueDatabaseOperationFactory.build_table_name">(AiopgBrokerQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.validators.html#minos.plugins.aiopg.factories.networks.subscribers.validators.AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory.build_table_name">(AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory static method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#minos.plugins.aiopg.factories.networks.subscribers.queues.AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_table_name">(AiopgBrokerSubscriberQueueDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.events.html#minos.plugins.aiopg.factories.aggregate.events.AiopgEventDatabaseOperationFactory.build_table_name">(AiopgEventDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_table_name">(AiopgSnapshotDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.transactions.html#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_table_name">(AiopgTransactionDatabaseOperationFactory method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.factories.saga.executions.html#minos.plugins.lmdb.factories.saga.executions.LmdbSagaExecutionDatabaseOperationFactory.build_table_name">(LmdbSagaExecutionDatabaseOperationFactory method)</a>
 </li>
       </ul></li>
       <li><a href="api-reference/minos.aggregate.entities.refs.resolvers.html#minos.aggregate.entities.refs.resolvers.RefResolver.build_topic_name">build_topic_name() (RefResolver static method)</a>
@@ -2238,9 +2390,11 @@
 </li>
       <li><a href="api-reference/minos.networks.decorators.callables.checkers.html#minos.networks.decorators.callables.checkers.CheckerWrapper">CheckerWrapper (class in minos.networks.decorators.callables.checkers)</a>
 </li>
-      <li><a href="api-reference/minos.common.retries.html#minos.common.retries.CircuitBreakerMixin.circuit_breaker">circuit_breaker (CircuitBreakerMixin property)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.circuit_breaker">circuit_breaker (AiopgDatabaseClient property)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.retries.html#minos.common.retries.CircuitBreakerMixin.circuit_breaker">(CircuitBreakerMixin property)</a>
+</li>
         <li><a href="api-reference/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.circuit_breaker">(KafkaBrokerPublisher property)</a>
 </li>
         <li><a href="api-reference/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.circuit_breaker">(KafkaBrokerSubscriber property)</a>
@@ -2252,9 +2406,11 @@
         <li><a href="api-reference/minos.plugins.minos_discovery.client.html#minos.plugins.minos_discovery.client.MinosDiscoveryClient.circuit_breaker">(MinosDiscoveryClient property)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.common.retries.html#minos.common.retries.CircuitBreakerMixin.circuit_breaker_exceptions">circuit_breaker_exceptions (CircuitBreakerMixin property)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.circuit_breaker_exceptions">circuit_breaker_exceptions (AiopgDatabaseClient property)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.retries.html#minos.common.retries.CircuitBreakerMixin.circuit_breaker_exceptions">(CircuitBreakerMixin property)</a>
+</li>
         <li><a href="api-reference/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.circuit_breaker_exceptions">(KafkaBrokerPublisher property)</a>
 </li>
         <li><a href="api-reference/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.circuit_breaker_exceptions">(KafkaBrokerSubscriber property)</a>
@@ -2362,9 +2518,11 @@
 </li>
       <li><a href="api-reference/minos.aggregate.entities.refs.models.html#minos.aggregate.entities.refs.models.Ref.clock_seq_low">clock_seq_low (Ref property)</a>
 </li>
-      <li><a href="api-reference/minos.networks.brokers.pools.html#minos.networks.brokers.pools.BrokerClientPool.close">close() (BrokerClientPool method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.close">close() (AiopgDatabaseClient method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.networks.brokers.pools.html#minos.networks.brokers.pools.BrokerClientPool.close">(BrokerClientPool method)</a>
+</li>
         <li><a href="api-reference/minos.common.database.pools.html#minos.common.database.pools.DatabaseClientPool.close">(DatabaseClientPool method)</a>
 </li>
         <li><a href="api-reference/minos.common.database.pools.html#minos.common.database.pools.DatabaseLockPool.close">(DatabaseLockPool method)</a>
@@ -2455,6 +2613,8 @@
       <li><a href="api-reference/minos.common.config.v1.html#minos.common.config.v1.ConfigV1">ConfigV1 (class in minos.common.config.v1)</a>
 </li>
       <li><a href="api-reference/minos.common.config.v2.html#minos.common.config.v2.ConfigV2">ConfigV2 (class in minos.common.config.v2)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.connection">connection (AiopgDatabaseClient property)</a>
 </li>
       <li><a href="api-reference/minos.common.database.clients.exceptions.html#minos.common.database.clients.exceptions.ConnectionException">ConnectionException</a>
 </li>
@@ -2569,7 +2729,11 @@
       <li><a href="api-reference/minos.common.model.types.model_types.html#minos.common.model.types.model_types.FieldType.count">count() (FieldType method)</a>
 </li>
       <li><a href="api-reference/minos.aggregate.actions.html#minos.aggregate.actions.Action.CREATE">CREATE (Action attribute)</a>
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.lmdb.operations.html#minos.plugins.lmdb.operations.LmdbDatabaseOperationType.CREATE">(LmdbDatabaseOperationType attribute)</a>
 </li>
+      </ul></li>
       <li><a href="api-reference/minos.aggregate.events.repositories.database.impl.html#minos.aggregate.events.repositories.database.impl.DatabaseEventRepository.create">create() (DatabaseEventRepository method)</a>
 
       <ul>
@@ -2612,6 +2776,8 @@
 </li>
       <li><a href="api-reference/minos.common.datetime.html#minos.common.datetime.current_datetime">current_datetime() (in module minos.common.datetime)</a>
 </li>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.cursor">cursor (AiopgDatabaseClient property)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -2644,6 +2810,8 @@
         <li><a href="api-reference/minos.aggregate.value_objects.html#minos.aggregate.value_objects.ValueObjectSet.data_cls">(ValueObjectSet property)</a>
 </li>
       </ul></li>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.database">database (AiopgDatabaseClient property)</a>
+</li>
       <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.DatabaseBrokerPublisherQueue.database_client_cls">database_client_cls (DatabaseBrokerPublisherQueue property)</a>
 
       <ul>
@@ -2904,8 +3072,6 @@
         <li><a href="api-reference/minos.common.config.abc.html#minos.common.config.abc.MinosConfig.DEFAULT_VALUES">(MinosConfig attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference/minos.saga.executions.steps.conditional.html#minos.saga.executions.steps.conditional.ConditionalSagaStepExecution.definition">definition (ConditionalSagaStepExecution attribute)</a>
 
       <ul>
@@ -2914,10 +3080,16 @@
         <li><a href="api-reference/minos.saga.executions.steps.remote.html#minos.saga.executions.steps.remote.RemoteSagaStepExecution.definition">(RemoteSagaStepExecution attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference/minos.networks.decorators.callables.checkers.html#minos.networks.decorators.callables.checkers.CheckerMeta.delay">delay (CheckerMeta attribute)</a>
 </li>
       <li><a href="api-reference/minos.aggregate.actions.html#minos.aggregate.actions.Action.DELETE">DELETE (Action attribute)</a>
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.lmdb.operations.html#minos.plugins.lmdb.operations.LmdbDatabaseOperationType.DELETE">(LmdbDatabaseOperationType attribute)</a>
 </li>
+      </ul></li>
       <li><a href="api-reference/minos.aggregate.events.repositories.database.impl.html#minos.aggregate.events.repositories.database.impl.DatabaseEventRepository.delete">delete() (DatabaseEventRepository method)</a>
 
       <ul>
@@ -2970,6 +3142,8 @@
 
       <ul>
         <li><a href="api-reference/minos.plugins.aiohttp.connectors.html#minos.plugins.aiohttp.connectors.AioHttpConnector.destroy">(AioHttpConnector method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.destroy">(AiopgDatabaseClient method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.clients.html#minos.networks.brokers.clients.BrokerClient.destroy">(BrokerClient method)</a>
 </li>
@@ -3100,6 +3274,8 @@
         <li><a href="api-reference/minos.plugins.kong.client.html#minos.plugins.kong.client.KongClient.destroy">(KongClient method)</a>
 </li>
         <li><a href="api-reference/minos.plugins.kong.discovery.html#minos.plugins.kong.discovery.KongDiscoveryClient.destroy">(KongDiscoveryClient method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.destroy">(LmdbDatabaseClient method)</a>
 </li>
         <li><a href="api-reference/minos.common.locks.html#minos.common.locks.LockPool.destroy">(LockPool method)</a>
 </li>
@@ -3362,10 +3538,10 @@
         <li><a href="api-reference/minos.networks.brokers.subscribers.queued.queues.memory.html#minos.networks.brokers.subscribers.queued.queues.memory.InMemoryBrokerSubscriberQueue.enqueue">(InMemoryBrokerSubscriberQueue method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference/minos.networks.decorators.api.html#minos.networks.decorators.api.Enroute">Enroute (class in minos.networks.decorators.api)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference/minos.networks.decorators.api.html#minos.networks.decorators.api.enroute">enroute (in module minos.networks.decorators.api)</a>
 </li>
       <li><a href="api-reference/minos.networks.decorators.collectors.html#minos.networks.decorators.collectors.EnrouteCollector">EnrouteCollector (class in minos.networks.decorators.collectors)</a>
@@ -3458,10 +3634,14 @@
         <li><a href="api-reference/minos.saga.executions.executors.response.html#minos.saga.executions.executors.response.ResponseExecutor.exec_function">(ResponseExecutor method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.saga.executions.steps.conditional.html#minos.saga.executions.steps.conditional.ConditionalSagaStepExecution.execute">execute() (ConditionalSagaStepExecution method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.execute">execute() (AiopgDatabaseClient method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.saga.executions.steps.conditional.html#minos.saga.executions.steps.conditional.ConditionalSagaStepExecution.execute">(ConditionalSagaStepExecution method)</a>
+</li>
         <li><a href="api-reference/minos.common.database.clients.abc.html#minos.common.database.clients.abc.DatabaseClient.execute">(DatabaseClient method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.execute">(LmdbDatabaseClient method)</a>
 </li>
         <li><a href="api-reference/minos.saga.executions.steps.local.html#minos.saga.executions.steps.local.LocalSagaStepExecution.execute">(LocalSagaStepExecution method)</a>
 </li>
@@ -3550,15 +3730,23 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference/minos.aggregate.queries.html#minos.aggregate.queries.Condition.FALSE">FALSE (Condition attribute)</a>
 </li>
-      <li><a href="api-reference/minos.common.database.clients.abc.html#minos.common.database.clients.abc.DatabaseClient.fetch_all">fetch_all() (DatabaseClient method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.fetch_all">fetch_all() (AiopgDatabaseClient method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.database.clients.abc.html#minos.common.database.clients.abc.DatabaseClient.fetch_all">(DatabaseClient method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.fetch_all">(LmdbDatabaseClient method)</a>
+</li>
         <li><a href="api-reference/minos.common.testing.database.clients.html#minos.common.testing.database.clients.MockedDatabaseClient.fetch_all">(MockedDatabaseClient method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.common.database.clients.abc.html#minos.common.database.clients.abc.DatabaseClient.fetch_one">fetch_one() (DatabaseClient method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.fetch_one">fetch_one() (AiopgDatabaseClient method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.database.clients.abc.html#minos.common.database.clients.abc.DatabaseClient.fetch_one">(DatabaseClient method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.fetch_one">(LmdbDatabaseClient method)</a>
+</li>
         <li><a href="api-reference/minos.common.testing.database.clients.html#minos.common.testing.database.clients.MockedDatabaseClient.fetch_one">(MockedDatabaseClient method)</a>
 </li>
       </ul></li>
@@ -3851,6 +4039,8 @@
       <ul>
         <li><a href="api-reference/minos.plugins.aiohttp.connectors.html#minos.plugins.aiohttp.connectors.AioHttpConnector.from_config">(AioHttpConnector class method)</a>
 </li>
+        <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.from_config">(AiopgDatabaseClient class method)</a>
+</li>
         <li><a href="api-reference/minos.networks.brokers.clients.html#minos.networks.brokers.clients.BrokerClient.from_config">(BrokerClient class method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.pools.html#minos.networks.brokers.pools.BrokerClientPool.from_config">(BrokerClientPool class method)</a>
@@ -3980,6 +4170,8 @@
         <li><a href="api-reference/minos.plugins.kong.client.html#minos.plugins.kong.client.KongClient.from_config">(KongClient class method)</a>
 </li>
         <li><a href="api-reference/minos.plugins.kong.discovery.html#minos.plugins.kong.discovery.KongDiscoveryClient.from_config">(KongDiscoveryClient class method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.from_config">(LmdbDatabaseClient class method)</a>
 </li>
         <li><a href="api-reference/minos.common.locks.html#minos.common.locks.LockPool.from_config">(LockPool class method)</a>
 </li>
@@ -4250,9 +4442,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference/minos.plugins.kong.client.html#minos.plugins.kong.client.KongClient.generate_jwt_token">generate_jwt_token() (KongClient method)</a>
 </li>
-      <li><a href="api-reference/minos.common.model.serializers.avro.schema.encoder.html#minos.common.model.serializers.avro.schema.encoder.AvroSchemaEncoder.generate_random_str">generate_random_str() (AvroSchemaEncoder static method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.queries.html#minos.plugins.aiopg.factories.aggregate.snapshots.queries.AiopgSnapshotQueryDatabaseOperationBuilder.generate_random_str">generate_random_str() (AiopgSnapshotQueryDatabaseOperationBuilder static method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.model.serializers.avro.schema.encoder.html#minos.common.model.serializers.avro.schema.encoder.AvroSchemaEncoder.generate_random_str">(AvroSchemaEncoder static method)</a>
+</li>
         <li><a href="api-reference/minos.aggregate.events.fields.html#minos.aggregate.events.fields.FieldDiffContainer.generate_random_str">(FieldDiffContainer static method)</a>
 </li>
       </ul></li>
@@ -4382,9 +4576,11 @@
         <li><a href="api-reference/minos.networks.decorators.factories.html#minos.networks.decorators.factories.EnrouteFactory.get_broker_event">(EnrouteFactory method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.networks.brokers.publishers.abc.html#minos.networks.brokers.publishers.abc.BrokerPublisher.get_builder">get_builder() (BrokerPublisher class method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.get_builder">get_builder() (AiopgDatabaseClient class method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.networks.brokers.publishers.abc.html#minos.networks.brokers.publishers.abc.BrokerPublisher.get_builder">(BrokerPublisher class method)</a>
+</li>
         <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.abc.html#minos.networks.brokers.publishers.queued.queues.abc.BrokerPublisherQueue.get_builder">(BrokerPublisherQueue class method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.collections.queues.abc.html#minos.networks.brokers.collections.queues.abc.BrokerQueue.get_builder">(BrokerQueue class method)</a>
@@ -4426,6 +4622,8 @@
         <li><a href="api-reference/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.get_builder">(KafkaBrokerPublisher class method)</a>
 </li>
         <li><a href="api-reference/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.get_builder">(KafkaBrokerSubscriber class method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.get_builder">(LmdbDatabaseClient class method)</a>
 </li>
         <li><a href="api-reference/minos.common.testing.database.clients.html#minos.common.testing.database.clients.MockedDatabaseClient.get_builder">(MockedDatabaseClient class method)</a>
 </li>
@@ -4536,9 +4734,13 @@
       </ul></li>
       <li><a href="api-reference/minos.networks.specs.asyncapi.html#minos.networks.specs.asyncapi.AsyncAPIService.get_events">get_events() (AsyncAPIService method)</a>
 </li>
-      <li><a href="api-reference/minos.common.database.clients.abc.html#minos.common.database.clients.abc.DatabaseClient.get_factory">get_factory() (DatabaseClient class method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.get_factory">get_factory() (AiopgDatabaseClient class method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.database.clients.abc.html#minos.common.database.clients.abc.DatabaseClient.get_factory">(DatabaseClient class method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.get_factory">(LmdbDatabaseClient class method)</a>
+</li>
         <li><a href="api-reference/minos.common.testing.database.clients.html#minos.common.testing.database.clients.MockedDatabaseClient.get_factory">(MockedDatabaseClient class method)</a>
 </li>
       </ul></li>
@@ -4875,6 +5077,8 @@
       <li><a href="api-reference/minos.plugins.aiohttp.connectors.html#minos.plugins.aiohttp.connectors.AioHttpConnector.host">host (AioHttpConnector property)</a>
 
       <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.host">(AiopgDatabaseClient property)</a>
+</li>
         <li><a href="api-reference/minos.networks.http.connectors.html#minos.networks.http.connectors.HttpConnector.host">(HttpConnector property)</a>
 </li>
         <li><a href="api-reference/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.host">(KafkaBrokerPublisher property)</a>
@@ -4986,9 +5190,11 @@
 </li>
       <li><a href="api-reference/minos.common.database.clients.exceptions.html#minos.common.database.clients.exceptions.IntegrityException">IntegrityException</a>
 </li>
-      <li><a href="api-reference/minos.common.retries.html#minos.common.retries.CircuitBreakerMixin.is_circuit_breaker_broken">is_circuit_breaker_broken (CircuitBreakerMixin property)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.is_circuit_breaker_broken">is_circuit_breaker_broken (AiopgDatabaseClient property)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.retries.html#minos.common.retries.CircuitBreakerMixin.is_circuit_breaker_broken">(CircuitBreakerMixin property)</a>
+</li>
         <li><a href="api-reference/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.is_circuit_breaker_broken">(KafkaBrokerPublisher property)</a>
 </li>
         <li><a href="api-reference/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.is_circuit_breaker_broken">(KafkaBrokerSubscriber property)</a>
@@ -5000,9 +5206,11 @@
         <li><a href="api-reference/minos.plugins.minos_discovery.client.html#minos.plugins.minos_discovery.client.MinosDiscoveryClient.is_circuit_breaker_broken">(MinosDiscoveryClient property)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.common.retries.html#minos.common.retries.CircuitBreakerMixin.is_circuit_breaker_passing">is_circuit_breaker_passing (CircuitBreakerMixin property)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.is_circuit_breaker_passing">is_circuit_breaker_passing (AiopgDatabaseClient property)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.retries.html#minos.common.retries.CircuitBreakerMixin.is_circuit_breaker_passing">(CircuitBreakerMixin property)</a>
+</li>
         <li><a href="api-reference/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.is_circuit_breaker_passing">(KafkaBrokerPublisher property)</a>
 </li>
         <li><a href="api-reference/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.is_circuit_breaker_passing">(KafkaBrokerSubscriber property)</a>
@@ -5014,11 +5222,11 @@
         <li><a href="api-reference/minos.plugins.minos_discovery.client.html#minos.plugins.minos_discovery.client.MinosDiscoveryClient.is_circuit_breaker_passing">(MinosDiscoveryClient property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api-reference/minos.common.retries.html#minos.common.retries.CircuitBreakerMixin.is_circuit_breaker_recovering">is_circuit_breaker_recovering (CircuitBreakerMixin property)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.is_circuit_breaker_recovering">is_circuit_breaker_recovering (AiopgDatabaseClient property)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.retries.html#minos.common.retries.CircuitBreakerMixin.is_circuit_breaker_recovering">(CircuitBreakerMixin property)</a>
+</li>
         <li><a href="api-reference/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.is_circuit_breaker_recovering">(KafkaBrokerPublisher property)</a>
 </li>
         <li><a href="api-reference/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.is_circuit_breaker_recovering">(KafkaBrokerSubscriber property)</a>
@@ -5030,6 +5238,10 @@
         <li><a href="api-reference/minos.plugins.minos_discovery.client.html#minos.plugins.minos_discovery.client.MinosDiscoveryClient.is_circuit_breaker_recovering">(MinosDiscoveryClient property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.is_connected">is_connected() (AiopgDatabaseClient method)</a>
+</li>
       <li><a href="api-reference/minos.aggregate.actions.html#minos.aggregate.actions.Action.is_create">is_create (Action property)</a>
 </li>
       <li><a href="api-reference/minos.aggregate.actions.html#minos.aggregate.actions.Action.is_delete">is_delete (Action property)</a>
@@ -5050,9 +5262,11 @@
 </li>
       <li><a href="api-reference/minos.aggregate.actions.html#minos.aggregate.actions.Action.is_update">is_update (Action property)</a>
 </li>
-      <li><a href="api-reference/minos.networks.brokers.subscribers.filtered.validators.duplicates.abc.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.abc.BrokerSubscriberDuplicateValidator.is_valid">is_valid() (BrokerSubscriberDuplicateValidator method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.is_valid">is_valid() (AiopgDatabaseClient method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.networks.brokers.subscribers.filtered.validators.duplicates.abc.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.abc.BrokerSubscriberDuplicateValidator.is_valid">(BrokerSubscriberDuplicateValidator method)</a>
+</li>
         <li><a href="api-reference/minos.networks.brokers.subscribers.filtered.validators.abc.html#minos.networks.brokers.subscribers.filtered.validators.abc.BrokerSubscriberValidator.is_valid">(BrokerSubscriberValidator method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.subscribers.filtered.validators.duplicates.database.impl.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.database.impl.DatabaseBrokerSubscriberDuplicateValidator.is_valid">(DatabaseBrokerSubscriberDuplicateValidator method)</a>
@@ -5060,6 +5274,8 @@
         <li><a href="api-reference/minos.common.database.clients.abc.html#minos.common.database.clients.abc.DatabaseClient.is_valid">(DatabaseClient method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.subscribers.filtered.validators.duplicates.memory.html#minos.networks.brokers.subscribers.filtered.validators.duplicates.memory.InMemoryBrokerSubscriberDuplicateValidator.is_valid">(InMemoryBrokerSubscriberDuplicateValidator method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.is_valid">(LmdbDatabaseClient method)</a>
 </li>
         <li><a href="api-reference/minos.common.testing.database.clients.html#minos.common.testing.database.clients.MockedDatabaseClient.is_valid">(MockedDatabaseClient method)</a>
 </li>
@@ -5250,6 +5466,14 @@
 </li>
       <li><a href="api-reference/minos.aggregate.queries.html#minos.aggregate.queries.Condition.LIKE">LIKE (Condition attribute)</a>
 </li>
+      <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient">LmdbDatabaseClient (class in minos.plugins.lmdb.clients)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.lmdb.operations.html#minos.plugins.lmdb.operations.LmdbDatabaseOperation">LmdbDatabaseOperation (class in minos.plugins.lmdb.operations)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.lmdb.operations.html#minos.plugins.lmdb.operations.LmdbDatabaseOperationType">LmdbDatabaseOperationType (class in minos.plugins.lmdb.operations)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.lmdb.factories.saga.executions.html#minos.plugins.lmdb.factories.saga.executions.LmdbSagaExecutionDatabaseOperationFactory">LmdbSagaExecutionDatabaseOperationFactory (class in minos.plugins.lmdb.factories.saga.executions)</a>
+</li>
       <li><a href="api-reference/minos.saga.executions.repositories.database.impl.html#minos.saga.executions.repositories.database.impl.DatabaseSagaExecutionRepository.load">load() (DatabaseSagaExecutionRepository method)</a>
 
       <ul>
@@ -5268,19 +5492,23 @@
         <li><a href="api-reference/minos.saga.definitions.steps.abc.html#minos.saga.definitions.steps.abc.SagaStep.local_step">(SagaStep method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.saga.executions.executors.local.html#minos.saga.executions.executors.local.LocalExecutor">LocalExecutor (class in minos.saga.executions.executors.local)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference/minos.saga.executions.executors.local.html#minos.saga.executions.executors.local.LocalExecutor">LocalExecutor (class in minos.saga.executions.executors.local)</a>
+</li>
       <li><a href="api-reference/minos.saga.definitions.steps.local.html#minos.saga.definitions.steps.local.LocalSagaStep">LocalSagaStep (class in minos.saga.definitions.steps.local)</a>
 </li>
       <li><a href="api-reference/minos.saga.executions.steps.local.html#minos.saga.executions.steps.local.LocalSagaStepExecution">LocalSagaStepExecution (class in minos.saga.executions.steps.local)</a>
+</li>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.lock">lock (AiopgDatabaseClient property)</a>
 </li>
       <li><a href="api-reference/minos.common.locks.html#minos.common.locks.Lock">Lock (class in minos.common.locks)</a>
 </li>
       <li><a href="api-reference/minos.common.database.clients.abc.html#minos.common.database.clients.abc.DatabaseClient.lock">lock (DatabaseClient property)</a>
 
       <ul>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.lock">(LmdbDatabaseClient property)</a>
+</li>
         <li><a href="api-reference/minos.common.testing.database.clients.html#minos.common.testing.database.clients.MockedDatabaseClient.lock">(MockedDatabaseClient property)</a>
 </li>
       </ul></li>
@@ -7004,12 +7232,161 @@
 </li>
       </ul></li>
       <li>
+    minos.plugins.aiopg
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.html#module-minos.plugins.aiopg">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.clients
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.clients.html#module-minos.plugins.aiopg.clients">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.html#module-minos.plugins.aiopg.factories">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.aggregate
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.html#module-minos.plugins.aiopg.factories.aggregate">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.aggregate.events
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.events.html#module-minos.plugins.aiopg.factories.aggregate.events">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.aggregate.snapshots
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.html#module-minos.plugins.aiopg.factories.aggregate.snapshots">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.aggregate.snapshots.impl
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#module-minos.plugins.aiopg.factories.aggregate.snapshots.impl">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.aggregate.snapshots.queries
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.queries.html#module-minos.plugins.aiopg.factories.aggregate.snapshots.queries">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.aggregate.transactions
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.transactions.html#module-minos.plugins.aiopg.factories.aggregate.transactions">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.common
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.common.html#module-minos.plugins.aiopg.factories.common">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.common.locks
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.common.locks.html#module-minos.plugins.aiopg.factories.common.locks">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.common.managemens
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.common.managemens.html#module-minos.plugins.aiopg.factories.common.managemens">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.networks
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.html#module-minos.plugins.aiopg.factories.networks">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.networks.collections
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.collections.html#module-minos.plugins.aiopg.factories.networks.collections">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.networks.collections.queues
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.collections.queues.html#module-minos.plugins.aiopg.factories.networks.collections.queues">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.networks.publishers
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.publishers.html#module-minos.plugins.aiopg.factories.networks.publishers">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.networks.publishers.queues
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.publishers.queues.html#module-minos.plugins.aiopg.factories.networks.publishers.queues">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.networks.subscribers
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.html#module-minos.plugins.aiopg.factories.networks.subscribers">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.networks.subscribers.queues
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#module-minos.plugins.aiopg.factories.networks.subscribers.queues">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.factories.networks.subscribers.validators
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.validators.html#module-minos.plugins.aiopg.factories.networks.subscribers.validators">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.aiopg.operations
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.operations.html#module-minos.plugins.aiopg.operations">module</a>
+</li>
+      </ul></li>
+      <li>
     minos.plugins.graphql
 
       <ul>
         <li><a href="api-reference/minos.plugins.graphql.html#module-minos.plugins.graphql">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     minos.plugins.graphql.builders
 
@@ -7017,8 +7394,6 @@
         <li><a href="api-reference/minos.plugins.graphql.builders.html#module-minos.plugins.graphql.builders">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     minos.plugins.graphql.builders.schema
 
@@ -7101,6 +7476,48 @@
 
       <ul>
         <li><a href="api-reference/minos.plugins.kong.utils.html#module-minos.plugins.kong.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.lmdb
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.lmdb.html#module-minos.plugins.lmdb">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.lmdb.clients
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#module-minos.plugins.lmdb.clients">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.lmdb.factories
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.lmdb.factories.html#module-minos.plugins.lmdb.factories">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.lmdb.factories.saga
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.lmdb.factories.saga.html#module-minos.plugins.lmdb.factories.saga">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.lmdb.factories.saga.executions
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.lmdb.factories.saga.executions.html#module-minos.plugins.lmdb.factories.saga.executions">module</a>
+</li>
+      </ul></li>
+      <li>
+    minos.plugins.lmdb.operations
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.lmdb.operations.html#module-minos.plugins.lmdb.operations">module</a>
 </li>
       </ul></li>
       <li>
@@ -8032,6 +8449,48 @@
 </li>
         <li><a href="api-reference/minos.plugins.aiohttp.requests.html#module-minos.plugins.aiohttp.requests">minos.plugins.aiohttp.requests</a>
 </li>
+        <li><a href="api-reference/minos.plugins.aiopg.html#module-minos.plugins.aiopg">minos.plugins.aiopg</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.clients.html#module-minos.plugins.aiopg.clients">minos.plugins.aiopg.clients</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.html#module-minos.plugins.aiopg.factories">minos.plugins.aiopg.factories</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.html#module-minos.plugins.aiopg.factories.aggregate">minos.plugins.aiopg.factories.aggregate</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.events.html#module-minos.plugins.aiopg.factories.aggregate.events">minos.plugins.aiopg.factories.aggregate.events</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.html#module-minos.plugins.aiopg.factories.aggregate.snapshots">minos.plugins.aiopg.factories.aggregate.snapshots</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#module-minos.plugins.aiopg.factories.aggregate.snapshots.impl">minos.plugins.aiopg.factories.aggregate.snapshots.impl</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.queries.html#module-minos.plugins.aiopg.factories.aggregate.snapshots.queries">minos.plugins.aiopg.factories.aggregate.snapshots.queries</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.aggregate.transactions.html#module-minos.plugins.aiopg.factories.aggregate.transactions">minos.plugins.aiopg.factories.aggregate.transactions</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.common.html#module-minos.plugins.aiopg.factories.common">minos.plugins.aiopg.factories.common</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.common.locks.html#module-minos.plugins.aiopg.factories.common.locks">minos.plugins.aiopg.factories.common.locks</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.common.managemens.html#module-minos.plugins.aiopg.factories.common.managemens">minos.plugins.aiopg.factories.common.managemens</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.html#module-minos.plugins.aiopg.factories.networks">minos.plugins.aiopg.factories.networks</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.collections.html#module-minos.plugins.aiopg.factories.networks.collections">minos.plugins.aiopg.factories.networks.collections</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.collections.queues.html#module-minos.plugins.aiopg.factories.networks.collections.queues">minos.plugins.aiopg.factories.networks.collections.queues</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.publishers.html#module-minos.plugins.aiopg.factories.networks.publishers">minos.plugins.aiopg.factories.networks.publishers</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.publishers.queues.html#module-minos.plugins.aiopg.factories.networks.publishers.queues">minos.plugins.aiopg.factories.networks.publishers.queues</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.html#module-minos.plugins.aiopg.factories.networks.subscribers">minos.plugins.aiopg.factories.networks.subscribers</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#module-minos.plugins.aiopg.factories.networks.subscribers.queues">minos.plugins.aiopg.factories.networks.subscribers.queues</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.factories.networks.subscribers.validators.html#module-minos.plugins.aiopg.factories.networks.subscribers.validators">minos.plugins.aiopg.factories.networks.subscribers.validators</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.operations.html#module-minos.plugins.aiopg.operations">minos.plugins.aiopg.operations</a>
+</li>
         <li><a href="api-reference/minos.plugins.graphql.html#module-minos.plugins.graphql">minos.plugins.graphql</a>
 </li>
         <li><a href="api-reference/minos.plugins.graphql.builders.html#module-minos.plugins.graphql.builders">minos.plugins.graphql.builders</a>
@@ -8059,6 +8518,18 @@
         <li><a href="api-reference/minos.plugins.kong.discovery.html#module-minos.plugins.kong.discovery">minos.plugins.kong.discovery</a>
 </li>
         <li><a href="api-reference/minos.plugins.kong.utils.html#module-minos.plugins.kong.utils">minos.plugins.kong.utils</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.html#module-minos.plugins.lmdb">minos.plugins.lmdb</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#module-minos.plugins.lmdb.clients">minos.plugins.lmdb.clients</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.factories.html#module-minos.plugins.lmdb.factories">minos.plugins.lmdb.factories</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.factories.saga.html#module-minos.plugins.lmdb.factories.saga">minos.plugins.lmdb.factories.saga</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.factories.saga.executions.html#module-minos.plugins.lmdb.factories.saga.executions">minos.plugins.lmdb.factories.saga.executions</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.operations.html#module-minos.plugins.lmdb.operations">minos.plugins.lmdb.operations</a>
 </li>
         <li><a href="api-reference/minos.plugins.minos_discovery.html#module-minos.plugins.minos_discovery">minos.plugins.minos_discovery</a>
 </li>
@@ -8341,6 +8812,8 @@
 </li>
       <li><a href="api-reference/minos.plugins.kong.utils.html#minos.plugins.kong.utils.Endpoint.part_path_pattern">part_path_pattern (Endpoint attribute)</a>
 </li>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.password">password (AiopgDatabaseClient property)</a>
+</li>
       <li><a href="api-reference/minos.plugins.kong.utils.html#minos.plugins.kong.utils.Endpoint.path_as_regex">path_as_regex (Endpoint property)</a>
 </li>
       <li><a href="api-reference/minos.plugins.kong.utils.html#minos.plugins.kong.utils.Endpoint.path_as_str">path_as_str (Endpoint property)</a>
@@ -8406,7 +8879,11 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference/minos.plugins.aiohttp.connectors.html#minos.plugins.aiohttp.connectors.AioHttpConnector.port">port (AioHttpConnector property)</a>
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.port">(AiopgDatabaseClient property)</a>
 </li>
+      </ul></li>
       <li><a href="api-reference/minos.common.ports.html#minos.common.ports.Port">Port (class in minos.common.ports)</a>
 </li>
       <li><a href="api-reference/minos.networks.http.connectors.html#minos.networks.http.connectors.HttpConnector.port">port (HttpConnector property)</a>
@@ -8585,6 +9062,8 @@
       </ul></li>
       <li><a href="api-reference/minos.plugins.aiohttp.requests.html#minos.plugins.aiohttp.requests.AioHttpRequest.raw_request">raw_request (AioHttpRequest property)</a>
 </li>
+      <li><a href="api-reference/minos.plugins.lmdb.operations.html#minos.plugins.lmdb.operations.LmdbDatabaseOperationType.READ">READ (LmdbDatabaseOperationType attribute)</a>
+</li>
       <li><a href="api-reference/minos.common.model.fields.html#minos.common.model.fields.Field.real_type">real_type (Field property)</a>
 </li>
       <li><a href="api-reference/minos.networks.brokers.clients.html#minos.networks.brokers.clients.BrokerClient.receive">receive() (BrokerClient method)</a>
@@ -8613,6 +9092,8 @@
         <li><a href="api-reference/minos.networks.brokers.subscribers.queued.queues.database.impl.html#minos.networks.brokers.subscribers.queued.queues.database.impl.DatabaseBrokerSubscriberQueue.records">(DatabaseBrokerSubscriberQueue property)</a>
 </li>
       </ul></li>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.recreate">recreate() (AiopgDatabaseClient method)</a>
+</li>
       <li><a href="api-reference/minos.aggregate.entities.refs.models.html#minos.aggregate.entities.refs.models.Ref">Ref (class in minos.aggregate.entities.refs.models)</a>
 </li>
       <li><a href="api-reference/minos.aggregate.exceptions.html#minos.aggregate.exceptions.RefException">RefException</a>
@@ -8701,9 +9182,13 @@
 </li>
       <li><a href="api-reference/minos.aggregate.transactions.entries.html#minos.aggregate.transactions.entries.TransactionStatus.RESERVING">RESERVING (TransactionStatus attribute)</a>
 </li>
-      <li><a href="api-reference/minos.common.database.clients.abc.html#minos.common.database.clients.abc.DatabaseClient.reset">reset() (DatabaseClient method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.reset">reset() (AiopgDatabaseClient method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.database.clients.abc.html#minos.common.database.clients.abc.DatabaseClient.reset">(DatabaseClient method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.reset">(LmdbDatabaseClient method)</a>
+</li>
         <li><a href="api-reference/minos.common.testing.database.clients.html#minos.common.testing.database.clients.MockedDatabaseClient.reset">(MockedDatabaseClient method)</a>
 </li>
       </ul></li>
@@ -8957,9 +9442,11 @@
 </li>
       <li><a href="api-reference/minos.common.launchers.html#minos.common.launchers.EntrypointLauncher.services">services (EntrypointLauncher property)</a>
 </li>
-      <li><a href="api-reference/minos.networks.brokers.publishers.abc.html#minos.networks.brokers.publishers.abc.BrokerPublisher.set_builder">set_builder() (BrokerPublisher class method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.set_builder">set_builder() (AiopgDatabaseClient class method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.networks.brokers.publishers.abc.html#minos.networks.brokers.publishers.abc.BrokerPublisher.set_builder">(BrokerPublisher class method)</a>
+</li>
         <li><a href="api-reference/minos.networks.brokers.publishers.queued.queues.abc.html#minos.networks.brokers.publishers.queued.queues.abc.BrokerPublisherQueue.set_builder">(BrokerPublisherQueue class method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.collections.queues.abc.html#minos.networks.brokers.collections.queues.abc.BrokerQueue.set_builder">(BrokerQueue class method)</a>
@@ -9002,6 +9489,8 @@
 </li>
         <li><a href="api-reference/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.set_builder">(KafkaBrokerSubscriber class method)</a>
 </li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.set_builder">(LmdbDatabaseClient class method)</a>
+</li>
         <li><a href="api-reference/minos.common.testing.database.clients.html#minos.common.testing.database.clients.MockedDatabaseClient.set_builder">(MockedDatabaseClient class method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.publishers.queued.impl.html#minos.networks.brokers.publishers.queued.impl.QueuedBrokerPublisher.set_builder">(QueuedBrokerPublisher class method)</a>
@@ -9013,9 +9502,13 @@
         <li><a href="api-reference/minos.plugins.rabbitmq.subscriber.html#minos.plugins.rabbitmq.subscriber.RabbitMQBrokerSubscriber.set_builder">(RabbitMQBrokerSubscriber class method)</a>
 </li>
       </ul></li>
-      <li><a href="api-reference/minos.common.database.clients.abc.html#minos.common.database.clients.abc.DatabaseClient.set_factory">set_factory() (DatabaseClient class method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.set_factory">set_factory() (AiopgDatabaseClient class method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.database.clients.abc.html#minos.common.database.clients.abc.DatabaseClient.set_factory">(DatabaseClient class method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.set_factory">(LmdbDatabaseClient class method)</a>
+</li>
         <li><a href="api-reference/minos.common.testing.database.clients.html#minos.common.testing.database.clients.MockedDatabaseClient.set_factory">(MockedDatabaseClient class method)</a>
 </li>
       </ul></li>
@@ -9047,6 +9540,8 @@
 
       <ul>
         <li><a href="api-reference/minos.plugins.aiohttp.connectors.html#minos.plugins.aiohttp.connectors.AioHttpConnector.setup">(AioHttpConnector method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.setup">(AiopgDatabaseClient method)</a>
 </li>
         <li><a href="api-reference/minos.networks.brokers.clients.html#minos.networks.brokers.clients.BrokerClient.setup">(BrokerClient method)</a>
 </li>
@@ -9185,6 +9680,8 @@
         <li><a href="api-reference/minos.plugins.kong.client.html#minos.plugins.kong.client.KongClient.setup">(KongClient method)</a>
 </li>
         <li><a href="api-reference/minos.plugins.kong.discovery.html#minos.plugins.kong.discovery.KongDiscoveryClient.setup">(KongDiscoveryClient method)</a>
+</li>
+        <li><a href="api-reference/minos.plugins.lmdb.clients.html#minos.plugins.lmdb.clients.LmdbDatabaseClient.setup">(LmdbDatabaseClient method)</a>
 </li>
         <li><a href="api-reference/minos.common.locks.html#minos.common.locks.LockPool.setup">(LockPool method)</a>
 </li>
@@ -9984,7 +10481,11 @@
       <li><a href="api-reference/minos.common.injections.injectors.html#minos.common.injections.injectors.DependencyInjector.unwire_injections">unwire_injections() (DependencyInjector method)</a>
 </li>
       <li><a href="api-reference/minos.aggregate.actions.html#minos.aggregate.actions.Action.UPDATE">UPDATE (Action attribute)</a>
+
+      <ul>
+        <li><a href="api-reference/minos.plugins.lmdb.operations.html#minos.plugins.lmdb.operations.LmdbDatabaseOperationType.UPDATE">(LmdbDatabaseOperationType attribute)</a>
 </li>
+      </ul></li>
       <li><a href="api-reference/minos.aggregate.events.repositories.database.impl.html#minos.aggregate.events.repositories.database.impl.DatabaseEventRepository.update">update() (DatabaseEventRepository method)</a>
 
       <ul>
@@ -10034,6 +10535,8 @@
       <li><a href="api-reference/minos.plugins.aiohttp.requests.html#minos.plugins.aiohttp.requests.AioHttpRequest.user">user (AioHttpRequest property)</a>
 
       <ul>
+        <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.user">(AiopgDatabaseClient property)</a>
+</li>
         <li><a href="api-reference/minos.networks.brokers.dispatchers.requests.html#minos.networks.brokers.dispatchers.requests.BrokerRequest.user">(BrokerRequest attribute)</a>
 </li>
         <li><a href="api-reference/minos.networks.http.requests.html#minos.networks.http.requests.HttpRequest.user">(HttpRequest attribute)</a>
@@ -10223,9 +10726,11 @@
 </li>
       <li><a href="api-reference/minos.common.injections.injectors.html#minos.common.injections.injectors.DependencyInjector.wire_injections">wire_injections() (DependencyInjector method)</a>
 </li>
-      <li><a href="api-reference/minos.common.retries.html#minos.common.retries.CircuitBreakerMixin.with_circuit_breaker">with_circuit_breaker() (CircuitBreakerMixin method)</a>
+      <li><a href="api-reference/minos.plugins.aiopg.clients.html#minos.plugins.aiopg.clients.AiopgDatabaseClient.with_circuit_breaker">with_circuit_breaker() (AiopgDatabaseClient method)</a>
 
       <ul>
+        <li><a href="api-reference/minos.common.retries.html#minos.common.retries.CircuitBreakerMixin.with_circuit_breaker">(CircuitBreakerMixin method)</a>
+</li>
         <li><a href="api-reference/minos.plugins.kafka.publisher.html#minos.plugins.kafka.publisher.KafkaBrokerPublisher.with_circuit_breaker">(KafkaBrokerPublisher method)</a>
 </li>
         <li><a href="api-reference/minos.plugins.kafka.subscriber.html#minos.plugins.kafka.subscriber.KafkaBrokerSubscriber.with_circuit_breaker">(KafkaBrokerSubscriber method)</a>

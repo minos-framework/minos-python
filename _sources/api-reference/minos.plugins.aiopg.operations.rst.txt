@@ -1,0 +1,29 @@
+minos.plugins.aiopg.operations
+==============================
+
+.. automodule:: minos.plugins.aiopg.operations
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AiopgDatabaseOperation
+   
+   
+
+   
+   
+   
+
+
+

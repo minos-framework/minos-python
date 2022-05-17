@@ -1,0 +1,29 @@
+minos.plugins.aiopg.clients
+===========================
+
+.. automodule:: minos.plugins.aiopg.clients
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AiopgDatabaseClient
+   
+   
+
+   
+   
+   
+
+
+

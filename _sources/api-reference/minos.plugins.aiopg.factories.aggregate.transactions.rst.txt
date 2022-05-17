@@ -1,0 +1,29 @@
+minos.plugins.aiopg.factories.aggregate.transactions
+====================================================
+
+.. automodule:: minos.plugins.aiopg.factories.aggregate.transactions
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AiopgTransactionDatabaseOperationFactory
+   
+   
+
+   
+   
+   
+
+
+

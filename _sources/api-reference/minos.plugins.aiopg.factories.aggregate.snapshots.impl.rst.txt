@@ -1,0 +1,29 @@
+minos.plugins.aiopg.factories.aggregate.snapshots.impl
+======================================================
+
+.. automodule:: minos.plugins.aiopg.factories.aggregate.snapshots.impl
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AiopgSnapshotDatabaseOperationFactory
+   
+   
+
+   
+   
+   
+
+
+

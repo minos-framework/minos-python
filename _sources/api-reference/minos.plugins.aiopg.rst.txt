@@ -1,0 +1,33 @@
+﻿minos.plugins.aiopg
+===================
+
+.. automodule:: minos.plugins.aiopg
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.plugins.aiopg.clients
+   minos.plugins.aiopg.factories
+   minos.plugins.aiopg.operations
+

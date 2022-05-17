@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.plugins.aiopg.factories.networks.subscribers.queues &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../search.html" />
+    <link href="../../../../../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.aiopg.html">minos.plugins.aiopg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.lmdb.html">minos.plugins.lmdb</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.plugins.aiopg.factories.networks.subscribers.queues</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.plugins.aiopg.factories.networks.subscribers.queues</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">psycopg2.sql</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SQL</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DatabaseOperation</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BrokerSubscriberQueueDatabaseOperationFactory</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">....clients</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AiopgDatabaseClient</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">....operations</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AiopgDatabaseOperation</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..collections</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AiopgBrokerQueueDatabaseOperationFactory</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="c1"># noinspection SqlNoDataSourceInspection,SqlResolve,PyTypeChecker,PyArgumentList</span>
+<div class="viewcode-block" id="AiopgBrokerSubscriberQueueDatabaseOperationFactory"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#minos.plugins.aiopg.factories.networks.subscribers.queues.AiopgBrokerSubscriberQueueDatabaseOperationFactory">[docs]</a><span class="k">class</span> <span class="nc">AiopgBrokerSubscriberQueueDatabaseOperationFactory</span><span class="p">(</span>
+    <span class="n">BrokerSubscriberQueueDatabaseOperationFactory</span><span class="p">,</span> <span class="n">AiopgBrokerQueueDatabaseOperationFactory</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Aiopg Broker Subscriber Queue Database Operation Factory class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_table_name"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#minos.plugins.aiopg.factories.networks.subscribers.queues.AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_table_name">[docs]</a>    <span class="k">def</span> <span class="nf">build_table_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the table name.</span>
+
+<span class="sd">        :return: A ``str`` value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;broker_subscriber_queue&quot;</span></div>
+
+<div class="viewcode-block" id="AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_count"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#minos.plugins.aiopg.factories.networks.subscribers.queues.AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_count">[docs]</a>    <span class="k">def</span> <span class="nf">build_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">retry</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">topics</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(),</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the &quot;count not processed&quot; query.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+            <span class="n">SQL</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;SELECT COUNT(*) FROM (SELECT id FROM </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;WHERE NOT processing AND retry &lt; </span><span class="si">%(retry)s</span><span class="s2"> AND topic IN </span><span class="si">%(topics)s</span><span class="s2"> FOR UPDATE SKIP LOCKED) s&quot;</span>
+            <span class="p">),</span>
+            <span class="p">{</span><span class="s2">&quot;retry&quot;</span><span class="p">:</span> <span class="n">retry</span><span class="p">,</span> <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">topics</span><span class="p">)},</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_query"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.networks.subscribers.queues.html#minos.plugins.aiopg.factories.networks.subscribers.queues.AiopgBrokerSubscriberQueueDatabaseOperationFactory.build_query">[docs]</a>    <span class="k">def</span> <span class="nf">build_query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">retry</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">records</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">topics</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(),</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the &quot;select not processed&quot; query.</span>
+
+<span class="sd">        :return: A ``SQL`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+            <span class="n">SQL</span><span class="p">(</span>
+                <span class="s2">&quot;SELECT id, data &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;FROM </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;WHERE NOT processing AND retry &lt; </span><span class="si">%(retry)s</span><span class="s2"> AND topic IN </span><span class="si">%(topics)s</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;ORDER BY created_at &quot;</span>
+                <span class="s2">&quot;LIMIT </span><span class="si">%(records)s</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;FOR UPDATE SKIP LOCKED&quot;</span>
+            <span class="p">),</span>
+            <span class="p">{</span><span class="s2">&quot;retry&quot;</span><span class="p">:</span> <span class="n">retry</span><span class="p">,</span> <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">topics</span><span class="p">),</span> <span class="s2">&quot;records&quot;</span><span class="p">:</span> <span class="n">records</span><span class="p">},</span>
+        <span class="p">)</span></div></div>
+
+
+<span class="n">AiopgDatabaseClient</span><span class="o">.</span><span class="n">set_factory</span><span class="p">(</span>
+    <span class="n">BrokerSubscriberQueueDatabaseOperationFactory</span><span class="p">,</span>
+    <span class="n">AiopgBrokerSubscriberQueueDatabaseOperationFactory</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.plugins.aiopg.factories.aggregate.transactions &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.plugins.aiopg.factories.common" href="minos.plugins.aiopg.factories.common.html" />
+    <link rel="prev" title="minos.plugins.aiopg.factories.aggregate.snapshots.queries" href="minos.plugins.aiopg.factories.aggregate.snapshots.queries.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="minos.plugins.aiopg.html">minos.plugins.aiopg</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="minos.plugins.aiopg.clients.html">minos.plugins.aiopg.clients</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="minos.plugins.aiopg.factories.html">minos.plugins.aiopg.factories</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="minos.plugins.aiopg.factories.aggregate.html">minos.plugins.aiopg.factories.aggregate</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="minos.plugins.aiopg.factories.aggregate.events.html">minos.plugins.aiopg.factories.aggregate.events</a></li>
+<li class="toctree-l4"><a class="reference internal" href="minos.plugins.aiopg.factories.aggregate.snapshots.html">minos.plugins.aiopg.factories.aggregate.snapshots</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">minos.plugins.aiopg.factories.aggregate.transactions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="minos.plugins.aiopg.factories.common.html">minos.plugins.aiopg.factories.common</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.plugins.aiopg.factories.networks.html">minos.plugins.aiopg.factories.networks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="minos.plugins.aiopg.operations.html">minos.plugins.aiopg.operations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.lmdb.html">minos.plugins.lmdb</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="minos.plugins.aiopg.html">minos.plugins.aiopg</a> &raquo;</li>
+          <li><a href="minos.plugins.aiopg.factories.html">minos.plugins.aiopg.factories</a> &raquo;</li>
+          <li><a href="minos.plugins.aiopg.factories.aggregate.html">minos.plugins.aiopg.factories.aggregate</a> &raquo;</li>
+      <li>minos.plugins.aiopg.factories.aggregate.transactions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/minos.plugins.aiopg.factories.aggregate.transactions.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-minos.plugins.aiopg.factories.aggregate.transactions">
+<span id="minos-plugins-aiopg-factories-aggregate-transactions"></span><h1>minos.plugins.aiopg.factories.aggregate.transactions<a class="headerlink" href="#module-minos.plugins.aiopg.factories.aggregate.transactions" title="Permalink to this headline"></a></h1>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory" title="minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AiopgTransactionDatabaseOperationFactory</span></code></a></p></td>
+<td><p>Aiopg Transaction Database Operation Factory class.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AiopgTransactionDatabaseOperationFactory</span></span><a class="reference internal" href="../_modules/minos/plugins/aiopg/factories/aggregate/transactions.html#AiopgTransactionDatabaseOperationFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.aggregate.transactions.repositories.database.factories.html#minos.aggregate.transactions.repositories.database.factories.TransactionDatabaseOperationFactory" title="minos.aggregate.transactions.repositories.database.factories.TransactionDatabaseOperationFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionDatabaseOperationFactory</span></code></a></p>
+<p>Aiopg Transaction Database Operation Factory class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_table_name">
+<span class="sig-name descname"><span class="pre">build_table_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/plugins/aiopg/factories/aggregate/transactions.html#AiopgTransactionDatabaseOperationFactory.build_table_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_table_name" title="Permalink to this definition"></a></dt>
+<dd><p>Get the table name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">str</span></code> value.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_create">
+<span class="sig-name descname"><span class="pre">build_create</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/plugins/aiopg/factories/aggregate/transactions.html#AiopgTransactionDatabaseOperationFactory.build_create"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_create" title="Permalink to this definition"></a></dt>
+<dd><p>Build the database operation to create the snapshot table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">DatabaseOperation</span></code> instance.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_submit">
+<span class="sig-name descname"><span class="pre">build_submit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uuid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination_uuid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_offset</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/plugins/aiopg/factories/aggregate/transactions.html#AiopgTransactionDatabaseOperationFactory.build_submit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_submit" title="Permalink to this definition"></a></dt>
+<dd><p>Build the database operation to submit a row.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>UUID</em></a>) – The identifier of the transaction.</p></li>
+<li><p><strong>destination_uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>UUID</em></a>) – The identifier of the destination transaction.</p></li>
+<li><p><strong>status</strong> (<a class="reference internal" href="minos.aggregate.transactions.entries.html#minos.aggregate.transactions.entries.TransactionStatus" title="minos.aggregate.transactions.entries.TransactionStatus"><em>TransactionStatus</em></a>) – The status of the transaction.</p></li>
+<li><p><strong>event_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – The event offset of the transaction.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">DatabaseOperation</span></code> instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_query">
+<span class="sig-name descname"><span class="pre">build_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uuid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uuid_ne</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uuid_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination_uuid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_offset_lt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_offset_gt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_offset_le</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_offset_ge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">updated_at</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">updated_at_lt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">updated_at_gt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">updated_at_le</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">updated_at_ge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/plugins/aiopg/factories/aggregate/transactions.html#AiopgTransactionDatabaseOperationFactory.build_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_query" title="Permalink to this definition"></a></dt>
+<dd><p>Build the database operation to select rows.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>UUID</em></a><em>]</em>) – Transaction identifier equal to the given value.</p></li>
+<li><p><strong>uuid_ne</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>UUID</em></a><em>]</em>) – Transaction identifier not equal to the given value</p></li>
+<li><p><strong>uuid_in</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.10)"><em>Iterable</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>UUID</em></a><em>]</em><em>]</em>) – Transaction identifier within the given values.</p></li>
+<li><p><strong>destination_uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.10)"><em>UUID</em></a><em>]</em>) – Destination Transaction identifier equal to the given value.</p></li>
+<li><p><strong>status</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – Transaction status equal to the given value.</p></li>
+<li><p><strong>status_in</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.10)"><em>Iterable</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em><em>]</em>) – Transaction status within the given values</p></li>
+<li><p><strong>event_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – Event offset equal to the given value.</p></li>
+<li><p><strong>event_offset_lt</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – Event Offset lower than the given value</p></li>
+<li><p><strong>event_offset_gt</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – Event Offset greater than the given value</p></li>
+<li><p><strong>event_offset_le</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – Event Offset lower or equal to the given value</p></li>
+<li><p><strong>event_offset_ge</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – Event Offset greater or equal to the given value</p></li>
+<li><p><strong>updated_at</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><em>datetime</em></a><em>]</em>) – Updated at equal to the given value.</p></li>
+<li><p><strong>updated_at_lt</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><em>datetime</em></a><em>]</em>) – Updated at lower than the given value.</p></li>
+<li><p><strong>updated_at_gt</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><em>datetime</em></a><em>]</em>) – Updated at greater than the given value.</p></li>
+<li><p><strong>updated_at_le</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><em>datetime</em></a><em>]</em>) – Updated at lower or equal to the given value.</p></li>
+<li><p><strong>updated_at_ge</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><em>datetime</em></a><em>]</em>) – Updated at greater or equal to the given value.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">DatabaseOperation</span></code> instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.plugins.aiopg.factories.aggregate.snapshots.queries.html" class="btn btn-neutral float-left" title="minos.plugins.aiopg.factories.aggregate.snapshots.queries" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.plugins.aiopg.factories.common.html" class="btn btn-neutral float-right" title="minos.plugins.aiopg.factories.common" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

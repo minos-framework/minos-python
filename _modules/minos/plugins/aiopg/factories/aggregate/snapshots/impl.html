@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.plugins.aiopg.factories.aggregate.snapshots.impl &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../search.html" />
+    <link href="../../../../../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.aiopg.html">minos.plugins.aiopg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.lmdb.html">minos.plugins.lmdb</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.plugins.aiopg.factories.aggregate.snapshots.impl</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.plugins.aiopg.factories.aggregate.snapshots.impl</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">datetime</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UUID</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.aggregate</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SnapshotDatabaseOperationFactory</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.aggregate.queries</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_Condition</span><span class="p">,</span>
+    <span class="n">_Ordering</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ComposedDatabaseOperation</span><span class="p">,</span>
+    <span class="n">DatabaseOperation</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">....clients</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AiopgDatabaseClient</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">....operations</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AiopgDatabaseOperation</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.queries</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AiopgSnapshotQueryDatabaseOperationBuilder</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="c1"># noinspection SqlNoDataSourceInspection,SqlResolve</span>
+<div class="viewcode-block" id="AiopgSnapshotDatabaseOperationFactory"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory">[docs]</a><span class="k">class</span> <span class="nc">AiopgSnapshotDatabaseOperationFactory</span><span class="p">(</span><span class="n">SnapshotDatabaseOperationFactory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Aiopg Snapshot Database Operation Factory class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AiopgSnapshotDatabaseOperationFactory.build_table_name"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_table_name">[docs]</a>    <span class="k">def</span> <span class="nf">build_table_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the table name.</span>
+
+<span class="sd">        :return: A ``str`` value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;snapshot&quot;</span></div>
+
+<div class="viewcode-block" id="AiopgSnapshotDatabaseOperationFactory.build_offset_table_name"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_offset_table_name">[docs]</a>    <span class="k">def</span> <span class="nf">build_offset_table_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the offset table name.</span>
+
+<span class="sd">        :return: A ``str`` value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;snapshot_aux_offset&quot;</span></div>
+
+<div class="viewcode-block" id="AiopgSnapshotDatabaseOperationFactory.build_create"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_create">[docs]</a>    <span class="k">def</span> <span class="nf">build_create</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to create the snapshot table.</span>
+
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ComposedDatabaseOperation</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+                    <span class="s1">&#39;CREATE EXTENSION IF NOT EXISTS &quot;uuid-ossp&quot;;&#39;</span><span class="p">,</span>
+                    <span class="n">lock</span><span class="o">=</span><span class="s2">&quot;uuid-ossp&quot;</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                    CREATE TABLE IF NOT EXISTS </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> (</span>
+<span class="s2">                        uuid UUID NOT NULL,</span>
+<span class="s2">                        name TEXT NOT NULL,</span>
+<span class="s2">                        version INT NOT NULL,</span>
+<span class="s2">                        schema BYTEA,</span>
+<span class="s2">                        data JSONB,</span>
+<span class="s2">                        created_at TIMESTAMPTZ NOT NULL,</span>
+<span class="s2">                        updated_at TIMESTAMPTZ NOT NULL,</span>
+<span class="s2">                        transaction_uuid UUID NOT NULL DEFAULT uuid_nil(),</span>
+<span class="s2">                        PRIMARY KEY (uuid, transaction_uuid)</span>
+<span class="s2">                    );</span>
+<span class="s2">                    &quot;&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">lock</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">(),</span>
+                <span class="p">),</span>
+                <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                    CREATE TABLE IF NOT EXISTS </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_offset_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> (</span>
+<span class="s2">                        id bool PRIMARY KEY DEFAULT TRUE,</span>
+<span class="s2">                        value BIGINT NOT NULL,</span>
+<span class="s2">                        CONSTRAINT id_uni CHECK (id)</span>
+<span class="s2">                    );</span>
+<span class="s2">                    &quot;&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">lock</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">build_offset_table_name</span><span class="p">(),</span>
+                <span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AiopgSnapshotDatabaseOperationFactory.build_delete"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_delete">[docs]</a>    <span class="k">def</span> <span class="nf">build_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transaction_uuids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">UUID</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to delete rows by transaction identifiers.</span>
+
+<span class="sd">        :param transaction_uuids: The transaction identifiers.</span>
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            DELETE FROM </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">            WHERE transaction_uuid IN %(transaction_uuids)s;</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">,</span>
+            <span class="p">{</span><span class="s2">&quot;transaction_uuids&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">transaction_uuids</span><span class="p">)},</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AiopgSnapshotDatabaseOperationFactory.build_submit"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_submit">[docs]</a>    <span class="k">def</span> <span class="nf">build_submit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+        <span class="n">updated_at</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+        <span class="n">transaction_uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the insert database operation.</span>
+
+<span class="sd">        :param uuid: The identifier of the entity.</span>
+<span class="sd">        :param name: The name of the entity.</span>
+<span class="sd">        :param version: The version of the entity.</span>
+<span class="sd">        :param schema: The schema of the entity.</span>
+<span class="sd">        :param data: The data of the entity.</span>
+<span class="sd">        :param created_at: The creation datetime.</span>
+<span class="sd">        :param updated_at: The last update datetime.</span>
+<span class="sd">        :param transaction_uuid: The transaction identifier.</span>
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            INSERT INTO </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> (</span>
+<span class="s2">                uuid, name, version, schema, data, created_at, updated_at, transaction_uuid</span>
+<span class="s2">            )</span>
+<span class="s2">            VALUES (</span>
+<span class="s2">                %(uuid)s,</span>
+<span class="s2">                %(name)s,</span>
+<span class="s2">                %(version)s,</span>
+<span class="s2">                %(schema)s,</span>
+<span class="s2">                %(data)s,</span>
+<span class="s2">                %(created_at)s,</span>
+<span class="s2">                %(updated_at)s,</span>
+<span class="s2">                %(transaction_uuid)s</span>
+<span class="s2">            )</span>
+<span class="s2">            ON CONFLICT (uuid, transaction_uuid)</span>
+<span class="s2">            DO</span>
+<span class="s2">               UPDATE SET version = %(version)s, schema = %(schema)s, data = %(data)s, updated_at = %(updated_at)s</span>
+<span class="s2">            RETURNING created_at, updated_at;</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">uuid</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">version</span><span class="p">,</span>
+                <span class="s2">&quot;schema&quot;</span><span class="p">:</span> <span class="n">schema</span><span class="p">,</span>
+                <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span>
+                <span class="s2">&quot;created_at&quot;</span><span class="p">:</span> <span class="n">created_at</span><span class="p">,</span>
+                <span class="s2">&quot;updated_at&quot;</span><span class="p">:</span> <span class="n">updated_at</span><span class="p">,</span>
+                <span class="s2">&quot;transaction_uuid&quot;</span><span class="p">:</span> <span class="n">transaction_uuid</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AiopgSnapshotDatabaseOperationFactory.build_query"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_query">[docs]</a>    <span class="k">def</span> <span class="nf">build_query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">condition</span><span class="p">:</span> <span class="n">_Condition</span><span class="p">,</span>
+        <span class="n">ordering</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_Ordering</span><span class="p">],</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">transaction_uuids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">UUID</span><span class="p">],</span>
+        <span class="n">exclude_deleted</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the query database operation.</span>
+
+<span class="sd">        :param name: Class name of the ``RootEntity``.</span>
+<span class="sd">        :param condition: The condition that must be satisfied by the ``RootEntity`` instances.</span>
+<span class="sd">        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour</span>
+<span class="sd">            is to retrieve them without any order pattern.</span>
+<span class="sd">        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the</span>
+<span class="sd">            instances that meet the given condition.</span>
+<span class="sd">        :param transaction_uuids: The transaction within the operation is performed. If not any value is provided, then</span>
+<span class="sd">            the transaction is extracted from the context var. If not any transaction is being scoped then the query is</span>
+<span class="sd">            performed to the global snapshot.</span>
+<span class="sd">        :param exclude_deleted: If ``True``, deleted ``RootEntity`` entries are included, otherwise deleted</span>
+<span class="sd">            ``RootEntity`` entries are filtered.</span>
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">builder</span> <span class="o">=</span> <span class="n">AiopgSnapshotQueryDatabaseOperationBuilder</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">condition</span><span class="o">=</span><span class="n">condition</span><span class="p">,</span>
+            <span class="n">ordering</span><span class="o">=</span><span class="n">ordering</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">transaction_uuids</span><span class="o">=</span><span class="n">transaction_uuids</span><span class="p">,</span>
+            <span class="n">exclude_deleted</span><span class="o">=</span><span class="n">exclude_deleted</span><span class="p">,</span>
+            <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="n">query</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AiopgSnapshotDatabaseOperationFactory.build_submit_offset"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_submit_offset">[docs]</a>    <span class="k">def</span> <span class="nf">build_submit_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to store the offset.</span>
+
+<span class="sd">        :param value: The value to be stored as the new offset.</span>
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            INSERT INTO </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_offset_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> (id, value)</span>
+<span class="s2">            VALUES (TRUE, %(value)s)</span>
+<span class="s2">            ON CONFLICT (id)</span>
+<span class="s2">            DO UPDATE SET value = GREATEST(</span>
+<span class="s2">                %(value)s,</span>
+<span class="s2">                (SELECT value FROM </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_offset_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> WHERE id = TRUE)</span>
+<span class="s2">            );</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+            <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">value</span><span class="p">},</span>
+            <span class="n">lock</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;insert_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_offset_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AiopgSnapshotDatabaseOperationFactory.build_query_offset"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.impl.html#minos.plugins.aiopg.factories.aggregate.snapshots.impl.AiopgSnapshotDatabaseOperationFactory.build_query_offset">[docs]</a>    <span class="k">def</span> <span class="nf">build_query_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to get the current offset.</span>
+
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT value</span>
+<span class="s2">            FROM </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_offset_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">            WHERE id = TRUE;</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+        <span class="p">)</span></div></div>
+
+
+<span class="n">AiopgDatabaseClient</span><span class="o">.</span><span class="n">set_factory</span><span class="p">(</span><span class="n">SnapshotDatabaseOperationFactory</span><span class="p">,</span> <span class="n">AiopgSnapshotDatabaseOperationFactory</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

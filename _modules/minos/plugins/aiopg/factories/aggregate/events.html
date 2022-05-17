@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.plugins.aiopg.factories.aggregate.events &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" />
+    <link href="../../../../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.aiopg.html">minos.plugins.aiopg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.lmdb.html">minos.plugins.lmdb</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.plugins.aiopg.factories.aggregate.events</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.plugins.aiopg.factories.aggregate.events</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">datetime</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UUID</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">psycopg2.sql</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SQL</span><span class="p">,</span>
+    <span class="n">Composable</span><span class="p">,</span>
+    <span class="n">Identifier</span><span class="p">,</span>
+    <span class="n">Literal</span><span class="p">,</span>
+    <span class="n">Placeholder</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.aggregate</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Action</span><span class="p">,</span>
+    <span class="n">EventDatabaseOperationFactory</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ComposedDatabaseOperation</span><span class="p">,</span>
+    <span class="n">DatabaseOperation</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">...clients</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AiopgDatabaseClient</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">...operations</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AiopgDatabaseOperation</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="c1"># noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic</span>
+<div class="viewcode-block" id="AiopgEventDatabaseOperationFactory"><a class="viewcode-back" href="../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.events.html#minos.plugins.aiopg.factories.aggregate.events.AiopgEventDatabaseOperationFactory">[docs]</a><span class="k">class</span> <span class="nc">AiopgEventDatabaseOperationFactory</span><span class="p">(</span><span class="n">EventDatabaseOperationFactory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Aiopg Event Database Operation Factory class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AiopgEventDatabaseOperationFactory.build_table_name"><a class="viewcode-back" href="../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.events.html#minos.plugins.aiopg.factories.aggregate.events.AiopgEventDatabaseOperationFactory.build_table_name">[docs]</a>    <span class="k">def</span> <span class="nf">build_table_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the table name.</span>
+
+<span class="sd">        :return: A ``str`` value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;aggregate_event&quot;</span></div>
+
+<div class="viewcode-block" id="AiopgEventDatabaseOperationFactory.build_create"><a class="viewcode-back" href="../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.events.html#minos.plugins.aiopg.factories.aggregate.events.AiopgEventDatabaseOperationFactory.build_create">[docs]</a>    <span class="k">def</span> <span class="nf">build_create</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to create the event table.</span>
+
+<span class="sd">        :return: A ``DatabaseOperation`` instance.s</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ComposedDatabaseOperation</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+                    <span class="s1">&#39;CREATE EXTENSION IF NOT EXISTS &quot;uuid-ossp&quot;;&#39;</span><span class="p">,</span>
+                    <span class="n">lock</span><span class="o">=</span><span class="s2">&quot;uuid-ossp&quot;</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    DO</span>
+<span class="sd">                    $$</span>
+<span class="sd">                        BEGIN</span>
+<span class="sd">                            IF NOT EXISTS(SELECT *</span>
+<span class="sd">                                          FROM pg_type typ</span>
+<span class="sd">                                                   INNER JOIN pg_namespace nsp</span>
+<span class="sd">                                                              ON nsp.oid = typ.typnamespace</span>
+<span class="sd">                                          WHERE nsp.nspname = current_schema()</span>
+<span class="sd">                                            AND typ.typname = &#39;action_type&#39;) THEN</span>
+<span class="sd">                                CREATE TYPE action_type AS ENUM (&#39;create&#39;, &#39;update&#39;, &#39;delete&#39;);</span>
+<span class="sd">                            END IF;</span>
+<span class="sd">                        END;</span>
+<span class="sd">                    $$</span>
+<span class="sd">                    LANGUAGE plpgsql;</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">lock</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">(),</span>
+                <span class="p">),</span>
+                <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                    CREATE TABLE IF NOT EXISTS </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> (</span>
+<span class="s2">                        id BIGSERIAL PRIMARY KEY,</span>
+<span class="s2">                        action ACTION_TYPE NOT NULL,</span>
+<span class="s2">                        uuid UUID NOT NULL,</span>
+<span class="s2">                        name TEXT NOT NULL,</span>
+<span class="s2">                        version INT NOT NULL,</span>
+<span class="s2">                        data BYTEA NOT NULL,</span>
+<span class="s2">                        created_at TIMESTAMPTZ NOT NULL,</span>
+<span class="s2">                        transaction_uuid UUID NOT NULL DEFAULT uuid_nil(),</span>
+<span class="s2">                        UNIQUE (uuid, version, transaction_uuid)</span>
+<span class="s2">                    );</span>
+<span class="s2">                    &quot;&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">lock</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">(),</span>
+                <span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AiopgEventDatabaseOperationFactory.build_submit"><a class="viewcode-back" href="../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.events.html#minos.plugins.aiopg.factories.aggregate.events.AiopgEventDatabaseOperationFactory.build_submit">[docs]</a>    <span class="k">def</span> <span class="nf">build_submit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">transaction_uuids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">UUID</span><span class="p">],</span>
+        <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span>
+        <span class="n">action</span><span class="p">:</span> <span class="n">Action</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+        <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+        <span class="n">transaction_uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span>
+        <span class="n">lock</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to submit a row into the event table.</span>
+
+<span class="sd">        :param transaction_uuids: The sequence of nested transaction in on top of the current event&#39;s transaction.</span>
+<span class="sd">        :param uuid: The identifier of the entity.</span>
+<span class="sd">        :param action: The action of the event.</span>
+<span class="sd">        :param name: The name of the entity.</span>
+<span class="sd">        :param version: The version of the entity</span>
+<span class="sd">        :param data: The data of the event.</span>
+<span class="sd">        :param created_at: The creation datetime.</span>
+<span class="sd">        :param transaction_uuid: The identifier of the transaction.</span>
+<span class="sd">        :param lock: The lock identifier.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">insert_values</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            INSERT INTO {table_name} (id, action, uuid, name, version, data, created_at, transaction_uuid)</span>
+<span class="sd">            VALUES (</span>
+<span class="sd">                default,</span>
+<span class="sd">                %(action)s,</span>
+<span class="sd">                CASE %(uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(uuid)s END,</span>
+<span class="sd">                %(name)s,</span>
+<span class="sd">                (</span>
+<span class="sd">                    SELECT (CASE WHEN %(version)s IS NULL THEN 1 + COALESCE(MAX(t2.version), 0) ELSE %(version)s END)</span>
+<span class="sd">                    FROM (</span>
+<span class="sd">                             SELECT DISTINCT ON (t1.uuid) t1.version</span>
+<span class="sd">                             FROM ( {from_parts} ) AS t1</span>
+<span class="sd">                             ORDER BY t1.uuid, t1.transaction_index DESC</span>
+<span class="sd">                    ) AS t2</span>
+<span class="sd">                ),</span>
+<span class="sd">                %(data)s,</span>
+<span class="sd">                (CASE WHEN %(created_at)s IS NULL THEN NOW() ELSE %(created_at)s END),</span>
+<span class="sd">                %(transaction_uuid)s</span>
+<span class="sd">            )</span>
+<span class="sd">            RETURNING id, uuid, version, created_at;</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="p">)</span>
+        <span class="n">insert_parameters</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">uuid</span><span class="p">,</span>
+            <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="n">action</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">version</span><span class="p">,</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span>
+            <span class="s2">&quot;created_at&quot;</span><span class="p">:</span> <span class="n">created_at</span><span class="p">,</span>
+            <span class="s2">&quot;transaction_uuid&quot;</span><span class="p">:</span> <span class="n">transaction_uuid</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">from_sql</span><span class="p">,</span> <span class="n">from_parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_submit_from</span><span class="p">(</span><span class="n">transaction_uuids</span><span class="p">)</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="n">insert_values</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">from_parts</span><span class="o">=</span><span class="n">from_sql</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="n">Identifier</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()))</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">from_parameters</span> <span class="o">|</span> <span class="n">insert_parameters</span>
+
+        <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">lock</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_build_submit_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transaction_uuids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">UUID</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Composable</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="n">select_transaction</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            SELECT {index} AS transaction_index, uuid, MAX(version) AS version</span>
+<span class="sd">            FROM {table_name}</span>
+<span class="sd">            WHERE uuid = %(uuid)s AND transaction_uuid = {transaction_uuid}</span>
+<span class="sd">            GROUP BY uuid</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="p">)</span>
+        <span class="n">from_query_parts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">transaction_uuid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">transaction_uuids</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;transaction_uuid_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">transaction_uuid</span>
+
+            <span class="n">from_query_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">select_transaction</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">index</span><span class="o">=</span><span class="n">Literal</span><span class="p">(</span><span class="n">index</span><span class="p">),</span>
+                    <span class="n">transaction_uuid</span><span class="o">=</span><span class="n">Placeholder</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">table_name</span><span class="o">=</span><span class="n">Identifier</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()),</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot; UNION ALL &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">from_query_parts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">query</span><span class="p">,</span> <span class="n">parameters</span>
+
+    <span class="c1"># noinspection PyShadowingBuiltins</span>
+<div class="viewcode-block" id="AiopgEventDatabaseOperationFactory.build_query"><a class="viewcode-back" href="../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.events.html#minos.plugins.aiopg.factories.aggregate.events.AiopgEventDatabaseOperationFactory.build_query">[docs]</a>    <span class="k">def</span> <span class="nf">build_query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">uuid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">version_lt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">version_gt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">version_le</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">version_ge</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">id_lt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">id_gt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">id_le</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">id_ge</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">transaction_uuid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">transaction_uuid_ne</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">transaction_uuid_in</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">UUID</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to select rows.</span>
+
+<span class="sd">        :param uuid: The identifier must be equal to the given value.</span>
+<span class="sd">        :param name: The classname must be equal to the given value.</span>
+<span class="sd">        :param version: The version must be equal to the given value.</span>
+<span class="sd">        :param version_lt: The version must be lower than the given value.</span>
+<span class="sd">        :param version_gt: The version must be greater than the given value.</span>
+<span class="sd">        :param version_le: The version must be lower or equal to the given value.</span>
+<span class="sd">        :param version_ge: The version must be greater or equal to the given value.</span>
+<span class="sd">        :param id: The entry identifier must be equal to the given value.</span>
+<span class="sd">        :param id_lt: The entry identifier must be lower than the given value.</span>
+<span class="sd">        :param id_gt: The entry identifier must be greater than the given value.</span>
+<span class="sd">        :param id_le: The entry identifier must be lower or equal to the given value.</span>
+<span class="sd">        :param id_ge: The entry identifier must be greater or equal to the given value.</span>
+<span class="sd">        :param transaction_uuid: The transaction identifier must be equal to the given value.</span>
+<span class="sd">        :param transaction_uuid_ne: The transaction identifier must be distinct of the given value.</span>
+<span class="sd">        :param transaction_uuid_in: The destination transaction identifier must be equal to one of the given values.</span>
+
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">transaction_uuid_in</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">transaction_uuid_in</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">transaction_uuid_in</span><span class="p">)</span>
+
+        <span class="n">_select_all</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT uuid, name, version, data, id, action, created_at, transaction_uuid</span>
+<span class="s2">            FROM </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">            &quot;&quot;&quot;</span>
+
+        <span class="n">conditions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">uuid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;uuid = </span><span class="si">%(uuid)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;name = </span><span class="si">%(name)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;version = </span><span class="si">%(version)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">version_lt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;version &lt; </span><span class="si">%(version_lt)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">version_gt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;version &gt; </span><span class="si">%(version_gt)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">version_le</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;version &lt;= </span><span class="si">%(version_le)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">version_ge</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;version &gt;= </span><span class="si">%(version_ge)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;id = </span><span class="si">%(id)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">id_lt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;id &lt; </span><span class="si">%(id_lt)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">id_gt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;id &gt; </span><span class="si">%(id_gt)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">id_le</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;id &lt;= </span><span class="si">%(id_le)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">id_ge</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;id &gt;= </span><span class="si">%(id_ge)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">transaction_uuid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;transaction_uuid = </span><span class="si">%(transaction_uuid)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">transaction_uuid_ne</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;transaction_uuid &lt;&gt; </span><span class="si">%(transaction_uuid_ne)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">transaction_uuid_in</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;transaction_uuid IN </span><span class="si">%(transaction_uuid_in)s</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">conditions</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_select_all</span><span class="si">}</span><span class="s2"> ORDER BY id;&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_select_all</span><span class="si">}</span><span class="s2"> WHERE </span><span class="si">{</span><span class="s1">&#39; AND &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span><span class="si">}</span><span class="s2"> ORDER BY id;&quot;</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">uuid</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">version</span><span class="p">,</span>
+                <span class="s2">&quot;version_lt&quot;</span><span class="p">:</span> <span class="n">version_lt</span><span class="p">,</span>
+                <span class="s2">&quot;version_gt&quot;</span><span class="p">:</span> <span class="n">version_gt</span><span class="p">,</span>
+                <span class="s2">&quot;version_le&quot;</span><span class="p">:</span> <span class="n">version_le</span><span class="p">,</span>
+                <span class="s2">&quot;version_ge&quot;</span><span class="p">:</span> <span class="n">version_ge</span><span class="p">,</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="nb">id</span><span class="p">,</span>
+                <span class="s2">&quot;id_lt&quot;</span><span class="p">:</span> <span class="n">id_lt</span><span class="p">,</span>
+                <span class="s2">&quot;id_gt&quot;</span><span class="p">:</span> <span class="n">id_gt</span><span class="p">,</span>
+                <span class="s2">&quot;id_le&quot;</span><span class="p">:</span> <span class="n">id_le</span><span class="p">,</span>
+                <span class="s2">&quot;id_ge&quot;</span><span class="p">:</span> <span class="n">id_ge</span><span class="p">,</span>
+                <span class="s2">&quot;transaction_uuid&quot;</span><span class="p">:</span> <span class="n">transaction_uuid</span><span class="p">,</span>
+                <span class="s2">&quot;transaction_uuid_ne&quot;</span><span class="p">:</span> <span class="n">transaction_uuid_ne</span><span class="p">,</span>
+                <span class="s2">&quot;transaction_uuid_in&quot;</span><span class="p">:</span> <span class="n">transaction_uuid_in</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AiopgEventDatabaseOperationFactory.build_query_offset"><a class="viewcode-back" href="../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.events.html#minos.plugins.aiopg.factories.aggregate.events.AiopgEventDatabaseOperationFactory.build_query_offset">[docs]</a>    <span class="k">def</span> <span class="nf">build_query_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to get the maximum identifier.</span>
+
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT MAX(id) FROM </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2">;&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span></div></div>
+
+
+<span class="n">AiopgDatabaseClient</span><span class="o">.</span><span class="n">set_factory</span><span class="p">(</span><span class="n">EventDatabaseOperationFactory</span><span class="p">,</span> <span class="n">AiopgEventDatabaseOperationFactory</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.plugins.aiopg.factories.networks.publishers.queues &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="minos.plugins.aiopg.factories.networks.subscribers" href="minos.plugins.aiopg.factories.networks.subscribers.html" />
+    <link rel="prev" title="minos.plugins.aiopg.factories.networks.publishers" href="minos.plugins.aiopg.factories.networks.publishers.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="minos.plugins.aiopg.html">minos.plugins.aiopg</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="minos.plugins.aiopg.clients.html">minos.plugins.aiopg.clients</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="minos.plugins.aiopg.factories.html">minos.plugins.aiopg.factories</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="minos.plugins.aiopg.factories.aggregate.html">minos.plugins.aiopg.factories.aggregate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="minos.plugins.aiopg.factories.common.html">minos.plugins.aiopg.factories.common</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="minos.plugins.aiopg.factories.networks.html">minos.plugins.aiopg.factories.networks</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="minos.plugins.aiopg.factories.networks.collections.html">minos.plugins.aiopg.factories.networks.collections</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="minos.plugins.aiopg.factories.networks.publishers.html">minos.plugins.aiopg.factories.networks.publishers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="minos.plugins.aiopg.factories.networks.subscribers.html">minos.plugins.aiopg.factories.networks.subscribers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="minos.plugins.aiopg.operations.html">minos.plugins.aiopg.operations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.lmdb.html">minos.plugins.lmdb</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="minos.plugins.aiopg.html">minos.plugins.aiopg</a> &raquo;</li>
+          <li><a href="minos.plugins.aiopg.factories.html">minos.plugins.aiopg.factories</a> &raquo;</li>
+          <li><a href="minos.plugins.aiopg.factories.networks.html">minos.plugins.aiopg.factories.networks</a> &raquo;</li>
+          <li><a href="minos.plugins.aiopg.factories.networks.publishers.html">minos.plugins.aiopg.factories.networks.publishers</a> &raquo;</li>
+      <li>minos.plugins.aiopg.factories.networks.publishers.queues</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/minos.plugins.aiopg.factories.networks.publishers.queues.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-minos.plugins.aiopg.factories.networks.publishers.queues">
+<span id="minos-plugins-aiopg-factories-networks-publishers-queues"></span><h1>minos.plugins.aiopg.factories.networks.publishers.queues<a class="headerlink" href="#module-minos.plugins.aiopg.factories.networks.publishers.queues" title="Permalink to this headline"></a></h1>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory" title="minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AiopgBrokerPublisherQueueDatabaseOperationFactory</span></code></a></p></td>
+<td><p>Aiopg Broker Publisher Queue Query Factory class.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AiopgBrokerPublisherQueueDatabaseOperationFactory</span></span><a class="reference internal" href="../_modules/minos/plugins/aiopg/factories/networks/publishers/queues.html#AiopgBrokerPublisherQueueDatabaseOperationFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="minos.networks.brokers.publishers.queued.queues.database.html#minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory" title="minos.networks.brokers.publishers.queued.queues.database.BrokerPublisherQueueDatabaseOperationFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">BrokerPublisherQueueDatabaseOperationFactory</span></code></a>, <a class="reference internal" href="minos.plugins.aiopg.factories.networks.collections.queues.html#minos.plugins.aiopg.factories.networks.collections.queues.AiopgBrokerQueueDatabaseOperationFactory" title="minos.plugins.aiopg.factories.networks.collections.queues.AiopgBrokerQueueDatabaseOperationFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">AiopgBrokerQueueDatabaseOperationFactory</span></code></a></p>
+<p>Aiopg Broker Publisher Queue Query Factory class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_table_name">
+<span class="sig-name descname"><span class="pre">build_table_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/minos/plugins/aiopg/factories/networks/publishers/queues.html#AiopgBrokerPublisherQueueDatabaseOperationFactory.build_table_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_table_name" title="Permalink to this definition"></a></dt>
+<dd><p>Get the table name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">str</span></code> value.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_count">
+<span class="sig-name descname"><span class="pre">build_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">retry</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_count" title="Permalink to this definition"></a></dt>
+<dd><p>Build the “count not processed” query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>retry</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_create">
+<span class="sig-name descname"><span class="pre">build_create</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_create" title="Permalink to this definition"></a></dt>
+<dd><p>Build the “create table” query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">SQL</span></code> instance.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_delete">
+<span class="sig-name descname"><span class="pre">build_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_delete" title="Permalink to this definition"></a></dt>
+<dd><p>Build the “delete processed” query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">SQL</span></code> instance.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>id_</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_mark_processed">
+<span class="sig-name descname"><span class="pre">build_mark_processed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_mark_processed" title="Permalink to this definition"></a></dt>
+<dd><p>Build the “update not processed” query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">SQL</span></code> instance.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>id_</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_mark_processing">
+<span class="sig-name descname"><span class="pre">build_mark_processing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_mark_processing" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">SQL</span></code> instance.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.10)"><em>Iterable</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – </p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_query">
+<span class="sig-name descname"><span class="pre">build_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">retry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">records</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_query" title="Permalink to this definition"></a></dt>
+<dd><p>Build the “select not processed” query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">SQL</span></code> instance.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>retry</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p></li>
+<li><p><strong>records</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_submit">
+<span class="sig-name descname"><span class="pre">build_submit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minos.plugins.aiopg.factories.networks.publishers.queues.AiopgBrokerPublisherQueueDatabaseOperationFactory.build_submit" title="Permalink to this definition"></a></dt>
+<dd><p>Build the “insert” query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">SQL</span></code> instance.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>topic</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.10)"><em>bytes</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="minos.common.database.operations.html#minos.common.database.operations.DatabaseOperation" title="minos.common.database.operations.DatabaseOperation"><em>DatabaseOperation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="minos.plugins.aiopg.factories.networks.publishers.html" class="btn btn-neutral float-left" title="minos.plugins.aiopg.factories.networks.publishers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minos.plugins.aiopg.factories.networks.subscribers.html" class="btn btn-neutral float-right" title="minos.plugins.aiopg.factories.networks.subscribers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

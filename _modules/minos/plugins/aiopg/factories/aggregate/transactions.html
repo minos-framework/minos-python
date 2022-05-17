@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.plugins.aiopg.factories.aggregate.transactions &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" />
+    <link href="../../../../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.aiopg.html">minos.plugins.aiopg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.lmdb.html">minos.plugins.lmdb</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api-reference/minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.plugins.aiopg.factories.aggregate.transactions</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.plugins.aiopg.factories.aggregate.transactions</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">datetime</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Optional</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UUID</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.aggregate</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TransactionDatabaseOperationFactory</span><span class="p">,</span>
+    <span class="n">TransactionStatus</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ComposedDatabaseOperation</span><span class="p">,</span>
+    <span class="n">DatabaseOperation</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">...clients</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AiopgDatabaseClient</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">...operations</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AiopgDatabaseOperation</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="c1"># noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic</span>
+<div class="viewcode-block" id="AiopgTransactionDatabaseOperationFactory"><a class="viewcode-back" href="../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.transactions.html#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory">[docs]</a><span class="k">class</span> <span class="nc">AiopgTransactionDatabaseOperationFactory</span><span class="p">(</span><span class="n">TransactionDatabaseOperationFactory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Aiopg Transaction Database Operation Factory class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AiopgTransactionDatabaseOperationFactory.build_table_name"><a class="viewcode-back" href="../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.transactions.html#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_table_name">[docs]</a>    <span class="k">def</span> <span class="nf">build_table_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the table name.</span>
+
+<span class="sd">        :return: A ``str`` value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;aggregate_transaction&quot;</span></div>
+
+<div class="viewcode-block" id="AiopgTransactionDatabaseOperationFactory.build_create"><a class="viewcode-back" href="../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.transactions.html#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_create">[docs]</a>    <span class="k">def</span> <span class="nf">build_create</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to create the snapshot table.</span>
+
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">ComposedDatabaseOperation</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+                    <span class="s1">&#39;CREATE EXTENSION IF NOT EXISTS &quot;uuid-ossp&quot;;&#39;</span><span class="p">,</span>
+                    <span class="n">lock</span><span class="o">=</span><span class="s2">&quot;uuid-ossp&quot;</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    DO</span>
+<span class="sd">                    $$</span>
+<span class="sd">                        BEGIN</span>
+<span class="sd">                            IF NOT EXISTS(SELECT *</span>
+<span class="sd">                                          FROM pg_type typ</span>
+<span class="sd">                                                   INNER JOIN pg_namespace nsp</span>
+<span class="sd">                                                              ON nsp.oid = typ.typnamespace</span>
+<span class="sd">                                          WHERE nsp.nspname = current_schema()</span>
+<span class="sd">                                            AND typ.typname = &#39;transaction_status&#39;) THEN</span>
+<span class="sd">                                CREATE TYPE transaction_status AS ENUM (</span>
+<span class="sd">                                    &#39;pending&#39;, &#39;reserving&#39;, &#39;reserved&#39;, &#39;committing&#39;, &#39;committed&#39;, &#39;rejected&#39;</span>
+<span class="sd">                                );</span>
+<span class="sd">                            END IF;</span>
+<span class="sd">                        END;</span>
+<span class="sd">                    $$</span>
+<span class="sd">                    LANGUAGE plpgsql;</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">lock</span><span class="o">=</span><span class="s2">&quot;transaction_status&quot;</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                    CREATE TABLE IF NOT EXISTS </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> (</span>
+<span class="s2">                        uuid UUID PRIMARY KEY,</span>
+<span class="s2">                        destination_uuid UUID NOT NULL,</span>
+<span class="s2">                        status TRANSACTION_STATUS NOT NULL,</span>
+<span class="s2">                        event_offset INTEGER,</span>
+<span class="s2">                        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()</span>
+<span class="s2">                    );</span>
+<span class="s2">                    &quot;&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">lock</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">(),</span>
+                <span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AiopgTransactionDatabaseOperationFactory.build_submit"><a class="viewcode-back" href="../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.transactions.html#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_submit">[docs]</a>    <span class="k">def</span> <span class="nf">build_submit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span>
+        <span class="n">destination_uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span>
+        <span class="n">status</span><span class="p">:</span> <span class="n">TransactionStatus</span><span class="p">,</span>
+        <span class="n">event_offset</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to submit a row.</span>
+
+<span class="sd">        :param uuid: The identifier of the transaction.</span>
+<span class="sd">        :param destination_uuid: The identifier of the destination transaction.</span>
+<span class="sd">        :param status: The status of the transaction.</span>
+<span class="sd">        :param event_offset: The event offset of the transaction.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">uuid</span><span class="p">,</span>
+            <span class="s2">&quot;destination_uuid&quot;</span><span class="p">:</span> <span class="n">destination_uuid</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">,</span>
+            <span class="s2">&quot;event_offset&quot;</span><span class="p">:</span> <span class="n">event_offset</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            INSERT INTO </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> AS t (uuid, destination_uuid, status, event_offset)</span>
+<span class="s2">            VALUES (%(uuid)s, %(destination_uuid)s, %(status)s, %(event_offset)s)</span>
+<span class="s2">            ON CONFLICT (uuid)</span>
+<span class="s2">            DO</span>
+<span class="s2">               UPDATE SET status = %(status)s, event_offset = %(event_offset)s, updated_at = NOW()</span>
+<span class="s2">            WHERE (t.destination_uuid = %(destination_uuid)s)</span>
+<span class="s2">              AND (NOT (t.status = &#39;pending&#39; AND %(status)s NOT IN (&#39;pending&#39;, &#39;reserving&#39;, &#39;rejected&#39;)))</span>
+<span class="s2">              AND (NOT (t.status = &#39;reserving&#39; AND %(status)s NOT IN (&#39;reserved&#39;, &#39;rejected&#39;)))</span>
+<span class="s2">              AND (NOT (t.status = &#39;reserved&#39; AND %(status)s NOT IN (&#39;committing&#39;, &#39;rejected&#39;)))</span>
+<span class="s2">              AND (NOT (t.status = &#39;committing&#39; AND %(status)s NOT IN (&#39;committed&#39;)))</span>
+<span class="s2">              AND (NOT (t.status = &#39;committed&#39;))</span>
+<span class="s2">              AND (NOT (t.status = &#39;rejected&#39;))</span>
+<span class="s2">            RETURNING updated_at;</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">,</span>
+            <span class="n">params</span><span class="p">,</span>
+            <span class="n">lock</span><span class="o">=</span><span class="n">uuid</span><span class="o">.</span><span class="n">int</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">32</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AiopgTransactionDatabaseOperationFactory.build_query"><a class="viewcode-back" href="../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.transactions.html#minos.plugins.aiopg.factories.aggregate.transactions.AiopgTransactionDatabaseOperationFactory.build_query">[docs]</a>    <span class="k">def</span> <span class="nf">build_query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">uuid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">uuid_ne</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">uuid_in</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">UUID</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">destination_uuid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">status_in</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">event_offset</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">event_offset_lt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">event_offset_gt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">event_offset_le</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">event_offset_ge</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">updated_at</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">updated_at_lt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">updated_at_gt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">updated_at_le</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">updated_at_ge</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabaseOperation</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build the database operation to select rows.</span>
+
+<span class="sd">        :param uuid: Transaction identifier equal to the given value.</span>
+<span class="sd">        :param uuid_ne: Transaction identifier not equal to the given value</span>
+<span class="sd">        :param uuid_in: Transaction identifier within the given values.</span>
+<span class="sd">        :param destination_uuid: Destination Transaction identifier equal to the given value.</span>
+<span class="sd">        :param status: Transaction status equal to the given value.</span>
+<span class="sd">        :param status_in: Transaction status within the given values</span>
+<span class="sd">        :param event_offset: Event offset equal to the given value.</span>
+<span class="sd">        :param event_offset_lt: Event Offset lower than the given value</span>
+<span class="sd">        :param event_offset_gt: Event Offset greater than the given value</span>
+<span class="sd">        :param event_offset_le: Event Offset lower or equal to the given value</span>
+<span class="sd">        :param event_offset_ge: Event Offset greater or equal to the given value</span>
+<span class="sd">        :param updated_at: Updated at equal to the given value.</span>
+<span class="sd">        :param updated_at_lt: Updated at lower than the given value.</span>
+<span class="sd">        :param updated_at_gt: Updated at greater than the given value.</span>
+<span class="sd">        :param updated_at_le: Updated at lower or equal to the given value.</span>
+<span class="sd">        :param updated_at_ge: Updated at greater or equal to the given value.</span>
+<span class="sd">        :param kwargs: Additional named arguments.</span>
+<span class="sd">        :return: A ``DatabaseOperation`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">uuid_in</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">uuid_in</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">uuid_in</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">status_in</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">status_in</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">status_in</span><span class="p">)</span>
+
+        <span class="n">conditions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">uuid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;uuid = </span><span class="si">%(uuid)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">uuid_ne</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;uuid &lt;&gt; </span><span class="si">%(uuid_ne)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">uuid_in</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;uuid IN </span><span class="si">%(uuid_in)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">destination_uuid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;destination_uuid = </span><span class="si">%(destination_uuid)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;status = </span><span class="si">%(status)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">status_in</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;status IN </span><span class="si">%(status_in)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">event_offset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;event_offset = </span><span class="si">%(event_offset)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">event_offset_lt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;event_offset &lt; </span><span class="si">%(event_offset_lt)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">event_offset_gt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;event_offset &gt; </span><span class="si">%(event_offset_gt)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">event_offset_le</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;event_offset &lt;= </span><span class="si">%(event_offset_le)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">event_offset_ge</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;event_offset &gt;= </span><span class="si">%(event_offset_ge)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">updated_at</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;updated_at = </span><span class="si">%(updated_at)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">updated_at_lt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;updated_at &lt; </span><span class="si">%(updated_at_lt)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">updated_at_gt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;updated_at &gt; </span><span class="si">%(updated_at_gt)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">updated_at_le</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;updated_at &lt;= </span><span class="si">%(updated_at_le)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">updated_at_ge</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;updated_at &gt;= </span><span class="si">%(updated_at_ge)s</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">select_all</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        SELECT uuid, status, event_offset, destination_uuid, updated_at</span>
+<span class="s2">        FROM </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">build_table_name</span><span class="p">()</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">conditions</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">select_all</span><span class="si">}</span><span class="s2"> ORDER BY event_offset;&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">AiopgDatabaseOperation</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">select_all</span><span class="si">}</span><span class="s2"> WHERE </span><span class="si">{</span><span class="s1">&#39; AND &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span><span class="si">}</span><span class="s2"> ORDER BY event_offset;&quot;</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">uuid</span><span class="p">,</span>
+                <span class="s2">&quot;uuid_ne&quot;</span><span class="p">:</span> <span class="n">uuid_ne</span><span class="p">,</span>
+                <span class="s2">&quot;uuid_in&quot;</span><span class="p">:</span> <span class="n">uuid_in</span><span class="p">,</span>
+                <span class="s2">&quot;destination_uuid&quot;</span><span class="p">:</span> <span class="n">destination_uuid</span><span class="p">,</span>
+                <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">,</span>
+                <span class="s2">&quot;status_in&quot;</span><span class="p">:</span> <span class="n">status_in</span><span class="p">,</span>
+                <span class="s2">&quot;event_offset&quot;</span><span class="p">:</span> <span class="n">event_offset</span><span class="p">,</span>
+                <span class="s2">&quot;event_offset_lt&quot;</span><span class="p">:</span> <span class="n">event_offset_lt</span><span class="p">,</span>
+                <span class="s2">&quot;event_offset_gt&quot;</span><span class="p">:</span> <span class="n">event_offset_gt</span><span class="p">,</span>
+                <span class="s2">&quot;event_offset_le&quot;</span><span class="p">:</span> <span class="n">event_offset_le</span><span class="p">,</span>
+                <span class="s2">&quot;event_offset_ge&quot;</span><span class="p">:</span> <span class="n">event_offset_ge</span><span class="p">,</span>
+                <span class="s2">&quot;updated_at&quot;</span><span class="p">:</span> <span class="n">updated_at</span><span class="p">,</span>
+                <span class="s2">&quot;updated_at_lt&quot;</span><span class="p">:</span> <span class="n">updated_at_lt</span><span class="p">,</span>
+                <span class="s2">&quot;updated_at_gt&quot;</span><span class="p">:</span> <span class="n">updated_at_gt</span><span class="p">,</span>
+                <span class="s2">&quot;updated_at_le&quot;</span><span class="p">:</span> <span class="n">updated_at_le</span><span class="p">,</span>
+                <span class="s2">&quot;updated_at_ge&quot;</span><span class="p">:</span> <span class="n">updated_at_ge</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div></div>
+
+
+<span class="n">AiopgDatabaseClient</span><span class="o">.</span><span class="n">set_factory</span><span class="p">(</span><span class="n">TransactionDatabaseOperationFactory</span><span class="p">,</span> <span class="n">AiopgTransactionDatabaseOperationFactory</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

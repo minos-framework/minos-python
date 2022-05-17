@@ -1,0 +1,29 @@
+minos.plugins.aiopg.factories.aggregate.events
+==============================================
+
+.. automodule:: minos.plugins.aiopg.factories.aggregate.events
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AiopgEventDatabaseOperationFactory
+   
+   
+
+   
+   
+   
+
+
+

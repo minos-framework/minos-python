@@ -1,0 +1,33 @@
+minos.plugins.aiopg.factories.aggregate
+=======================================
+
+.. automodule:: minos.plugins.aiopg.factories.aggregate
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   minos.plugins.aiopg.factories.aggregate.events
+   minos.plugins.aiopg.factories.aggregate.snapshots
+   minos.plugins.aiopg.factories.aggregate.transactions
+

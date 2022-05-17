@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>minos.plugins.aiopg.factories.aggregate.snapshots.queries &mdash; minos-python 0.7.0 documentation</title>
+      <link rel="stylesheet" href="../../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../search.html" />
+    <link href="../../../../../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../../index.html" class="icon icon-home"> minos-python
+          </a>
+              <div class="version">
+                0.7.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.aggregate.html">minos.aggregate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.common.html">minos.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.cqrs.html">minos.cqrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.networks.html">minos.networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.saga.html">minos.saga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.kafka.html">minos.plugins.kafka</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.rabbitmq.html">minos.plugins.rabbitmq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.minos_discovery.html">minos.plugins.minos_discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.aiopg.html">minos.plugins.aiopg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.lmdb.html">minos.plugins.lmdb</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.kong.html">minos.plugins.kong</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.aiohttp.html">minos.plugins.aiohttp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api-reference/minos.plugins.graphql.html">minos.plugins.graphql</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../../index.html">minos-python</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../../../index.html">Module code</a> &raquo;</li>
+      <li>minos.plugins.aiopg.factories.aggregate.snapshots.queries</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for minos.plugins.aiopg.factories.aggregate.snapshots.queries</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UUID</span><span class="p">,</span>
+    <span class="n">uuid4</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">psycopg2.extras</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Json</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">psycopg2.sql</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SQL</span><span class="p">,</span>
+    <span class="n">Composable</span><span class="p">,</span>
+    <span class="n">Identifier</span><span class="p">,</span>
+    <span class="n">Literal</span><span class="p">,</span>
+    <span class="n">Placeholder</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.aggregate</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.aggregate.queries</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_FALSE_CONDITION</span><span class="p">,</span>
+    <span class="n">_AndCondition</span><span class="p">,</span>
+    <span class="n">_ComposedCondition</span><span class="p">,</span>
+    <span class="n">_Condition</span><span class="p">,</span>
+    <span class="n">_EqualCondition</span><span class="p">,</span>
+    <span class="n">_FalseCondition</span><span class="p">,</span>
+    <span class="n">_GreaterCondition</span><span class="p">,</span>
+    <span class="n">_GreaterEqualCondition</span><span class="p">,</span>
+    <span class="n">_InCondition</span><span class="p">,</span>
+    <span class="n">_LikeCondition</span><span class="p">,</span>
+    <span class="n">_LowerCondition</span><span class="p">,</span>
+    <span class="n">_LowerEqualCondition</span><span class="p">,</span>
+    <span class="n">_NotCondition</span><span class="p">,</span>
+    <span class="n">_NotEqualCondition</span><span class="p">,</span>
+    <span class="n">_OrCondition</span><span class="p">,</span>
+    <span class="n">_Ordering</span><span class="p">,</span>
+    <span class="n">_SimpleCondition</span><span class="p">,</span>
+    <span class="n">_TrueCondition</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">NULL_UUID</span><span class="p">,</span>
+    <span class="n">AvroDataEncoder</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="c1"># noinspection SqlResolve,SqlNoDataSourceInspection</span>
+<div class="viewcode-block" id="AiopgSnapshotQueryDatabaseOperationBuilder"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.queries.html#minos.plugins.aiopg.factories.aggregate.snapshots.queries.AiopgSnapshotQueryDatabaseOperationBuilder">[docs]</a><span class="k">class</span> <span class="nc">AiopgSnapshotQueryDatabaseOperationBuilder</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Aiopg Snapshot Query Database Operation Builder class.</span>
+
+<span class="sd">    This class build postgres-compatible database queries over fields based on a condition, ordering, etc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AiopgSnapshotQueryDatabaseOperationBuilder.__init__"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.queries.html#minos.plugins.aiopg.factories.aggregate.snapshots.queries.AiopgSnapshotQueryDatabaseOperationBuilder.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">condition</span><span class="p">:</span> <span class="n">_Condition</span><span class="p">,</span>
+        <span class="n">ordering</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_Ordering</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">transaction_uuids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">UUID</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">NULL_UUID</span><span class="p">,),</span>
+        <span class="n">exclude_deleted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transaction_uuids</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">transaction_uuids</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">transaction_uuids</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">table_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table_name</span> <span class="o">=</span> <span class="s2">&quot;snapshot&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">condition</span> <span class="o">=</span> <span class="n">condition</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span> <span class="o">=</span> <span class="n">ordering</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">limit</span> <span class="o">=</span> <span class="n">limit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transaction_uuids</span> <span class="o">=</span> <span class="n">transaction_uuids</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exclude_deleted</span> <span class="o">=</span> <span class="n">exclude_deleted</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span> <span class="o">=</span> <span class="n">table_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="AiopgSnapshotQueryDatabaseOperationBuilder.build"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.queries.html#minos.plugins.aiopg.factories.aggregate.snapshots.queries.AiopgSnapshotQueryDatabaseOperationBuilder.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Composable</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Build a query.</span>
+
+<span class="sd">        :return: A tuple in which the first value is the sql sentence and the second one is a dictionary containing the</span>
+<span class="sd">            query parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="n">token</span> <span class="o">=</span> <span class="n">IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+
+        <span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span>
+
+        <span class="k">return</span> <span class="n">query</span><span class="p">,</span> <span class="n">parameters</span></div>
+
+    <span class="k">def</span> <span class="nf">_build</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Composable</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot; WHERE &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_select_from</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_condition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">condition</span><span class="p">)])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude_deleted</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot; AND &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">query</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_EXCLUDE_DELETED_CONDITION</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">query</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_ordering</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="p">)])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">query</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_limit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">limit</span><span class="p">)])</span>
+
+        <span class="k">return</span> <span class="n">query</span>
+
+    <span class="k">def</span> <span class="nf">_build_select_from</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Composable</span><span class="p">:</span>
+        <span class="n">from_query_parts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">transaction_uuid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_uuids</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;transaction_uuid_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">transaction_uuid</span>
+
+            <span class="n">from_query_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_SELECT_TRANSACTION_CHUNK</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">index</span><span class="o">=</span><span class="n">Literal</span><span class="p">(</span><span class="n">index</span><span class="p">),</span> <span class="n">transaction_uuid</span><span class="o">=</span><span class="n">Placeholder</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">table_name</span><span class="o">=</span><span class="n">Identifier</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">from_query</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot; UNION ALL &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">from_query_parts</span><span class="p">)</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_SELECT_ENTRIES_QUERY</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">from_parts</span><span class="o">=</span><span class="n">from_query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">query</span>
+
+    <span class="k">def</span> <span class="nf">_build_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">condition</span><span class="p">:</span> <span class="n">_Condition</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Composable</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">_NotCondition</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_condition_not</span><span class="p">(</span><span class="n">condition</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">_ComposedCondition</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_condition_composed</span><span class="p">(</span><span class="n">condition</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">_TrueCondition</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;TRUE&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">_FalseCondition</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;FALSE&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">_LikeCondition</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_condition_like</span><span class="p">(</span><span class="n">condition</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">_SimpleCondition</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_condition_simple</span><span class="p">(</span><span class="n">condition</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Given condition is not supported. Obtained: </span><span class="si">{</span><span class="n">condition</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_build_condition_not</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">condition</span><span class="p">:</span> <span class="n">_NotCondition</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Composable</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;(NOT </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_condition</span><span class="p">(</span><span class="n">condition</span><span class="o">.</span><span class="n">inner</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_build_condition_composed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">condition</span><span class="p">:</span> <span class="n">_ComposedCondition</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Composable</span><span class="p">:</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">operator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_COMPOSED_MAPPER</span><span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="n">condition</span><span class="p">)]</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_condition</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">condition</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{composed}</span><span class="s2">)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">composed</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_build_condition_simple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">condition</span><span class="p">:</span> <span class="n">_SimpleCondition</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Composable</span><span class="p">:</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">condition</span><span class="o">.</span><span class="n">field</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
+        <span class="n">operator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_SIMPLE_MAPPER</span><span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="n">condition</span><span class="p">)]</span>
+
+        <span class="n">parameter</span> <span class="o">=</span> <span class="n">AvroDataEncoder</span><span class="p">(</span><span class="n">condition</span><span class="o">.</span><span class="n">parameter</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_condition</span><span class="p">(</span><span class="n">_FALSE_CONDITION</span><span class="p">)</span>
+            <span class="n">parameter</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_FIXED_FIELDS_MAPPER</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_random_str</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameter</span>
+
+            <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_FIXED_FIELDS_MAPPER</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{field}</span><span class="s2"> </span><span class="si">{operator}</span><span class="s2"> </span><span class="si">{name}</span><span class="s2">)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">operator</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_random_str</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">Json</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+
+            <span class="n">field</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">(</span><span class="s2">&quot;{{</span><span class="si">{}</span><span class="s2">}}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;(data#&gt;</span><span class="si">{field}</span><span class="s2"> </span><span class="si">{operator}</span><span class="s2"> </span><span class="si">{name}</span><span class="s2">::jsonb)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">operator</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_build_condition_like</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">condition</span><span class="p">:</span> <span class="n">_SimpleCondition</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Composable</span><span class="p">:</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">condition</span><span class="o">.</span><span class="n">field</span>
+
+        <span class="n">parameter</span> <span class="o">=</span> <span class="n">AvroDataEncoder</span><span class="p">(</span><span class="n">condition</span><span class="o">.</span><span class="n">parameter</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_FIXED_FIELDS_MAPPER</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_random_str</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameter</span>
+
+            <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_FIXED_FIELDS_MAPPER</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{field}</span><span class="s2">::text LIKE </span><span class="si">{name}</span><span class="s2">)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_random_str</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameter</span>
+
+            <span class="n">field</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">(</span><span class="s2">&quot;{{</span><span class="si">{}</span><span class="s2">}}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;(data#&gt;&gt;</span><span class="si">{field}</span><span class="s2"> LIKE </span><span class="si">{name}</span><span class="s2">)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_build_ordering</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ordering</span><span class="p">:</span> <span class="n">_Ordering</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Composable</span><span class="p">:</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">ordering</span><span class="o">.</span><span class="n">by</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ORDERING_MAPPER</span><span class="p">[</span><span class="n">ordering</span><span class="o">.</span><span class="n">reverse</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_FIXED_FIELDS_MAPPER</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">Identifier</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+            <span class="n">order_by</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;ORDER BY </span><span class="si">{field}</span><span class="s2"> </span><span class="si">{direction}</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">(</span><span class="s2">&quot;{{</span><span class="si">{}</span><span class="s2">}}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+            <span class="n">order_by</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;ORDER BY data#&gt;</span><span class="si">{field}</span><span class="s2"> </span><span class="si">{direction}</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">order_by</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_build_limit</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Composable</span><span class="p">:</span>
+        <span class="n">limit</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;LIMIT </span><span class="si">{limit}</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="n">Literal</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">limit</span>
+
+<div class="viewcode-block" id="AiopgSnapshotQueryDatabaseOperationBuilder.generate_random_str"><a class="viewcode-back" href="../../../../../../../api-reference/minos.plugins.aiopg.factories.aggregate.snapshots.queries.html#minos.plugins.aiopg.factories.aggregate.snapshots.queries.AiopgSnapshotQueryDatabaseOperationBuilder.generate_random_str">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">generate_random_str</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generate a random string</span>
+
+<span class="sd">        :return: A random string value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid4</span><span class="p">())</span></div>
+
+    <span class="n">_COMPOSED_MAPPER</span> <span class="o">=</span> <span class="p">{</span><span class="n">_AndCondition</span><span class="p">:</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot; AND &quot;</span><span class="p">),</span> <span class="n">_OrCondition</span><span class="p">:</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot; OR &quot;</span><span class="p">)}</span>
+
+    <span class="n">_SIMPLE_MAPPER</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">_LowerCondition</span><span class="p">:</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;&lt;&quot;</span><span class="p">),</span>
+        <span class="n">_LowerEqualCondition</span><span class="p">:</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;&lt;=&quot;</span><span class="p">),</span>
+        <span class="n">_GreaterCondition</span><span class="p">:</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">),</span>
+        <span class="n">_GreaterEqualCondition</span><span class="p">:</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;&gt;=&quot;</span><span class="p">),</span>
+        <span class="n">_EqualCondition</span><span class="p">:</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">),</span>
+        <span class="n">_NotEqualCondition</span><span class="p">:</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;&lt;&gt;&quot;</span><span class="p">),</span>
+        <span class="n">_InCondition</span><span class="p">:</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;IN&quot;</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="n">_FIXED_FIELDS_MAPPER</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">Identifier</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">Identifier</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;created_at&quot;</span><span class="p">:</span> <span class="n">Identifier</span><span class="p">(</span><span class="s2">&quot;created_at&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;updated_at&quot;</span><span class="p">:</span> <span class="n">Identifier</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="n">_ORDERING_MAPPER</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="kc">True</span><span class="p">:</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;DESC&quot;</span><span class="p">),</span>
+        <span class="kc">False</span><span class="p">:</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;ASC&quot;</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="n">_SELECT_ENTRIES_QUERY</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span>
+        <span class="s2">&quot;SELECT &quot;</span>
+        <span class="s2">&quot;   t2.uuid, &quot;</span>
+        <span class="s2">&quot;   t2.name, &quot;</span>
+        <span class="s2">&quot;   t2.version, &quot;</span>
+        <span class="s2">&quot;   t2.schema, &quot;</span>
+        <span class="s2">&quot;   t2.data, &quot;</span>
+        <span class="s2">&quot;   t2.created_at, &quot;</span>
+        <span class="s2">&quot;   t2.updated_at, &quot;</span>
+        <span class="s2">&quot;   t2.transaction_uuid &quot;</span>
+        <span class="s2">&quot;FROM (&quot;</span>
+        <span class="s2">&quot;   SELECT DISTINCT ON (uuid) t1.* &quot;</span>
+        <span class="s2">&quot;   FROM ( </span><span class="si">{from_parts}</span><span class="s2"> ) AS t1 &quot;</span>
+        <span class="s2">&quot;   ORDER BY uuid, transaction_index DESC &quot;</span>
+        <span class="s2">&quot;) AS t2&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">_SELECT_TRANSACTION_CHUNK</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span>
+        <span class="s2">&quot;SELECT </span><span class="si">{index}</span><span class="s2"> AS transaction_index, * &quot;</span>
+        <span class="s2">&quot;FROM </span><span class="si">{table_name}</span><span class="s2"> &quot;</span>
+        <span class="s2">&quot;WHERE name = </span><span class="si">%(name)s</span><span class="s2"> AND transaction_uuid = </span><span class="si">{transaction_uuid}</span><span class="s2"> &quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">_EXCLUDE_DELETED_CONDITION</span> <span class="o">=</span> <span class="n">SQL</span><span class="p">(</span><span class="s2">&quot;(data IS NOT NULL)&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2022, Clariteia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
