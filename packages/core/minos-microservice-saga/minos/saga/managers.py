@@ -22,6 +22,7 @@ from .context import (
 )
 from .definitions import (
     Saga,
+    SagaWrapper,
 )
 from .executions import (
     DatabaseSagaExecutionRepository,
@@ -111,6 +112,9 @@ class SagaManager(SetupMixin):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
+
+        if isinstance(definition, SagaWrapper):
+            definition = definition.meta.saga
 
         return await self.runner.run(
             definition=definition,

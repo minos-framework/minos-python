@@ -3,13 +3,26 @@ from __future__ import (
 )
 
 import warnings
+from inspect import (
+    getmembers,
+)
+from operator import (
+    attrgetter,
+    itemgetter,
+)
 from typing import (
     Any,
     Iterable,
     Optional,
+    Protocol,
     Type,
     TypeVar,
     Union,
+    runtime_checkable,
+)
+
+from cached_property import (
+    cached_property,
 )
 
 from ..exceptions import (
@@ -26,11 +39,43 @@ from .steps import (
     LocalSagaStep,
     RemoteSagaStep,
     SagaStep,
+    SagaStepWrapper,
 )
 from .types import (
     LocalCallback,
     RequestCallBack,
 )
+
+SagaType = TypeVar("SagaType", bound=type)
+
+
+@runtime_checkable
+class SagaWrapper(Protocol):
+    """TODO"""
+
+    meta: SagaMeta
+
+
+class SagaMeta:
+    """TODO"""
+
+    func: SagaType
+    _saga: Saga
+
+    def __init__(self, func: SagaType, saga: Saga):
+        self.func = func
+        self._saga = saga
+
+    @cached_property
+    def saga(self):
+        callables: list[SagaStepWrapper] = sorted(
+            set(map(itemgetter(1), getmembers(self.func, predicate=lambda x: isinstance(x, SagaStepWrapper)))),
+            key=attrgetter("meta.saga_step.priority"),
+        )
+        for c in callables:
+            self._saga.steps.append(c.meta.saga_step)
+
+        return self._saga
 
 
 class Saga:
@@ -40,7 +85,21 @@ class Saga:
     """
 
     # noinspection PyUnusedLocal
-    def __init__(self, *args, steps: list[SagaStep] = None, committed: bool = False, commit: None = None, **kwargs):
+    def __init__(
+        self,
+        decorated: Optional[type] = None,
+        *args,
+        steps: list[SagaStep] = None,
+        committed: bool = False,
+        commit: None = None,
+        **kwargs,
+    ):
+        if decorated is not None:
+            steps = sorted(
+                map(itemgetter(1), getmembers(decorated, predicate=lambda x: isinstance(x, SagaStep))),
+                key=lambda step: step.priority,
+            )
+
         if steps is None:
             steps = list()
 
@@ -51,6 +110,12 @@ class Saga:
             warnings.warn(f"Commit callback is being deprecated. Use {self.local_step!r} instead", DeprecationWarning)
             self.local_step(commit)
             self.committed = True
+
+    def __call__(self, type_: Union[type, SagaWrapper]) -> SagaWrapper:
+        if not isinstance(type_, SagaWrapper):
+            type_.meta = SagaMeta(type_, self)
+
+        return type_
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], Saga], **kwargs) -> Saga:

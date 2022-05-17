@@ -7,12 +7,22 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from collections.abc import (
+    Callable,
+)
 from typing import (
     TYPE_CHECKING,
     Any,
     Iterable,
     Optional,
+    Protocol,
+    TypeVar,
     Union,
+    runtime_checkable,
+)
+
+from cached_property import (
+    cached_property,
 )
 
 from minos.common import (
@@ -37,12 +47,39 @@ if TYPE_CHECKING:
         RemoteSagaStep,
     )
 
+T = TypeVar("T")
+
+
+@runtime_checkable
+class SagaStepWrapper(Protocol):
+    """TODO"""
+
+    meta: SagaStepMeta
+
+
+class SagaStepMeta:
+    """TODO"""
+
+    func: T
+    _saga_step: SagaStep
+
+    def __init__(self, func: T, saga_step: SagaStep):
+        self.func = func
+        self._saga_step = saga_step
+
+    @cached_property
+    def saga_step(self):
+        """TODO"""
+        self._saga_step.on_execute(self.func)
+        return self._saga_step
+
 
 class SagaStep(ABC):
     """Saga step class."""
 
-    def __init__(self, saga: Optional[Saga] = None, **kwargs):
+    def __init__(self, saga: Optional[Saga] = None, priority: Optional[int] = None, **kwargs):
         self.saga = saga
+        self.priority = priority
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
@@ -72,6 +109,12 @@ class SagaStep(ABC):
     @abstractmethod
     def _from_raw(cls, raw: dict[str, Any]) -> SagaStep:
         raise NotImplementedError
+
+    def __call__(self, func: Union[Callable, SagaStepWrapper]) -> SagaStepWrapper:
+        if not isinstance(func, SagaStepWrapper):
+            func.meta = SagaStepMeta(func, self)
+
+        return func
 
     def conditional_step(self, *args, **kwargs) -> ConditionalSagaStep:
         """Create a new conditional step in the ``Saga``.
@@ -145,6 +188,9 @@ class SagaStep(ABC):
 
         :return: A ``dict`` instance.
         """
+
+    def __hash__(self):
+        return hash(tuple(self))
 
     def __eq__(self, other: SagaStep) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)

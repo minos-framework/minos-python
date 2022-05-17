@@ -80,6 +80,9 @@ class SagaOperation(Generic[T]):
             current["parameters"] = SagaContext.from_avro_str(current["parameters"])
         return cls(**current)
 
+    def __hash__(self):
+        return hash(tuple(self))
+
     def __eq__(self, other: SagaOperation) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 

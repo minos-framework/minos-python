@@ -14,8 +14,10 @@ from .definitions import (
     LocalSagaStep,
     RemoteSagaStep,
     Saga,
+    SagaMeta,
     SagaOperation,
     SagaStep,
+    SagaWrapper,
 )
 from .exceptions import (
     AlreadyCommittedException,

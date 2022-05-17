@@ -2,11 +2,19 @@ from __future__ import (
     annotations,
 )
 
+from collections.abc import (
+    Callable,
+)
 from typing import (
     Any,
     Iterable,
     Optional,
+    TypeVar,
     Union,
+)
+
+from cached_property import (
+    cached_property,
 )
 
 from minos.common import (
@@ -30,7 +38,52 @@ from ..types import (
 )
 from .abc import (
     SagaStep,
+    SagaStepMeta,
+    SagaStepWrapper,
 )
+
+T = TypeVar("T")
+
+
+class LocalSagaStepWrapper(SagaStepWrapper):
+    """TODO"""
+
+    meta: LocalSagaStepMeta
+    on_failure: Callable
+
+
+class LocalSagaStepMeta(SagaStepMeta):
+    """TODO"""
+
+    func: T
+    _saga_step: LocalSagaStep
+    _on_failure: Optional[Callable]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._on_failure = None
+
+    @cached_property
+    def saga_step(self):
+        """TODO"""
+        self._saga_step.on_execute(self.func)
+        if self._on_failure is not None:
+            self._saga_step.on_failure(self._on_failure)
+        return self._saga_step
+
+    def on_failure(self, *args, **kwargs):
+        return OnFailureLocalStepDecorator(*args, **kwargs, local_step_meta=self)
+
+
+class OnFailureLocalStepDecorator:
+    """ "TODO"""
+
+    def __init__(self, local_step_meta, *args, **kwargs):
+        self.local_step_meta = local_step_meta
+
+    def __call__(self, func):
+        self.local_step_meta._on_failure = func
+        return func
 
 
 class LocalSagaStep(SagaStep):
@@ -59,6 +112,11 @@ class LocalSagaStep(SagaStep):
         raw["on_failure"] = SagaOperation.from_raw(raw["on_failure"])
 
         return cls(**raw)
+
+    def __call__(self, func: Union[Callable, LocalSagaStepWrapper]) -> LocalSagaStepWrapper:
+        func.meta = LocalSagaStepMeta(func, self)
+        func.on_failure = func.meta.on_failure
+        return func
 
     def on_execute(self, callback: LocalCallback, parameters: Optional[SagaContext] = None, **kwargs) -> LocalSagaStep:
         """On execute method.

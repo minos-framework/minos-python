@@ -1,5 +1,6 @@
 from .abc import (
     SagaStep,
+    SagaStepWrapper,
 )
 from .conditional import (
     ConditionalSagaStep,
