@@ -67,8 +67,16 @@ class TestSaga(unittest.TestCase):
         saga = Saga(committed=True)
         self.assertTrue(saga.committed)
 
+    def test_committed_true_steps(self):
+        saga = Saga(steps=[LocalSagaStep(create_payment)])
+        self.assertTrue(saga.committed)
+
     def test_committed_false(self):
         saga = Saga()
+        self.assertFalse(saga.committed)
+
+    def test_committed_false_steps(self):
+        saga = Saga(steps=[LocalSagaStep(create_payment)], committed=False)
         self.assertFalse(saga.committed)
 
     def test_conditional(self):
@@ -275,7 +283,7 @@ class TestSaga(unittest.TestCase):
             Saga(steps=[RemoteSagaStep()]).validate()
 
         with self.assertRaises(SagaNotCommittedException):
-            Saga(steps=[LocalSagaStep(create_payment)]).validate()
+            Saga(steps=[LocalSagaStep(create_payment)], committed=False).validate()
 
 
 if __name__ == "__main__":

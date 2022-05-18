@@ -82,7 +82,7 @@ class SagaManager(SetupMixin):
 
     async def run(
         self,
-        definition: Optional[Saga] = None,
+        definition: Optional[Union[Saga, SagaWrapper]] = None,
         context: Optional[SagaContext] = None,
         *,
         response: Optional[SagaResponse] = None,

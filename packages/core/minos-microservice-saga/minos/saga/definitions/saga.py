@@ -74,6 +74,7 @@ class SagaMeta:
         )
         for c in callables:
             self._saga.steps.append(c.meta.saga_step)
+        self._saga.commit()
 
         return self._saga
 
@@ -90,7 +91,7 @@ class Saga:
         decorated: Optional[type] = None,
         *args,
         steps: list[SagaStep] = None,
-        committed: bool = False,
+        committed: Optional[bool] = None,
         commit: None = None,
         **kwargs,
     ):
@@ -102,6 +103,9 @@ class Saga:
 
         if steps is None:
             steps = list()
+
+        if committed is None:
+            committed = len(steps)
 
         self.steps = steps
         self.committed = committed
