@@ -112,10 +112,6 @@ class SagaManager(SetupMixin):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-
-        if isinstance(definition, SagaWrapper):
-            definition = definition.meta.saga
-
         return await self.runner.run(
             definition=definition,
             context=context,

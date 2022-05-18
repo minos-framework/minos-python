@@ -26,15 +26,12 @@ from minos.saga import (
     SagaStatus,
 )
 from tests.utils import (
+    DeleteOrderSaga,
     Foo,
     SagaTestCase,
-    handle_order_success,
     handle_ticket_success,
-    handle_ticket_success_raises,
     send_create_order,
     send_create_ticket,
-    send_delete_order,
-    send_delete_ticket,
 )
 
 
@@ -44,8 +41,8 @@ class TestSagaExecution(SagaTestCase):
         self.saga = (
             Saga()
             .remote_step(send_create_order)
-            .on_success(handle_order_success)
-            .on_failure(send_delete_order)
+            .on_success(DeleteOrderSaga.handle_order_success)
+            .on_failure(DeleteOrderSaga.send_delete_order)
             .remote_step(send_create_ticket)
             .on_success(handle_ticket_success)
             .commit()
@@ -109,11 +106,11 @@ class TestSagaExecution(SagaTestCase):
         saga = (
             Saga()
             .remote_step(send_create_order)
-            .on_success(handle_order_success)
-            .on_failure(send_delete_order)
+            .on_success(DeleteOrderSaga.handle_order_success)
+            .on_failure(DeleteOrderSaga.send_delete_order)
             .remote_step(send_create_ticket)
-            .on_success(handle_ticket_success_raises)
-            .on_failure(send_delete_ticket)
+            .on_success(DeleteOrderSaga.handle_ticket_success_raises)
+            .on_failure(DeleteOrderSaga.send_delete_ticket)
             .commit()
         )
         execution = SagaExecution.from_definition(saga)

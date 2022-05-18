@@ -49,7 +49,8 @@ class LocalSagaStepWrapper(SagaStepWrapper):
     """TODO"""
 
     meta: LocalSagaStepMeta
-    on_failure: Callable
+    on_failure: type[OnFailureLocalStepDecorator]
+    __call__: LocalCallback
 
 
 class LocalSagaStepMeta(SagaStepMeta):
@@ -113,9 +114,11 @@ class LocalSagaStep(SagaStep):
 
         return cls(**raw)
 
-    def __call__(self, func: Union[Callable, LocalSagaStepWrapper]) -> LocalSagaStepWrapper:
-        func.meta = LocalSagaStepMeta(func, self)
-        func.on_failure = func.meta.on_failure
+    def __call__(self, func: LocalCallback) -> LocalSagaStepWrapper:
+        meta = LocalSagaStepMeta(func, self)
+        func.meta = meta
+        func.on_failure = meta.on_failure
+        # noinspection PyTypeChecker
         return func
 
     def on_execute(self, callback: LocalCallback, parameters: Optional[SagaContext] = None, **kwargs) -> LocalSagaStep:

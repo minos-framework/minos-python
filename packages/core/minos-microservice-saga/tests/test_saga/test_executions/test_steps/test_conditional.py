@@ -24,12 +24,10 @@ from minos.saga import (
     SagaStepStatus,
 )
 from tests.utils import (
+    DeleteOrderSaga,
     Foo,
     SagaTestCase,
-    handle_order_success,
-    handle_ticket_success_raises,
     send_create_order,
-    send_delete_ticket,
 )
 
 
@@ -52,15 +50,16 @@ class TestConditionalSageStepExecution(SagaTestCase):
         self.definition = ConditionalSagaStep(
             [
                 IfThenAlternative(
-                    _is_one, Saga().remote_step(send_create_order).on_success(handle_order_success).commit()
+                    _is_one,
+                    Saga().remote_step(send_create_order).on_success(DeleteOrderSaga.handle_order_success).commit(),
                 ),
             ],
             ElseThenAlternative(
                 (
                     Saga()
                     .remote_step(send_create_order)
-                    .on_success(handle_ticket_success_raises)
-                    .on_failure(send_delete_ticket)
+                    .on_success(DeleteOrderSaga.handle_ticket_success_raises)
+                    .on_failure(DeleteOrderSaga.send_delete_ticket)
                     .commit()
                 )
             ),
@@ -163,7 +162,7 @@ class TestConditionalSageStepExecution(SagaTestCase):
                         "on_error": None,
                         "on_execute": {"callback": "tests.utils.send_create_order"},
                         "on_failure": None,
-                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_success": {"callback": "tests.utils.DeleteOrderSaga.handle_order_success"},
                     },
                     "status": "paused-by-on-execute",
                     "related_services": ["order"],
@@ -207,7 +206,7 @@ class TestConditionalSageStepExecution(SagaTestCase):
                             "on_error": None,
                             "on_execute": {"callback": "tests.utils.send_create_order"},
                             "on_failure": None,
-                            "on_success": {"callback": "tests.utils.handle_order_success"},
+                            "on_success": {"callback": "tests.utils.DeleteOrderSaga.handle_order_success"},
                         },
                         "status": "finished",
                         "related_services": ["order"],

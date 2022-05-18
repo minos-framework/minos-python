@@ -25,6 +25,8 @@ from minos.networks import (
     InMemoryBrokerSubscriberBuilder,
 )
 from minos.saga import (
+    LocalSagaStep,
+    RemoteSagaStep,
     Saga,
     SagaContext,
     SagaRequest,
@@ -139,27 +141,9 @@ async def send_create_ticket_raises(context: SagaContext) -> SagaRequest:
 
 
 # noinspection PyUnusedLocal
-async def send_delete_ticket(context: SagaContext) -> SagaRequest:
-    """For testing purposes."""
-    return SagaRequest("CreateTicket", Foo("delete_ticket!"))
-
-
-# noinspection PyUnusedLocal
 async def send_create_order(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
     return SagaRequest("CreateOrder", Foo("create_order!"))
-
-
-# noinspection PyUnusedLocal
-async def send_delete_order(context: SagaContext) -> SagaRequest:
-    """For testing purposes."""
-    return SagaRequest("DeleteOrder", Foo("delete_order!"))
-
-
-async def handle_order_success(context: SagaContext, response: SagaResponse) -> SagaContext:
-    """For testing purposes."""
-    context["order"] = await response.content()
-    return context
 
 
 # noinspection PyUnusedLocal
@@ -167,12 +151,6 @@ async def handle_ticket_success(context: SagaContext, response: SagaResponse) ->
     """For testing purposes."""
     context["ticket"] = await response.content()
     return context
-
-
-# noinspection PyUnusedLocal
-async def handle_ticket_success_raises(context: SagaContext, response: SagaResponse) -> SagaContext:
-    """For testing purposes."""
-    raise ValueError()
 
 
 # noinspection PyUnusedLocal
@@ -206,28 +184,61 @@ def delete_payment(context: SagaContext) -> SagaContext:
     return context
 
 
+@Saga()
+class DeleteOrderSaga:
+    """For testing purposes"""
+
+    @LocalSagaStep()
+    def _something(self, context: SagaContext) -> SagaContext:
+        return context
+
+    # noinspection PyUnusedLocal
+    @RemoteSagaStep()
+    async def send_delete_order(self, context: SagaContext) -> SagaRequest:
+        """For testing purposes."""
+        return SagaRequest("DeleteOrder", Foo("delete_order!"))
+
+    @send_delete_order.on_success()
+    async def handle_order_success(self, context: SagaContext, response: SagaResponse) -> SagaContext:
+        """For testing purposes."""
+        context["order"] = await response.content()
+        return context
+
+    # noinspection PyUnusedLocal
+    @RemoteSagaStep()
+    async def send_delete_ticket(self, context: SagaContext) -> SagaRequest:
+        """For testing purposes."""
+        return SagaRequest("CreateTicket", Foo("delete_ticket!"))
+
+    # noinspection PyUnusedLocal
+    @send_delete_ticket.on_success()
+    async def handle_ticket_success_raises(self, context: SagaContext, response: SagaResponse) -> SagaContext:
+        """For testing purposes."""
+        raise ValueError()
+
+
 # fmt: off
 ADD_ORDER = (
     Saga()
         .remote_step(send_create_order)
-        .on_success(handle_order_success)
-        .on_failure(send_delete_order)
+        .on_success(DeleteOrderSaga.handle_order_success)
+        .on_failure(DeleteOrderSaga.send_delete_order)
         .local_step(create_payment)
         .on_failure(delete_payment)
         .remote_step(send_create_ticket)
         .on_success(handle_ticket_success)
         .on_error(handle_ticket_error)
-        .on_failure(send_delete_ticket)
+        .on_failure(DeleteOrderSaga.send_delete_ticket)
         .commit()
 )
 
 # fmt: off
 DELETE_ORDER = (
     Saga()
-        .remote_step(send_delete_order)
-        .on_success(handle_order_success)
-        .remote_step(send_delete_ticket)
-        .on_success(handle_ticket_success_raises)
+        .remote_step(DeleteOrderSaga.send_delete_order)
+        .on_success(DeleteOrderSaga.handle_order_success)
+        .remote_step(DeleteOrderSaga.send_delete_ticket)
+        .on_success(DeleteOrderSaga.handle_ticket_success_raises)
         .commit()
 )
 

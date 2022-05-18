@@ -52,9 +52,10 @@ class RemoteSagaStepWrapper(SagaStepWrapper):
     """TODO"""
 
     meta: RemoteSagaStepMeta
-    on_success: Callable
-    on_error: Callable
-    on_failure: Callable
+    on_success: type[OnSuccessRemoteStepDecorator]
+    on_error: type[OnErrorRemoteStepDecorator]
+    on_failure: type[OnFailureRemoteStepDecorator]
+    __call__: RequestCallBack
 
 
 class RemoteSagaStepMeta(SagaStepMeta):
@@ -97,7 +98,7 @@ class RemoteSagaStepMeta(SagaStepMeta):
 class OnSuccessRemoteStepDecorator:
     """ "TODO"""
 
-    def __init__(self, remote_step_meta, *args, **kwargs):
+    def __init__(self, remote_step_meta: Optional[RemoteSagaStepMeta] = None, *args, **kwargs):
         self.remote_step_meta = remote_step_meta
 
     def __call__(self, func):
@@ -108,7 +109,7 @@ class OnSuccessRemoteStepDecorator:
 class OnErrorRemoteStepDecorator:
     """ "TODO"""
 
-    def __init__(self, remote_step_meta, *args, **kwargs):
+    def __init__(self, remote_step_meta: Optional[RemoteSagaStepMeta] = None, *args, **kwargs):
         self.remote_step_meta = remote_step_meta
 
     def __call__(self, func):
@@ -119,7 +120,7 @@ class OnErrorRemoteStepDecorator:
 class OnFailureRemoteStepDecorator:
     """ "TODO"""
 
-    def __init__(self, remote_step_meta, *args, **kwargs):
+    def __init__(self, remote_step_meta: Optional[RemoteSagaStepMeta] = None, *args, **kwargs):
         self.remote_step_meta = remote_step_meta
 
     def __call__(self, func):
@@ -164,11 +165,13 @@ class RemoteSagaStep(SagaStep):
 
         return cls(**raw)
 
-    def __call__(self, func: Union[Callable, RemoteSagaStepWrapper]) -> RemoteSagaStepWrapper:
-        func.meta = RemoteSagaStepMeta(func, self)
-        func.on_success = func.meta.on_success
-        func.on_error = func.meta.on_error
-        func.on_failure = func.meta.on_failure
+    def __call__(self, func: RequestCallBack) -> RemoteSagaStepWrapper:
+        meta = RemoteSagaStepMeta(func, self)
+        func.meta = meta
+        func.on_success = meta.on_success
+        func.on_error = meta.on_error
+        func.on_failure = meta.on_failure
+        # noinspection PyTypeChecker
         return func
 
     def on_execute(

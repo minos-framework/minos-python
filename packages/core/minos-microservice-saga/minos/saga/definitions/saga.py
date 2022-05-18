@@ -79,6 +79,9 @@ class SagaMeta:
         return self._saga
 
 
+TP = TypeVar("TP", bound=type)
+
+
 class Saga:
     """Saga class.
 
@@ -115,10 +118,8 @@ class Saga:
             self.local_step(commit)
             self.committed = True
 
-    def __call__(self, type_: Union[type, SagaWrapper]) -> SagaWrapper:
-        if not isinstance(type_, SagaWrapper):
-            type_.meta = SagaMeta(type_, self)
-
+    def __call__(self, type_: TP) -> Union[TP, SagaWrapper]:
+        type_.meta = SagaMeta(type_, self)
         return type_
 
     @classmethod

@@ -37,6 +37,7 @@ from ..context import (
 )
 from ..definitions import (
     Saga,
+    SagaWrapper,
 )
 from ..exceptions import (
     SagaFailedExecutionException,
@@ -84,7 +85,7 @@ class SagaRunner(SetupMixin):
 
     async def run(
         self,
-        definition: Optional[Saga] = None,
+        definition: Optional[Union[Saga, SagaWrapper]] = None,
         context: Optional[SagaContext] = None,
         *,
         response: Optional[SagaResponse] = None,
@@ -114,6 +115,8 @@ class SagaRunner(SetupMixin):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
+        if isinstance(definition, SagaWrapper):
+            definition = definition.meta.saga
 
         if response is not None:
             return await self._load_and_run(

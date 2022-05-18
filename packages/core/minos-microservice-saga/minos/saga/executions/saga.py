@@ -20,6 +20,9 @@ from uuid import (
     UUID,
 )
 
+from .. import (
+    SagaWrapper,
+)
 from ..context import (
     SagaContext,
 )
@@ -137,7 +140,12 @@ class SagaExecution:
 
     @classmethod
     def from_definition(
-        cls, definition: Saga, context: Optional[SagaContext] = None, uuid: Optional[UUID] = None, *args, **kwargs
+        cls,
+        definition: Union[Saga, SagaWrapper],
+        context: Optional[SagaContext] = None,
+        uuid: Optional[UUID] = None,
+        *args,
+        **kwargs,
     ) -> SagaExecution:
         """Build a new instance from a ``Saga`` object.
 
@@ -148,6 +156,9 @@ class SagaExecution:
         :param kwargs: Additional named arguments.
         :return: A new ``SagaExecution`` instance.
         """
+        if isinstance(definition, SagaWrapper):
+            definition = definition.meta.saga
+
         if uuid is None:
             from uuid import (
                 uuid4,
