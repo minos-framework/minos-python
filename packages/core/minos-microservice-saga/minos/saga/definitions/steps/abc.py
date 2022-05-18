@@ -13,16 +13,13 @@ from collections.abc import (
 from typing import (
     TYPE_CHECKING,
     Any,
+    Generic,
     Iterable,
     Optional,
     Protocol,
     TypeVar,
     Union,
     runtime_checkable,
-)
-
-from cached_property import (
-    cached_property,
 )
 
 from minos.common import (
@@ -60,18 +57,34 @@ class SagaStepWrapper(Protocol):
 class SagaStepMeta:
     """TODO"""
 
-    func: T
-    _saga_step: SagaStep
+    _func: T
+    _step: SagaStep
 
     def __init__(self, func: T, saga_step: SagaStep):
-        self.func = func
-        self._saga_step = saga_step
+        self._func = func
+        self._step = saga_step
 
-    @cached_property
-    def saga_step(self):
+    @property
+    @abstractmethod
+    def step(self) -> SagaStep:
         """TODO"""
-        self._saga_step.on_execute(self.func)
-        return self._saga_step
+
+
+FN = TypeVar("FN", bound=Callable)
+
+
+class OnStepDecorator(Generic[FN]):
+    """ "TODO"""
+
+    def __init__(self, attr_name: [str] = None, step_meta: Optional[SagaStepMeta] = None, *args, **kwargs):
+        if attr_name is None or step_meta is None:
+            raise ValueError("TODO")
+        self.step_meta = step_meta
+        self.attr_name = attr_name
+
+    def __call__(self, func: FN) -> FN:
+        setattr(self.step_meta, self.attr_name, func)
+        return func
 
 
 class SagaStep(ABC):

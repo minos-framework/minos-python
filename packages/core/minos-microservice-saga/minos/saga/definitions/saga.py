@@ -8,7 +8,6 @@ from inspect import (
 )
 from operator import (
     attrgetter,
-    itemgetter,
 )
 from typing import (
     Any,
@@ -46,7 +45,7 @@ from .types import (
     RequestCallBack,
 )
 
-SagaType = TypeVar("SagaType", bound=type)
+SagaClass = TypeVar("SagaClass", bound=type)
 
 
 @runtime_checkable
@@ -59,22 +58,22 @@ class SagaWrapper(Protocol):
 class SagaMeta:
     """TODO"""
 
-    func: SagaType
+    _class: SagaClass
     _saga: Saga
 
-    def __init__(self, func: SagaType, saga: Saga):
-        self.func = func
+    def __init__(self, func: SagaClass, saga: Saga):
+        self._class = func
         self._saga = saga
 
     @cached_property
     def saga(self) -> Saga:
         """TODO"""
-        funcs: list[SagaStepWrapper] = sorted(
-            set(map(itemgetter(1), getmembers(self.func, predicate=lambda x: isinstance(x, SagaStepWrapper)))),
-            key=attrgetter("meta.saga_step.order"),
-        )
-        for func in funcs:
-            self._saga.steps.append(func.meta.saga_step)
+        steps = getmembers(self._class, predicate=lambda x: isinstance(x, SagaStepWrapper))
+        steps = map(lambda member: member[1].meta.step, steps)
+        steps = sorted(steps, key=attrgetter("order"))
+
+        for step in steps:
+            self._saga.steps.append(step)
         self._saga.commit()
 
         return self._saga

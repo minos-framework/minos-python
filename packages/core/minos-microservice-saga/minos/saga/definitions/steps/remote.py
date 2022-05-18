@@ -3,11 +3,13 @@ from __future__ import (
 )
 
 from collections.abc import (
-    Callable,
+    Iterable,
+)
+from functools import (
+    partial,
 )
 from typing import (
     Any,
-    Iterable,
     Optional,
     TypeVar,
     Union,
@@ -40,6 +42,7 @@ from ..types import (
     ResponseCallBack,
 )
 from .abc import (
+    OnStepDecorator,
     SagaStep,
     SagaStepMeta,
     SagaStepWrapper,
@@ -52,20 +55,20 @@ class RemoteSagaStepWrapper(SagaStepWrapper):
     """TODO"""
 
     meta: RemoteSagaStepMeta
-    on_success: type[OnSuccessRemoteStepDecorator]
-    on_error: type[OnErrorRemoteStepDecorator]
-    on_failure: type[OnFailureRemoteStepDecorator]
+    on_success: type[OnStepDecorator[ResponseCallBack]]
+    on_error: type[OnStepDecorator[ResponseCallBack]]
+    on_failure: type[OnStepDecorator[RequestCallBack]]
     __call__: RequestCallBack
 
 
 class RemoteSagaStepMeta(SagaStepMeta):
     """TODO"""
 
-    func: T
-    _saga_step: RemoteSagaStep
-    _on_success: Optional[Callable]
-    _on_error: Optional[Callable]
-    _on_failure: Optional[Callable]
+    _func: T
+    _step: RemoteSagaStep
+    _on_success: Optional[ResponseCallBack]
+    _on_error: Optional[ResponseCallBack]
+    _on_failure: Optional[RequestCallBack]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -74,58 +77,34 @@ class RemoteSagaStepMeta(SagaStepMeta):
         self._on_failure = None
 
     @cached_property
-    def saga_step(self):
+    def step(self):
         """TODO"""
-        self._saga_step.on_execute(self.func)
+        self._step.on_execute(self._func)
         if self._on_success is not None:
-            self._saga_step.on_success(self._on_success)
+            self._step.on_success(self._on_success)
         if self._on_error is not None:
-            self._saga_step.on_error(self._on_error)
+            self._step.on_error(self._on_error)
         if self._on_failure is not None:
-            self._saga_step.on_failure(self._on_failure)
-        return self._saga_step
+            self._step.on_failure(self._on_failure)
+        return self._step
 
-    def on_success(self, *args, **kwargs):
-        return OnSuccessRemoteStepDecorator(*args, **kwargs, remote_step_meta=self)
+    @cached_property
+    def on_success(self) -> OnStepDecorator:
+        """TODO"""
+        # noinspection PyTypeChecker
+        return partial(OnStepDecorator, step_meta=self, attr_name="_on_success")
 
-    def on_error(self, *args, **kwargs):
-        return OnErrorRemoteStepDecorator(*args, **kwargs, remote_step_meta=self)
+    @cached_property
+    def on_error(self) -> OnStepDecorator:
+        """TODO"""
+        # noinspection PyTypeChecker
+        return partial(OnStepDecorator, step_meta=self, attr_name="_on_error")
 
-    def on_failure(self, *args, **kwargs):
-        return OnFailureRemoteStepDecorator(*args, **kwargs, remote_step_meta=self)
-
-
-class OnSuccessRemoteStepDecorator:
-    """ "TODO"""
-
-    def __init__(self, remote_step_meta: Optional[RemoteSagaStepMeta] = None, *args, **kwargs):
-        self.remote_step_meta = remote_step_meta
-
-    def __call__(self, func):
-        self.remote_step_meta._on_success = func
-        return func
-
-
-class OnErrorRemoteStepDecorator:
-    """ "TODO"""
-
-    def __init__(self, remote_step_meta: Optional[RemoteSagaStepMeta] = None, *args, **kwargs):
-        self.remote_step_meta = remote_step_meta
-
-    def __call__(self, func):
-        self.remote_step_meta._on_error = func
-        return func
-
-
-class OnFailureRemoteStepDecorator:
-    """ "TODO"""
-
-    def __init__(self, remote_step_meta: Optional[RemoteSagaStepMeta] = None, *args, **kwargs):
-        self.remote_step_meta = remote_step_meta
-
-    def __call__(self, func):
-        self.remote_step_meta._on_failure = func
-        return func
+    @cached_property
+    def on_failure(self) -> OnStepDecorator:
+        """TODO"""
+        # noinspection PyTypeChecker
+        return partial(OnStepDecorator, step_meta=self, attr_name="_on_failure")
 
 
 class RemoteSagaStep(SagaStep):

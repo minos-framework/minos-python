@@ -3,11 +3,13 @@ from __future__ import (
 )
 
 from collections.abc import (
-    Callable,
+    Iterable,
+)
+from functools import (
+    partial,
 )
 from typing import (
     Any,
-    Iterable,
     Optional,
     TypeVar,
     Union,
@@ -37,6 +39,7 @@ from ..types import (
     LocalCallback,
 )
 from .abc import (
+    OnStepDecorator,
     SagaStep,
     SagaStepMeta,
     SagaStepWrapper,
@@ -49,42 +52,33 @@ class LocalSagaStepWrapper(SagaStepWrapper):
     """TODO"""
 
     meta: LocalSagaStepMeta
-    on_failure: type[OnFailureLocalStepDecorator]
+    on_failure: type[OnStepDecorator[LocalCallback]]
     __call__: LocalCallback
 
 
 class LocalSagaStepMeta(SagaStepMeta):
     """TODO"""
 
-    func: T
     _saga_step: LocalSagaStep
-    _on_failure: Optional[Callable]
+    _on_failure: Optional[LocalCallback]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._on_failure = None
 
     @cached_property
-    def saga_step(self):
+    def step(self):
         """TODO"""
-        self._saga_step.on_execute(self.func)
+        self._saga_step.on_execute(self._func)
         if self._on_failure is not None:
             self._saga_step.on_failure(self._on_failure)
         return self._saga_step
 
-    def on_failure(self, *args, **kwargs):
-        return OnFailureLocalStepDecorator(*args, **kwargs, local_step_meta=self)
-
-
-class OnFailureLocalStepDecorator:
-    """ "TODO"""
-
-    def __init__(self, local_step_meta, *args, **kwargs):
-        self.local_step_meta = local_step_meta
-
-    def __call__(self, func):
-        self.local_step_meta._on_failure = func
-        return func
+    @cached_property
+    def on_failure(self) -> OnStepDecorator:
+        """TODO"""
+        # noinspection PyTypeChecker
+        return partial(OnStepDecorator, step_meta=self, attr_name="_on_failure")
 
 
 class LocalSagaStep(SagaStep):
