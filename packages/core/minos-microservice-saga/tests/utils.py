@@ -188,12 +188,12 @@ def delete_payment(context: SagaContext) -> SagaContext:
 class DeleteOrderSaga:
     """For testing purposes"""
 
-    @LocalSagaStep()
+    @LocalSagaStep(order=1)
     def _something(self, context: SagaContext) -> SagaContext:
         return context
 
     # noinspection PyUnusedLocal
-    @RemoteSagaStep()
+    @RemoteSagaStep(order=2)
     async def send_delete_order(self, context: SagaContext) -> SagaRequest:
         """For testing purposes."""
         return SagaRequest("DeleteOrder", Foo("delete_order!"))
@@ -205,7 +205,7 @@ class DeleteOrderSaga:
         return context
 
     # noinspection PyUnusedLocal
-    @RemoteSagaStep()
+    @RemoteSagaStep(order=3)
     async def send_delete_ticket(self, context: SagaContext) -> SagaRequest:
         """For testing purposes."""
         return SagaRequest("CreateTicket", Foo("delete_ticket!"))

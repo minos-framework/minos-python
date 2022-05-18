@@ -67,13 +67,14 @@ class SagaMeta:
         self._saga = saga
 
     @cached_property
-    def saga(self):
-        callables: list[SagaStepWrapper] = sorted(
+    def saga(self) -> Saga:
+        """TODO"""
+        funcs: list[SagaStepWrapper] = sorted(
             set(map(itemgetter(1), getmembers(self.func, predicate=lambda x: isinstance(x, SagaStepWrapper)))),
-            key=attrgetter("meta.saga_step.priority"),
+            key=attrgetter("meta.saga_step.order"),
         )
-        for c in callables:
-            self._saga.steps.append(c.meta.saga_step)
+        for func in funcs:
+            self._saga.steps.append(func.meta.saga_step)
         self._saga.commit()
 
         return self._saga
@@ -90,20 +91,8 @@ class Saga:
 
     # noinspection PyUnusedLocal
     def __init__(
-        self,
-        decorated: Optional[type] = None,
-        *args,
-        steps: list[SagaStep] = None,
-        committed: Optional[bool] = None,
-        commit: None = None,
-        **kwargs,
+        self, *args, steps: list[SagaStep] = None, committed: Optional[bool] = None, commit: None = None, **kwargs
     ):
-        if decorated is not None:
-            steps = sorted(
-                map(itemgetter(1), getmembers(decorated, predicate=lambda x: isinstance(x, SagaStep))),
-                key=lambda step: step.priority,
-            )
-
         if steps is None:
             steps = list()
 

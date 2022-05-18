@@ -64,11 +64,11 @@ class TestConditionalSagaStep(unittest.TestCase):
             ConditionalSagaStep().validate()
 
     def test_raw(self):
-        step = ConditionalSagaStep(if_then=self.if_then, else_then=self.else_then, priority=3)
+        step = ConditionalSagaStep(if_then=self.if_then, else_then=self.else_then, order=3)
 
         expected = {
             "cls": "minos.saga.definitions.steps.conditional.ConditionalSagaStep",
-            "priority": 3,
+            "order": 3,
             "else_then": self.else_then.raw,
             "if_then": [self.if_then[0].raw, self.if_then[1].raw],
         }

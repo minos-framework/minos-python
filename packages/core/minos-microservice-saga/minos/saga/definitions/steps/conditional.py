@@ -125,14 +125,14 @@ class ConditionalSagaStep(SagaStep):
 
         return {
             "cls": classname(type(self)),
-            "priority": self.priority,
+            "order": self.order,
             "if_then": [alternative.raw for alternative in self.if_then_alternatives],
             "else_then": None if self.else_then_alternative is None else self.else_then_alternative.raw,
         }
 
     def __iter__(self) -> Iterable:
         yield from (
-            self.priority,
+            self.order,
             self.if_then_alternatives,
             self.else_then_alternative,
         )

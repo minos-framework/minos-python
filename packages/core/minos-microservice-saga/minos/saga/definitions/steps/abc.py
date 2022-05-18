@@ -77,9 +77,9 @@ class SagaStepMeta:
 class SagaStep(ABC):
     """Saga step class."""
 
-    def __init__(self, saga: Optional[Saga] = None, priority: Optional[int] = None, **kwargs):
+    def __init__(self, saga: Optional[Saga] = None, order: Optional[int] = None, **kwargs):
         self.saga = saga
-        self.priority = priority
+        self.order = order
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
@@ -110,10 +110,7 @@ class SagaStep(ABC):
     def _from_raw(cls, raw: dict[str, Any]) -> SagaStep:
         raise NotImplementedError
 
-    def __call__(self, func: Union[Callable, SagaStepWrapper]) -> SagaStepWrapper:
-        if not isinstance(func, SagaStepWrapper):
-            func.meta = SagaStepMeta(func, self)
-
+    def __call__(self, func: Callable) -> SagaStepWrapper:
         return func
 
     def conditional_step(self, *args, **kwargs) -> ConditionalSagaStep:

@@ -88,7 +88,7 @@ class TestRemoteSagaStep(unittest.TestCase):
 
         expected = {
             "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
-            "priority": None,
+            "order": None,
             "on_execute": {"callback": "tests.utils.send_create_ticket"},
             "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_ticket"},
             "on_success": {"callback": "tests.utils.handle_ticket_success"},

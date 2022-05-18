@@ -159,7 +159,7 @@ class TestConditionalSageStepExecution(SagaTestCase):
                     "cls": "minos.saga.executions.steps.remote.RemoteSagaStepExecution",
                     "definition": {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
-                        "priority": None,
+                        "order": None,
                         "on_error": None,
                         "on_execute": {"callback": "tests.utils.send_create_order"},
                         "on_failure": None,
@@ -204,7 +204,7 @@ class TestConditionalSageStepExecution(SagaTestCase):
                         "cls": "minos.saga.executions.steps.remote.RemoteSagaStepExecution",
                         "definition": {
                             "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
-                            "priority": None,
+                            "order": None,
                             "on_error": None,
                             "on_execute": {"callback": "tests.utils.send_create_order"},
                             "on_failure": None,

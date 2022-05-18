@@ -126,7 +126,7 @@ class LocalSagaStep(SagaStep):
 
         :param callback: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
-        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has priority if it is not
+        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has order if it is not
             ``None``.
         :return: A ``self`` reference.
         """
@@ -142,7 +142,7 @@ class LocalSagaStep(SagaStep):
 
         :param callback: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
-        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has priority if it is not
+        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has order if it is not
             ``None``.
         :return: A ``self`` reference.
         """
@@ -172,14 +172,14 @@ class LocalSagaStep(SagaStep):
         """
         return {
             "cls": classname(type(self)),
-            "priority": self.priority,
+            "order": self.order,
             "on_execute": None if self.on_execute_operation is None else self.on_execute_operation.raw,
             "on_failure": None if self.on_failure_operation is None else self.on_failure_operation.raw,
         }
 
     def __iter__(self) -> Iterable:
         yield from (
-            self.priority,
+            self.order,
             self.on_execute_operation,
             self.on_failure_operation,
         )
