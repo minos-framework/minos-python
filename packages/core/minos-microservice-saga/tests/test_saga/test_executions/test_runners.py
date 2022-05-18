@@ -25,8 +25,6 @@ from minos.networks import (
 )
 from minos.saga import (
     DatabaseSagaExecutionRepository,
-    LocalSagaStep,
-    Saga,
     SagaContext,
     SagaExecution,
     SagaFailedExecutionException,
@@ -40,6 +38,7 @@ from minos.saga.testing import (
 from tests.utils import (
     ADD_ORDER,
     DELETE_ORDER,
+    DeleteOrderSaga,
     Foo,
     SagaTestCase,
 )
@@ -99,17 +98,11 @@ class TestSagaRunner(SagaTestCase):
         self.assertEqual(expected, observed)
 
     async def test_run_from_wrapper(self):
-        @Saga()
-        class _MySaga:
-            @LocalSagaStep()
-            def _something(self, context: SagaContext) -> SagaContext:
-                return context
-
-        expected = SagaExecution.from_definition(_MySaga)
+        expected = SagaExecution.from_definition(DeleteOrderSaga)
         mock = AsyncMock(return_value=expected)
         self.runner._run_new = mock
 
-        observed = await self.runner.run(_MySaga)
+        observed = await self.runner.run(DeleteOrderSaga)
         self.assertEqual(expected, observed)
 
     async def test_load_and_run(self):

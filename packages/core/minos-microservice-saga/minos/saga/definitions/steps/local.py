@@ -11,7 +11,6 @@ from functools import (
 from typing import (
     Any,
     Optional,
-    TypeVar,
     Union,
 )
 
@@ -45,8 +44,6 @@ from .abc import (
     SagaStepWrapper,
 )
 
-T = TypeVar("T")
-
 
 class LocalSagaStepWrapper(SagaStepWrapper):
     """TODO"""
@@ -59,7 +56,7 @@ class LocalSagaStepWrapper(SagaStepWrapper):
 class LocalSagaStepMeta(SagaStepMeta):
     """TODO"""
 
-    _saga_step: LocalSagaStep
+    _step: LocalSagaStep
     _on_failure: Optional[LocalCallback]
 
     def __init__(self, *args, **kwargs):
@@ -69,10 +66,10 @@ class LocalSagaStepMeta(SagaStepMeta):
     @cached_property
     def step(self):
         """TODO"""
-        self._saga_step.on_execute(self._func)
+        self._step.on_execute(self._func)
         if self._on_failure is not None:
-            self._saga_step.on_failure(self._on_failure)
-        return self._saga_step
+            self._step.on_failure(self._on_failure)
+        return self._step
 
     @cached_property
     def on_failure(self) -> OnStepDecorator:

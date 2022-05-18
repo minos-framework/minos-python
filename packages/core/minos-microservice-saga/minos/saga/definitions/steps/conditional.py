@@ -25,6 +25,7 @@ from ..operations import (
 )
 from .abc import (
     SagaStep,
+    SagaStepWrapper,
 )
 
 if TYPE_CHECKING:
@@ -40,6 +41,7 @@ class ConditionalSagaStep(SagaStep):
     """Conditional Saga Step class."""
 
     if_then_alternatives: list[IfThenAlternative]
+
     else_then_alternative: ElseThenAlternative
 
     def __init__(
@@ -72,6 +74,9 @@ class ConditionalSagaStep(SagaStep):
             current["else_then"] = ElseThenAlternative.from_raw(else_then)
 
         return cls(**current)
+
+    def __call__(self, func: Callable) -> SagaStepWrapper:
+        raise NotImplementedError
 
     def if_then(
         self, condition: Callable[[SagaContext], Union[bool, Awaitable[bool]]], saga: Saga

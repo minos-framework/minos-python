@@ -11,7 +11,6 @@ from functools import (
 from typing import (
     Any,
     Optional,
-    TypeVar,
     Union,
 )
 
@@ -48,8 +47,6 @@ from .abc import (
     SagaStepWrapper,
 )
 
-T = TypeVar("T")
-
 
 class RemoteSagaStepWrapper(SagaStepWrapper):
     """TODO"""
@@ -64,7 +61,6 @@ class RemoteSagaStepWrapper(SagaStepWrapper):
 class RemoteSagaStepMeta(SagaStepMeta):
     """TODO"""
 
-    _func: T
     _step: RemoteSagaStep
     _on_success: Optional[ResponseCallBack]
     _on_error: Optional[ResponseCallBack]

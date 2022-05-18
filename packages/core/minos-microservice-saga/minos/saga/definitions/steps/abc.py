@@ -123,8 +123,9 @@ class SagaStep(ABC):
     def _from_raw(cls, raw: dict[str, Any]) -> SagaStep:
         raise NotImplementedError
 
+    @abstractmethod
     def __call__(self, func: Callable) -> SagaStepWrapper:
-        return func
+        """TODO"""
 
     def conditional_step(self, *args, **kwargs) -> ConditionalSagaStep:
         """Create a new conditional step in the ``Saga``.
