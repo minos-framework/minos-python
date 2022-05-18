@@ -270,6 +270,7 @@ class RemoteSagaStep(SagaStep):
         """
         return {
             "cls": classname(type(self)),
+            "priority": self.priority,
             "on_execute": None if self.on_execute_operation is None else self.on_execute_operation.raw,
             "on_failure": None if self.on_failure_operation is None else self.on_failure_operation.raw,
             "on_success": None if self.on_success_operation is None else self.on_success_operation.raw,
@@ -278,6 +279,7 @@ class RemoteSagaStep(SagaStep):
 
     def __iter__(self) -> Iterable:
         yield from (
+            self.priority,
             self.on_execute_operation,
             self.on_failure_operation,
             self.on_success_operation,

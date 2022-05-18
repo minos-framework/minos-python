@@ -63,6 +63,11 @@ class TestSagaOperation(unittest.TestCase):
         observed = SagaOperation.from_raw(expected)
         self.assertEqual(expected, observed)
 
+    def test_hash(self):
+        operation = SagaOperation(send_create_ticket, {"one": 1})
+
+        self.assertIsInstance(hash(operation), int)
+
 
 if __name__ == "__main__":
     unittest.main()

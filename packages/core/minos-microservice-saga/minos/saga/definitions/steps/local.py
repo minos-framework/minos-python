@@ -172,12 +172,14 @@ class LocalSagaStep(SagaStep):
         """
         return {
             "cls": classname(type(self)),
+            "priority": self.priority,
             "on_execute": None if self.on_execute_operation is None else self.on_execute_operation.raw,
             "on_failure": None if self.on_failure_operation is None else self.on_failure_operation.raw,
         }
 
     def __iter__(self) -> Iterable:
         yield from (
+            self.priority,
             self.on_execute_operation,
             self.on_failure_operation,
         )

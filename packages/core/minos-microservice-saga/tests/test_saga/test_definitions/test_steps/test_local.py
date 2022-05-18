@@ -53,6 +53,7 @@ class TestLocalSagaStep(unittest.TestCase):
 
         expected = {
             "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+            "priority": None,
             "on_execute": {"callback": "tests.utils.create_payment"},
             "on_failure": {"callback": "tests.utils.delete_payment"},
         }

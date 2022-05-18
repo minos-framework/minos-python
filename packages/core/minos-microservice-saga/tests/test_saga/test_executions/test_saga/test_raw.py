@@ -52,6 +52,7 @@ class TestSagaExecution(SagaTestCase):
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                        "priority": None,
                         "on_execute": {"callback": "tests.utils.send_create_order"},
                         "on_success": {"callback": "tests.utils.DeleteOrderSaga.handle_order_success"},
                         "on_error": None,
@@ -59,11 +60,13 @@ class TestSagaExecution(SagaTestCase):
                     },
                     {
                         "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                        "priority": None,
                         "on_execute": {"callback": "tests.utils.create_payment"},
                         "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                        "priority": None,
                         "on_execute": {"callback": "tests.utils.send_create_ticket"},
                         "on_success": {"callback": "tests.utils.handle_ticket_success"},
                         "on_error": {"callback": "tests.utils.handle_ticket_error"},
@@ -95,6 +98,7 @@ class TestSagaExecution(SagaTestCase):
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                        "priority": None,
                         "on_execute": {"callback": "tests.utils.send_create_order"},
                         "on_success": {"callback": "tests.utils.DeleteOrderSaga.handle_order_success"},
                         "on_error": None,
@@ -102,11 +106,13 @@ class TestSagaExecution(SagaTestCase):
                     },
                     {
                         "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                        "priority": None,
                         "on_execute": {"callback": "tests.utils.create_payment"},
                         "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                        "priority": None,
                         "on_execute": {"callback": "tests.utils.send_create_ticket"},
                         "on_success": {"callback": "tests.utils.handle_ticket_success"},
                         "on_error": {"callback": "tests.utils.handle_ticket_error"},

@@ -115,6 +115,10 @@ class TestSagaStep(unittest.TestCase):
         with self.assertRaises(SagaNotDefinedException):
             RemoteSagaStep(send_create_ticket).commit()
 
+    def test_hash(self):
+        step = RemoteSagaStep(send_create_ticket)
+        self.assertIsInstance(hash(step), int)
+
 
 if __name__ == "__main__":
     unittest.main()
