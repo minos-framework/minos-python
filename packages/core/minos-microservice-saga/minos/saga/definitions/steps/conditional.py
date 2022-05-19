@@ -2,14 +2,28 @@ from __future__ import (
     annotations,
 )
 
+from collections.abc import (
+    Callable,
+    Iterable,
+)
+from inspect import (
+    getmembers,
+)
+from operator import (
+    attrgetter,
+)
 from typing import (
     TYPE_CHECKING,
     Any,
-    Awaitable,
-    Callable,
-    Iterable,
     Optional,
+    Protocol,
+    TypeVar,
     Union,
+    runtime_checkable,
+)
+
+from cached_property import (
+    cached_property,
 )
 
 from minos.common import (
@@ -23,18 +37,62 @@ from ...exceptions import (
 from ..operations import (
     SagaOperation,
 )
+from ..types import (
+    ConditionCallback,
+)
 from .abc import (
     SagaStep,
+    SagaStepMeta,
     SagaStepWrapper,
 )
 
 if TYPE_CHECKING:
-    from ...context import (
-        SagaContext,
-    )
     from ..saga import (
         Saga,
     )
+
+TP = TypeVar("TP", bound=type)
+
+
+class ConditionalSagaStepWrapper(SagaStepWrapper):
+    """TODO"""
+
+    meta: ConditionalSagaStepMeta
+
+
+class ConditionalSagaStepMeta(SagaStepMeta):
+    """TODO"""
+
+    _step: ConditionalSagaStep
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @cached_property
+    def step(self):
+        """TODO"""
+        if_then_alternatives = getmembers(
+            self._func,
+            predicate=lambda x: isinstance(x, IfThenAlternativeWrapper) and isinstance(x.meta, IfThenAlternativeMeta),
+        )
+        if_then_alternatives = map(lambda member: member[1].meta.alternative, if_then_alternatives)
+        if_then_alternatives = sorted(if_then_alternatives, key=attrgetter("order"))
+
+        for alternative in if_then_alternatives:
+            self._step.if_then_alternatives.append(alternative)
+
+        else_then_alternatives = getmembers(
+            self._func,
+            predicate=lambda x: isinstance(x, ElseThenAlternativeWrapper)
+            and isinstance(x.meta, ElseThenAlternativeMeta),
+        )
+        else_then_alternatives = list(map(lambda member: member[1].meta.alternative, else_then_alternatives))
+        if len(else_then_alternatives) > 1:
+            raise MultipleElseThenException()
+        elif len(else_then_alternatives) == 1:
+            self._step.else_then_alternative = else_then_alternatives[0]
+
+        return self._step
 
 
 class ConditionalSagaStep(SagaStep):
@@ -75,12 +133,12 @@ class ConditionalSagaStep(SagaStep):
 
         return cls(**current)
 
-    def __call__(self, func: Callable) -> SagaStepWrapper:
-        raise NotImplementedError
+    def __call__(self, type_: TP) -> Union[TP, ConditionalSagaStepMeta]:
+        meta = ConditionalSagaStepMeta(type_, self)
+        type_.meta = meta
+        return type_
 
-    def if_then(
-        self, condition: Callable[[SagaContext], Union[bool, Awaitable[bool]]], saga: Saga
-    ) -> ConditionalSagaStep:
+    def if_then(self, condition: ConditionCallback, saga: Saga) -> ConditionalSagaStep:
         """Add a new ``IfThenAlternative`` based on a condition and a saga.
 
         :param condition: The condition that must be satisfied to execute the alternative.
@@ -143,17 +201,42 @@ class ConditionalSagaStep(SagaStep):
         )
 
 
+@runtime_checkable
+class IfThenAlternativeWrapper(Protocol):
+    """TODO"""
+
+    meta: IfThenAlternativeMeta
+
+
+class IfThenAlternativeMeta:
+    """TODO"""
+
+    def __init__(self, func: ConditionCallback, alternative: IfThenAlternative):
+        self._func = func
+        self._alternative = alternative
+
+    @cached_property
+    def alternative(self) -> IfThenAlternative:
+        """TODO"""
+        self._alternative.condition = SagaOperation(self._func)
+        return self._alternative
+
+
 class IfThenAlternative:
     """If Then Alternative class."""
 
     def __init__(
-        self, condition: Union[SagaOperation, Callable[[SagaContext], Union[bool, Awaitable[bool]]]], saga: Saga
+        self, condition: Union[SagaOperation, ConditionCallback] = None, saga: Saga = None, order: Optional[int] = None
     ):
+        if saga is None:
+            raise ValueError("TODO")
+
         if not isinstance(condition, SagaOperation):
             condition = SagaOperation(condition)
 
         self.condition = condition
         self.saga = saga
+        self.order = order
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], IfThenAlternative], **kwargs) -> IfThenAlternative:
@@ -176,6 +259,11 @@ class IfThenAlternative:
         current["saga"] = Saga.from_raw(current["saga"])
 
         return cls(**current)
+
+    def __call__(self, type_: ConditionCallback) -> Union[ConditionCallback, IfThenAlternativeMeta]:
+        meta = IfThenAlternativeMeta(type_, self)
+        type_.meta = meta
+        return type_
 
     def validate(self) -> None:
         """Check if the alternative is valid.
@@ -207,10 +295,33 @@ class IfThenAlternative:
         )
 
 
+@runtime_checkable
+class ElseThenAlternativeWrapper(Protocol):
+    """TODO"""
+
+    meta: ElseThenAlternativeMeta
+
+
+class ElseThenAlternativeMeta:
+    """TODO"""
+
+    def __init__(self, func: Callable, alternative: ElseThenAlternative):
+        self._func = func
+        self._alternative = alternative
+
+    @cached_property
+    def alternative(self) -> ElseThenAlternative:
+        """TODO"""
+        return self._alternative
+
+
 class ElseThenAlternative:
     """Else Then Alternative class."""
 
-    def __init__(self, saga: Saga):
+    def __init__(self, saga: Saga = None):
+        if saga is None:
+            raise ValueError("TODO")
+
         self.saga = saga
 
     @classmethod
@@ -233,6 +344,11 @@ class ElseThenAlternative:
         current["saga"] = Saga.from_raw(current["saga"])
 
         return cls(**current)
+
+    def __call__(self, type_: Callable) -> Union[Callable, ElseThenAlternativeMeta]:
+        meta = ElseThenAlternativeMeta(type_, self)
+        type_.meta = meta
+        return type_
 
     def validate(self) -> None:
         """Check if the alternative is valid.

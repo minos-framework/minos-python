@@ -15,6 +15,7 @@ from .steps import (
     SagaStep,
 )
 from .types import (
+    ConditionCallback,
     LocalCallback,
     RequestCallBack,
     ResponseCallBack,

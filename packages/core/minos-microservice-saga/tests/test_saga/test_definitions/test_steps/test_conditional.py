@@ -9,6 +9,8 @@ from minos.saga import (
     EmptySagaStepException,
     IfThenAlternative,
     MultipleElseThenException,
+    Saga,
+    SagaContext,
     SagaOperation,
     SagaStep,
 )
@@ -19,6 +21,32 @@ from tests.utils import (
     add_order_condition,
     delete_order_condition,
 )
+
+
+@Saga()
+class MySaga:
+    """For testing purposes"""
+
+    @ConditionalSagaStep(order=1)
+    class FirstConditionStep:
+        """For testing purposes"""
+
+        @IfThenAlternative(order=1, saga=ADD_ORDER)
+        def if_delete_order(self, context: SagaContext) -> bool:
+            """For testing purposes."""
+            return "b" in context
+
+        @IfThenAlternative(order=2, saga=DELETE_ORDER)
+        def if_add_order(self, context: SagaContext) -> bool:
+            """For testing purposes."""
+            return "a" in context
+
+        @ElseThenAlternative(saga=CREATE_PAYMENT)
+        def else_(self) -> None:
+            """For testing purposes"""
+
+
+print(MySaga.meta.saga.raw)
 
 
 class TestConditionalSagaStep(unittest.TestCase):

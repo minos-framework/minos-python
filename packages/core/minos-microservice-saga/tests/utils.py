@@ -25,6 +25,9 @@ from minos.networks import (
     InMemoryBrokerSubscriberBuilder,
 )
 from minos.saga import (
+    ConditionalSagaStep,
+    ElseThenAlternative,
+    IfThenAlternative,
     LocalSagaStep,
     RemoteSagaStep,
     Saga,
