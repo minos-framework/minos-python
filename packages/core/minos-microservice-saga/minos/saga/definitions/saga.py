@@ -66,10 +66,10 @@ class SagaMeta:
         self._saga = saga
 
     @cached_property
-    def saga(self) -> Saga:
+    def definition(self) -> Saga:
         """TODO"""
         steps = getmembers(self._class, predicate=lambda x: isinstance(x, SagaStepWrapper))
-        steps = map(lambda member: member[1].meta.step, steps)
+        steps = map(lambda member: member[1].meta.definition, steps)
         steps = sorted(steps, key=attrgetter("order"))
 
         for step in steps:

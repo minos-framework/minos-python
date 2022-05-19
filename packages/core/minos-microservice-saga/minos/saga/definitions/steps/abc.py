@@ -66,7 +66,7 @@ class SagaStepMeta:
 
     @property
     @abstractmethod
-    def step(self) -> SagaStep:
+    def definition(self) -> SagaStep:
         """TODO"""
 
 

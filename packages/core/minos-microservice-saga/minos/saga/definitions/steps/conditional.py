@@ -69,7 +69,7 @@ class ConditionalSagaStepMeta(SagaStepMeta):
         super().__init__(*args, **kwargs)
 
     @cached_property
-    def step(self):
+    def definition(self):
         """TODO"""
         if_then_alternatives = getmembers(
             self._func,

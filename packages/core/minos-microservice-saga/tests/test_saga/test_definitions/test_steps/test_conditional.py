@@ -46,7 +46,7 @@ class MySaga:
             """For testing purposes"""
 
 
-print(MySaga.meta.saga.raw)
+print(MySaga.meta.definition.raw)
 
 
 class TestConditionalSagaStep(unittest.TestCase):

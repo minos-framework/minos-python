@@ -73,7 +73,7 @@ class RemoteSagaStepMeta(SagaStepMeta):
         self._on_failure = None
 
     @cached_property
-    def step(self):
+    def definition(self):
         """TODO"""
         self._step.on_execute(self._func)
         if self._on_success is not None:

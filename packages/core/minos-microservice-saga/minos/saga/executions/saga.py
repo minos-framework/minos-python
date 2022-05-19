@@ -157,7 +157,7 @@ class SagaExecution:
         :return: A new ``SagaExecution`` instance.
         """
         if isinstance(definition, SagaWrapper):
-            definition = definition.meta.saga
+            definition = definition.meta.definition
 
         if uuid is None:
             from uuid import (

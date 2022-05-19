@@ -116,7 +116,7 @@ class SagaRunner(SetupMixin):
         :return: This method does not return anything.
         """
         if isinstance(definition, SagaWrapper):
-            definition = definition.meta.saga
+            definition = definition.meta.definition
 
         if response is not None:
             return await self._load_and_run(
