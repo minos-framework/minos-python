@@ -42,6 +42,7 @@ from .exceptions import (
     MultipleOnExecuteException,
     MultipleOnFailureException,
     MultipleOnSuccessException,
+    OrderPrecedenceException,
     SagaException,
     SagaExecutionAlreadyExecutedException,
     SagaExecutionException,

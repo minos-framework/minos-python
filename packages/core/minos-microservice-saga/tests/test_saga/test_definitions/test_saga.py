@@ -11,6 +11,7 @@ from minos.saga import (
     EmptySagaException,
     EmptySagaStepException,
     LocalSagaStep,
+    OrderPrecedenceException,
     RemoteSagaStep,
     Saga,
     SagaException,
@@ -143,6 +144,7 @@ class TestSaga(unittest.TestCase):
         saga.remote_step = mock
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
             step = saga.step()
 
         self.assertEqual(1, mock.call_count)
@@ -204,14 +206,30 @@ class TestSaga(unittest.TestCase):
 
     def test_add_step(self):
         step = RemoteSagaStep(send_create_order)
-        saga = Saga().remote_step(step).commit()
+        saga = Saga().add_step(step).commit()
 
         self.assertEqual([step], saga.steps)
 
-    def test_add_step_raises(self):
+    def test_add_step_raises_duplicated(self):
         step = RemoteSagaStep(send_create_order, saga=Saga())
         with self.assertRaises(AlreadyOnSagaException):
-            Saga().remote_step(step)
+            Saga().add_step(step)
+
+    def test_add_step_raises_precedence_lower(self):
+        step1 = RemoteSagaStep(send_create_order, order=2)
+        step2 = RemoteSagaStep(send_create_order, order=1)
+        saga = Saga()
+        saga.add_step(step1)
+        with self.assertRaises(OrderPrecedenceException):
+            saga.add_step(step2)
+
+    def test_add_step_raises_precedence_equal(self):
+        step1 = RemoteSagaStep(send_create_order, order=1)
+        step2 = RemoteSagaStep(send_create_order, order=1)
+        saga = Saga()
+        saga.add_step(step1)
+        with self.assertRaises(OrderPrecedenceException):
+            saga.add_step(step2)
 
     def test_raw(self):
         saga = ADD_ORDER

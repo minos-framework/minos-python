@@ -27,6 +27,7 @@ from ..exceptions import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
     EmptySagaException,
+    OrderPrecedenceException,
     SagaNotCommittedException,
 )
 from .operations import (
@@ -206,7 +207,9 @@ class Saga:
                 step.order = 1
 
         if self.steps and step.order <= self.steps[-1].order:
-            raise ValueError("TODO")
+            raise OrderPrecedenceException(
+                f"Unsatisfied precedence constraints. Previous: {self.steps[-1].order} Current: {step.order} "
+            )
 
         self.steps.append(step)
         return step
