@@ -3,8 +3,11 @@ import unittest
 from minos.saga import (
     EmptySagaStepException,
     LocalSagaStep,
+    LocalSagaStepDecoratorMeta,
+    LocalSagaStepDecoratorWrapper,
     MultipleOnExecuteException,
     MultipleOnFailureException,
+    SagaContext,
     SagaOperation,
     SagaStep,
     UndefinedOnExecuteException,
@@ -13,6 +16,34 @@ from tests.utils import (
     create_payment,
     delete_payment,
 )
+
+
+class TestLocalSagaStepDecoratorMeta(unittest.TestCase):
+    def test_constructor(self):
+        # noinspection PyUnusedLocal
+        @LocalSagaStep()
+        def _fn(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        self.assertIsInstance(_fn, LocalSagaStepDecoratorWrapper)
+        meta = _fn.meta
+        self.assertIsInstance(meta, LocalSagaStepDecoratorMeta)
+        self.assertEqual(LocalSagaStep(_fn), meta.definition)
+
+    def test_on_failure(self):
+        # noinspection PyUnusedLocal
+        @LocalSagaStep()
+        def _fn(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        @_fn.on_failure()
+        def _fn2(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        self.assertIsInstance(_fn, LocalSagaStepDecoratorWrapper)
+        meta = _fn.meta
+        self.assertIsInstance(meta, LocalSagaStepDecoratorMeta)
+        self.assertEqual(LocalSagaStep(_fn, on_failure=_fn2), meta.definition)
 
 
 class TestLocalSagaStep(unittest.TestCase):

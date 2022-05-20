@@ -11,7 +11,9 @@ from functools import (
 from typing import (
     Any,
     Optional,
+    Protocol,
     Union,
+    runtime_checkable,
 )
 
 from cached_property import (
@@ -45,7 +47,8 @@ from .abc import (
 )
 
 
-class LocalSagaStepDecoratorWrapper(SagaStepDecoratorWrapper):
+@runtime_checkable
+class LocalSagaStepDecoratorWrapper(SagaStepDecoratorWrapper, Protocol):
     """TODO"""
 
     meta: LocalSagaStepDecoratorMeta
@@ -112,10 +115,12 @@ class LocalSagaStep(SagaStep):
         # noinspection PyTypeChecker
         return func
 
-    def on_execute(self, callback: LocalCallback, parameters: Optional[SagaContext] = None, **kwargs) -> LocalSagaStep:
+    def on_execute(
+        self, operation: Union[SagaOperation, LocalCallback], parameters: Optional[SagaContext] = None, **kwargs
+    ) -> LocalSagaStep:
         """On execute method.
 
-        :param callback: The callback function to be called.
+        :param operation: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
         :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has order if it is not
             ``None``.
@@ -124,14 +129,19 @@ class LocalSagaStep(SagaStep):
         if self.on_execute_operation is not None:
             raise MultipleOnExecuteException()
 
-        self.on_execute_operation = SagaOperation(callback, parameters, **kwargs)
+        if not isinstance(operation, SagaOperation):
+            operation = SagaOperation(operation, parameters, **kwargs)
+
+        self.on_execute_operation = operation
 
         return self
 
-    def on_failure(self, callback: LocalCallback, parameters: Optional[SagaContext] = None, **kwargs) -> LocalSagaStep:
+    def on_failure(
+        self, operation: Union[SagaOperation, LocalCallback], parameters: Optional[SagaContext] = None, **kwargs
+    ) -> LocalSagaStep:
         """On failure method.
 
-        :param callback: The callback function to be called.
+        :param operation: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
         :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has order if it is not
             ``None``.
@@ -140,7 +150,10 @@ class LocalSagaStep(SagaStep):
         if self.on_failure_operation is not None:
             raise MultipleOnFailureException()
 
-        self.on_failure_operation = SagaOperation(callback, parameters, **kwargs)
+        if not isinstance(operation, SagaOperation):
+            operation = SagaOperation(operation, parameters, **kwargs)
+
+        self.on_failure_operation = operation
 
         return self
 
