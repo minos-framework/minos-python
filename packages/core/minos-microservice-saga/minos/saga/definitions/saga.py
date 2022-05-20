@@ -2,7 +2,6 @@ from __future__ import (
     annotations,
 )
 
-import math
 import warnings
 from collections.abc import (
     Iterable,
@@ -59,24 +58,27 @@ class SagaMeta:
     """TODO"""
 
     _class: SagaClass
-    _saga: Saga
+    _definition: Saga
 
     def __init__(self, func: SagaClass, saga: Saga):
         self._class = func
-        self._saga = saga
+        self._definition = saga
 
     @cached_property
     def definition(self) -> Saga:
         """TODO"""
         steps = getmembers(self._class, predicate=lambda x: isinstance(x, SagaStepWrapper))
-        steps = map(lambda member: member[1].meta.definition, steps)
-        steps = sorted(steps, key=lambda s: s.order or math.inf)
+        steps = list(map(lambda member: member[1].meta.definition, steps))
+        for step in steps:
+            if step.order is None:
+                raise OrderPrecedenceException(f"The {step!r} step does not have 'order' value.")
+        steps.sort(key=lambda s: s.order)
 
         for step in steps:
-            self._saga.add_step(step)
-        self._saga.commit()
+            self._definition.add_step(step)
+        self._definition.commit()
 
-        return self._saga
+        return self._definition
 
 
 TP = TypeVar("TP", bound=type)

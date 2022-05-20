@@ -9,12 +9,12 @@ from abc import (
 )
 from collections.abc import (
     Callable,
+    Iterable,
 )
 from typing import (
     TYPE_CHECKING,
     Any,
     Generic,
-    Iterable,
     Optional,
     Protocol,
     TypeVar,
@@ -205,6 +205,9 @@ class SagaStep(ABC):
 
     def __eq__(self, other: SagaStep) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}{tuple(self)}"
 
     @abstractmethod
     def __iter__(self) -> Iterable:

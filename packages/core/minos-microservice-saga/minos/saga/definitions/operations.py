@@ -2,11 +2,13 @@ from __future__ import (
     annotations,
 )
 
+from collections.abc import (
+    Callable,
+    Iterable,
+)
 from typing import (
     Any,
-    Callable,
     Generic,
-    Iterable,
     Optional,
     TypeVar,
     Union,
@@ -85,6 +87,9 @@ class SagaOperation(Generic[T]):
 
     def __eq__(self, other: SagaOperation) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}{tuple(self)}"
 
     def __iter__(self) -> Iterable:
         yield from (

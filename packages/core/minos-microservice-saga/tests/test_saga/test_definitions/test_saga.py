@@ -14,11 +14,14 @@ from minos.saga import (
     OrderPrecedenceException,
     RemoteSagaStep,
     Saga,
+    SagaContext,
     SagaException,
     SagaExecution,
+    SagaMeta,
     SagaNotCommittedException,
     SagaOperation,
     SagaStep,
+    SagaWrapper,
 )
 from tests.utils import (
     ADD_ORDER,
@@ -26,6 +29,35 @@ from tests.utils import (
     create_payment,
     send_create_order,
 )
+
+
+class TestSagaMeta(unittest.TestCase):
+    def test_constructor(self):
+        @Saga()
+        class _Foo:
+            """For testing purposes."""
+
+            @LocalSagaStep(order=1)
+            def step(self, context: SagaContext) -> SagaContext:
+                """For testing purposes."""
+
+        self.assertIsInstance(_Foo, SagaWrapper)
+
+        meta = _Foo.meta
+        self.assertIsInstance(meta, SagaMeta)
+        self.assertEqual(meta.definition, Saga().local_step(_Foo.step).commit())
+
+    def test_definition_raises_order(self):
+        @Saga()
+        class _Foo:
+            """For testing purposes."""
+
+            @LocalSagaStep()
+            def step(self, context: SagaContext) -> SagaContext:
+                """For testing purposes."""
+
+        with self.assertRaises(OrderPrecedenceException):
+            _Foo.meta.definition
 
 
 class TestSaga(unittest.TestCase):
