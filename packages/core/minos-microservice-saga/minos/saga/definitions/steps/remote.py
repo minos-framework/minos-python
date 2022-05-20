@@ -35,13 +35,13 @@ from ...exceptions import (
 )
 from ..operations import (
     SagaOperation,
+    SagaOperationDecorator,
 )
 from ..types import (
     RequestCallBack,
     ResponseCallBack,
 )
 from .abc import (
-    OnSagaStepDecorator,
     SagaStep,
     SagaStepDecoratorMeta,
     SagaStepDecoratorWrapper,
@@ -52,9 +52,9 @@ class RemoteSagaStepDecoratorWrapper(SagaStepDecoratorWrapper):
     """TODO"""
 
     meta: RemoteSagaStepDecoratorMeta
-    on_success: type[OnSagaStepDecorator[ResponseCallBack]]
-    on_error: type[OnSagaStepDecorator[ResponseCallBack]]
-    on_failure: type[OnSagaStepDecorator[RequestCallBack]]
+    on_success: type[SagaOperationDecorator[ResponseCallBack]]
+    on_error: type[SagaOperationDecorator[ResponseCallBack]]
+    on_failure: type[SagaOperationDecorator[RequestCallBack]]
     __call__: RequestCallBack
 
 
@@ -85,22 +85,22 @@ class RemoteSagaStepDecoratorMeta(SagaStepDecoratorMeta):
         return self._definition
 
     @cached_property
-    def on_success(self) -> OnSagaStepDecorator:
+    def on_success(self) -> SagaOperationDecorator:
         """TODO"""
         # noinspection PyTypeChecker
-        return partial(OnSagaStepDecorator, step_meta=self, attr_name="_on_success")
+        return partial(SagaOperationDecorator, step_meta=self, attr_name="_on_success")
 
     @cached_property
-    def on_error(self) -> OnSagaStepDecorator:
+    def on_error(self) -> SagaOperationDecorator:
         """TODO"""
         # noinspection PyTypeChecker
-        return partial(OnSagaStepDecorator, step_meta=self, attr_name="_on_error")
+        return partial(SagaOperationDecorator, step_meta=self, attr_name="_on_error")
 
     @cached_property
-    def on_failure(self) -> OnSagaStepDecorator:
+    def on_failure(self) -> SagaOperationDecorator:
         """TODO"""
         # noinspection PyTypeChecker
-        return partial(OnSagaStepDecorator, step_meta=self, attr_name="_on_failure")
+        return partial(SagaOperationDecorator, step_meta=self, attr_name="_on_failure")
 
 
 class RemoteSagaStep(SagaStep):

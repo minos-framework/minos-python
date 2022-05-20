@@ -33,12 +33,12 @@ from ...exceptions import (
 )
 from ..operations import (
     SagaOperation,
+    SagaOperationDecorator,
 )
 from ..types import (
     LocalCallback,
 )
 from .abc import (
-    OnSagaStepDecorator,
     SagaStep,
     SagaStepDecoratorMeta,
     SagaStepDecoratorWrapper,
@@ -49,7 +49,7 @@ class LocalSagaStepDecoratorWrapper(SagaStepDecoratorWrapper):
     """TODO"""
 
     meta: LocalSagaStepDecoratorMeta
-    on_failure: type[OnSagaStepDecorator[LocalCallback]]
+    on_failure: type[SagaOperationDecorator[LocalCallback]]
     __call__: LocalCallback
 
 
@@ -72,10 +72,10 @@ class LocalSagaStepDecoratorMeta(SagaStepDecoratorMeta):
         return self._definition
 
     @cached_property
-    def on_failure(self) -> OnSagaStepDecorator:
+    def on_failure(self) -> SagaOperationDecorator:
         """TODO"""
         # noinspection PyTypeChecker
-        return partial(OnSagaStepDecorator, step_meta=self, attr_name="_on_failure")
+        return partial(SagaOperationDecorator, step_meta=self, attr_name="_on_failure")
 
 
 class LocalSagaStep(SagaStep):

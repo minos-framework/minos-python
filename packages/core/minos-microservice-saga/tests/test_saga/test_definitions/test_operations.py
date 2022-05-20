@@ -3,10 +3,39 @@ import unittest
 from minos.saga import (
     SagaContext,
     SagaOperation,
+    SagaOperationDecorator,
 )
 from tests.utils import (
     send_create_ticket,
 )
+
+
+class TestSagaOperationDecorator(unittest.TestCase):
+    def test_constructor(self):
+        class _Meta:
+            """For testing purposes."""
+
+        meta = _Meta()
+        meta.foo = None
+
+        # noinspection PyTypeChecker
+        decorator = SagaOperationDecorator("foo", meta, foobar="foobar")
+
+        # noinspection PyTypeChecker
+        decorator("bar")
+
+        # noinspection PyTypeChecker
+        expected = SagaOperation("bar", SagaContext(foobar="foobar"))
+        self.assertEqual(expected, meta.foo)
+
+    def test_constructor_raises(self):
+        with self.assertRaises(ValueError):
+            # noinspection PyArgumentEqualDefault,PyTypeChecker
+            SagaOperationDecorator(None, object())
+
+        with self.assertRaises(ValueError):
+            # noinspection PyArgumentEqualDefault,PyTypeChecker
+            SagaOperationDecorator(object(), None)
 
 
 class TestSagaOperation(unittest.TestCase):

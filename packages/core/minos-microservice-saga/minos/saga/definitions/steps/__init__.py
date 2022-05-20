@@ -1,5 +1,4 @@
 from .abc import (
-    OnSagaStepDecorator,
     SagaStep,
     SagaStepDecoratorMeta,
     SagaStepDecoratorWrapper,

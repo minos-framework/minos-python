@@ -14,13 +14,30 @@ from minos.saga import (
     LocalSagaStep,
     RemoteSagaStep,
     Saga,
+    SagaContext,
     SagaNotDefinedException,
+    SagaRequest,
     SagaStep,
+    SagaStepDecoratorMeta,
+    SagaStepDecoratorWrapper,
 )
 from tests.utils import (
     create_payment,
     send_create_ticket,
 )
+
+
+class TestSagaStepDecoratorMeta(unittest.TestCase):
+    def test_constructor(self):
+        # noinspection PyUnusedLocal
+        @RemoteSagaStep()
+        def _fn(context: SagaContext) -> SagaRequest:
+            """For testing purposes"""
+
+        self.assertIsInstance(_fn, SagaStepDecoratorWrapper)
+        meta = _fn.meta
+        self.assertIsInstance(meta, SagaStepDecoratorMeta)
+        self.assertEqual(RemoteSagaStep(_fn), meta.definition)
 
 
 class TestSagaStep(unittest.TestCase):

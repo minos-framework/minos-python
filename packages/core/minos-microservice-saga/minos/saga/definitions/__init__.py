@@ -1,5 +1,6 @@
 from .operations import (
     SagaOperation,
+    SagaOperationDecorator,
 )
 from .saga import (
     Saga,
@@ -19,7 +20,6 @@ from .steps import (
     LocalSagaStep,
     LocalSagaStepDecoratorMeta,
     LocalSagaStepDecoratorWrapper,
-    OnSagaStepDecorator,
     RemoteSagaStep,
     RemoteSagaStepDecoratorMeta,
     RemoteSagaStepDecoratorWrapper,

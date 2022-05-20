@@ -14,10 +14,8 @@ from collections.abc import (
 from typing import (
     TYPE_CHECKING,
     Any,
-    Generic,
     Optional,
     Protocol,
-    TypeVar,
     Union,
     runtime_checkable,
 )
@@ -66,23 +64,6 @@ class SagaStepDecoratorMeta:
     @abstractmethod
     def definition(self) -> SagaStep:
         """TODO"""
-
-
-FN = TypeVar("FN", bound=Callable)
-
-
-class OnSagaStepDecorator(Generic[FN]):
-    """ "TODO"""
-
-    def __init__(self, attr_name: [str] = None, step_meta: Optional[SagaStepDecoratorMeta] = None):
-        if attr_name is None or step_meta is None:
-            raise ValueError("TODO")
-        self.step_meta = step_meta
-        self.attr_name = attr_name
-
-    def __call__(self, func: FN) -> FN:
-        setattr(self.step_meta, self.attr_name, func)
-        return func
 
 
 class SagaStep(ABC):
