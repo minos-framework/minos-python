@@ -3,6 +3,9 @@ from __future__ import (
 )
 
 import warnings
+from collections.abc import (
+    Iterable,
+)
 from inspect import (
     getmembers,
 )
@@ -11,10 +14,8 @@ from operator import (
 )
 from typing import (
     Any,
-    Iterable,
     Optional,
     Protocol,
-    Type,
     TypeVar,
     Union,
     runtime_checkable,
@@ -73,7 +74,7 @@ class SagaMeta:
         steps = sorted(steps, key=attrgetter("order"))
 
         for step in steps:
-            self._saga.steps.append(step)
+            self._saga.add_step(step)
         self._saga.commit()
 
         return self._saga
@@ -135,7 +136,7 @@ class Saga:
         :param step: The step to be added. If `None` is provided then a new one will be created.
         :return: A ``SagaStep`` instance.
         """
-        return self._add_step(ConditionalSagaStep, step)
+        return self.add_step(step, ConditionalSagaStep)
 
     def local_step(
         self, step: Optional[Union[LocalCallback, SagaOperation[LocalCallback], LocalSagaStep]] = None, **kwargs
@@ -148,12 +149,12 @@ class Saga:
         """
         if step is not None and not isinstance(step, SagaStep) and not isinstance(step, SagaOperation):
             step = SagaOperation(step, **kwargs)
-        return self._add_step(LocalSagaStep, step)
+        return self.add_step(step, LocalSagaStep)
 
     def step(
         self, step: Optional[Union[RequestCallBack, SagaOperation[RequestCallBack], RemoteSagaStep]] = None, **kwargs
     ) -> RemoteSagaStep:
-        """Add a new remote step step.
+        """Add a new remote step.
 
         :param step: The step to be added. If `None` is provided then a new one will be created.
         :param kwargs: Additional named parameters.
@@ -165,7 +166,7 @@ class Saga:
     def remote_step(
         self, step: Optional[Union[RequestCallBack, SagaOperation[RequestCallBack], RemoteSagaStep]] = None, **kwargs
     ) -> RemoteSagaStep:
-        """Add a new remote step step.
+        """Add a new remote step.
 
         :param step: The step to be added. If `None` is provided then a new one will be created.
         :param kwargs: Additional named parameters.
@@ -173,9 +174,15 @@ class Saga:
         """
         if step is not None and not isinstance(step, SagaStep) and not isinstance(step, SagaOperation):
             step = SagaOperation(step, **kwargs)
-        return self._add_step(RemoteSagaStep, step)
+        return self.add_step(step, RemoteSagaStep)
 
-    def _add_step(self, step_cls: Type[T], step: Optional[Union[SagaOperation, T]]) -> T:
+    def add_step(self, step: Optional[Union[SagaOperation, T]], step_cls: type[T] = SagaStep) -> T:
+        """TODO
+
+        :param step: TODO
+        :param step_cls: TODO
+        :return: TODO
+        """
         if self.committed:
             raise AlreadyCommittedException("It is not possible to add more steps to an already committed saga.")
 
