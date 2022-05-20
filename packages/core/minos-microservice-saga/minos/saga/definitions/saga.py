@@ -9,6 +9,9 @@ from collections.abc import (
 from inspect import (
     getmembers,
 )
+from operator import (
+    attrgetter,
+)
 from typing import (
     Any,
     Optional,
@@ -70,7 +73,7 @@ class SagaDecoratorMeta:
         for step in steps:
             if step.order is None:
                 raise OrderPrecedenceException(f"The {step!r} step does not have 'order' value.")
-        steps.sort(key=lambda s: s.order)
+        steps.sort(key=attrgetter("order"))
 
         for step in steps:
             self._definition.add_step(step)

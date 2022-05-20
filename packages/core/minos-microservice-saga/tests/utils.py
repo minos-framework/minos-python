@@ -192,7 +192,7 @@ class DeleteOrderSaga:
     """For testing purposes"""
 
     @LocalSagaStep(order=1)
-    def _something(self, context: SagaContext) -> SagaContext:
+    def something(self, context: SagaContext) -> SagaContext:
         return context
 
     # noinspection PyUnusedLocal
@@ -238,6 +238,7 @@ ADD_ORDER = (
 # fmt: off
 DELETE_ORDER = (
     Saga()
+        .local_step(DeleteOrderSaga.something)
         .remote_step(DeleteOrderSaga.send_delete_order)
         .on_success(DeleteOrderSaga.handle_order_success)
         .remote_step(DeleteOrderSaga.send_delete_ticket)
@@ -250,6 +251,40 @@ CREATE_PAYMENT = (
     Saga()
         .local_step(create_payment)
         .on_failure(delete_payment)
+        .commit()
+)
+
+
+@Saga()
+class ConditionalOrderSaga:
+    """For testing purposes"""
+
+    @ConditionalSagaStep(order=1)
+    class FirstConditionStep:
+        """For testing purposes"""
+
+        @IfThenAlternative(order=1, saga=ADD_ORDER)
+        def if_add_order(self, context: SagaContext) -> bool:
+            """For testing purposes."""
+            return "a" in context
+
+        @IfThenAlternative(order=2, saga=DELETE_ORDER)
+        def if_delete_order(self, context: SagaContext) -> bool:
+            """For testing purposes."""
+            return "b" in context
+
+        @ElseThenAlternative(saga=CREATE_PAYMENT)
+        def else_(self) -> None:
+            """For testing purposes"""
+
+
+# fmt: off
+CONDITIONAL_ORDER_SAGA = (
+    Saga()
+        .conditional_step()
+        .if_then(ConditionalOrderSaga.FirstConditionStep.if_add_order, ADD_ORDER)
+        .if_then(ConditionalOrderSaga.FirstConditionStep.if_delete_order, DELETE_ORDER)
+        .else_then(CREATE_PAYMENT)
         .commit()
 )
 

@@ -33,6 +33,7 @@ from minos.common import (
 from ...exceptions import (
     EmptySagaStepException,
     MultipleElseThenException,
+    OrderPrecedenceException,
 )
 from ..operations import (
     SagaOperation,
@@ -51,10 +52,9 @@ if TYPE_CHECKING:
         Saga,
     )
 
-ConditionalSagaStepClass = TypeVar("ConditionalSagaStepClass", bound=type)
 
-
-class ConditionalSagaStepDecoratorWrapper(SagaStepDecoratorWrapper):
+@runtime_checkable
+class ConditionalSagaStepDecoratorWrapper(SagaStepDecoratorWrapper, Protocol):
     """TODO"""
 
     meta: ConditionalSagaStepDecoratorMeta
@@ -70,27 +70,35 @@ class ConditionalSagaStepDecoratorMeta(SagaStepDecoratorMeta):
         """TODO"""
         if_then_alternatives = getmembers(
             self._inner,
-            predicate=lambda x: isinstance(x, IfThenAlternativeWrapper) and isinstance(x.meta, IfThenAlternativeMeta),
+            predicate=(
+                lambda x: isinstance(x, IfThenAlternativeDecoratorWrapper)
+                and isinstance(x.meta, IfThenAlternativeDecoratorMeta)
+            ),
         )
-        if_then_alternatives = map(lambda member: member[1].meta.alternative, if_then_alternatives)
-        if_then_alternatives = sorted(if_then_alternatives, key=attrgetter("order"))
+        if_then_alternatives = list(map(lambda member: member[1].meta.alternative, if_then_alternatives))
+        for alternative in if_then_alternatives:
+            if alternative.order is None:
+                raise OrderPrecedenceException(f"The {alternative!r} alternative does not have 'order' value.")
+        if_then_alternatives.sort(key=attrgetter("order"))
 
         for alternative in if_then_alternatives:
-            self._definition.if_then_alternatives.append(alternative)
+            self._definition.if_then(alternative)
 
         else_then_alternatives = getmembers(
             self._inner,
             predicate=(
-                lambda x: isinstance(x, ElseThenAlternativeWrapper) and isinstance(x.meta, ElseThenAlternativeMeta)
+                lambda x: isinstance(x, ElseThenAlternativeDecoratorWrapper)
+                and isinstance(x.meta, ElseThenAlternativeDecoratorMeta)
             ),
         )
         else_then_alternatives = list(map(lambda member: member[1].meta.alternative, else_then_alternatives))
-        if len(else_then_alternatives) > 1:
-            raise MultipleElseThenException()
-        elif len(else_then_alternatives) == 1:
-            self._definition.else_then_alternative = else_then_alternatives[0]
+        for alternative in else_then_alternatives:
+            self._definition.else_then(alternative)
 
         return self._definition
+
+
+TP = TypeVar("TP", bound=type)
 
 
 class ConditionalSagaStep(SagaStep):
@@ -131,34 +139,51 @@ class ConditionalSagaStep(SagaStep):
 
         return cls(**current)
 
-    def __call__(self, type_: ConditionalSagaStepClass) -> ConditionalSagaStepClass:
+    def __call__(self, type_: TP) -> Union[TP, ConditionalSagaStepDecoratorWrapper]:
         meta = ConditionalSagaStepDecoratorMeta(type_, self)
         type_.meta = meta
         return type_
 
-    def if_then(self, condition: ConditionCallback, saga: Saga) -> ConditionalSagaStep:
+    def if_then(
+        self, alternative: Union[IfThenAlternative, ConditionCallback], saga: Optional[Saga] = None
+    ) -> ConditionalSagaStep:
         """Add a new ``IfThenAlternative`` based on a condition and a saga.
 
-        :param condition: The condition that must be satisfied to execute the alternative.
+        :param alternative: The condition that must be satisfied to execute the alternative.
         :param saga: The saga to be executed if the condition is satisfied.
         :return: This method returns the same instance that is called.
         """
+        if not isinstance(alternative, IfThenAlternative):
+            alternative = IfThenAlternative(saga, alternative)
 
-        alternative = IfThenAlternative(condition, saga)
+        if alternative.order is None:
+            if self.if_then_alternatives:
+                alternative.order = self.if_then_alternatives[-1].order + 1
+            else:
+                alternative.order = 1
+
+        if self.if_then_alternatives and alternative.order <= self.if_then_alternatives[-1].order:
+            raise OrderPrecedenceException(
+                f"Unsatisfied precedence constraints. Previous: {self.if_then_alternatives[-1].order} "
+                f"Current: {alternative.order} "
+            )
+
         self.if_then_alternatives.append(alternative)
         return self
 
-    def else_then(self, saga: Saga) -> ConditionalSagaStep:
+    def else_then(self, alternative: Union[ElseThenAlternative, Saga]) -> ConditionalSagaStep:
         """Set the ``ElseThenAlternative`` with the given saga.
 
-        :param saga: The saga to be executed if not any condition is met.
+        :param alternative: The saga to be executed if not any condition is met.
         :return: This method returns the same instance that is called.
         """
 
         if self.else_then_alternative is not None:
             raise MultipleElseThenException()
 
-        alternative = ElseThenAlternative(saga)
+        if not isinstance(alternative, ElseThenAlternative):
+            alternative = ElseThenAlternative(alternative)
+
         self.else_then_alternative = alternative
         return self
 
@@ -200,23 +225,24 @@ class ConditionalSagaStep(SagaStep):
 
 
 @runtime_checkable
-class IfThenAlternativeWrapper(Protocol):
+class IfThenAlternativeDecoratorWrapper(Protocol):
     """TODO"""
 
-    meta: IfThenAlternativeMeta
+    meta: IfThenAlternativeDecoratorMeta
+    __call__: ConditionCallback
 
 
-class IfThenAlternativeMeta:
+class IfThenAlternativeDecoratorMeta:
     """TODO"""
 
-    def __init__(self, func: ConditionCallback, alternative: IfThenAlternative):
-        self._func = func
+    def __init__(self, inner: ConditionCallback, alternative: IfThenAlternative):
+        self._inner = inner
         self._alternative = alternative
 
     @cached_property
     def alternative(self) -> IfThenAlternative:
         """TODO"""
-        self._alternative.condition = SagaOperation(self._func)
+        self._alternative.condition = SagaOperation(self._inner)
         return self._alternative
 
 
@@ -224,11 +250,11 @@ class IfThenAlternative:
     """If Then Alternative class."""
 
     def __init__(
-        self, condition: Union[SagaOperation, ConditionCallback] = None, saga: Saga = None, order: Optional[int] = None
+        self,
+        saga: Saga,
+        condition: Optional[Union[ConditionCallback, SagaOperation[ConditionCallback]]] = None,
+        order: Optional[int] = None,
     ):
-        if saga is None:
-            raise ValueError("TODO")
-
         if not isinstance(condition, SagaOperation):
             condition = SagaOperation(condition)
 
@@ -258,10 +284,10 @@ class IfThenAlternative:
 
         return cls(**current)
 
-    def __call__(self, type_: ConditionCallback) -> Union[ConditionCallback, IfThenAlternativeMeta]:
-        meta = IfThenAlternativeMeta(type_, self)
-        type_.meta = meta
-        return type_
+    def __call__(self, func: ConditionCallback) -> IfThenAlternativeDecoratorWrapper:
+        meta = IfThenAlternativeDecoratorMeta(func, self)
+        func.meta = meta
+        return func
 
     def validate(self) -> None:
         """Check if the alternative is valid.
@@ -283,6 +309,9 @@ class IfThenAlternative:
             "saga": self.saga.raw,
         }
 
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}{tuple(self)}"
+
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, type(self)) and tuple(self) == tuple(other)
 
@@ -294,17 +323,18 @@ class IfThenAlternative:
 
 
 @runtime_checkable
-class ElseThenAlternativeWrapper(Protocol):
+class ElseThenAlternativeDecoratorWrapper(Protocol):
     """TODO"""
 
-    meta: ElseThenAlternativeMeta
+    meta: ElseThenAlternativeDecoratorMeta
+    __call__: Callable
 
 
-class ElseThenAlternativeMeta:
+class ElseThenAlternativeDecoratorMeta:
     """TODO"""
 
-    def __init__(self, func: Callable, alternative: ElseThenAlternative):
-        self._func = func
+    def __init__(self, inner: Callable, alternative: ElseThenAlternative):
+        self._inner = inner
         self._alternative = alternative
 
     @cached_property
@@ -316,10 +346,7 @@ class ElseThenAlternativeMeta:
 class ElseThenAlternative:
     """Else Then Alternative class."""
 
-    def __init__(self, saga: Saga = None):
-        if saga is None:
-            raise ValueError("TODO")
-
+    def __init__(self, saga: Saga):
         self.saga = saga
 
     @classmethod
@@ -343,10 +370,10 @@ class ElseThenAlternative:
 
         return cls(**current)
 
-    def __call__(self, type_: Callable) -> Union[Callable, ElseThenAlternativeMeta]:
-        meta = ElseThenAlternativeMeta(type_, self)
-        type_.meta = meta
-        return type_
+    def __call__(self, func: Callable) -> ElseThenAlternativeDecoratorWrapper:
+        meta = ElseThenAlternativeDecoratorMeta(func, self)
+        func.meta = meta
+        return func
 
     def validate(self) -> None:
         """Check if the alternative is valid.
@@ -366,6 +393,9 @@ class ElseThenAlternative:
         return {
             "saga": self.saga.raw,
         }
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}{tuple(self)}"
 
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, type(self)) and tuple(self) == tuple(other)

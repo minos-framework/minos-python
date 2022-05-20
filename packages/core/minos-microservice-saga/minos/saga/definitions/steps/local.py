@@ -112,7 +112,6 @@ class LocalSagaStep(SagaStep):
         meta = LocalSagaStepDecoratorMeta(func, self)
         func.meta = meta
         func.on_failure = meta.on_failure
-        # noinspection PyTypeChecker
         return func
 
     def on_execute(

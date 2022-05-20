@@ -20,4 +20,4 @@ ResponseCallBack = Callable[
     [SagaContext, SagaResponse, ...], Union[Union[Exception, SagaContext], Awaitable[Union[Exception, SagaContext]]]
 ]
 LocalCallback = Callable[[SagaContext, ...], Union[Optional[SagaContext], Awaitable[Optional[SagaContext]]]]
-ConditionCallback = Callable[[SagaContext], Union[bool, Awaitable[bool]]]
+ConditionCallback = Callable[[SagaContext, ...], Union[bool, Awaitable[bool]]]

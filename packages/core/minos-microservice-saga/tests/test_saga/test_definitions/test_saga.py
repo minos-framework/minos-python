@@ -25,6 +25,9 @@ from minos.saga import (
 )
 from tests.utils import (
     ADD_ORDER,
+    CONDITIONAL_ORDER_SAGA,
+    DELETE_ORDER,
+    ConditionalOrderSaga,
     DeleteOrderSaga,
     create_payment,
     send_create_order,
@@ -58,6 +61,12 @@ class TestSagaClassMeta(unittest.TestCase):
 
         with self.assertRaises(OrderPrecedenceException):
             _Foo.meta.definition
+
+    def test_equal(self):
+        self.assertEqual(DeleteOrderSaga.meta.definition, DELETE_ORDER)
+
+    def test_equal_conditional(self):
+        self.assertEqual(ConditionalOrderSaga.meta.definition, CONDITIONAL_ORDER_SAGA)
 
 
 class TestSaga(unittest.TestCase):

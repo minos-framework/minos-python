@@ -8,11 +8,11 @@ from .conditional import (
     ConditionalSagaStepDecoratorMeta,
     ConditionalSagaStepDecoratorWrapper,
     ElseThenAlternative,
-    ElseThenAlternativeMeta,
-    ElseThenAlternativeWrapper,
+    ElseThenAlternativeDecoratorMeta,
+    ElseThenAlternativeDecoratorWrapper,
     IfThenAlternative,
-    IfThenAlternativeMeta,
-    IfThenAlternativeWrapper,
+    IfThenAlternativeDecoratorMeta,
+    IfThenAlternativeDecoratorWrapper,
 )
 from .local import (
     LocalSagaStep,

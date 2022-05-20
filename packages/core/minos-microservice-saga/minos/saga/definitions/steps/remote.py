@@ -149,7 +149,6 @@ class RemoteSagaStep(SagaStep):
         func.on_success = meta.on_success
         func.on_error = meta.on_error
         func.on_failure = meta.on_failure
-        # noinspection PyTypeChecker
         return func
 
     def on_execute(

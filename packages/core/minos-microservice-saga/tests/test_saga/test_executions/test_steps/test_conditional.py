@@ -50,8 +50,8 @@ class TestConditionalSageStepExecution(SagaTestCase):
         self.definition = ConditionalSagaStep(
             [
                 IfThenAlternative(
-                    _is_one,
                     Saga().remote_step(send_create_order).on_success(DeleteOrderSaga.handle_order_success).commit(),
+                    _is_one,
                 ),
             ],
             ElseThenAlternative(
