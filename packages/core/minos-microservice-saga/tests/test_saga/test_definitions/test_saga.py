@@ -14,14 +14,14 @@ from minos.saga import (
     OrderPrecedenceException,
     RemoteSagaStep,
     Saga,
+    SagaClassMeta,
+    SagaClassWrapper,
     SagaContext,
     SagaException,
     SagaExecution,
-    SagaMeta,
     SagaNotCommittedException,
     SagaOperation,
     SagaStep,
-    SagaWrapper,
 )
 from tests.utils import (
     ADD_ORDER,
@@ -31,7 +31,7 @@ from tests.utils import (
 )
 
 
-class TestSagaMeta(unittest.TestCase):
+class TestSagaClassMeta(unittest.TestCase):
     def test_constructor(self):
         @Saga()
         class _Foo:
@@ -41,10 +41,10 @@ class TestSagaMeta(unittest.TestCase):
             def step(self, context: SagaContext) -> SagaContext:
                 """For testing purposes."""
 
-        self.assertIsInstance(_Foo, SagaWrapper)
+        self.assertIsInstance(_Foo, SagaClassWrapper)
 
         meta = _Foo.meta
-        self.assertIsInstance(meta, SagaMeta)
+        self.assertIsInstance(meta, SagaClassMeta)
         self.assertEqual(meta.definition, Saga().local_step(_Foo.step).commit())
 
     def test_definition_raises_order(self):

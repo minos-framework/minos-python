@@ -48,13 +48,13 @@ SagaClass = TypeVar("SagaClass", bound=type)
 
 
 @runtime_checkable
-class SagaWrapper(Protocol):
+class SagaClassWrapper(Protocol):
     """TODO"""
 
-    meta: SagaMeta
+    meta: SagaClassMeta
 
 
-class SagaMeta:
+class SagaClassMeta:
     """TODO"""
 
     _class: SagaClass
@@ -111,8 +111,8 @@ class Saga:
             self.local_step(commit)
             self.committed = True
 
-    def __call__(self, type_: TP) -> Union[TP, SagaWrapper]:
-        type_.meta = SagaMeta(type_, self)
+    def __call__(self, type_: TP) -> Union[TP, SagaClassWrapper]:
+        type_.meta = SagaClassMeta(type_, self)
         return type_
 
     @classmethod

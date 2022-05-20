@@ -3,8 +3,8 @@ from .operations import (
 )
 from .saga import (
     Saga,
-    SagaMeta,
-    SagaWrapper,
+    SagaClassMeta,
+    SagaClassWrapper,
 )
 from .steps import (
     ConditionalSagaStep,

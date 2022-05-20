@@ -22,7 +22,7 @@ from .context import (
 )
 from .definitions import (
     Saga,
-    SagaWrapper,
+    SagaClassWrapper,
 )
 from .executions import (
     DatabaseSagaExecutionRepository,
@@ -82,7 +82,7 @@ class SagaManager(SetupMixin):
 
     async def run(
         self,
-        definition: Optional[Union[Saga, SagaWrapper]] = None,
+        definition: Optional[Union[Saga, SagaClassWrapper]] = None,
         context: Optional[SagaContext] = None,
         *,
         response: Optional[SagaResponse] = None,

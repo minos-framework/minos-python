@@ -25,12 +25,12 @@ from .definitions import (
     RemoteSagaStepMeta,
     RemoteSagaStepWrapper,
     Saga,
-    SagaMeta,
+    SagaClassMeta,
+    SagaClassWrapper,
     SagaOperation,
     SagaStep,
     SagaStepMeta,
     SagaStepWrapper,
-    SagaWrapper,
 )
 from .exceptions import (
     AlreadyCommittedException,
