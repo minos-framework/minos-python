@@ -194,8 +194,18 @@ class Saga:
             if step.saga is not None:
                 raise AlreadyOnSagaException()
             step.saga = self
+
         else:
             step = step_cls(step, saga=self)
+
+        if step.order is None:
+            if self.steps:
+                step.order = self.steps[-1].order + 1
+            else:
+                step.order = 1
+
+        if self.steps and step.order <= self.steps[-1].order:
+            raise ValueError("TODO")
 
         self.steps.append(step)
         return step

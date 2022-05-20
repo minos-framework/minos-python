@@ -37,7 +37,7 @@ class TestSaga(unittest.TestCase):
             warnings.simplefilter("ignore", DeprecationWarning)
             saga = Saga(commit=create_payment)
 
-        self.assertEqual([LocalSagaStep(SagaOperation(create_payment))], saga.steps)
+        self.assertEqual([LocalSagaStep(SagaOperation(create_payment), order=1)], saga.steps)
         self.assertEqual(True, saga.committed)
 
     def test_commit(self):
@@ -54,7 +54,7 @@ class TestSaga(unittest.TestCase):
             # noinspection PyTypeChecker
             observed = saga.commit(create_payment)
         self.assertEqual(saga, observed)
-        self.assertEqual([LocalSagaStep(SagaOperation(create_payment))], saga.steps)
+        self.assertEqual([LocalSagaStep(SagaOperation(create_payment), order=1)], saga.steps)
         self.assertEqual(True, saga.committed)
 
     def test_commit_raises(self):
@@ -111,13 +111,13 @@ class TestSaga(unittest.TestCase):
     def test_local_operation(self):
         saga = Saga()
         step = saga.local_step(SagaOperation(create_payment))
-        self.assertEqual(LocalSagaStep(on_execute=SagaOperation(create_payment)), step)
+        self.assertEqual(LocalSagaStep(on_execute=SagaOperation(create_payment), order=1), step)
         self.assertEqual(saga, step.saga)
 
     def test_local_callback(self):
         saga = Saga()
         step = saga.local_step(create_payment)
-        self.assertEqual(LocalSagaStep(on_execute=SagaOperation(create_payment)), step)
+        self.assertEqual(LocalSagaStep(on_execute=SagaOperation(create_payment), order=1), step)
         self.assertEqual(saga, step.saga)
 
     def test_local_empty(self):
@@ -158,13 +158,13 @@ class TestSaga(unittest.TestCase):
     def test_remote_operation(self):
         saga = Saga()
         step = saga.remote_step(SagaOperation(DeleteOrderSaga.send_delete_ticket))
-        self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(DeleteOrderSaga.send_delete_ticket)), step)
+        self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(DeleteOrderSaga.send_delete_ticket), order=1), step)
         self.assertEqual(saga, step.saga)
 
     def test_remote_callback(self):
         saga = Saga()
         step = saga.remote_step(DeleteOrderSaga.send_delete_ticket)
-        self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(DeleteOrderSaga.send_delete_ticket)), step)
+        self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(DeleteOrderSaga.send_delete_ticket), order=1), step)
         self.assertEqual(saga, step.saga)
 
     def test_remote_empty(self):
@@ -220,7 +220,7 @@ class TestSaga(unittest.TestCase):
             "steps": [
                 {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
-                    "order": None,
+                    "order": 1,
                     "on_execute": {"callback": "tests.utils.send_create_order"},
                     "on_success": {"callback": "tests.utils.DeleteOrderSaga.handle_order_success"},
                     "on_error": None,
@@ -228,13 +228,13 @@ class TestSaga(unittest.TestCase):
                 },
                 {
                     "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
-                    "order": None,
+                    "order": 2,
                     "on_execute": {"callback": "tests.utils.create_payment"},
                     "on_failure": {"callback": "tests.utils.delete_payment"},
                 },
                 {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
-                    "order": None,
+                    "order": 3,
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
                     "on_error": {"callback": "tests.utils.handle_ticket_error"},
@@ -250,6 +250,7 @@ class TestSaga(unittest.TestCase):
             "steps": [
                 {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                    "order": 1,
                     "on_execute": {"callback": "tests.utils.send_create_order"},
                     "on_success": {"callback": "tests.utils.DeleteOrderSaga.handle_order_success"},
                     "on_error": None,
@@ -257,11 +258,13 @@ class TestSaga(unittest.TestCase):
                 },
                 {
                     "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                    "order": 2,
                     "on_execute": {"callback": "tests.utils.create_payment"},
                     "on_failure": {"callback": "tests.utils.delete_payment"},
                 },
                 {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                    "order": 3,
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
                     "on_error": {"callback": "tests.utils.handle_ticket_error"},
