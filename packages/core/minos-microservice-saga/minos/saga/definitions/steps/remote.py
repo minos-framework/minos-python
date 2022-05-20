@@ -61,7 +61,7 @@ class RemoteSagaStepWrapper(SagaStepWrapper):
 class RemoteSagaStepMeta(SagaStepMeta):
     """TODO"""
 
-    _step: RemoteSagaStep
+    _definition: RemoteSagaStep
     _on_success: Optional[ResponseCallBack]
     _on_error: Optional[ResponseCallBack]
     _on_failure: Optional[RequestCallBack]
@@ -75,14 +75,14 @@ class RemoteSagaStepMeta(SagaStepMeta):
     @cached_property
     def definition(self):
         """TODO"""
-        self._step.on_execute(self._func)
+        self._definition.on_execute(self._inner)
         if self._on_success is not None:
-            self._step.on_success(self._on_success)
+            self._definition.on_success(self._on_success)
         if self._on_error is not None:
-            self._step.on_error(self._on_error)
+            self._definition.on_error(self._on_error)
         if self._on_failure is not None:
-            self._step.on_failure(self._on_failure)
-        return self._step
+            self._definition.on_failure(self._on_failure)
+        return self._definition
 
     @cached_property
     def on_success(self) -> OnStepDecorator:

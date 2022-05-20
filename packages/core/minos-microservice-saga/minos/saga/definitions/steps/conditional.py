@@ -63,26 +63,23 @@ class ConditionalSagaStepWrapper(SagaStepWrapper):
 class ConditionalSagaStepMeta(SagaStepMeta):
     """TODO"""
 
-    _step: ConditionalSagaStep
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    _definition: ConditionalSagaStep
 
     @cached_property
     def definition(self):
         """TODO"""
         if_then_alternatives = getmembers(
-            self._func,
+            self._inner,
             predicate=lambda x: isinstance(x, IfThenAlternativeWrapper) and isinstance(x.meta, IfThenAlternativeMeta),
         )
         if_then_alternatives = map(lambda member: member[1].meta.alternative, if_then_alternatives)
         if_then_alternatives = sorted(if_then_alternatives, key=attrgetter("order"))
 
         for alternative in if_then_alternatives:
-            self._step.if_then_alternatives.append(alternative)
+            self._definition.if_then_alternatives.append(alternative)
 
         else_then_alternatives = getmembers(
-            self._func,
+            self._inner,
             predicate=lambda x: isinstance(x, ElseThenAlternativeWrapper)
             and isinstance(x.meta, ElseThenAlternativeMeta),
         )
@@ -90,9 +87,9 @@ class ConditionalSagaStepMeta(SagaStepMeta):
         if len(else_then_alternatives) > 1:
             raise MultipleElseThenException()
         elif len(else_then_alternatives) == 1:
-            self._step.else_then_alternative = else_then_alternatives[0]
+            self._definition.else_then_alternative = else_then_alternatives[0]
 
-        return self._step
+        return self._definition
 
 
 class ConditionalSagaStep(SagaStep):

@@ -56,7 +56,7 @@ class LocalSagaStepWrapper(SagaStepWrapper):
 class LocalSagaStepMeta(SagaStepMeta):
     """TODO"""
 
-    _step: LocalSagaStep
+    _definition: LocalSagaStep
     _on_failure: Optional[LocalCallback]
 
     def __init__(self, *args, **kwargs):
@@ -66,10 +66,10 @@ class LocalSagaStepMeta(SagaStepMeta):
     @cached_property
     def definition(self):
         """TODO"""
-        self._step.on_execute(self._func)
+        self._definition.on_execute(self._inner)
         if self._on_failure is not None:
-            self._step.on_failure(self._on_failure)
-        return self._step
+            self._definition.on_failure(self._on_failure)
+        return self._definition
 
     @cached_property
     def on_failure(self) -> OnStepDecorator:

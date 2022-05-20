@@ -57,12 +57,12 @@ class SagaStepWrapper(Protocol):
 class SagaStepMeta:
     """TODO"""
 
-    _func: T
-    _step: SagaStep
+    _inner: T
+    _definition: SagaStep
 
-    def __init__(self, func: T, saga_step: SagaStep):
-        self._func = func
-        self._step = saga_step
+    def __init__(self, inner: T, definition: SagaStep):
+        self._inner = inner
+        self._definition = definition
 
     @property
     @abstractmethod
@@ -76,7 +76,7 @@ FN = TypeVar("FN", bound=Callable)
 class OnStepDecorator(Generic[FN]):
     """ "TODO"""
 
-    def __init__(self, attr_name: [str] = None, step_meta: Optional[SagaStepMeta] = None, *args, **kwargs):
+    def __init__(self, attr_name: [str] = None, step_meta: Optional[SagaStepMeta] = None):
         if attr_name is None or step_meta is None:
             raise ValueError("TODO")
         self.step_meta = step_meta
