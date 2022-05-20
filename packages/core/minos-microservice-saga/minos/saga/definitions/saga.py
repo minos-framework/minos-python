@@ -2,15 +2,13 @@ from __future__ import (
     annotations,
 )
 
+import math
 import warnings
 from collections.abc import (
     Iterable,
 )
 from inspect import (
     getmembers,
-)
-from operator import (
-    attrgetter,
 )
 from typing import (
     Any,
@@ -71,7 +69,7 @@ class SagaMeta:
         """TODO"""
         steps = getmembers(self._class, predicate=lambda x: isinstance(x, SagaStepWrapper))
         steps = map(lambda member: member[1].meta.definition, steps)
-        steps = sorted(steps, key=attrgetter("order"))
+        steps = sorted(steps, key=lambda s: s.order or math.inf)
 
         for step in steps:
             self._saga.add_step(step)
@@ -93,13 +91,16 @@ class Saga:
     def __init__(
         self, *args, steps: list[SagaStep] = None, committed: Optional[bool] = None, commit: None = None, **kwargs
     ):
+        self.steps = list()
+        self.committed = False
+
         if steps is None:
             steps = list()
+        for step in steps:
+            self.add_step(step)
 
         if committed is None:
             committed = len(steps)
-
-        self.steps = steps
         self.committed = committed
 
         if commit is not None:
