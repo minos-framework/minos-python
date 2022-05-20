@@ -44,23 +44,21 @@ if TYPE_CHECKING:
         RemoteSagaStep,
     )
 
-T = TypeVar("T")
-
 
 @runtime_checkable
-class SagaStepWrapper(Protocol):
+class SagaStepDecoratorWrapper(Protocol):
     """TODO"""
 
-    meta: SagaStepMeta
+    meta: SagaStepDecoratorMeta
 
 
-class SagaStepMeta:
+class SagaStepDecoratorMeta:
     """TODO"""
 
-    _inner: T
+    _inner: Any
     _definition: SagaStep
 
-    def __init__(self, inner: T, definition: SagaStep):
+    def __init__(self, inner: Any, definition: SagaStep):
         self._inner = inner
         self._definition = definition
 
@@ -73,10 +71,10 @@ class SagaStepMeta:
 FN = TypeVar("FN", bound=Callable)
 
 
-class OnStepDecorator(Generic[FN]):
+class OnSagaStepDecorator(Generic[FN]):
     """ "TODO"""
 
-    def __init__(self, attr_name: [str] = None, step_meta: Optional[SagaStepMeta] = None):
+    def __init__(self, attr_name: [str] = None, step_meta: Optional[SagaStepDecoratorMeta] = None):
         if attr_name is None or step_meta is None:
             raise ValueError("TODO")
         self.step_meta = step_meta
@@ -124,7 +122,7 @@ class SagaStep(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def __call__(self, func: Callable) -> SagaStepWrapper:
+    def __call__(self, func: Callable) -> SagaStepDecoratorWrapper:
         """TODO"""
 
     def conditional_step(self, *args, **kwargs) -> ConditionalSagaStep:

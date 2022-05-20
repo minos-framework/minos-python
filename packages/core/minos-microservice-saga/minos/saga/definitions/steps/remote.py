@@ -41,24 +41,24 @@ from ..types import (
     ResponseCallBack,
 )
 from .abc import (
-    OnStepDecorator,
+    OnSagaStepDecorator,
     SagaStep,
-    SagaStepMeta,
-    SagaStepWrapper,
+    SagaStepDecoratorMeta,
+    SagaStepDecoratorWrapper,
 )
 
 
-class RemoteSagaStepWrapper(SagaStepWrapper):
+class RemoteSagaStepDecoratorWrapper(SagaStepDecoratorWrapper):
     """TODO"""
 
-    meta: RemoteSagaStepMeta
-    on_success: type[OnStepDecorator[ResponseCallBack]]
-    on_error: type[OnStepDecorator[ResponseCallBack]]
-    on_failure: type[OnStepDecorator[RequestCallBack]]
+    meta: RemoteSagaStepDecoratorMeta
+    on_success: type[OnSagaStepDecorator[ResponseCallBack]]
+    on_error: type[OnSagaStepDecorator[ResponseCallBack]]
+    on_failure: type[OnSagaStepDecorator[RequestCallBack]]
     __call__: RequestCallBack
 
 
-class RemoteSagaStepMeta(SagaStepMeta):
+class RemoteSagaStepDecoratorMeta(SagaStepDecoratorMeta):
     """TODO"""
 
     _definition: RemoteSagaStep
@@ -85,22 +85,22 @@ class RemoteSagaStepMeta(SagaStepMeta):
         return self._definition
 
     @cached_property
-    def on_success(self) -> OnStepDecorator:
+    def on_success(self) -> OnSagaStepDecorator:
         """TODO"""
         # noinspection PyTypeChecker
-        return partial(OnStepDecorator, step_meta=self, attr_name="_on_success")
+        return partial(OnSagaStepDecorator, step_meta=self, attr_name="_on_success")
 
     @cached_property
-    def on_error(self) -> OnStepDecorator:
+    def on_error(self) -> OnSagaStepDecorator:
         """TODO"""
         # noinspection PyTypeChecker
-        return partial(OnStepDecorator, step_meta=self, attr_name="_on_error")
+        return partial(OnSagaStepDecorator, step_meta=self, attr_name="_on_error")
 
     @cached_property
-    def on_failure(self) -> OnStepDecorator:
+    def on_failure(self) -> OnSagaStepDecorator:
         """TODO"""
         # noinspection PyTypeChecker
-        return partial(OnStepDecorator, step_meta=self, attr_name="_on_failure")
+        return partial(OnSagaStepDecorator, step_meta=self, attr_name="_on_failure")
 
 
 class RemoteSagaStep(SagaStep):
@@ -140,8 +140,8 @@ class RemoteSagaStep(SagaStep):
 
         return cls(**raw)
 
-    def __call__(self, func: RequestCallBack) -> RemoteSagaStepWrapper:
-        meta = RemoteSagaStepMeta(func, self)
+    def __call__(self, func: RequestCallBack) -> RemoteSagaStepDecoratorWrapper:
+        meta = RemoteSagaStepDecoratorMeta(func, self)
         func.meta = meta
         func.on_success = meta.on_success
         func.on_error = meta.on_error

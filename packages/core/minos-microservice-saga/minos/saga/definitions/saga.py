@@ -37,37 +37,35 @@ from .steps import (
     LocalSagaStep,
     RemoteSagaStep,
     SagaStep,
-    SagaStepWrapper,
+    SagaStepDecoratorWrapper,
 )
 from .types import (
     LocalCallback,
     RequestCallBack,
 )
 
-SagaClass = TypeVar("SagaClass", bound=type)
-
 
 @runtime_checkable
-class SagaClassWrapper(Protocol):
+class SagaDecoratorWrapper(Protocol):
     """TODO"""
 
-    meta: SagaClassMeta
+    meta: SagaDecoratorMeta
 
 
-class SagaClassMeta:
+class SagaDecoratorMeta:
     """TODO"""
 
-    _class: SagaClass
+    _inner: type
     _definition: Saga
 
-    def __init__(self, func: SagaClass, saga: Saga):
-        self._class = func
+    def __init__(self, func: type, saga: Saga):
+        self._inner = func
         self._definition = saga
 
     @cached_property
     def definition(self) -> Saga:
         """TODO"""
-        steps = getmembers(self._class, predicate=lambda x: isinstance(x, SagaStepWrapper))
+        steps = getmembers(self._inner, predicate=lambda x: isinstance(x, SagaStepDecoratorWrapper))
         steps = list(map(lambda member: member[1].meta.definition, steps))
         for step in steps:
             if step.order is None:
@@ -111,8 +109,8 @@ class Saga:
             self.local_step(commit)
             self.committed = True
 
-    def __call__(self, type_: TP) -> Union[TP, SagaClassWrapper]:
-        type_.meta = SagaClassMeta(type_, self)
+    def __call__(self, type_: TP) -> Union[TP, SagaDecoratorWrapper]:
+        type_.meta = SagaDecoratorMeta(type_, self)
         return type_
 
     @classmethod

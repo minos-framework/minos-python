@@ -14,9 +14,9 @@ from minos.saga import (
     OrderPrecedenceException,
     RemoteSagaStep,
     Saga,
-    SagaClassMeta,
-    SagaClassWrapper,
     SagaContext,
+    SagaDecoratorMeta,
+    SagaDecoratorWrapper,
     SagaException,
     SagaExecution,
     SagaNotCommittedException,
@@ -41,10 +41,10 @@ class TestSagaClassMeta(unittest.TestCase):
             def step(self, context: SagaContext) -> SagaContext:
                 """For testing purposes."""
 
-        self.assertIsInstance(_Foo, SagaClassWrapper)
+        self.assertIsInstance(_Foo, SagaDecoratorWrapper)
 
         meta = _Foo.meta
-        self.assertIsInstance(meta, SagaClassMeta)
+        self.assertIsInstance(meta, SagaDecoratorMeta)
         self.assertEqual(meta.definition, Saga().local_step(_Foo.step).commit())
 
     def test_definition_raises_order(self):

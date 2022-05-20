@@ -3,13 +3,13 @@ from .operations import (
 )
 from .saga import (
     Saga,
-    SagaClassMeta,
-    SagaClassWrapper,
+    SagaDecoratorMeta,
+    SagaDecoratorWrapper,
 )
 from .steps import (
     ConditionalSagaStep,
-    ConditionalSagaStepMeta,
-    ConditionalSagaStepWrapper,
+    ConditionalSagaStepDecoratorMeta,
+    ConditionalSagaStepDecoratorWrapper,
     ElseThenAlternative,
     ElseThenAlternativeMeta,
     ElseThenAlternativeWrapper,
@@ -17,15 +17,15 @@ from .steps import (
     IfThenAlternativeMeta,
     IfThenAlternativeWrapper,
     LocalSagaStep,
-    LocalSagaStepMeta,
-    LocalSagaStepWrapper,
-    OnStepDecorator,
+    LocalSagaStepDecoratorMeta,
+    LocalSagaStepDecoratorWrapper,
+    OnSagaStepDecorator,
     RemoteSagaStep,
-    RemoteSagaStepMeta,
-    RemoteSagaStepWrapper,
+    RemoteSagaStepDecoratorMeta,
+    RemoteSagaStepDecoratorWrapper,
     SagaStep,
-    SagaStepMeta,
-    SagaStepWrapper,
+    SagaStepDecoratorMeta,
+    SagaStepDecoratorWrapper,
 )
 from .types import (
     ConditionCallback,

@@ -1,13 +1,13 @@
 from .abc import (
-    OnStepDecorator,
+    OnSagaStepDecorator,
     SagaStep,
-    SagaStepMeta,
-    SagaStepWrapper,
+    SagaStepDecoratorMeta,
+    SagaStepDecoratorWrapper,
 )
 from .conditional import (
     ConditionalSagaStep,
-    ConditionalSagaStepMeta,
-    ConditionalSagaStepWrapper,
+    ConditionalSagaStepDecoratorMeta,
+    ConditionalSagaStepDecoratorWrapper,
     ElseThenAlternative,
     ElseThenAlternativeMeta,
     ElseThenAlternativeWrapper,
@@ -17,11 +17,11 @@ from .conditional import (
 )
 from .local import (
     LocalSagaStep,
-    LocalSagaStepMeta,
-    LocalSagaStepWrapper,
+    LocalSagaStepDecoratorMeta,
+    LocalSagaStepDecoratorWrapper,
 )
 from .remote import (
     RemoteSagaStep,
-    RemoteSagaStepMeta,
-    RemoteSagaStepWrapper,
+    RemoteSagaStepDecoratorMeta,
+    RemoteSagaStepDecoratorWrapper,
 )

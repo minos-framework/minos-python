@@ -42,8 +42,8 @@ from ..types import (
 )
 from .abc import (
     SagaStep,
-    SagaStepMeta,
-    SagaStepWrapper,
+    SagaStepDecoratorMeta,
+    SagaStepDecoratorWrapper,
 )
 
 if TYPE_CHECKING:
@@ -51,16 +51,16 @@ if TYPE_CHECKING:
         Saga,
     )
 
-TP = TypeVar("TP", bound=type)
+ConditionalSagaStepClass = TypeVar("ConditionalSagaStepClass", bound=type)
 
 
-class ConditionalSagaStepWrapper(SagaStepWrapper):
+class ConditionalSagaStepDecoratorWrapper(SagaStepDecoratorWrapper):
     """TODO"""
 
-    meta: ConditionalSagaStepMeta
+    meta: ConditionalSagaStepDecoratorMeta
 
 
-class ConditionalSagaStepMeta(SagaStepMeta):
+class ConditionalSagaStepDecoratorMeta(SagaStepDecoratorMeta):
     """TODO"""
 
     _definition: ConditionalSagaStep
@@ -80,8 +80,9 @@ class ConditionalSagaStepMeta(SagaStepMeta):
 
         else_then_alternatives = getmembers(
             self._inner,
-            predicate=lambda x: isinstance(x, ElseThenAlternativeWrapper)
-            and isinstance(x.meta, ElseThenAlternativeMeta),
+            predicate=(
+                lambda x: isinstance(x, ElseThenAlternativeWrapper) and isinstance(x.meta, ElseThenAlternativeMeta)
+            ),
         )
         else_then_alternatives = list(map(lambda member: member[1].meta.alternative, else_then_alternatives))
         if len(else_then_alternatives) > 1:
@@ -130,8 +131,8 @@ class ConditionalSagaStep(SagaStep):
 
         return cls(**current)
 
-    def __call__(self, type_: TP) -> Union[TP, ConditionalSagaStepMeta]:
-        meta = ConditionalSagaStepMeta(type_, self)
+    def __call__(self, type_: ConditionalSagaStepClass) -> ConditionalSagaStepClass:
+        meta = ConditionalSagaStepDecoratorMeta(type_, self)
         type_.meta = meta
         return type_
 

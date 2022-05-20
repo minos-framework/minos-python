@@ -38,22 +38,22 @@ from ..types import (
     LocalCallback,
 )
 from .abc import (
-    OnStepDecorator,
+    OnSagaStepDecorator,
     SagaStep,
-    SagaStepMeta,
-    SagaStepWrapper,
+    SagaStepDecoratorMeta,
+    SagaStepDecoratorWrapper,
 )
 
 
-class LocalSagaStepWrapper(SagaStepWrapper):
+class LocalSagaStepDecoratorWrapper(SagaStepDecoratorWrapper):
     """TODO"""
 
-    meta: LocalSagaStepMeta
-    on_failure: type[OnStepDecorator[LocalCallback]]
+    meta: LocalSagaStepDecoratorMeta
+    on_failure: type[OnSagaStepDecorator[LocalCallback]]
     __call__: LocalCallback
 
 
-class LocalSagaStepMeta(SagaStepMeta):
+class LocalSagaStepDecoratorMeta(SagaStepDecoratorMeta):
     """TODO"""
 
     _definition: LocalSagaStep
@@ -72,10 +72,10 @@ class LocalSagaStepMeta(SagaStepMeta):
         return self._definition
 
     @cached_property
-    def on_failure(self) -> OnStepDecorator:
+    def on_failure(self) -> OnSagaStepDecorator:
         """TODO"""
         # noinspection PyTypeChecker
-        return partial(OnStepDecorator, step_meta=self, attr_name="_on_failure")
+        return partial(OnSagaStepDecorator, step_meta=self, attr_name="_on_failure")
 
 
 class LocalSagaStep(SagaStep):
@@ -105,8 +105,8 @@ class LocalSagaStep(SagaStep):
 
         return cls(**raw)
 
-    def __call__(self, func: LocalCallback) -> LocalSagaStepWrapper:
-        meta = LocalSagaStepMeta(func, self)
+    def __call__(self, func: LocalCallback) -> LocalSagaStepDecoratorWrapper:
+        meta = LocalSagaStepDecoratorMeta(func, self)
         func.meta = meta
         func.on_failure = meta.on_failure
         # noinspection PyTypeChecker

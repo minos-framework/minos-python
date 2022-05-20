@@ -46,9 +46,6 @@ class MySaga:
             """For testing purposes"""
 
 
-print(MySaga.meta.definition.raw)
-
-
 class TestConditionalSagaStep(unittest.TestCase):
     def setUp(self) -> None:
         self.if_then = [
