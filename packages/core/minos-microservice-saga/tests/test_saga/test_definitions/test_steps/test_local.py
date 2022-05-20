@@ -36,6 +36,7 @@ class TestLocalSagaStepDecoratorMeta(unittest.TestCase):
         def _fn(context: SagaContext) -> SagaContext:
             """For testing purposes"""
 
+        # noinspection PyUnusedLocal
         @_fn.on_failure()
         def _fn2(context: SagaContext) -> SagaContext:
             """For testing purposes"""

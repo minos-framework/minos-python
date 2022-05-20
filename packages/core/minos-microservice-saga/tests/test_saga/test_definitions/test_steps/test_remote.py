@@ -7,7 +7,11 @@ from minos.saga import (
     MultipleOnFailureException,
     MultipleOnSuccessException,
     RemoteSagaStep,
+    RemoteSagaStepDecoratorMeta,
+    RemoteSagaStepDecoratorWrapper,
+    SagaContext,
     SagaOperation,
+    SagaRequest,
     SagaStep,
     UndefinedOnExecuteException,
 )
@@ -17,6 +21,67 @@ from tests.utils import (
     handle_ticket_success,
     send_create_ticket,
 )
+
+
+class TestRemoteSagaStepDecoratorMeta(unittest.TestCase):
+    def test_constructor(self):
+        # noinspection PyUnusedLocal
+        @RemoteSagaStep()
+        def _fn(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        self.assertIsInstance(_fn, RemoteSagaStepDecoratorWrapper)
+        meta = _fn.meta
+        self.assertIsInstance(meta, RemoteSagaStepDecoratorMeta)
+        self.assertEqual(RemoteSagaStep(_fn), meta.definition)
+
+    def test_on_failure(self):
+        # noinspection PyUnusedLocal
+        @RemoteSagaStep()
+        def _fn(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        # noinspection PyUnusedLocal
+        @_fn.on_failure()
+        def _fn2(context: SagaContext) -> SagaRequest:
+            """For testing purposes"""
+
+        self.assertIsInstance(_fn, RemoteSagaStepDecoratorWrapper)
+        meta = _fn.meta
+        self.assertIsInstance(meta, RemoteSagaStepDecoratorMeta)
+        self.assertEqual(RemoteSagaStep(_fn, on_failure=_fn2), meta.definition)
+
+    def test_on_success(self):
+        # noinspection PyUnusedLocal
+        @RemoteSagaStep()
+        def _fn(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        # noinspection PyUnusedLocal
+        @_fn.on_success()
+        def _fn2(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        self.assertIsInstance(_fn, RemoteSagaStepDecoratorWrapper)
+        meta = _fn.meta
+        self.assertIsInstance(meta, RemoteSagaStepDecoratorMeta)
+        self.assertEqual(RemoteSagaStep(_fn, on_success=_fn2), meta.definition)
+
+    def test_on_error(self):
+        # noinspection PyUnusedLocal
+        @RemoteSagaStep()
+        def _fn(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        # noinspection PyUnusedLocal
+        @_fn.on_error()
+        def _fn2(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        self.assertIsInstance(_fn, RemoteSagaStepDecoratorWrapper)
+        meta = _fn.meta
+        self.assertIsInstance(meta, RemoteSagaStepDecoratorMeta)
+        self.assertEqual(RemoteSagaStep(_fn, on_error=_fn2), meta.definition)
 
 
 class TestRemoteSagaStep(unittest.TestCase):

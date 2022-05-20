@@ -11,7 +11,9 @@ from functools import (
 from typing import (
     Any,
     Optional,
+    Protocol,
     Union,
+    runtime_checkable,
 )
 
 from cached_property import (
@@ -48,7 +50,8 @@ from .abc import (
 )
 
 
-class RemoteSagaStepDecoratorWrapper(SagaStepDecoratorWrapper):
+@runtime_checkable
+class RemoteSagaStepDecoratorWrapper(SagaStepDecoratorWrapper, Protocol):
     """TODO"""
 
     meta: RemoteSagaStepDecoratorMeta
@@ -150,11 +153,14 @@ class RemoteSagaStep(SagaStep):
         return func
 
     def on_execute(
-        self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs
+        self,
+        operation: Union[SagaOperation[RequestCallBack], RequestCallBack],
+        parameters: Optional[SagaContext] = None,
+        **kwargs,
     ) -> RemoteSagaStep:
         """On execute method.
 
-        :param callback: The callback function to be called.
+        :param operation: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
         :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has order if it is not
             ``None``.
@@ -163,16 +169,22 @@ class RemoteSagaStep(SagaStep):
         if self.on_execute_operation is not None:
             raise MultipleOnExecuteException()
 
-        self.on_execute_operation = SagaOperation(callback, parameters, **kwargs)
+        if not isinstance(operation, SagaOperation):
+            operation = SagaOperation(operation, parameters, **kwargs)
+
+        self.on_execute_operation = operation
 
         return self
 
     def on_failure(
-        self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs
+        self,
+        operation: Union[SagaOperation[RequestCallBack], RequestCallBack],
+        parameters: Optional[SagaContext] = None,
+        **kwargs,
     ) -> RemoteSagaStep:
         """On failure method.
 
-        :param callback: The callback function to be called.
+        :param operation: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
         :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has order if it is not
             ``None``.
@@ -181,16 +193,22 @@ class RemoteSagaStep(SagaStep):
         if self.on_failure_operation is not None:
             raise MultipleOnFailureException()
 
-        self.on_failure_operation = SagaOperation(callback, parameters, **kwargs)
+        if not isinstance(operation, SagaOperation):
+            operation = SagaOperation(operation, parameters, **kwargs)
+
+        self.on_failure_operation = operation
 
         return self
 
     def on_success(
-        self, callback: ResponseCallBack, parameters: Optional[SagaContext] = None, **kwargs
+        self,
+        operation: Union[SagaOperation[ResponseCallBack], ResponseCallBack],
+        parameters: Optional[SagaContext] = None,
+        **kwargs,
     ) -> RemoteSagaStep:
         """On success method.
 
-        :param callback: The callback function to be called.
+        :param operation: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
         :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has order if it is not
             ``None``.
@@ -199,16 +217,22 @@ class RemoteSagaStep(SagaStep):
         if self.on_success_operation is not None:
             raise MultipleOnSuccessException()
 
-        self.on_success_operation = SagaOperation(callback, parameters, **kwargs)
+        if not isinstance(operation, SagaOperation):
+            operation = SagaOperation(operation, parameters, **kwargs)
+
+        self.on_success_operation = operation
 
         return self
 
     def on_error(
-        self, callback: ResponseCallBack, parameters: Optional[SagaContext] = None, **kwargs
+        self,
+        operation: Union[SagaOperation[ResponseCallBack], ResponseCallBack],
+        parameters: Optional[SagaContext] = None,
+        **kwargs,
     ) -> RemoteSagaStep:
         """On error method.
 
-        :param callback: The callback function to be called.
+        :param operation: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
         :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has order if it is not
             ``None``.
@@ -217,7 +241,10 @@ class RemoteSagaStep(SagaStep):
         if self.on_error_operation is not None:
             raise MultipleOnErrorException()
 
-        self.on_error_operation = SagaOperation(callback, parameters, **kwargs)
+        if not isinstance(operation, SagaOperation):
+            operation = SagaOperation(operation, parameters, **kwargs)
+
+        self.on_error_operation = operation
 
         return self
 
