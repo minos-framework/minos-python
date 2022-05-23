@@ -16,6 +16,13 @@ class SagaExecutionDatabaseOperationFactory(DatabaseOperationFactory, ABC):
     """Saga Execution Database Operation Factory class."""
 
     @abstractmethod
+    def build_create(self) -> DatabaseOperation:
+        """Build the database operation to create the delta table.
+
+        :return: A ``DatabaseOperation`` instance.s
+        """
+
+    @abstractmethod
     def build_store(self, uuid: UUID, **kwargs) -> DatabaseOperation:
         """Build the database operation to store a saga execution.
 

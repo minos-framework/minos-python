@@ -3,6 +3,7 @@ from uuid import (
 )
 
 from minos.common import (
+    ComposedDatabaseOperation,
     DatabaseOperation,
 )
 from minos.saga import (
@@ -28,6 +29,13 @@ class LmdbSagaExecutionDatabaseOperationFactory(SagaExecutionDatabaseOperationFa
         :return: A ``str`` value.
         """
         return "LocalState"
+
+    def build_create(self) -> DatabaseOperation:
+        """Build the database operation to create the delta table.
+
+        :return: A ``DatabaseOperation`` instance.s
+        """
+        return ComposedDatabaseOperation([])  # FIXME: create specific empty operation.
 
     def build_store(self, uuid: UUID, **kwargs) -> DatabaseOperation:
         """Build the database operation to store a saga execution.
