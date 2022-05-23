@@ -1,4 +1,5 @@
 import unittest
+import uuid
 from unittest.mock import (
     MagicMock,
     patch,
@@ -29,19 +30,25 @@ class TestSagaExecution(SagaTestCase):
         self.broker_publisher.send = self.publish_mock
 
     def test_from_raw(self):
-        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_definition(ADD_ORDER, user=self.user)
         observed = SagaExecution.from_raw(expected)
         self.assertEqual(expected, observed)
 
+    def test_from_raw_iterable(self):
+        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+            expected = SagaExecution.from_definition(ADD_ORDER, user=self.user)
+        observed = SagaExecution.from_raw(expected.raw.values())
+        self.assertEqual(expected, observed)
+
     def test_from_raw_without_user(self):
-        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_definition(ADD_ORDER)
         observed = SagaExecution.from_raw(expected)
         self.assertEqual(expected, observed)
 
     def test_created(self):
-        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             execution = SagaExecution.from_definition(ADD_ORDER, user=self.user)
 
         expected = {
@@ -87,7 +94,7 @@ class TestSagaExecution(SagaTestCase):
         self.assertEqual(expected, observed)
 
     def test_created_without_user(self):
-        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             execution = SagaExecution.from_definition(ADD_ORDER)
 
         expected = {
@@ -182,7 +189,7 @@ class TestSagaExecution(SagaTestCase):
             "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
         }
 
-        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_definition(ADD_ORDER, user=self.user)
             with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute()
@@ -268,7 +275,7 @@ class TestSagaExecution(SagaTestCase):
             "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
         }
 
-        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_definition(ADD_ORDER, user=self.user)
             with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute()
