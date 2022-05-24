@@ -71,6 +71,19 @@ class SagaExecution:
         *args,
         **kwargs,
     ):
+        """Initialize a Saga Execution.
+
+        :param definition: The ``Saga`` definition.
+        :param uuid: The identifier of the execution.
+        :param context: The execution context.
+        :param status: The status of the execution.
+        :param steps: The executed steps of the execution.
+        :param paused_step: The paused step of the execution.
+        :param already_rollback: ``True`` if already rollback of ``False`` otherwise.
+        :param user: The user that launched the execution.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        """
         definition.validate()  # If not valid, raises an exception.
 
         if steps is None:
