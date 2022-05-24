@@ -307,10 +307,10 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
     def test_model_with_model(self):
         Foo = ModelType.build("Foo", one=int)
         Bar = ModelType.build("Bar", one=int, two=str)
-        decoder = AvroDataDecoder(Foo)
-        value = Bar(1234, "5678")
-        observed = decoder.build(value)
-        self.assertEqual(Foo(1234), observed)
+
+        self.assertEqual(Foo(1234), AvroDataDecoder(Foo).build(Bar(1234, "5678")))
+        self.assertEqual(Foo(1234), AvroDataDecoder(Union[Foo, Bar]).build(Bar(1234, "5678")))
+        self.assertEqual(Bar(1234, "5678"), AvroDataDecoder(Union[Bar, Foo]).build(Bar(1234, "5678")))
 
     def test_model_from_dict(self):
         decoder = AvroDataDecoder(User)
