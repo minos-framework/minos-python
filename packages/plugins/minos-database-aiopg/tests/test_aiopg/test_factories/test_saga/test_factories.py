@@ -8,19 +8,29 @@ from minos.plugins.aiopg import (
     AiopgSagaExecutionDatabaseOperationFactory,
 )
 from minos.saga import (
+    Saga,
+    SagaExecution,
     SagaExecutionDatabaseOperationFactory,
 )
 
 
+def _fn(context):
+    pass
+
+
 class TestAiopgSagaExecutionDatabaseOperationFactory(unittest.TestCase):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.execution = SagaExecution.from_definition(Saga().local_step(_fn).commit())
+
     def test_is_subclass(self):
         self.assertTrue(issubclass(AiopgSagaExecutionDatabaseOperationFactory, SagaExecutionDatabaseOperationFactory))
 
-    @unittest.skip
     def test_build_store(self):
         factory = AiopgSagaExecutionDatabaseOperationFactory()
 
-        operation = factory.build_store(uuid4(), foo="bar")
+        operation = factory.build_store(**self.execution.raw)
         self.assertIsInstance(operation, AiopgDatabaseOperation)
 
     def test_build_load(self):

@@ -3,6 +3,10 @@ from __future__ import (
 )
 
 import json
+from typing import (
+    Any,
+    Optional,
+)
 from uuid import (
     UUID,
 )
@@ -88,10 +92,28 @@ class AiopgSagaExecutionDatabaseOperationFactory(SagaExecutionDatabaseOperationF
             ]
         )
 
-    def build_store(self, uuid: UUID, **kwargs) -> DatabaseOperation:
+    def build_store(
+        self,
+        uuid: UUID,
+        definition: dict[str, Any],
+        status: str,
+        executed_steps: list[dict[str, Any]],
+        paused_step: Optional[dict[str, Any]],
+        context: str,
+        already_rollback: bool,
+        user: Optional[UUID],
+        **kwargs,
+    ) -> DatabaseOperation:
         """Build the database operation to store a saga execution.
 
         :param uuid: The identifier of the saga execution.
+        :param definition: The ``Saga`` definition.
+        :param context: The execution context.
+        :param status: The status of the execution.
+        :param executed_steps: The executed steps of the execution.
+        :param paused_step: The paused step of the execution.
+        :param already_rollback: ``True`` if already rollback of ``False`` otherwise.
+        :param user: The user that launched the execution.
         :param kwargs: The attributes of the saga execution.
         :return: A ``DatabaseOperation`` instance.
         """
@@ -123,11 +145,17 @@ class AiopgSagaExecutionDatabaseOperationFactory(SagaExecutionDatabaseOperationF
             ;
             """
         )
-        # FIXME
-        kwargs["definition"] = json.dumps(kwargs["definition"])
-        kwargs["executed_steps"] = json.dumps(kwargs["executed_steps"])
-        kwargs["paused_step"] = json.dumps(kwargs["paused_step"])
-        return AiopgDatabaseOperation(query, {"uuid": uuid} | kwargs)
+        parameters = {
+            "uuid": uuid,
+            "definition": json.dumps(definition),
+            "status": status,
+            "executed_steps": json.dumps(executed_steps),
+            "paused_step": json.dumps(paused_step),
+            "context": context,
+            "already_rollback": already_rollback,
+            "user": user,
+        }
+        return AiopgDatabaseOperation(query, parameters)
 
     def build_load(self, uuid: UUID) -> DatabaseOperation:
         """Build the database operation to load a saga execution.
