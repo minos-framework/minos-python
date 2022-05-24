@@ -86,7 +86,7 @@ class SagaExecution:
         self.user = user
 
     @classmethod
-    def from_raw(cls, raw: Union[dict[str, Any], Iterable[Any], SagaExecution], **kwargs) -> SagaExecution:
+    def from_raw(cls, raw: Union[dict[str, Any], SagaExecution], **kwargs) -> SagaExecution:
         """Build a new instance from a raw representation.
 
         :param raw: The raw representation of the instance.
@@ -96,20 +96,7 @@ class SagaExecution:
         if isinstance(raw, cls):
             return raw
 
-        if isinstance(raw, dict):
-            raw = raw.copy()
-        else:
-            keys = [
-                "uuid",
-                "definition",
-                "status",
-                "executed_steps",
-                "paused_step",
-                "context",
-                "already_rollback",
-                "user",
-            ]
-            raw = dict(zip(keys, raw))
+        raw = dict(raw)
 
         current = raw | kwargs
         current["definition"] = Saga.from_raw(current["definition"])

@@ -38,7 +38,6 @@ class DatabaseSagaExecutionRepository(SagaExecutionRepository, DatabaseMixin[Sag
 
     async def _setup(self) -> None:
         await super()._setup()
-
         operation = self.database_operation_factory.build_create()
         await self.execute_on_database(operation)
 

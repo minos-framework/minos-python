@@ -35,12 +35,6 @@ class TestSagaExecution(SagaTestCase):
         observed = SagaExecution.from_raw(expected)
         self.assertEqual(expected, observed)
 
-    def test_from_raw_iterable(self):
-        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_definition(ADD_ORDER, user=self.user)
-        observed = SagaExecution.from_raw(expected.raw.values())
-        self.assertEqual(expected, observed)
-
     def test_from_raw_without_user(self):
         with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_definition(ADD_ORDER)
