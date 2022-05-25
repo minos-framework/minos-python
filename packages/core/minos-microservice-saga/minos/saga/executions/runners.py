@@ -1,3 +1,5 @@
+"""Runners module."""
+
 from __future__ import (
     annotations,
 )
@@ -19,9 +21,7 @@ from uuid import (
 )
 
 from minos.common import (
-    Config,
     Inject,
-    Injectable,
     NotProvidedException,
     PoolFactory,
     SetupMixin,
@@ -34,35 +34,32 @@ from minos.networks import (
     BrokerMessage,
 )
 
-from .context import (
+from ..context import (
     SagaContext,
 )
-from .definitions import (
+from ..definitions import (
     Saga,
 )
-from .exceptions import (
+from ..exceptions import (
     SagaFailedExecutionException,
     SagaPausedExecutionStepException,
 )
-from .executions import (
-    DatabaseSagaExecutionRepository,
-    SagaExecution,
-    SagaExecutionRepository,
-    SagaStatus,
-)
-from .messages import (
+from ..messages import (
     SagaResponse,
+)
+from .repositories import (
+    SagaExecutionRepository,
+)
+from .saga import (
+    SagaExecution,
+    SagaStatus,
 )
 
 logger = logging.getLogger(__name__)
 
 
-@Injectable("saga_manager")
-class SagaManager(SetupMixin):
-    """Saga Manager implementation class.
-
-    The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
-    """
+class SagaRunner(SetupMixin):
+    """Saga Runner class."""
 
     @Inject()
     def __init__(
@@ -74,7 +71,9 @@ class SagaManager(SetupMixin):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        self.storage = storage
+
+        if storage is None:
+            raise NotProvidedException(f"A {SagaExecutionRepository!r} instance is required.")
 
         if broker_pool is None and pool_factory is not None:
             broker_pool = pool_factory.get_pool("broker")
@@ -82,27 +81,8 @@ class SagaManager(SetupMixin):
         if broker_pool is None:
             raise NotProvidedException(f"A {BrokerClientPool!r} instance is required.")
 
+        self.storage = storage
         self.broker_pool = broker_pool
-
-    @classmethod
-    def _from_config(cls, config: Config, **kwargs) -> SagaManager:
-        """Build an instance from config.
-
-        :param args: Additional positional arguments.
-        :param config: Config instance.
-        :param kwargs: Additional named arguments.
-        :return: A new ``SagaManager`` instance.
-        """
-        storage = DatabaseSagaExecutionRepository.from_config(config, **kwargs)
-        return cls(storage=storage, **kwargs)
-
-    async def _setup(self) -> None:
-        await super()._setup()
-        await self.storage.setup()
-
-    async def _destroy(self) -> None:
-        await self.storage.destroy()
-        await super()._destroy()
 
     async def run(
         self,
@@ -126,7 +106,7 @@ class SagaManager(SetupMixin):
         :param response: The reply that relaunches a saga execution.
         :param user: The user identifier to be injected on remote steps.
         :param autocommit: If ``True`` the transactions are committed/rejected automatically. Otherwise, the ``commit``
-            or ``reject`` must to be called manually.
+            or ``reject`` must be called manually.
         :param pause_on_disk: If ``True`` the pauses until remote steps' responses are paused on disk (background,
             non-blocking the execution). Otherwise, the pauses are waited on memory (online, blocking the execution)
         :param raise_on_error: If ``True`` exceptions are raised on error. Otherwise, the execution is returned normally
@@ -187,36 +167,40 @@ class SagaManager(SetupMixin):
             else:
                 await self._run_with_pause_on_memory(execution, **kwargs)
         except SagaFailedExecutionException as exc:
-            await self.storage.store(execution)
             if raise_on_error:
                 raise exc
             logger.exception(f"The execution identified by {execution.uuid!s} failed")
         finally:
-            if (headers := REQUEST_HEADERS_CONTEXT_VAR.get()) is not None:
-                related_services = reduce(or_, (s.related_services for s in execution.executed_steps), set())
-                if execution.paused_step is not None:
-                    related_services.update(execution.paused_step.related_services)
-
-                if raw_related_services := headers.get("related_services"):
-                    related_services.update(raw_related_services.split(","))
-
-                headers["related_services"] = ",".join(related_services)
-
-        if execution.status == SagaStatus.Finished:
-            await self.storage.delete(execution)
+            await self.storage.store(execution)
+            self._update_request_headers(execution)
 
         if return_execution:
             return execution
 
         return execution.uuid
 
-    async def _run_with_pause_on_disk(self, execution: SagaExecution, autocommit: bool = True, **kwargs) -> None:
+    @staticmethod
+    def _update_request_headers(execution: SagaExecution) -> None:
+        if (headers := REQUEST_HEADERS_CONTEXT_VAR.get()) is None:
+            return
+
+        related_services = reduce(or_, (s.related_services for s in execution.executed_steps), set())
+        if execution.paused_step is not None:
+            related_services.update(execution.paused_step.related_services)
+
+        if raw_related_services := headers.get("related_services"):
+            related_services.update(raw_related_services.split(","))
+
+        headers["related_services"] = ",".join(related_services)
+
+    @staticmethod
+    async def _run_with_pause_on_disk(execution: SagaExecution, autocommit: bool = True, **kwargs) -> None:
         try:
             await execution.execute(autocommit=False, **kwargs)
             if autocommit:
                 await execution.commit(**kwargs)
         except SagaPausedExecutionStepException:
-            await self.storage.store(execution)
+            return
         except SagaFailedExecutionException as exc:
             if autocommit:
                 await execution.reject(**kwargs)
@@ -233,8 +217,8 @@ class SagaManager(SetupMixin):
                     try:
                         await execution.execute(response=response, autocommit=False, **kwargs)
                     except SagaPausedExecutionStepException:
+                        await self.storage.store(execution)
                         response = await self._get_response(broker, execution, **kwargs)
-                    await self.storage.store(execution)
             if autocommit:
                 await execution.commit(**kwargs)
         except SagaFailedExecutionException as exc:
