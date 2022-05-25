@@ -114,7 +114,6 @@ class SagaRunner(SetupMixin):
             but with ``Errored`` status.
         :param return_execution: If ``True`` the ``SagaExecution`` instance is returned. Otherwise, only the
             identifier (``UUID``) is returned.
-        # :param timeout: TODO
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
