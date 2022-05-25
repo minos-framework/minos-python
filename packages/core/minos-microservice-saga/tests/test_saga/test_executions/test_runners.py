@@ -91,24 +91,30 @@ class TestSagaRunner(SagaTestCase):
 
     async def test_run(self):
         expected = SagaExecution.from_definition(ADD_ORDER)
-        mock = AsyncMock(return_value=expected)
-        self.runner._run_new = mock
+        create_mock = AsyncMock()
+        run_mock = AsyncMock(return_value=expected)
+        self.runner._create = create_mock
+        self.runner._run = run_mock
 
         observed = await self.runner.run(ADD_ORDER)
         self.assertEqual(expected, observed)
 
     async def test_run_from_wrapper(self):
         expected = SagaExecution.from_definition(DeleteOrderSaga)
-        mock = AsyncMock(return_value=expected)
-        self.runner._run_new = mock
+        create_mock = AsyncMock()
+        run_mock = AsyncMock(return_value=expected)
+        self.runner._create = create_mock
+        self.runner._run = run_mock
 
         observed = await self.runner.run(DeleteOrderSaga)
         self.assertEqual(expected, observed)
 
     async def test_load_and_run(self):
         expected = SagaExecution.from_definition(ADD_ORDER)
-        mock = AsyncMock(return_value=expected)
-        self.runner._load_and_run = mock
+        load_mock = AsyncMock()
+        run_mock = AsyncMock(return_value=expected)
+        self.runner._load = load_mock
+        self.runner._run = run_mock
 
         observed = await self.runner.run(response=SagaResponse(uuid=expected.uuid))
         self.assertEqual(expected, observed)
