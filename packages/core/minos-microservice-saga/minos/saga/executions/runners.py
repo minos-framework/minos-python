@@ -1,3 +1,5 @@
+"""Runners module."""
+
 from __future__ import (
     annotations,
 )
@@ -57,7 +59,7 @@ logger = logging.getLogger(__name__)
 
 
 class SagaRunner(SetupMixin):
-    """TODO"""
+    """Saga Runner class."""
 
     @Inject()
     def __init__(

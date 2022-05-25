@@ -1,3 +1,5 @@
+"""Managers module."""
+
 from __future__ import (
     annotations,
 )
@@ -125,5 +127,9 @@ class SagaManager(SetupMixin):
         )
 
     async def get(self, uuid: UUID) -> SagaExecution:
-        """TODO"""
+        """Get a saga execution by identifier.
+
+        :param uuid: The identifier of the execution..
+        :return: A ``SagaExecution`` instance.
+        """
         return await self.storage.load(uuid)
