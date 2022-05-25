@@ -24,6 +24,9 @@ from minos.networks import (
     BrokerMessageV1Payload,
     BrokerPublisher,
 )
+from minos.saga import (
+    SagaManager,
+)
 from minos.transactions import (
     TransactionRepository,
 )
@@ -56,6 +59,7 @@ class Aggregate(Generic[RT], SetupMixin):
     snapshot_repository: SnapshotRepository
     repository: EntityRepository
     broker_publisher: BrokerPublisher
+    saga_manager: SagaManager
 
     @Inject()
     def __init__(
@@ -64,6 +68,7 @@ class Aggregate(Generic[RT], SetupMixin):
         delta_repository: DeltaRepository,
         snapshot_repository: SnapshotRepository,
         broker_publisher: BrokerPublisher,
+        saga_manager: SagaManager,
         *args,
         **kwargs,
     ):
@@ -75,6 +80,8 @@ class Aggregate(Generic[RT], SetupMixin):
             raise NotProvidedException(f"A {SnapshotRepository!r} object must be provided.")
         if broker_publisher is None:
             raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
+        if saga_manager is None:
+            raise NotProvidedException(f"A {SagaManager!r} object must be provided.")
 
         super().__init__(*args, **kwargs)
 
@@ -86,6 +93,7 @@ class Aggregate(Generic[RT], SetupMixin):
         self.delta_repository = delta_repository
         self.snapshot_repository = snapshot_repository
         self.broker_publisher = broker_publisher
+        self.saga_manager = saga_manager
 
     @classmethod
     def _from_config(cls, config: Config, **kwargs) -> Aggregate:

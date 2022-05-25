@@ -1,44 +1,7 @@
-service:
-    name: foo
-    aggregate: tests.utils.Foo
-rest:
-    host: localhost
-    port: 8900
-broker:
-    host: localhost
-    port: 9092
-    queue:
-        client: minos.common.testing.MockedDatabaseClient
-        database: order_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 10
-        retry: 2
-repository:
-    client: minos.common.testing.MockedDatabaseClient
-    database: order_db
-    user: minos
-    password: min0s
-    host: localhost
-    port: 5432
-snapshot:
-    client: minos.common.testing.MockedDatabaseClient
-    database: order_db
-    user: minos
-    password: min0s
-    host: localhost
-    port: 5432
-events:
-    service: tests.utils.FakeQueryService
-commands:
-    service: tests.utils.FakeCommandService
-queries:
-    service: tests.utils.FakeQueryService
-saga:
-    storage:
-        path: "./order.lmdb"
-discovery:
-    host: discovery-service
-    port: 8080
+version: 2
+name: foo
+aggregate:
+  client: tests.utils.FakeAggregate
+services:
+  - tests.utils.FakeQueryService
+  - tests.utils.FakeCommandService

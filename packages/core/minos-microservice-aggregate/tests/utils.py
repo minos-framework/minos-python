@@ -40,6 +40,10 @@ from minos.networks import (
     InMemoryBrokerPublisher,
     InMemoryBrokerSubscriberBuilder,
 )
+from minos.saga import (
+    SagaManager,
+)
+from minos.saga import testing as saga_testing
 from minos.transactions import (
     InMemoryTransactionRepository,
 )
@@ -53,6 +57,7 @@ class AggregateTestCase(MinosTestCase, ABC):
     testing_module = {
         "aggregate": testing,
         "transactions": transactions_testing,
+        "saga": saga_testing,
     }
 
     def get_config_file_path(self):
@@ -74,6 +79,9 @@ class AggregateTestCase(MinosTestCase, ABC):
         snapshot_repository = InMemorySnapshotRepository(
             delta_repository=delta_repository, transaction_repository=transaction_repository
         )
+        saga_manager = SagaManager.from_config(
+            self.config, database_pool=pool_factory.get_pool("database"), broker_pool=pool_factory.get_pool("broker")
+        )
         return [
             pool_factory,
             broker_publisher,
@@ -81,6 +89,7 @@ class AggregateTestCase(MinosTestCase, ABC):
             transaction_repository,
             delta_repository,
             snapshot_repository,
+            saga_manager,
         ]
 
 
