@@ -318,6 +318,7 @@ class IfThenAlternative:
         """
 
         return {
+            "order": self.order,
             "condition": self.condition.raw,
             "saga": self.saga.raw,
         }
