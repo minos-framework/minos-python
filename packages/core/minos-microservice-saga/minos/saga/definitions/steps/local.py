@@ -1,3 +1,5 @@
+"""Local Step Definitions module."""
+
 from __future__ import (
     annotations,
 )
@@ -49,7 +51,7 @@ from .abc import (
 
 @runtime_checkable
 class LocalSagaStepDecoratorWrapper(SagaStepDecoratorWrapper, Protocol):
-    """TODO"""
+    """Local Saga Step Decorator Wrapper class."""
 
     meta: LocalSagaStepDecoratorMeta
     on_failure: type[SagaOperationDecorator[LocalCallback]]
@@ -57,7 +59,7 @@ class LocalSagaStepDecoratorWrapper(SagaStepDecoratorWrapper, Protocol):
 
 
 class LocalSagaStepDecoratorMeta(SagaStepDecoratorMeta):
-    """TODO"""
+    """Local Saga Step Decorator Meta class."""
 
     _definition: LocalSagaStep
     _on_failure: Optional[LocalCallback]
@@ -68,7 +70,10 @@ class LocalSagaStepDecoratorMeta(SagaStepDecoratorMeta):
 
     @cached_property
     def definition(self):
-        """TODO"""
+        """Get the step definition.
+
+        :return: A ``SagaStep`` instance.
+        """
         self._definition.on_execute(self._inner)
         if self._on_failure is not None:
             self._definition.on_failure(self._on_failure)
@@ -76,9 +81,12 @@ class LocalSagaStepDecoratorMeta(SagaStepDecoratorMeta):
 
     @cached_property
     def on_failure(self) -> SagaOperationDecorator:
-        """TODO"""
+        """Get the on failure decorator.
+
+        :return: A ``SagaOperationDecorator`` type.
+        """
         # noinspection PyTypeChecker
-        return partial(SagaOperationDecorator, step_meta=self, attr_name="_on_failure")
+        return partial(SagaOperationDecorator[LocalCallback], step_meta=self, attr_name="_on_failure")
 
 
 class LocalSagaStep(SagaStep):
@@ -109,6 +117,11 @@ class LocalSagaStep(SagaStep):
         return cls(**raw)
 
     def __call__(self, func: LocalCallback) -> LocalSagaStepDecoratorWrapper:
+        """Decorate the given function.
+
+        :param func: The function to be decorated.
+        :return: The decorated function.
+        """
         meta = LocalSagaStepDecoratorMeta(func, self)
         func.meta = meta
         func.on_failure = meta.on_failure

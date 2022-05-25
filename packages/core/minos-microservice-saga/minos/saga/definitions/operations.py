@@ -1,3 +1,5 @@
+"""Operation module."""
+
 from __future__ import (
     annotations,
 )
@@ -31,7 +33,7 @@ T = TypeVar("T", bound=Callable)
 
 
 class SagaOperationDecorator(Generic[T]):
-    """ "TODO"""
+    """Saga Operation Decorator class."""
 
     def __init__(self, attr_name: str = None, step_meta: SagaStepDecoratorMeta = None, *args, **kwargs):
         if attr_name is None:

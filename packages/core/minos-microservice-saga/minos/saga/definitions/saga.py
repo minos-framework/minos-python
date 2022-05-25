@@ -1,3 +1,5 @@
+"""Saga definitions module."""
+
 from __future__ import (
     annotations,
 )
@@ -50,13 +52,13 @@ from .types import (
 
 @runtime_checkable
 class SagaDecoratorWrapper(Protocol):
-    """TODO"""
+    """Saga Decorator Wrapper class."""
 
     meta: SagaDecoratorMeta
 
 
 class SagaDecoratorMeta:
-    """TODO"""
+    """Saga Decorator Meta class."""
 
     _inner: type
     _definition: Saga
@@ -67,7 +69,10 @@ class SagaDecoratorMeta:
 
     @cached_property
     def definition(self) -> Saga:
-        """TODO"""
+        """Get the saga definition.
+
+        :return: A ``Saga`` instance.
+        """
         steps = getmembers(self._inner, predicate=lambda x: isinstance(x, SagaStepDecoratorWrapper))
         steps = list(map(lambda member: member[1].meta.definition, steps))
         for step in steps:
@@ -113,6 +118,11 @@ class Saga:
             self.committed = True
 
     def __call__(self, type_: TP) -> Union[TP, SagaDecoratorWrapper]:
+        """Decorate the given type.
+
+        :param type_: The type to be decorated.
+        :return: The decorated type.
+        """
         type_.meta = SagaDecoratorMeta(type_, self)
         return type_
 
@@ -182,11 +192,11 @@ class Saga:
         return self.add_step(step, RemoteSagaStep)
 
     def add_step(self, step: Optional[Union[SagaOperation, T]], step_cls: type[T] = SagaStep) -> T:
-        """TODO
+        """Add a new step.
 
-        :param step: TODO
-        :param step_cls: TODO
-        :return: TODO
+        :param step: The step to be added.
+        :param step_cls: The step class (for validation purposes).
+        :return: The added step.
         """
         if self.committed:
             raise AlreadyCommittedException("It is not possible to add more steps to an already committed saga.")

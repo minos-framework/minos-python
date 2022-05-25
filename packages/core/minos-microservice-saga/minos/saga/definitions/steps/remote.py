@@ -1,3 +1,5 @@
+"""Remote Step Definitions module."""
+
 from __future__ import (
     annotations,
 )
@@ -52,7 +54,7 @@ from .abc import (
 
 @runtime_checkable
 class RemoteSagaStepDecoratorWrapper(SagaStepDecoratorWrapper, Protocol):
-    """TODO"""
+    """Remote Saga Step Decorator Wrapper class."""
 
     meta: RemoteSagaStepDecoratorMeta
     on_success: type[SagaOperationDecorator[ResponseCallBack]]
@@ -62,7 +64,7 @@ class RemoteSagaStepDecoratorWrapper(SagaStepDecoratorWrapper, Protocol):
 
 
 class RemoteSagaStepDecoratorMeta(SagaStepDecoratorMeta):
-    """TODO"""
+    """Remote Saga Step Decorator Meta class."""
 
     _definition: RemoteSagaStep
     _on_success: Optional[ResponseCallBack]
@@ -77,7 +79,10 @@ class RemoteSagaStepDecoratorMeta(SagaStepDecoratorMeta):
 
     @cached_property
     def definition(self):
-        """TODO"""
+        """Get the step definition.
+
+        :return: A ``SagaStep`` instance.
+        """
         self._definition.on_execute(self._inner)
         if self._on_success is not None:
             self._definition.on_success(self._on_success)
@@ -89,21 +94,30 @@ class RemoteSagaStepDecoratorMeta(SagaStepDecoratorMeta):
 
     @cached_property
     def on_success(self) -> SagaOperationDecorator:
-        """TODO"""
+        """Get the on success decorator.
+
+        :return: A ``SagaOperationDecorator`` type.
+        """
         # noinspection PyTypeChecker
-        return partial(SagaOperationDecorator, step_meta=self, attr_name="_on_success")
+        return partial(SagaOperationDecorator[ResponseCallBack], step_meta=self, attr_name="_on_success")
 
     @cached_property
     def on_error(self) -> SagaOperationDecorator:
-        """TODO"""
+        """Get the on error decorator.
+
+        :return: A ``SagaOperationDecorator`` type.
+        """
         # noinspection PyTypeChecker
-        return partial(SagaOperationDecorator, step_meta=self, attr_name="_on_error")
+        return partial(SagaOperationDecorator[ResponseCallBack], step_meta=self, attr_name="_on_error")
 
     @cached_property
     def on_failure(self) -> SagaOperationDecorator:
-        """TODO"""
+        """Get the on failure decorator.
+
+        :return: A ``SagaOperationDecorator`` type.
+        """
         # noinspection PyTypeChecker
-        return partial(SagaOperationDecorator, step_meta=self, attr_name="_on_failure")
+        return partial(SagaOperationDecorator[RequestCallBack], step_meta=self, attr_name="_on_failure")
 
 
 class RemoteSagaStep(SagaStep):
@@ -144,6 +158,11 @@ class RemoteSagaStep(SagaStep):
         return cls(**raw)
 
     def __call__(self, func: RequestCallBack) -> RemoteSagaStepDecoratorWrapper:
+        """Decorate the given function.
+
+        :param func: The function to be decorated.
+        :return: The decorated function.
+        """
         meta = RemoteSagaStepDecoratorMeta(func, self)
         func.meta = meta
         func.on_success = meta.on_success

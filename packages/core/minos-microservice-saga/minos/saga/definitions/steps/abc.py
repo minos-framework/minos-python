@@ -1,3 +1,5 @@
+"""Base Step Definitions module."""
+
 from __future__ import (
     annotations,
 )
@@ -45,13 +47,13 @@ if TYPE_CHECKING:
 
 @runtime_checkable
 class SagaStepDecoratorWrapper(Protocol):
-    """TODO"""
+    """Saga Step Decorator Wrapper class."""
 
     meta: SagaStepDecoratorMeta
 
 
 class SagaStepDecoratorMeta:
-    """TODO"""
+    """Saga Step Decorator Meta class."""
 
     _inner: Any
     _definition: SagaStep
@@ -63,7 +65,10 @@ class SagaStepDecoratorMeta:
     @property
     @abstractmethod
     def definition(self) -> SagaStep:
-        """TODO"""
+        """Get the step definition.
+
+        :return: A ``SagaStep`` instance.
+        """
 
 
 class SagaStep(ABC):
@@ -104,7 +109,11 @@ class SagaStep(ABC):
 
     @abstractmethod
     def __call__(self, func: Callable) -> SagaStepDecoratorWrapper:
-        """TODO"""
+        """Decorate the given function.
+
+        :param func: The function to be decorated.
+        :return: The decorated function.
+        """
 
     def conditional_step(self, *args, **kwargs) -> ConditionalSagaStep:
         """Create a new conditional step in the ``Saga``.
