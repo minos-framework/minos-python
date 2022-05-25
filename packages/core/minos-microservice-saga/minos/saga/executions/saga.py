@@ -20,14 +20,12 @@ from uuid import (
     UUID,
 )
 
-from .. import (
-    SagaDecoratorWrapper,
-)
 from ..context import (
     SagaContext,
 )
 from ..definitions import (
     Saga,
+    SagaDecoratorWrapper,
     SagaStep,
 )
 from ..exceptions import (

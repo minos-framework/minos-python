@@ -1,3 +1,5 @@
+"""Conditional Step Definitions module."""
+
 from __future__ import (
     annotations,
 )
@@ -55,19 +57,22 @@ if TYPE_CHECKING:
 
 @runtime_checkable
 class ConditionalSagaStepDecoratorWrapper(SagaStepDecoratorWrapper, Protocol):
-    """TODO"""
+    """Conditional Saga Step Decorator Wrapper class."""
 
     meta: ConditionalSagaStepDecoratorMeta
 
 
 class ConditionalSagaStepDecoratorMeta(SagaStepDecoratorMeta):
-    """TODO"""
+    """Conditional Saga Step Decorator Meta class."""
 
     _definition: ConditionalSagaStep
 
     @cached_property
     def definition(self):
-        """TODO"""
+        """Get the step definition.
+
+        :return: A ``SagaStep`` instance.
+        """
         if_then_alternatives = getmembers(
             self._inner,
             predicate=(
@@ -140,6 +145,11 @@ class ConditionalSagaStep(SagaStep):
         return cls(**current)
 
     def __call__(self, type_: TP) -> Union[TP, ConditionalSagaStepDecoratorWrapper]:
+        """Decorate the given type.
+
+        :param type_: The type to be decorated.
+        :return: The decorated type.
+        """
         meta = ConditionalSagaStepDecoratorMeta(type_, self)
         type_.meta = meta
         return type_
@@ -226,14 +236,14 @@ class ConditionalSagaStep(SagaStep):
 
 @runtime_checkable
 class IfThenAlternativeDecoratorWrapper(Protocol):
-    """TODO"""
+    """If Then Alternative Decorator Wrapper class."""
 
     meta: IfThenAlternativeDecoratorMeta
     __call__: ConditionCallback
 
 
 class IfThenAlternativeDecoratorMeta:
-    """TODO"""
+    """If Then Alternative Decorator Meta class."""
 
     def __init__(self, inner: ConditionCallback, alternative: IfThenAlternative):
         self._inner = inner
@@ -241,7 +251,10 @@ class IfThenAlternativeDecoratorMeta:
 
     @cached_property
     def alternative(self) -> IfThenAlternative:
-        """TODO"""
+        """Get the if-then alternative.
+
+        :return: A ``IfThenAlternative`` instance.
+        """
         self._alternative.condition = SagaOperation(self._inner)
         return self._alternative
 
@@ -305,6 +318,7 @@ class IfThenAlternative:
         """
 
         return {
+            "order": self.order,
             "condition": self.condition.raw,
             "saga": self.saga.raw,
         }
@@ -324,14 +338,14 @@ class IfThenAlternative:
 
 @runtime_checkable
 class ElseThenAlternativeDecoratorWrapper(Protocol):
-    """TODO"""
+    """Else Then Alternative Decorator Wrapper class."""
 
     meta: ElseThenAlternativeDecoratorMeta
     __call__: Callable
 
 
 class ElseThenAlternativeDecoratorMeta:
-    """TODO"""
+    """Else Then Alternative Decorator Meta class."""
 
     def __init__(self, inner: Callable, alternative: ElseThenAlternative):
         self._inner = inner
@@ -339,7 +353,10 @@ class ElseThenAlternativeDecoratorMeta:
 
     @cached_property
     def alternative(self) -> ElseThenAlternative:
-        """TODO"""
+        """Get the else-then alternative.
+
+        :return: A ``ElseThenAlternative`` instance.
+        """
         return self._alternative
 
 

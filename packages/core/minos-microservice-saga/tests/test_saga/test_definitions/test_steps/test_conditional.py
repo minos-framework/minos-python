@@ -219,7 +219,7 @@ class TestIfThenAlternativeMeta(unittest.TestCase):
 
 class TestIfThenAlternative(unittest.TestCase):
     def setUp(self) -> None:
-        self.alternative = IfThenAlternative(ADD_ORDER, add_order_condition)
+        self.alternative = IfThenAlternative(ADD_ORDER, add_order_condition, order=3)
 
     def test_condition(self):
         self.assertEqual(SagaOperation(add_order_condition), self.alternative.condition)
@@ -233,13 +233,13 @@ class TestIfThenAlternative(unittest.TestCase):
             self.assertEqual(1, mock.call_count)
 
     def test_raw(self):
-        expected = {"condition": {"callback": "tests.utils.add_order_condition"}, "saga": ADD_ORDER.raw}
+        expected = {"order": 3, "condition": {"callback": "tests.utils.add_order_condition"}, "saga": ADD_ORDER.raw}
 
         self.assertEqual(expected, self.alternative.raw)
 
     def test_from_raw(self):
         observed = IfThenAlternative.from_raw(
-            {"condition": {"callback": "tests.utils.add_order_condition"}, "saga": ADD_ORDER.raw}
+            {"order": 3, "condition": {"callback": "tests.utils.add_order_condition"}, "saga": ADD_ORDER.raw}
         )
         self.assertEqual(self.alternative, observed)
 
