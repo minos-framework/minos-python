@@ -24,7 +24,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Optional,
-    Type,
     TypeVar,
     Union,
     get_args,
@@ -241,7 +240,7 @@ class AvroDataDecoder(DataDecoder):
                 pass
         raise DataDecoderTypeException(UUID, data)
 
-    def _build_model(self, type_: Type[Model], data: Any, **kwargs) -> Any:
+    def _build_model(self, type_: type[Model], data: Any, **kwargs) -> Any:
         if is_type_subclass(type_) and isinstance(data, type_):
             return data
         return self._build_model_type(ModelType.from_model(type_), data, **kwargs)
@@ -254,7 +253,7 @@ class AvroDataDecoder(DataDecoder):
         if (ans := type_.model_cls.decode_data(self, data, type_, **kwargs)) is not MissingSentinel:
             return ans
 
-        if isinstance(data, dict):
+        if isinstance(data, Mapping):
             with suppress(Exception):
                 decoded_data = {
                     field_name: self._build(field_type, data[field_name], **kwargs)
