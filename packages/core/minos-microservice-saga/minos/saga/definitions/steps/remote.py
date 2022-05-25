@@ -180,7 +180,7 @@ class RemoteSagaStep(SagaStep):
 
         :param operation: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
-        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has order if it is not
+        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has priority if it is not
             ``None``.
         :return: A ``self`` reference.
         """
@@ -204,7 +204,7 @@ class RemoteSagaStep(SagaStep):
 
         :param operation: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
-        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has order if it is not
+        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has priority if it is not
             ``None``.
         :return: A ``self`` reference.
         """
@@ -228,7 +228,7 @@ class RemoteSagaStep(SagaStep):
 
         :param operation: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
-        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has order if it is not
+        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has priority if it is not
             ``None``.
         :return: A ``self`` reference.
         """
@@ -252,7 +252,7 @@ class RemoteSagaStep(SagaStep):
 
         :param operation: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
-        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has order if it is not
+        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has priority if it is not
             ``None``.
         :return: A ``self`` reference.
         """
