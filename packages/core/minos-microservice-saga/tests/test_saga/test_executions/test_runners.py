@@ -38,6 +38,7 @@ from minos.saga.testing import (
 from tests.utils import (
     ADD_ORDER,
     DELETE_ORDER,
+    DeleteOrderSaga,
     Foo,
     SagaTestCase,
 )
@@ -87,6 +88,30 @@ class TestSagaRunner(SagaTestCase):
     async def test_context_runner(self):
         async with self.runner as runner:
             self.assertIsInstance(runner, SagaRunner)
+
+    async def test_run(self):
+        expected = SagaExecution.from_definition(ADD_ORDER)
+        mock = AsyncMock(return_value=expected)
+        self.runner._run_new = mock
+
+        observed = await self.runner.run(ADD_ORDER)
+        self.assertEqual(expected, observed)
+
+    async def test_run_from_wrapper(self):
+        expected = SagaExecution.from_definition(DeleteOrderSaga)
+        mock = AsyncMock(return_value=expected)
+        self.runner._run_new = mock
+
+        observed = await self.runner.run(DeleteOrderSaga)
+        self.assertEqual(expected, observed)
+
+    async def test_load_and_run(self):
+        expected = SagaExecution.from_definition(ADD_ORDER)
+        mock = AsyncMock(return_value=expected)
+        self.runner._load_and_run = mock
+
+        observed = await self.runner.run(response=SagaResponse(uuid=expected.uuid))
+        self.assertEqual(expected, observed)
 
     async def test_run_with_pause_on_memory(self):
         self.broker_subscriber_builder.with_messages(

@@ -1,4 +1,5 @@
 import inspect
+import sys
 from typing import (
     Any,
     Callable,
@@ -37,7 +38,25 @@ class Executor:
         if operation.parameterized:
             kwargs = {**operation.parameters, **kwargs}
 
-        return await self.exec_function(operation.callback, *args, **kwargs)
+        try:
+            func = self._get_method(operation.callback)
+        except Exception:  # FIXME
+            func = operation.callback
+
+        return await self.exec_function(func, *args, **kwargs)
+
+    def _get_method(self, func) -> type:
+        cls = self._get_cls(func)
+        obj = cls()
+        method = getattr(obj, func.__name__)
+        return method
+
+    @staticmethod
+    def _get_cls(func):
+        vals = vars(sys.modules[func.__module__])
+        for attr in func.__qualname__.split(".")[:-1]:
+            vals = vals[attr]
+        return vals
 
     async def exec_function(self, func: Callable, *args, **kwargs) -> Any:
         """Execute a function.

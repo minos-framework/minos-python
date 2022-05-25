@@ -24,6 +24,7 @@ from .context import (
 )
 from .definitions import (
     Saga,
+    SagaDecoratorWrapper,
 )
 from .executions import (
     DatabaseSagaExecutionRepository,
@@ -83,7 +84,7 @@ class SagaManager(SetupMixin):
 
     async def run(
         self,
-        definition: Optional[Saga] = None,
+        definition: Optional[Union[Saga, SagaDecoratorWrapper]] = None,
         context: Optional[SagaContext] = None,
         *,
         response: Optional[SagaResponse] = None,
@@ -113,7 +114,6 @@ class SagaManager(SetupMixin):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-
         return await self.runner.run(
             definition=definition,
             context=context,
