@@ -101,6 +101,8 @@ class RemoteSagaStepExecution(SagaStepExecution):
             await self.rollback(context, *args, **kwargs)
             raise exc
 
+        self.status = SagaStepStatus.FinishedOnSuccess
+
         return context
 
     async def _execute_on_error(self, context: SagaContext, response: SagaResponse, *args, **kwargs) -> SagaContext:
@@ -114,6 +116,8 @@ class RemoteSagaStepExecution(SagaStepExecution):
             self.status = SagaStepStatus.ErroredOnError
             await self.rollback(context, *args, **kwargs)
             raise exc
+
+        self.status = SagaStepStatus.FinishedOnError
 
         return context
 
