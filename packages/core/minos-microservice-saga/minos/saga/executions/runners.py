@@ -6,6 +6,9 @@ from __future__ import (
 
 import logging
 import warnings
+from asyncio import (
+    wait_for,
+)
 from functools import (
     reduce,
 )
@@ -96,6 +99,7 @@ class SagaRunner(SetupMixin):
         pause_on_disk: bool = False,
         raise_on_error: bool = True,
         return_execution: bool = True,
+        timeout: Optional[float] = 60.0,
         **kwargs,
     ) -> Union[UUID, SagaExecution]:
         """Perform a run of a ``Saga``.
@@ -114,6 +118,7 @@ class SagaRunner(SetupMixin):
             but with ``Errored`` status.
         :param return_execution: If ``True`` the ``SagaExecution`` instance is returned. Otherwise, only the
             identifier (``UUID``) is returned.
+        :param timeout: TODO
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
@@ -125,7 +130,7 @@ class SagaRunner(SetupMixin):
         else:
             execution = await self._load(response)
 
-        return await self._run(
+        future = self._run(
             execution,
             response=response,
             autocommit=autocommit,
@@ -134,6 +139,7 @@ class SagaRunner(SetupMixin):
             return_execution=return_execution,
             **kwargs,
         )
+        return await wait_for(future, timeout=timeout)
 
     @staticmethod
     async def _create(definition: Saga, context: Optional[SagaContext], user: Optional[UUID]) -> SagaExecution:
