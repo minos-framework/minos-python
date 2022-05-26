@@ -64,7 +64,7 @@ class Event(DeclarativeModel):
 
     def __lt__(self, other: Any) -> bool:
         return isinstance(other, type(self)) and (
-            (self.name == other.name and self.version < other.version) or self.created_at < other.created_at
+            (self.uuid == other.uuid and self.version < other.version) or (self.created_at < other.created_at)
         )
 
     def __getitem__(self, item: str) -> Any:
