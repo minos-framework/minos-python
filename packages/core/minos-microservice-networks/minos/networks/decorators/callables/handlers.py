@@ -114,7 +114,6 @@ class HandlerMeta:
 
         _wrapper.meta = self
         _wrapper.check = self.check
-        _wrapper.__decorators__ = self.decorators  # FIXME: This attribute should be removed in future versions.
 
         return _wrapper
 
@@ -139,7 +138,6 @@ class HandlerMeta:
 
         _wrapper.meta = self
         _wrapper.check = self.check
-        _wrapper.__decorators__ = self.decorators  # FIXME: This attribute should be removed in future versions.
 
         return _wrapper
 
