@@ -81,10 +81,6 @@ class HandlerMeta:
         self.decorators = decorators
         self.checkers = checkers
 
-        self.pre_fn = None
-        self.post_fn = None
-        self.middleware = None
-
     @property
     def wrapper(self) -> HandlerWrapper:
         """Get the ``HandlerWrapper`` instance.
