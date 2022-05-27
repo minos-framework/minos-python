@@ -184,7 +184,7 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
             name = Placeholder(name)
             return SQL("(data#>{field} {operator} {name}::jsonb)").format(field=field, operator=operator, name=name)
 
-    def _build_condition_like(self, condition: _SimpleCondition) -> Composable:
+    def _build_condition_like(self, condition: _LikeCondition) -> Composable:
         field = condition.field
 
         parameter = AvroDataEncoder(condition.parameter).build()
