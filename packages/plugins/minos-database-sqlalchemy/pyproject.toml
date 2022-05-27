@@ -32,10 +32,12 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.9"
 minos-microservice-common = { version ="^0.8.0*", allow-prereleases = true }
+minos-microservice-aggregate = { version ="^0.8.0*", allow-prereleases = true }
 SQLAlchemy = "^1.4.36"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../../core/minos-microservice-common", develop = true }
+minos-microservice-aggregate = { path = "../../core/minos-microservice-aggregate", develop = true }
 black = "^22.3"
 isort = "^5.8.0"
 pytest = "^7.0.1"
