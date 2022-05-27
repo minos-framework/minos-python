@@ -7,6 +7,7 @@ from __future__ import (
 import logging
 import warnings
 from asyncio import (
+    TimeoutError,
     wait_for,
 )
 from functools import (
@@ -99,7 +100,7 @@ class SagaRunner(SetupMixin):
         pause_on_disk: bool = False,
         raise_on_error: bool = True,
         return_execution: bool = True,
-        timeout: Optional[float] = 60.0,
+        timeout: Optional[float] = None,
         **kwargs,
     ) -> Union[UUID, SagaExecution]:
         """Perform a run of a ``Saga``.
@@ -118,7 +119,7 @@ class SagaRunner(SetupMixin):
             but with ``Errored`` status.
         :param return_execution: If ``True`` the ``SagaExecution`` instance is returned. Otherwise, only the
             identifier (``UUID``) is returned.
-        :param timeout: TODO
+        :param timeout: Maximum execution time in seconds.
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
@@ -130,16 +131,19 @@ class SagaRunner(SetupMixin):
         else:
             execution = await self._load(response)
 
-        future = self._run(
+        execution = await self._run(
             execution,
+            timeout=timeout,
             response=response,
             autocommit=autocommit,
             pause_on_disk=pause_on_disk,
             raise_on_error=raise_on_error,
-            return_execution=return_execution,
             **kwargs,
         )
-        return await wait_for(future, timeout=timeout)
+        if return_execution:
+            return execution
+
+        return execution.uuid
 
     @staticmethod
     async def _create(definition: Saga, context: Optional[SagaContext], user: Optional[UUID]) -> SagaExecution:
@@ -153,31 +157,31 @@ class SagaRunner(SetupMixin):
     async def _load(self, response: SagaResponse) -> Union[UUID, SagaExecution]:
         return await self.storage.load(response.uuid)
 
-    async def _run(
-        self,
-        execution: SagaExecution,
-        pause_on_disk: bool = False,
-        raise_on_error: bool = True,
-        return_execution: bool = True,
-        **kwargs,
-    ) -> Union[UUID, SagaExecution]:
+    async def _run(self, execution: SagaExecution, raise_on_error: bool, **kwargs) -> SagaExecution:
         try:
-            if pause_on_disk:
-                await self._run_with_pause_on_disk(execution, **kwargs)
-            else:
-                await self._run_with_pause_on_memory(execution, **kwargs)
+            await self._run_with_timeout(execution, **kwargs)
         except SagaFailedExecutionException as exc:
             if raise_on_error:
                 raise exc
-            logger.exception(f"The execution identified by {execution.uuid!s} failed")
+            logger.exception(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
         finally:
             await self.storage.store(execution)
             self._update_request_headers(execution)
 
-        if return_execution:
-            return execution
+        return execution
 
-        return execution.uuid
+    async def _run_with_timeout(self, execution: SagaExecution, timeout: Optional[float], **kwargs) -> None:
+        future = self._run_with_pause(execution, **kwargs)
+        try:
+            return await wait_for(future, timeout=timeout)
+        except TimeoutError as exc:
+            raise SagaFailedExecutionException(exc)
+
+    async def _run_with_pause(self, execution: SagaExecution, pause_on_disk: bool, **kwargs) -> None:
+        if pause_on_disk:
+            await self._run_with_pause_on_disk(execution, **kwargs)
+        else:
+            await self._run_with_pause_on_memory(execution, **kwargs)
 
     @staticmethod
     def _update_request_headers(execution: SagaExecution) -> None:

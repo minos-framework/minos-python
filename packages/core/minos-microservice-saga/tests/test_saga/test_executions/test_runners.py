@@ -119,6 +119,34 @@ class TestSagaRunner(SagaTestCase):
         observed = await self.runner.run(response=SagaResponse(uuid=expected.uuid))
         self.assertEqual(expected, observed)
 
+    async def test_run_with_timeout(self):
+        expected = SagaExecution.from_definition(ADD_ORDER)
+        create_mock = AsyncMock(return_value=expected)
+        store_mock = AsyncMock()
+        update_headers_mock = AsyncMock
+        run_mock = AsyncMock()
+        self.runner._create = create_mock
+        self.runner.storage.store = store_mock
+        self.runner._update_request_headers = update_headers_mock
+        self.runner._run_with_pause = run_mock
+
+        observed = await self.runner.run(ADD_ORDER, timeout=60)
+        self.assertEqual(expected, observed)
+
+    async def test_run_with_timeout_raises(self):
+        expected = SagaExecution.from_definition(ADD_ORDER)
+        create_mock = AsyncMock(return_value=expected)
+        store_mock = AsyncMock()
+        update_headers_mock = AsyncMock
+        run_mock = AsyncMock()
+        self.runner._create = create_mock
+        self.runner.storage.store = store_mock
+        self.runner._update_request_headers = update_headers_mock
+        self.runner._run_with_pause = run_mock
+
+        with self.assertRaises(SagaFailedExecutionException):
+            await self.runner.run(ADD_ORDER, timeout=0.0)
+
     async def test_run_with_pause_on_memory(self):
         self.broker_subscriber_builder.with_messages(
             [
