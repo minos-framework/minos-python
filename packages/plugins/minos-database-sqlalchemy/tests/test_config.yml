@@ -1,0 +1,9 @@
+version: 2
+name: order
+databases:
+  default:
+    client: minos.common.testing.MockedDatabaseClient
+  snapshot:
+    client: minos.plugins.sqlalchemy.SqlAlchemyDatabaseClient
+pools:
+  database: minos.common.DatabaseClientPool

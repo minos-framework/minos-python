@@ -1111,6 +1111,7 @@ The plugin packages provide connectors to external technologies like brokers, di
 * [minos-broker-rabbitmq](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-broker-rabbitmq): The `rabbitmq` plugin package.
 * [minos-database-aiopg](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-database-aiopg): The `aiopg` plugin package.
 * [minos-database-lmdb](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-database-lmdb): The `lmdb` plugin package.
+* [minos-database-sqlalchemy](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-database-sqlalchemy): The `sqlalchemy` plugin package.
 * [minos-discovery-kong](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-discovery-kong): The `kong` plugin package.
 * [minos-discovery-minos](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-discovery-minos): The `minos-discovery` plugin package.
 * [minos-http-aiohttp](https://github.com/minos-framework/minos-python/tree/main/packages/plugins/minos-http-aiohttp): The `aiohttp` plugin package.
