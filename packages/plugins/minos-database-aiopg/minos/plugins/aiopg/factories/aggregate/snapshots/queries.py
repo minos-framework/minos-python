@@ -218,7 +218,7 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
 
             field = self._FIXED_FIELDS_MAPPER[field]
             name = Placeholder(name)
-            return SQL("({field}::text LIKE {name})").format(field=field, name=name)
+            return SQL("({name} IN {field})").format(name=name, field=field)
         else:
             name = self.generate_random_str()
             self._parameters[name] = parameter
