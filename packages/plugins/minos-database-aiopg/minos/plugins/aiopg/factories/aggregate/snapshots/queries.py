@@ -31,6 +31,7 @@ from minos.aggregate.queries import (
     _AndCondition,
     _ComposedCondition,
     _Condition,
+    _ContainsCondition,
     _EqualCondition,
     _FalseCondition,
     _GreaterCondition,
@@ -44,7 +45,7 @@ from minos.aggregate.queries import (
     _OrCondition,
     _Ordering,
     _SimpleCondition,
-    _TrueCondition, _ContainsCondition,
+    _TrueCondition,
 )
 from minos.common import (
     NULL_UUID,

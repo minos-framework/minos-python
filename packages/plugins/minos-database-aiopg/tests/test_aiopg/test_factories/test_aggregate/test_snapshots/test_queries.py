@@ -279,7 +279,7 @@ class TestAiopgSnapshotQueryDatabaseOperationBuilder(AiopgTestCase):
         expected_query = SQL(" WHERE ").join([self.base_select, SQL("(data#>%(hello)s IN '{numbers}'::jsonb)")])
         expected_parameters = {"hello": 1} | self.base_parameters
 
-        self.assertEqual(await self._flatten_query(expected_query), await self._flatten_query(observed[0]))
+        self.assertEqual(await self._flatten_query(expected_query), await self._fl  atten_query(observed[0]))
         self.assertEqual(self._flatten_parameters(expected_parameters), self._flatten_parameters(observed[1]))
 
     async def test_build_in_empty(self):
