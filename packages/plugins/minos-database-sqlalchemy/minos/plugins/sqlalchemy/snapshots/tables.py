@@ -43,7 +43,7 @@ from minos.common import (
 logger = logging.getLogger(__name__)
 
 
-class SqlAlchemySnapshotTableBuilder:
+class SqlAlchemySnapshotTableFactory:
     """TODO"""
 
     @classmethod

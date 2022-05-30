@@ -5,5 +5,5 @@ __email__ = "hey@minos.run"
 __version__ = "0.8.0.dev1"
 
 from .snapshots import (
-    SqlAlchemySnapshotTableBuilder,
+    SqlAlchemySnapshotTableFactory,
 )

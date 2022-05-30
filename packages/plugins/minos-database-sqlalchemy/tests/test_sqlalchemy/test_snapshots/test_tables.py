@@ -9,11 +9,11 @@ from minos.aggregate import (
     Ref,
 )
 from minos.plugins.sqlalchemy import (
-    SqlAlchemySnapshotTableBuilder,
+    SqlAlchemySnapshotTableFactory,
 )
 
 
-class TestSqlAlchemySnapshotTableBuilder(unittest.IsolatedAsyncioTestCase):
+class TestSqlAlchemySnapshotTableFactory(unittest.IsolatedAsyncioTestCase):
     def test_entity(self):
         class _Foo(Entity):
             bar: str
@@ -21,7 +21,7 @@ class TestSqlAlchemySnapshotTableBuilder(unittest.IsolatedAsyncioTestCase):
         class _Bar(Entity):
             foo: Ref[_Foo]
 
-        observed = SqlAlchemySnapshotTableBuilder.build(_Foo, _Bar)
+        observed = SqlAlchemySnapshotTableFactory.build(_Foo, _Bar)
 
         self.assertIsInstance(observed, MetaData)
 

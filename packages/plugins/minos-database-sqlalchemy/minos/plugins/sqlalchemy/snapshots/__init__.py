@@ -1,3 +1,3 @@
 from .tables import (
-    SqlAlchemySnapshotTableBuilder,
+    SqlAlchemySnapshotTableFactory,
 )
