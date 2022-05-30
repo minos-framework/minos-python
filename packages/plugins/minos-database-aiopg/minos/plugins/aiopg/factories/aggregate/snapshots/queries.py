@@ -44,7 +44,7 @@ from minos.aggregate.queries import (
     _OrCondition,
     _Ordering,
     _SimpleCondition,
-    _TrueCondition,
+    _TrueCondition, _ContainsCondition,
 )
 from minos.common import (
     NULL_UUID,
@@ -144,6 +144,8 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
             return SQL("FALSE")
         if isinstance(condition, _LikeCondition):
             return self._build_condition_like(condition)
+        if isinstance(condition, _ContainsCondition):
+            return self._build_condition_contains(condition)
         if isinstance(condition, _SimpleCondition):
             return self._build_condition_simple(condition)
 
@@ -203,6 +205,26 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
             field = Literal("{{{}}}".format(field.replace(".", ",")))
             name = Placeholder(name)
             return SQL("(data#>>{field} LIKE {name})").format(field=field, name=name)
+
+    def _build_condition_contains(self, condition: _ContainsCondition) -> Composable:
+        field = condition.field
+
+        parameter = AvroDataEncoder(condition.parameter).build()
+
+        if field in self._FIXED_FIELDS_MAPPER:
+            name = self.generate_random_str()
+            self._parameters[name] = parameter
+
+            field = self._FIXED_FIELDS_MAPPER[field]
+            name = Placeholder(name)
+            return SQL("({field}::text LIKE {name})").format(field=field, name=name)
+        else:
+            name = self.generate_random_str()
+            self._parameters[name] = parameter
+
+            field = Literal("{{{}}}".format(field.replace(".", ",")))
+            name = Placeholder(name)
+            return SQL("(data#>{name} IN {field}::jsonb)").format(field=field, name=name)
 
     def _build_ordering(self, ordering: _Ordering) -> Composable:
         field = ordering.by
