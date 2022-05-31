@@ -199,7 +199,7 @@ class TestAiopgSnapshotQueryDatabaseOperationBuilder(AiopgTestCase):
 
         with self.assertRaises(ValueError):
             with patch.object(AiopgSnapshotQueryDatabaseOperationBuilder, "generate_random_str", side_effect=["hello"]):
-                observed = AiopgSnapshotQueryDatabaseOperationBuilder(self.classname, condition).build()
+                AiopgSnapshotQueryDatabaseOperationBuilder(self.classname, condition).build()
 
     async def test_build_lower(self):
         condition = Condition.LOWER("age", 1)
