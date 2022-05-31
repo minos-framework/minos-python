@@ -1,6 +1,7 @@
 import logging
 from asyncio import (
     TimeoutError,
+    wait_for,
 )
 from collections.abc import (
     Callable,
@@ -96,22 +97,25 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
                 f"The operation must be a {SqlAlchemyDatabaseOperation!r} instance. Obtained: {operation!r}"
             )
 
-        fn = partial(self._execute_expression, expression=operation.expression)
+        fn = partial(self._execute_expression_with_timeout, expression=operation.expression)
         await self.with_circuit_breaker(fn)
 
-    async def _execute_expression(self, expression):
+    async def _execute_expression_with_timeout(self, expression):
         if not await self.is_connected():
             await self.recreate()
-
         try:
-            if isinstance(expression, Callable):
-                await self._connection.run_sync(expression)
-            else:
-                self._result = await self._connection.stream(expression)
+            self._result = await wait_for(self._execute_expression(expression), self._result_timeout)
         except (OperationalError, TimeoutError) as exc:
             raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
         except IntegrityError as exc:
             raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
+
+    async def _execute_expression(self, expression) -> Optional[AsyncResult]:
+        if isinstance(expression, Callable):
+            await self._connection.run_sync(expression)
+            return None
+
+        return await self._connection.stream(expression)
 
     async def _fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
         if self._result is None:
@@ -135,7 +139,7 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
 
     async def _connect(self) -> AsyncConnection:
         try:
-            return await self._engine.connect()
+            return await wait_for(self._engine.connect(), self._connection_timeout)
         except (OperationalError, TimeoutError) as exc:
             raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
 
