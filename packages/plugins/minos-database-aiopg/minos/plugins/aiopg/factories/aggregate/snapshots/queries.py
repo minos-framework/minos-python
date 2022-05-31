@@ -213,12 +213,7 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
         parameter = AvroDataEncoder(condition.parameter).build()
 
         if field in self._FIXED_FIELDS_MAPPER:
-            name = self.generate_random_str()
-            self._parameters[name] = parameter
-
-            field = self._FIXED_FIELDS_MAPPER[field]
-            name = Placeholder(name)
-            return SQL("({name} IN {field})").format(name=name, field=field)
+            raise ValueError(f"Cannot use 'contains' over non-list field '{field}'")
         else:
             name = self.generate_random_str()
             self._parameters[name] = parameter
