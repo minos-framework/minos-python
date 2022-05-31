@@ -16,6 +16,9 @@ from typing import (
     Optional,
 )
 
+from sqlalchemy.engine import (
+    URL,
+)
 from sqlalchemy.exc import (
     IntegrityError,
     OperationalError,
@@ -52,7 +55,12 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
 
     def __init__(
         self,
-        url: str,
+        driver,
+        user: str,
+        password: str,
+        host: str,
+        port: int,
+        database: str,
         *args,
         circuit_breaker_exceptions: Iterable[type] = tuple(),
         connection_timeout: Optional[float] = None,
@@ -69,8 +77,8 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
         if result_timeout is None:
             result_timeout = 60
 
+        url = URL.create(drivername=driver, username=user, password=password, host=host, port=port, database=database)
         self._engine = create_async_engine(url, pool_size=1)
-
         self._connection_timeout = connection_timeout
         self._result_timeout = result_timeout
 
@@ -97,25 +105,29 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
                 f"The operation must be a {SqlAlchemyDatabaseOperation!r} instance. Obtained: {operation!r}"
             )
 
-        fn = partial(self._execute_expression_with_timeout, expression=operation.expression)
+        fn = partial(self._execute_with_timeout, operation=operation)
         await self.with_circuit_breaker(fn)
 
-    async def _execute_expression_with_timeout(self, expression):
+    async def _execute_with_timeout(self, operation: SqlAlchemyDatabaseOperation) -> None:
         if not await self.is_connected():
             await self.recreate()
         try:
-            self._result = await wait_for(self._execute_expression(expression), self._result_timeout)
+            self._result = await wait_for(self._execute_operation(operation), self._result_timeout)
         except (OperationalError, TimeoutError) as exc:
             raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
         except IntegrityError as exc:
             raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
 
-    async def _execute_expression(self, expression) -> Optional[AsyncResult]:
-        if isinstance(expression, Callable):
-            await self._connection.run_sync(expression)
+    async def _execute_operation(self, operation: SqlAlchemyDatabaseOperation) -> Optional[AsyncResult]:
+        if isinstance(operation.expression, Callable):
+            await self._connection.run_sync(operation.expression)
             return None
 
-        return await self._connection.stream(expression)
+        if not operation.stream:
+            await self._connection.execute(operation.expression)
+            return None
+
+        return await self._connection.stream(operation.expression)
 
     async def _fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
         if self._result is None:

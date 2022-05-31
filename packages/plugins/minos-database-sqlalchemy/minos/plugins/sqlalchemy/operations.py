@@ -1,3 +1,7 @@
+from typing import (
+    Optional,
+)
+
 from minos.common import (
     DatabaseOperation,
 )
@@ -6,6 +10,9 @@ from minos.common import (
 class SqlAlchemyDatabaseOperation(DatabaseOperation):
     """TODO"""
 
-    def __init__(self, expression, *args, **kwargs):
+    def __init__(self, expression, stream: Optional[bool] = None, *args, **kwargs):
+        if stream is None:
+            stream = True
         super().__init__(*args, **kwargs)
         self.expression = expression
+        self.stream = stream

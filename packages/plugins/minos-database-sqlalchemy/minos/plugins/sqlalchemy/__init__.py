@@ -7,6 +7,10 @@ __version__ = "0.8.0.dev1"
 from .clients import (
     SqlAlchemyDatabaseClient,
 )
+from .factories import (
+    SqlAlchemyLockDatabaseOperationFactory,
+    SqlAlchemyManagementDatabaseOperationFactory,
+)
 from .operations import (
     SqlAlchemyDatabaseOperation,
 )

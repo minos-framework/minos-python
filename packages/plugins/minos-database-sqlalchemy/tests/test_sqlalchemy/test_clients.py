@@ -13,16 +13,18 @@ from minos.plugins.sqlalchemy import (
     SqlAlchemyDatabaseClient,
     SqlAlchemyDatabaseOperation,
 )
+from tests.utils import (
+    SqlAlchemyTestCase,
+)
 
 meta = MetaData()
 
 foo = Table("foo", meta, Column("bar", String))
 
 
-class TestSqlAlchemyDatabaseClient(unittest.IsolatedAsyncioTestCase):
-    @unittest.skip
+class TestSqlAlchemyDatabaseClient(SqlAlchemyTestCase):
     async def test_execute(self):
-        async with SqlAlchemyDatabaseClient("postgresql+asyncpg://postgres:postgres@localhost/postgres") as client:
+        async with SqlAlchemyDatabaseClient(**self.config.get_default_database()) as client:
 
             operation = SqlAlchemyDatabaseOperation(meta.create_all)
             await client.execute(operation)
@@ -38,10 +40,12 @@ class TestSqlAlchemyDatabaseClient(unittest.IsolatedAsyncioTestCase):
             async for row in client.fetch_all():
                 print(row)
 
-            await client.recreate()
+            await client.recreate()  # FIXME
 
             operation = SqlAlchemyDatabaseOperation(meta.drop_all)
             await client.execute(operation)
+
+        await client.engine.dispose()  # FIXME
 
 
 if __name__ == "__main__":
