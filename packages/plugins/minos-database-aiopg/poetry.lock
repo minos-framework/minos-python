@@ -222,7 +222,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-aggregate"
-version = "0.7.0"
+version = "0.7.1.dev1"
 description = "The Aggregate pattern of the Minos Framework"
 category = "main"
 optional = false
@@ -240,7 +240,7 @@ url = "../../core/minos-microservice-aggregate"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.7.0"
+version = "0.7.1.dev1"
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
@@ -262,7 +262,7 @@ url = "../../core/minos-microservice-common"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.7.0"
+version = "0.7.1.dev1"
 description = "The networks core of the Minos Framework"
 category = "main"
 optional = false
@@ -448,7 +448,7 @@ test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "e5c29b2d05b0ad2f223283eee76b88a58444d306d2100d23e30908b992de398e"
+content-hash = "b43594cabd6bbb5636025c9351168e25f8c2e066080128dabe87e8e7cbc1188e"
 
 [metadata.files]
 aiomisc = [
