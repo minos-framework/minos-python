@@ -216,11 +216,11 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
             raise ValueError(f"Cannot use 'contains' over non-list field '{field}'")
         else:
             name = self.generate_random_str()
-            self._parameters[name] = parameter
+            self._parameters[name] = Json(parameter)
 
             field = Literal("{{{}}}".format(field.replace(".", ",")))
             name = Placeholder(name)
-            return SQL("(data#>{name} IN {field}::jsonb)").format(field=field, name=name)
+            return SQL("(data#>{field} @> {name}::jsonb)").format(field=field, name=name)
 
     def _build_ordering(self, ordering: _Ordering) -> Composable:
         field = ordering.by

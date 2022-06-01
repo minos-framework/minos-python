@@ -283,7 +283,7 @@ class TestAiopgSnapshotQueryDatabaseOperationBuilder(AiopgTestCase):
         with patch.object(AiopgSnapshotQueryDatabaseOperationBuilder, "generate_random_str", side_effect=["hello"]):
             observed = AiopgSnapshotQueryDatabaseOperationBuilder(self.classname, condition).build()
 
-        expected_query = SQL(" WHERE ").join([self.base_select, SQL("(data#>%(hello)s IN '{numbers}'::jsonb)")])
+        expected_query = SQL(" WHERE ").join([self.base_select, SQL("(data#>'{numbers}' @> %(hello)s::jsonb)")])
         expected_parameters = {"hello": 1} | self.base_parameters
 
         self.assertEqual(await self._flatten_query(expected_query), await self._flatten_query(observed[0]))

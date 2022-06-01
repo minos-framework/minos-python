@@ -330,6 +330,44 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             ):
                 await super().test_find_by_uuid()
 
+    async def test_find_contains(self):
+        entities = [
+            SnapshotRepositoryTestCase.NumbersList([1, 2, 3], uuid=self.uuid_2),
+            SnapshotRepositoryTestCase.NumbersList([3, 8, 9], uuid=self.uuid_3),
+        ]
+        with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
+            with patch.object(
+                DatabaseClient,
+                "fetch_all",
+                side_effect=[
+                    FakeAsyncIterator(
+                        [tuple(SnapshotEntry.from_root_entity(entity).as_raw().values()) for entity in entities]
+                    ),
+                    FakeAsyncIterator([tuple(SnapshotEntry.from_root_entity(entities[0]).as_raw().values())]),
+                    FakeAsyncIterator([tuple(SnapshotEntry.from_root_entity(entities[1]).as_raw().values())]),
+                ],
+            ):
+                await super().test_find_contains()
+
+    async def test_find_equal(self):
+        entities = [
+            SnapshotRepositoryTestCase.Number(1, uuid=self.uuid_2),
+            SnapshotRepositoryTestCase.Number(1, uuid=self.uuid_3),
+        ]
+        with patch.object(DatabaseClient, "fetch_one", return_value=(9999,)):
+            with patch.object(
+                DatabaseClient,
+                "fetch_all",
+                side_effect=[
+                    FakeAsyncIterator(
+                        [tuple(SnapshotEntry.from_root_entity(entity).as_raw().values()) for entity in entities]
+                    ),
+                    FakeAsyncIterator([tuple(SnapshotEntry.from_root_entity(entities[0]).as_raw().values())]),
+                    FakeAsyncIterator([tuple(SnapshotEntry.from_root_entity(entities[1]).as_raw().values())]),
+                ],
+            ):
+                await super().test_find_equal()
+
     async def test_find_with_transaction(self):
         entities = [
             SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_2, version=4),
