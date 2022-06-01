@@ -8,7 +8,6 @@ from .clients import (
     SqlAlchemyDatabaseClient,
 )
 from .factories import (
-    SqlAlchemyLockDatabaseOperationFactory,
     SqlAlchemyManagementDatabaseOperationFactory,
 )
 from .operations import (

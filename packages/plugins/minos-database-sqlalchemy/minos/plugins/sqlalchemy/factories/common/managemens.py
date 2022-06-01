@@ -1,7 +1,3 @@
-from sqlalchemy import (
-    text,
-)
-
 from minos.common import (
     ComposedDatabaseOperation,
     DatabaseOperation,
@@ -28,8 +24,8 @@ class SqlAlchemyManagementDatabaseOperationFactory(ManagementDatabaseOperationFa
         """
         return ComposedDatabaseOperation(
             [
-                SqlAlchemyDatabaseOperation(text("COMMIT")),
-                SqlAlchemyDatabaseOperation(text(f"CREATE DATABASE {database};"), stream=False),
+                SqlAlchemyDatabaseOperation("COMMIT"),
+                SqlAlchemyDatabaseOperation(f"CREATE DATABASE {database};", stream=False),
             ]
         )
 
@@ -41,8 +37,8 @@ class SqlAlchemyManagementDatabaseOperationFactory(ManagementDatabaseOperationFa
         """
         return ComposedDatabaseOperation(
             [
-                SqlAlchemyDatabaseOperation(text("COMMIT")),
-                SqlAlchemyDatabaseOperation(text(f"DROP DATABASE IF EXISTS {database};"), stream=False),
+                SqlAlchemyDatabaseOperation("COMMIT"),
+                SqlAlchemyDatabaseOperation(f"DROP DATABASE IF EXISTS {database};", stream=False),
             ]
         )
 

@@ -96,9 +96,6 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
     async def _reset(self, **kwargs) -> None:
         await self._destroy_result()
 
-    async def _destroy_result(self) -> None:
-        self._result = None
-
     async def _execute(self, operation: SqlAlchemyDatabaseOperation) -> None:
         if not isinstance(operation, SqlAlchemyDatabaseOperation):
             raise ValueError(
@@ -157,12 +154,19 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
 
     async def close(self) -> None:
         """TODO"""
+        await self._destroy_result()
+
         if await self.is_connected():
             await self._connection.close()
 
         if self._connection is not None:
             logger.debug(f"Destroyed {self.url!r} connection identified by {id(self._connection)}!")
             self._connection = None
+
+        await self.engine.dispose()
+
+    async def _destroy_result(self) -> None:
+        self._result = None
 
     async def is_connected(self) -> bool:
         """Check if the client is connected.

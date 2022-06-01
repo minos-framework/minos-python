@@ -25,7 +25,6 @@ foo = Table("foo", meta, Column("bar", String))
 class TestSqlAlchemyDatabaseClient(SqlAlchemyTestCase):
     async def test_execute(self):
         async with SqlAlchemyDatabaseClient(**self.config.get_default_database()) as client:
-
             operation = SqlAlchemyDatabaseOperation(meta.create_all)
             await client.execute(operation)
 
@@ -44,8 +43,6 @@ class TestSqlAlchemyDatabaseClient(SqlAlchemyTestCase):
 
             operation = SqlAlchemyDatabaseOperation(meta.drop_all)
             await client.execute(operation)
-
-        await client.engine.dispose()  # FIXME
 
 
 if __name__ == "__main__":
