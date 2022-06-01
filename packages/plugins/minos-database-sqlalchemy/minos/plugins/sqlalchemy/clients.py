@@ -55,12 +55,6 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
 
     def __init__(
         self,
-        driver,
-        user: str,
-        password: str,
-        host: str,
-        port: int,
-        database: str,
         *args,
         circuit_breaker_exceptions: Iterable[type] = tuple(),
         connection_timeout: Optional[float] = None,
@@ -77,7 +71,14 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
         if result_timeout is None:
             result_timeout = 60
 
-        url = URL.create(drivername=driver, username=user, password=password, host=host, port=port, database=database)
+        url = URL.create(
+            drivername=kwargs.get("driver"),
+            username=kwargs.get("user"),
+            password=kwargs.get("password"),
+            host=kwargs.get("host"),
+            port=kwargs.get("port"),
+            database=kwargs.get("database"),
+        )
         self._engine = create_async_engine(url, pool_size=1)
         self._connection_timeout = connection_timeout
         self._result_timeout = result_timeout
@@ -116,15 +117,15 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
             raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
 
     async def _execute_operation(self, operation: SqlAlchemyDatabaseOperation) -> Optional[AsyncResult]:
-        if isinstance(operation.expression, Callable):
-            await self._connection.run_sync(operation.expression)
+        if isinstance(operation.statement, Callable):
+            await self._connection.run_sync(operation.statement)
             return None
 
         if not operation.stream:
-            await self._connection.execute(operation.expression)
+            await self._connection.execute(statement=operation.statement, parameters=operation.parameters)
             return None
 
-        return await self._connection.stream(operation.expression)
+        return await self._connection.stream(statement=operation.statement, parameters=operation.parameters)
 
     async def _fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
         if self._result is None:
