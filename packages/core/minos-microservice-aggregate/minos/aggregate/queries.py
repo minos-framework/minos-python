@@ -146,6 +146,11 @@ class _InCondition(_SimpleCondition):
         return self._get_field(value) in self.parameter
 
 
+class _ContainsCondition(_SimpleCondition):
+    def _evaluate(self, value: Model) -> bool:
+        return self.parameter in self._get_field(value)
+
+
 class _LikeCondition(_SimpleCondition):
     def _evaluate(self, value: Model) -> bool:
         return bool(self._pattern.fullmatch(self._get_field(value)))
@@ -205,6 +210,7 @@ class Condition:
     EQUAL = _EqualCondition
     NOT_EQUAL = _NotEqualCondition
     IN = _InCondition
+    CONTAINS = _ContainsCondition
     LIKE = _LikeCondition
 
 
