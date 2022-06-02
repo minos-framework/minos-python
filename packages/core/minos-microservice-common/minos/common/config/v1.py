@@ -291,7 +291,7 @@ class ConfigV1(Config):
             databases["broker"] = self._get_database_broker()
 
         with suppress(MinosConfigException):
-            databases["event"] = self._get_database_event()
+            databases["delta"] = self._get_database_delta()
 
         with suppress(MinosConfigException):
             databases["snapshot"] = self._get_database_snapshot()
@@ -303,7 +303,7 @@ class ConfigV1(Config):
             databases["query"] = self._get_database_query()
 
         with suppress(MinosConfigException):
-            databases["default"] = self._get_database_event()
+            databases["default"] = self._get_database_delta()
 
         return databases
 
@@ -314,7 +314,7 @@ class ConfigV1(Config):
         raw = self._get_database_by_name("saga.storage")
         return raw
 
-    def _get_database_event(self) -> dict[str, Any]:
+    def _get_database_delta(self) -> dict[str, Any]:
         return self._get_database_by_name("repository")
 
     def _get_database_query(self) -> dict[str, Any]:

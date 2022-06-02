@@ -16,7 +16,6 @@ from inspect import (
 )
 from typing import (
     Optional,
-    Union,
 )
 
 from minos.common import (
@@ -28,13 +27,13 @@ from minos.common import (
 
 from ...decorators import (
     EnrouteFactory,
+    Handler,
 )
 from ...exceptions import (
     MinosActionNotFoundException,
 )
 from ...requests import (
     REQUEST_USER_CONTEXT_VAR,
-    Request,
     Response,
     ResponseException,
 )
@@ -50,16 +49,17 @@ from ..publishers import (
 )
 from .requests import (
     BrokerRequest,
-    BrokerResponse,
 )
 
 logger = logging.getLogger(__name__)
+
+AdaptedHandler = Callable[[BrokerMessage], Awaitable[BrokerMessageV1Payload]]
 
 
 class BrokerDispatcher(SetupMixin):
     """Broker Dispatcher class."""
 
-    def __init__(self, actions: dict[str, Optional[Callable]], publisher: BrokerPublisher, **kwargs):
+    def __init__(self, actions: dict[str, Handler], publisher: BrokerPublisher, **kwargs):
         super().__init__(**kwargs)
         self._actions = actions
         self._publisher = publisher
@@ -72,9 +72,7 @@ class BrokerDispatcher(SetupMixin):
         return cls(**kwargs)
 
     @staticmethod
-    def _get_actions(
-        config: Config, handlers: dict[str, Optional[Callable]] = None, **kwargs
-    ) -> dict[str, Callable[[BrokerRequest], Awaitable[Optional[BrokerResponse]]]]:
+    def _get_actions(config: Config, handlers: dict[str, Handler] = None, **kwargs) -> dict[str, Handler]:
         if handlers is None:
             builder = EnrouteFactory(*config.get_services(), middleware=config.get_middleware())
             decorators = builder.get_broker_command_query_event(config=config, **kwargs)
@@ -104,7 +102,7 @@ class BrokerDispatcher(SetupMixin):
         return self._publisher
 
     @property
-    def actions(self) -> dict[str, Optional[Callable]]:
+    def actions(self) -> dict[str, Handler]:
         """Actions getter.
 
         :return: A dictionary in which the keys are topics and the values are the handler.
@@ -127,9 +125,7 @@ class BrokerDispatcher(SetupMixin):
             await self.publisher.send(reply)
 
     @staticmethod
-    def get_callback(
-        fn: Callable[[BrokerRequest], Union[Optional[BrokerResponse], Awaitable[Optional[BrokerResponse]]]]
-    ) -> Callable[[BrokerMessage], Awaitable[BrokerMessageV1Payload]]:
+    def get_callback(fn: Handler) -> AdaptedHandler:
         """Get the handler function to be used by the Broker Handler.
 
         :param fn: The action function.
@@ -169,7 +165,7 @@ class BrokerDispatcher(SetupMixin):
 
         return _wrapper
 
-    def get_action(self, topic: str) -> Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]:
+    def get_action(self, topic: str) -> Handler:
         """Get the handling function to be called.
 
         :param topic: The name of the topic that matches the action.

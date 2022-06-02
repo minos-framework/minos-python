@@ -9,11 +9,6 @@ from typing import (
     Any,
 )
 
-from minos.aggregate import (
-    InMemoryEventRepository,
-    InMemorySnapshotRepository,
-    InMemoryTransactionRepository,
-)
 from minos.common import (
     DeclarativeModel,
     Lock,
@@ -30,16 +25,23 @@ from minos.networks import (
     InMemoryBrokerSubscriberBuilder,
 )
 from minos.saga import (
+    ConditionalSagaStep,
+    ElseThenAlternative,
+    IfThenAlternative,
+    LocalSagaStep,
+    RemoteSagaStep,
     Saga,
     SagaContext,
     SagaRequest,
     SagaResponse,
     testing,
 )
+from minos.transactions import (
+    InMemoryTransactionRepository,
+)
 
 BASE_PATH = Path(__file__).parent
 CONFIG_FILE_PATH = BASE_PATH / "config.yml"
-DB_PATH = BASE_PATH / "test_db.lmdb"
 
 
 class SagaTestCase(MinosTestCase):
@@ -55,21 +57,11 @@ class SagaTestCase(MinosTestCase):
         broker_publisher = InMemoryBrokerPublisher()
         broker_subscriber_builder = InMemoryBrokerSubscriberBuilder()
         transaction_repository = InMemoryTransactionRepository(lock_pool=pool_factory.get_pool("lock"))
-        event_repository = InMemoryEventRepository(
-            broker_publisher=broker_publisher,
-            transaction_repository=transaction_repository,
-            lock_pool=pool_factory.get_pool("lock"),
-        )
-        snapshot_repository = InMemorySnapshotRepository(
-            event_repository=event_repository, transaction_repository=transaction_repository
-        )
         return [
             pool_factory,
             broker_publisher,
             broker_subscriber_builder,
             transaction_repository,
-            event_repository,
-            snapshot_repository,
         ]
 
 
@@ -78,6 +70,22 @@ class FakeBrokerPublisher(SetupMixin):
 
     async def send(self, data: Any, **kwargs) -> None:
         """For testing purposes."""
+
+
+class FakeAsyncIterator:
+    """For testing purposes."""
+
+    def __init__(self, seq):
+        self.iter = iter(seq)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        try:
+            return next(self.iter)
+        except StopIteration:
+            raise StopAsyncIteration
 
 
 class FakeLock(Lock):
@@ -136,27 +144,9 @@ async def send_create_ticket_raises(context: SagaContext) -> SagaRequest:
 
 
 # noinspection PyUnusedLocal
-async def send_delete_ticket(context: SagaContext) -> SagaRequest:
-    """For testing purposes."""
-    return SagaRequest("CreateTicket", Foo("delete_ticket!"))
-
-
-# noinspection PyUnusedLocal
 async def send_create_order(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
     return SagaRequest("CreateOrder", Foo("create_order!"))
-
-
-# noinspection PyUnusedLocal
-async def send_delete_order(context: SagaContext) -> SagaRequest:
-    """For testing purposes."""
-    return SagaRequest("DeleteOrder", Foo("delete_order!"))
-
-
-async def handle_order_success(context: SagaContext, response: SagaResponse) -> SagaContext:
-    """For testing purposes."""
-    context["order"] = await response.content()
-    return context
 
 
 # noinspection PyUnusedLocal
@@ -164,12 +154,6 @@ async def handle_ticket_success(context: SagaContext, response: SagaResponse) ->
     """For testing purposes."""
     context["ticket"] = await response.content()
     return context
-
-
-# noinspection PyUnusedLocal
-async def handle_ticket_success_raises(context: SagaContext, response: SagaResponse) -> SagaContext:
-    """For testing purposes."""
-    raise ValueError()
 
 
 # noinspection PyUnusedLocal
@@ -203,28 +187,62 @@ def delete_payment(context: SagaContext) -> SagaContext:
     return context
 
 
+@Saga()
+class DeleteOrderSaga:
+    """For testing purposes"""
+
+    @LocalSagaStep(order=1)
+    def something(self, context: SagaContext) -> SagaContext:
+        return context
+
+    # noinspection PyUnusedLocal
+    @RemoteSagaStep(order=2)
+    async def send_delete_order(self, context: SagaContext) -> SagaRequest:
+        """For testing purposes."""
+        return SagaRequest("DeleteOrder", Foo("delete_order!"))
+
+    @send_delete_order.on_success()
+    async def handle_order_success(self, context: SagaContext, response: SagaResponse) -> SagaContext:
+        """For testing purposes."""
+        context["order"] = await response.content()
+        return context
+
+    # noinspection PyUnusedLocal
+    @RemoteSagaStep(order=3)
+    async def send_delete_ticket(self, context: SagaContext) -> SagaRequest:
+        """For testing purposes."""
+        return SagaRequest("CreateTicket", Foo("delete_ticket!"))
+
+    # noinspection PyUnusedLocal
+    @send_delete_ticket.on_success()
+    async def handle_ticket_success_raises(self, context: SagaContext, response: SagaResponse) -> SagaContext:
+        """For testing purposes."""
+        raise ValueError()
+
+
 # fmt: off
 ADD_ORDER = (
     Saga()
         .remote_step(send_create_order)
-        .on_success(handle_order_success)
-        .on_failure(send_delete_order)
+        .on_success(DeleteOrderSaga.handle_order_success)
+        .on_failure(DeleteOrderSaga.send_delete_order)
         .local_step(create_payment)
         .on_failure(delete_payment)
         .remote_step(send_create_ticket)
         .on_success(handle_ticket_success)
         .on_error(handle_ticket_error)
-        .on_failure(send_delete_ticket)
+        .on_failure(DeleteOrderSaga.send_delete_ticket)
         .commit()
 )
 
 # fmt: off
 DELETE_ORDER = (
     Saga()
-        .remote_step(send_delete_order)
-        .on_success(handle_order_success)
-        .remote_step(send_delete_ticket)
-        .on_success(handle_ticket_success_raises)
+        .local_step(DeleteOrderSaga.something)
+        .remote_step(DeleteOrderSaga.send_delete_order)
+        .on_success(DeleteOrderSaga.handle_order_success)
+        .remote_step(DeleteOrderSaga.send_delete_ticket)
+        .on_success(DeleteOrderSaga.handle_ticket_success_raises)
         .commit()
 )
 
@@ -233,6 +251,40 @@ CREATE_PAYMENT = (
     Saga()
         .local_step(create_payment)
         .on_failure(delete_payment)
+        .commit()
+)
+
+
+@Saga()
+class ConditionalOrderSaga:
+    """For testing purposes"""
+
+    @ConditionalSagaStep(order=1)
+    class FirstConditionStep:
+        """For testing purposes"""
+
+        @IfThenAlternative(order=1, saga=ADD_ORDER)
+        def if_add_order(self, context: SagaContext) -> bool:
+            """For testing purposes."""
+            return "a" in context
+
+        @IfThenAlternative(order=2, saga=DELETE_ORDER)
+        def if_delete_order(self, context: SagaContext) -> bool:
+            """For testing purposes."""
+            return "b" in context
+
+        @ElseThenAlternative(saga=CREATE_PAYMENT)
+        def else_(self) -> None:
+            """For testing purposes"""
+
+
+# fmt: off
+CONDITIONAL_ORDER_SAGA = (
+    Saga()
+        .conditional_step()
+        .if_then(ConditionalOrderSaga.FirstConditionStep.if_add_order, ADD_ORDER)
+        .if_then(ConditionalOrderSaga.FirstConditionStep.if_delete_order, DELETE_ORDER)
+        .else_then(CREATE_PAYMENT)
         .commit()
 )
 

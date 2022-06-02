@@ -199,7 +199,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.7.0"
+version = "0.8.0.dev1"
 description = "The common core of the Minos Framework"
 category = "main"
 optional = false
@@ -218,6 +218,23 @@ uvloop = "^0.16.0"
 [package.source]
 type = "directory"
 url = "../minos-microservice-common"
+
+[[package]]
+name = "minos-microservice-transactions"
+version = "0.8.0.dev1"
+description = "The transactions core of the Minos Framework"
+category = "main"
+optional = false
+python-versions = "^3.9"
+develop = true
+
+[package.dependencies]
+cached-property = "^1.5.2"
+minos-microservice-common = "^0.8.0*"
+
+[package.source]
+type = "directory"
+url = "../minos-microservice-transactions"
 
 [[package]]
 name = "mypy-extensions"
@@ -382,7 +399,7 @@ test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "da7c8e23212bedf0d8263513f83692142646803a85382d956367a823572781eb"
+content-hash = "5b8799b6717b5f7b1f3512bfb3730b9e13d5c1eff2f4afbdb7c69eee503b2506"
 
 [metadata.files]
 aiomisc = [
@@ -557,6 +574,7 @@ mccabe = [
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
 minos-microservice-common = []
+minos-microservice-transactions = []
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},

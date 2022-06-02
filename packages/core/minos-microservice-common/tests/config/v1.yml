@@ -12,7 +12,7 @@ service:
         - tests.utils.FakeHttpConnector
         - tests.utils.FakeBrokerPublisher
         - tests.utils.FakeBrokerSubscriberBuilder
-        - tests.utils.FakeEventRepository
+        - tests.utils.FakeDeltaRepository
         - tests.utils.FakeSnapshotRepository
         - tests.utils.FakeTransactionRepository
         - tests.utils.FakeDiscoveryConnector

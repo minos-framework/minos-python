@@ -1,16 +1,24 @@
+"""Operation module."""
+
 from __future__ import (
     annotations,
 )
 
-from typing import (
-    Any,
+from collections.abc import (
     Callable,
-    Generic,
     Iterable,
+)
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Generic,
     Optional,
     TypeVar,
     Union,
 )
+
+if TYPE_CHECKING:
+    from .steps import SagaStepDecoratorMeta
 
 from minos.common import (
     classname,
@@ -22,6 +30,27 @@ from ..context import (
 )
 
 T = TypeVar("T", bound=Callable)
+
+
+class SagaOperationDecorator(Generic[T]):
+    """Saga Operation Decorator class."""
+
+    def __init__(self, attr_name: str = None, step_meta: SagaStepDecoratorMeta = None, *args, **kwargs):
+        if attr_name is None:
+            raise ValueError(f"The 'attr_name' must not be {None!r}.")
+        if step_meta is None:
+            raise ValueError(f"The 'step_meta' must not be {None!r}.")
+
+        self._step_meta = step_meta
+        self._attr_name = attr_name
+
+        self._args = args
+        self._kwargs = kwargs
+
+    def __call__(self, func: T) -> T:
+        operation = SagaOperation(func, *self._args, **self._kwargs)
+        setattr(self._step_meta, self._attr_name, operation)
+        return func
 
 
 class SagaOperation(Generic[T]):
@@ -80,8 +109,14 @@ class SagaOperation(Generic[T]):
             current["parameters"] = SagaContext.from_avro_str(current["parameters"])
         return cls(**current)
 
+    def __hash__(self):
+        return hash(tuple(self))
+
     def __eq__(self, other: SagaOperation) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}{tuple(self)}"
 
     def __iter__(self) -> Iterable:
         yield from (

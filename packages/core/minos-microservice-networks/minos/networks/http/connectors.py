@@ -12,6 +12,7 @@ from asyncio import (
     Semaphore,
 )
 from collections.abc import (
+    Awaitable,
     Callable,
 )
 from functools import (
@@ -21,11 +22,9 @@ from inspect import (
     isawaitable,
 )
 from typing import (
-    Awaitable,
     Generic,
     Optional,
     TypeVar,
-    Union,
 )
 
 from minos.common import (
@@ -35,6 +34,7 @@ from minos.common import (
 )
 
 from ..decorators import (
+    Handler,
     HttpEnrouteDecorator,
 )
 from ..requests import (
@@ -47,10 +47,9 @@ from .adapters import (
     HttpAdapter,
 )
 
-_Callback = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
-
 RawRequest = TypeVar("RawRequest")
 RawResponse = TypeVar("RawResponse")
+AdaptedHandler = Callable[[RawRequest], Awaitable[RawResponse]]
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +123,7 @@ class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
         for decorator, callback in self.routes.items():
             self.mount_route(decorator.path, decorator.method, callback)
 
-    def mount_route(self, path: str, method: str, callback: Callable[[Request], Optional[Response]]):
+    def mount_route(self, path: str, method: str, callback: Handler):
         """Mount a new route on the application.
 
         :param path: The request's path.
@@ -136,12 +135,10 @@ class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
         self._mount_route(path, method, adapted_callback)
 
     @abstractmethod
-    def _mount_route(self, path: str, method: str, adapted_callback: Callable) -> None:
+    def _mount_route(self, path: str, method: str, adapted_callback: AdaptedHandler) -> None:
         raise NotImplementedError
 
-    def adapt_callback(
-        self, callback: Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
-    ) -> Callable[[RawRequest], Awaitable[RawResponse]]:
+    def adapt_callback(self, callback: Handler) -> AdaptedHandler:
         """Get the adapted callback to be used by the connector.
 
         :param callback: The function.
@@ -206,7 +203,7 @@ class HttpConnector(ABC, SetupMixin, Generic[RawRequest, RawResponse]):
         return self._port
 
     @property
-    def routes(self) -> dict[HttpEnrouteDecorator, _Callback]:
+    def routes(self) -> dict[HttpEnrouteDecorator, Handler]:
         """Get the port.
 
         :return: A ``int`` value.

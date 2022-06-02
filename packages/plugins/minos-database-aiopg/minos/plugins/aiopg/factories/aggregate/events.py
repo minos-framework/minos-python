@@ -22,7 +22,7 @@ from psycopg2.sql import (
 
 from minos.aggregate import (
     Action,
-    EventDatabaseOperationFactory,
+    DeltaDatabaseOperationFactory,
 )
 from minos.common import (
     ComposedDatabaseOperation,
@@ -38,7 +38,7 @@ from ...operations import (
 
 
 # noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic
-class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
+class AiopgDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
     """Aiopg Event Database Operation Factory class."""
 
     def build_table_name(self) -> str:
@@ -303,4 +303,4 @@ class AiopgEventDatabaseOperationFactory(EventDatabaseOperationFactory):
         return AiopgDatabaseOperation(f"SELECT MAX(id) FROM {self.build_table_name()};".strip())
 
 
-AiopgDatabaseClient.set_factory(EventDatabaseOperationFactory, AiopgEventDatabaseOperationFactory)
+AiopgDatabaseClient.set_factory(DeltaDatabaseOperationFactory, AiopgDeltaDatabaseOperationFactory)

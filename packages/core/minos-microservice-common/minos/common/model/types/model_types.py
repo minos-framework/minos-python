@@ -37,6 +37,7 @@ class ModelType(type):
     name: str
     namespace: str
     type_hints: dict[str, Type]
+    _computed_hash: Optional[int]
 
     @classmethod
     def build(
@@ -69,7 +70,7 @@ class ModelType(type):
     @classmethod
     @lru_cache()
     def _build(mcs, name_: str, type_hints_: tuple[tuple[str, type], ...], namespace_: Optional[str]):
-        return mcs(name_, tuple(), {"type_hints": dict(type_hints_), "namespace": namespace_})
+        return mcs(name_, tuple(), {"type_hints": dict(type_hints_), "namespace": namespace_, "_computed_hash": None})
 
     @classmethod
     def from_typed_dict(mcs, typed_dict) -> ModelType:
@@ -139,11 +140,10 @@ class ModelType(type):
             TypeHintComparator,
         )
 
-        return type(cls).__eq__(cls, other) or (
-            type(cls) == type(other)
-            and cls.name == other.name
-            and cls.namespace == other.namespace
-            and set(cls.type_hints.keys()) <= set(other.type_hints.keys())
+        return (cls == other) or (
+            cls._equal_without_types(other)
+            and (not cls.namespace or cls.namespace == other.namespace)
+            and cls.type_hints.keys() <= other.type_hints.keys()
             and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in cls.type_hints.items())
         )
 
@@ -153,10 +153,9 @@ class ModelType(type):
         )
 
         return (
-            type(cls) == type(other)
-            and cls.name == other.name
-            and cls.namespace == other.namespace
-            and set(cls.type_hints.keys()) < set(other.type_hints.keys())
+            cls._equal_without_types(other)
+            and (not cls.namespace or cls.namespace == other.namespace)
+            and cls.type_hints.keys() < other.type_hints.keys()
             and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in cls.type_hints.items())
         )
 
@@ -165,11 +164,10 @@ class ModelType(type):
             TypeHintComparator,
         )
 
-        return type(cls).__eq__(cls, other) or (
-            type(cls) == type(other)
-            and cls.name == other.name
-            and cls.namespace == other.namespace
-            and set(cls.type_hints.keys()) >= set(other.type_hints.keys())
+        return (cls == other) or (
+            cls._equal_without_types(other)
+            and (not other.namespace or cls.namespace == other.namespace)
+            and cls.type_hints.keys() >= other.type_hints.keys()
             and all(TypeHintComparator(v, cls.type_hints[k]).match() for k, v in other.type_hints.items())
         )
 
@@ -179,10 +177,9 @@ class ModelType(type):
         )
 
         return (
-            type(cls) == type(other)
-            and cls.name == other.name
-            and cls.namespace == other.namespace
-            and set(cls.type_hints.keys()) > set(other.type_hints.keys())
+            cls._equal_without_types(other)
+            and (not other.namespace or cls.namespace == other.namespace)
+            and cls.type_hints.keys() > other.type_hints.keys()
             and all(TypeHintComparator(v, cls.type_hints[k]).match() for k, v in other.type_hints.items())
         )
 
@@ -202,19 +199,28 @@ class ModelType(type):
         )
 
         return (
-            type(cls) == type(other)
-            and cls.name == other.name
+            cls._equal_without_types(other)
             and cls.namespace == other.namespace
-            and set(cls.type_hints.keys()) == set(other.type_hints.keys())
+            and cls.type_hints.keys() == other.type_hints.keys()
             and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in cls.type_hints.items())
         )
 
-    def _equal_with_model(cls, other: Any) -> bool:
-        return hasattr(other, "model_type") and cls == ModelType.from_model(other)
+    def _equal_without_types(cls, other: Any):
+        return isinstance(other, ModelType) and cls.name == other.name
 
-    def _equal_with_inherited_model(cls, other: ModelType) -> bool:
+    def _equal_with_model(cls, other: Any) -> bool:
+        from .comparators import (
+            is_model_subclass,
+            is_model_type,
+        )
+
+        return (is_model_type(other) or is_model_subclass(other)) and cls == ModelType.from_model(other)
+
+    def _equal_with_inherited_model(cls, other: Any) -> bool:
         return (
-            type(cls) == type(other) and cls.model_cls != other.model_cls and issubclass(cls.model_cls, other.model_cls)
+            isinstance(other, ModelType)
+            and cls.model_cls != other.model_cls
+            and issubclass(cls.model_cls, other.model_cls)
         )
 
     def _equal_with_bucket_model(self, other: Any) -> bool:
@@ -223,17 +229,21 @@ class ModelType(type):
         )
 
         return (
-            hasattr(other, "model_cls")
-            and issubclass(self.model_cls, other.model_cls)
+            isinstance(other, ModelType)
             and issubclass(other.model_cls, BucketModel)
+            and issubclass(self.model_cls, other.model_cls)
         )
 
     def __hash__(cls) -> int:
-        return hash(tuple(cls))
+        if cls._computed_hash is None:
+            cls._computed_hash = hash(tuple(cls))
+        return cls._computed_hash
 
     def __iter__(cls) -> Iterable:
         # noinspection PyRedundantParentheses
-        yield from (cls.name, cls.namespace, tuple(cls.type_hints.items()))
+        yield cls.name
+        yield cls.namespace
+        yield frozenset(cls.type_hints.items())
 
     def __repr__(cls):
         return f"{type(cls).__name__}(name={cls.name!r}, namespace={cls.namespace!r}, type_hints={cls.type_hints!r})"

@@ -1,10 +1,7 @@
 from .events import (
-    AiopgEventDatabaseOperationFactory,
+    AiopgDeltaDatabaseOperationFactory,
 )
 from .snapshots import (
     AiopgSnapshotDatabaseOperationFactory,
     AiopgSnapshotQueryDatabaseOperationBuilder,
-)
-from .transactions import (
-    AiopgTransactionDatabaseOperationFactory,
 )

@@ -1,3 +1,5 @@
+"""Base Step Definitions module."""
+
 from __future__ import (
     annotations,
 )
@@ -7,12 +9,17 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from collections.abc import (
+    Callable,
+    Iterable,
+)
 from typing import (
     TYPE_CHECKING,
     Any,
-    Iterable,
     Optional,
+    Protocol,
     Union,
+    runtime_checkable,
 )
 
 from minos.common import (
@@ -38,11 +45,38 @@ if TYPE_CHECKING:
     )
 
 
+@runtime_checkable
+class SagaStepDecoratorWrapper(Protocol):
+    """Saga Step Decorator Wrapper class."""
+
+    meta: SagaStepDecoratorMeta
+
+
+class SagaStepDecoratorMeta:
+    """Saga Step Decorator Meta class."""
+
+    _inner: Any
+    _definition: SagaStep
+
+    def __init__(self, inner: Any, definition: SagaStep):
+        self._inner = inner
+        self._definition = definition
+
+    @property
+    @abstractmethod
+    def definition(self) -> SagaStep:
+        """Get the step definition.
+
+        :return: A ``SagaStep`` instance.
+        """
+
+
 class SagaStep(ABC):
     """Saga step class."""
 
-    def __init__(self, saga: Optional[Saga] = None, **kwargs):
+    def __init__(self, saga: Optional[Saga] = None, order: Optional[int] = None, **kwargs):
         self.saga = saga
+        self.order = order
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
@@ -72,6 +106,14 @@ class SagaStep(ABC):
     @abstractmethod
     def _from_raw(cls, raw: dict[str, Any]) -> SagaStep:
         raise NotImplementedError
+
+    @abstractmethod
+    def __call__(self, func: Callable) -> SagaStepDecoratorWrapper:
+        """Decorate the given function.
+
+        :param func: The function to be decorated.
+        :return: The decorated function.
+        """
 
     def conditional_step(self, *args, **kwargs) -> ConditionalSagaStep:
         """Create a new conditional step in the ``Saga``.
@@ -146,8 +188,14 @@ class SagaStep(ABC):
         :return: A ``dict`` instance.
         """
 
+    def __hash__(self):
+        return hash(tuple(self))
+
     def __eq__(self, other: SagaStep) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}{tuple(self)}"
 
     @abstractmethod
     def __iter__(self) -> Iterable:

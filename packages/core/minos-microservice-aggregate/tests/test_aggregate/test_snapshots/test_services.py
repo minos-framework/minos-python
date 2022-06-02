@@ -10,7 +10,7 @@ from uuid import (
 
 from minos.aggregate import (
     RefResolver,
-    RootEntity,
+    SnapshotRepository,
     SnapshotService,
 )
 from minos.common import (
@@ -51,14 +51,14 @@ class TestSnapshotService(AggregateTestCase, DatabaseMinosTestCase):
         uuids = [uuid4(), uuid4()]
 
         expected = [Agg(u) for u in uuids]
-        with patch.object(RootEntity, "get", side_effect=expected):
+        with patch.object(SnapshotRepository, "get", side_effect=expected):
             response = await self.service.__get_many__(InMemoryRequest({"uuids": uuids}))
         self.assertEqual(expected, await response.content())
 
     async def test_get_many_raises(self):
         with self.assertRaises(ResponseException):
             await self.service.__get_many__(InMemoryRequest())
-        with patch.object(RootEntity, "get", side_effect=ValueError):
+        with patch.object(SnapshotRepository, "get", side_effect=ValueError):
             with self.assertRaises(ResponseException):
                 await self.service.__get_many__(InMemoryRequest({"uuids": [uuid4()]}))
 

@@ -5,6 +5,9 @@ from operator import (
 from unittest.mock import (
     patch,
 )
+from uuid import (
+    uuid4,
+)
 
 from minos.aggregate import (
     Action,
@@ -27,65 +30,72 @@ class _NotHashable(Entity):
 
 class TestEntitySet(unittest.TestCase):
     def test_data(self):
-        raw = {OrderItem("John"), OrderItem("Michael")}
+        raw = {OrderItem("John", uuid=uuid4()), OrderItem("Michael", uuid=uuid4())}
 
         entities = EntitySet(raw)
         self.assertEqual({str(v.uuid): v for v in raw}, entities.data)
 
     def test_eq_true(self):
-        raw = {OrderItem("John"), OrderItem("Michael")}
+        raw = {OrderItem("John", uuid=uuid4()), OrderItem("Michael", uuid=uuid4())}
         observed = EntitySet(raw)
         self.assertEqual(EntitySet(raw), observed)
         self.assertEqual(raw, observed)
         self.assertEqual({str(v.uuid): v for v in raw}, observed)
 
     def test_eq_false(self):
-        raw = {OrderItem("John"), OrderItem("Michael")}
+        raw = {OrderItem("John", uuid=uuid4()), OrderItem("Michael", uuid=uuid4())}
         observed = EntitySet(raw)
-        other = {OrderItem("Charlie")}
+        other = {OrderItem("Charlie", uuid=uuid4())}
         self.assertNotEqual(EntitySet(other), observed)
         self.assertNotEqual(other, observed)
         self.assertNotEqual({str(v.uuid): v for v in other}, observed)
         self.assertNotEqual(list(raw), observed)
 
     def test_len(self):
-        raw = {OrderItem("John"), OrderItem("Michael")}
+        raw = {OrderItem("John", uuid=uuid4()), OrderItem("Michael", uuid=uuid4())}
 
         entities = EntitySet(raw)
         self.assertEqual(2, len(entities))
 
     def test_iter(self):
-        raw = {OrderItem("John"), OrderItem("Michael")}
+        raw = {OrderItem("John", uuid=uuid4()), OrderItem("Michael", uuid=uuid4())}
 
         entities = EntitySet(raw)
         self.assertEqual(raw, set(entities))
 
     def test_contains(self):
-        raw = [OrderItem("John")]
+        raw = [OrderItem("John", uuid=uuid4())]
 
         entities = EntitySet(raw)
 
         self.assertIn(raw[0], entities)
-        self.assertNotIn(OrderItem("Charlie"), entities)
+        self.assertNotIn(OrderItem("Charlie", uuid=uuid4()), entities)
         self.assertNotIn(1234, entities)
 
     def test_add(self):
-        raw = OrderItem("John")
+        raw = OrderItem("John", uuid=uuid4())
 
         entities = EntitySet()
         entities.add(raw)
 
         self.assertEqual({raw}, entities)
 
-    def test_get(self):
+    def test_add_raises(self):
         raw = OrderItem("John")
+
+        entities = EntitySet()
+        with self.assertRaises(ValueError):
+            entities.add(raw)
+
+    def test_get(self):
+        raw = OrderItem("John", uuid=uuid4())
 
         entities = EntitySet()
         entities.add(raw)
         self.assertEqual(raw, entities.get(raw.uuid))
 
     def test_remove(self):
-        raw = [OrderItem("John"), OrderItem("Michael")]
+        raw = [OrderItem("John", uuid=uuid4()), OrderItem("Michael", uuid=uuid4())]
 
         entities = EntitySet(raw)
         entities.remove(raw[1])
@@ -93,7 +103,7 @@ class TestEntitySet(unittest.TestCase):
         self.assertEqual({raw[0]}, entities)
 
     def test_diff(self):
-        raw = [OrderItem("John"), OrderItem("Michael")]
+        raw = [OrderItem("John", uuid=uuid4()), OrderItem("Michael", uuid=uuid4())]
         entities = EntitySet(raw)
 
         observed = entities.diff(EntitySet([raw[0]]))
@@ -102,12 +112,12 @@ class TestEntitySet(unittest.TestCase):
         self.assertEqual(observed, expected)
 
     def test_data_cls(self):
-        raw = [OrderItem("John"), OrderItem("Michael")]
+        raw = [OrderItem("John", uuid=uuid4()), OrderItem("Michael", uuid=uuid4())]
         entities = EntitySet(raw)
         self.assertEqual(OrderItem, entities.data_cls)
 
     def test_from_avro(self):
-        values = {OrderItem("John"), OrderItem("Michael")}
+        values = {OrderItem("John", uuid=uuid4()), OrderItem("Michael", uuid=uuid4())}
         expected = EntitySet(values)
         schema = [
             {
@@ -130,35 +140,35 @@ class TestEntitySet(unittest.TestCase):
                     "items": OrderItem.avro_schema[0],
                 },
             ]
-            observed = EntitySet({OrderItem("John"), OrderItem("Michael")}).avro_schema
+            observed = EntitySet({OrderItem("John", uuid=uuid4()), OrderItem("Michael", uuid=uuid4())}).avro_schema
         self.assertEqual(expected, observed)
 
     def test_avro_data(self):
-        values = {OrderItem("John"), OrderItem("Michael")}
+        values = {OrderItem("John", uuid=uuid4()), OrderItem("Michael", uuid=uuid4())}
         expected = sorted([v.avro_data for v in values], key=lambda v: v["uuid"])
         observed = EntitySet(values).avro_data
         self.assertIsInstance(observed, list)
         self.assertEqual(expected, sorted([v.avro_data for v in values], key=lambda v: v["uuid"]))
 
     def test_avro_bytes(self):
-        expected = EntitySet({OrderItem("John"), OrderItem("Michael")})
+        expected = EntitySet({OrderItem("John", uuid=uuid4()), OrderItem("Michael", uuid=uuid4())})
         self.assertEqual(expected, Model.from_avro_bytes(expected.avro_bytes))
 
     def test_avro_bytes_not_hashable(self):
-        expected = EntitySet([_NotHashable({1}), _NotHashable({2})])
+        expected = EntitySet([_NotHashable({1}, uuid=uuid4()), _NotHashable({2}, uuid=uuid4())])
         self.assertEqual(expected, Model.from_avro_bytes(expected.avro_bytes))
 
 
 class TestEntitySetDiff(unittest.TestCase):
     def setUp(self) -> None:
-        self.raw = [OrderItem("John"), OrderItem("Michael")]
+        self.raw = [OrderItem("John", uuid=uuid4()), OrderItem("Michael", uuid=uuid4())]
         self.old = EntitySet(self.raw)
 
         self.clone = [OrderItem(name=entity.name, uuid=entity.uuid) for entity in self.raw]
 
     def test_from_difference_create(self):
         entities = EntitySet(self.clone)
-        new = OrderItem("Charlie")
+        new = OrderItem("Charlie", uuid=uuid4())
         entities.add(new)
 
         observed = IncrementalSetDiff.from_difference(entities, self.old, get_fn=attrgetter("uuid"))
@@ -185,7 +195,7 @@ class TestEntitySetDiff(unittest.TestCase):
 
     def test_from_difference_combined(self):
         entities = EntitySet(self.clone)
-        new = OrderItem("Charlie")
+        new = OrderItem("Charlie", uuid=uuid4())
         entities.add(new)
 
         removed = self.clone[1]

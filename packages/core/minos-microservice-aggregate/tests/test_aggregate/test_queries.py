@@ -21,6 +21,10 @@ class _Text(DeclarativeModel):
     value: str
 
 
+class _ListInt(DeclarativeModel):
+    value: list[int]
+
+
 class TestCondition(unittest.TestCase):
     def test_hash(self):
         self.assertIsInstance(hash(Condition.EQUAL("value", 3)), int)
@@ -125,6 +129,13 @@ class TestCondition(unittest.TestCase):
 
         self.assertFalse(condition.evaluate(_Number(42)))
         self.assertTrue(condition.evaluate(_Number(56)))
+
+    def test_condition_contains(self):
+        condition = Condition.CONTAINS("value", 1)
+        self.assertEqual("_ContainsCondition('value', 1)", repr(condition))
+
+        self.assertFalse(condition.evaluate(_ListInt([42, 3, -5])))
+        self.assertTrue(condition.evaluate(_ListInt([1, 2, 3])))
 
     def test_condition_like(self):
         condition = Condition.LIKE("value", "a%[^ou]")

@@ -24,10 +24,15 @@ from minos.common import (
     Inject,
     NotProvidedException,
 )
+from minos.transactions import (
+    TransactionEntry,
+    TransactionRepository,
+    TransactionStatus,
+)
 
-from ...events import (
-    EventEntry,
-    EventRepository,
+from ...deltas import (
+    DeltaEntry,
+    DeltaRepository,
 )
 from ...exceptions import (
     AlreadyDeletedException,
@@ -35,11 +40,6 @@ from ...exceptions import (
 from ...queries import (
     _Condition,
     _Ordering,
-)
-from ...transactions import (
-    TransactionEntry,
-    TransactionRepository,
-    TransactionStatus,
 )
 from ..entries import (
     SnapshotEntry,
@@ -52,7 +52,7 @@ from .abc import (
 class InMemorySnapshotRepository(SnapshotRepository):
     """InMemory Snapshot class.
 
-    The snapshot provides a direct accessor to the ``RootEntity`` instances stored as events by the event repository
+    The snapshot provides a direct accessor to the ``Entity`` instances stored as deltas by the delta repository
     class.
     """
 
@@ -60,19 +60,19 @@ class InMemorySnapshotRepository(SnapshotRepository):
     def __init__(
         self,
         *args,
-        event_repository: EventRepository,
+        delta_repository: DeltaRepository,
         transaction_repository: TransactionRepository,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
-        if event_repository is None:
-            raise NotProvidedException("An event repository instance is required.")
+        if delta_repository is None:
+            raise NotProvidedException("An delta repository instance is required.")
 
         if transaction_repository is None:
             raise NotProvidedException("A transaction repository instance is required.")
 
-        self._event_repository = event_repository
+        self._delta_repository = delta_repository
         self._transaction_repository = transaction_repository
 
     async def _find_entries(
@@ -84,7 +84,7 @@ class InMemorySnapshotRepository(SnapshotRepository):
         exclude_deleted: bool,
         **kwargs,
     ) -> AsyncIterator[SnapshotEntry]:
-        uuids = {v.uuid async for v in self._event_repository.select(name=name)}
+        uuids = {v.uuid async for v in self._delta_repository.select(name=name)}
 
         entries = list()
         for uuid in uuids:
@@ -134,7 +134,7 @@ class InMemorySnapshotRepository(SnapshotRepository):
         self, name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs
     ) -> SnapshotEntry:
         transaction_uuids = await self._get_transaction_uuids(transaction)
-        entries = await self._get_event_entries(name, uuid, transaction_uuids)
+        entries = await self._get_delta_entries(name, uuid, transaction_uuids)
         return self._build_instance(entries, **kwargs)
 
     async def _get_transaction_uuids(self, transaction: Optional[TransactionEntry]) -> tuple[UUID, ...]:
@@ -151,10 +151,10 @@ class InMemorySnapshotRepository(SnapshotRepository):
 
         return transaction_uuids
 
-    async def _get_event_entries(self, name: str, uuid: UUID, transaction_uuids: tuple[UUID, ...]) -> list[EventEntry]:
+    async def _get_delta_entries(self, name: str, uuid: UUID, transaction_uuids: tuple[UUID, ...]) -> list[DeltaEntry]:
         entries = [
             v
-            async for v in self._event_repository.select(name=name, uuid=uuid)
+            async for v in self._delta_repository.select(name=name, uuid=uuid)
             if v.transaction_uuid in transaction_uuids
         ]
 
@@ -169,16 +169,16 @@ class InMemorySnapshotRepository(SnapshotRepository):
         return entries
 
     @staticmethod
-    def _build_instance(entries: list[EventEntry], **kwargs) -> SnapshotEntry:
+    def _build_instance(entries: list[DeltaEntry], **kwargs) -> SnapshotEntry:
         if entries[-1].action.is_delete:
-            return SnapshotEntry.from_event_entry(entries[-1])
+            return SnapshotEntry.from_delta_entry(entries[-1])
 
         cls = entries[0].type_
-        instance = cls.from_diff(entries[0].event, **kwargs)
+        instance = cls.from_diff(entries[0].delta, **kwargs)
         for entry in entries[1:]:
-            instance.apply_diff(entry.event)
+            instance.apply_diff(entry.delta)
 
-        snapshot = SnapshotEntry.from_root_entity(instance)
+        snapshot = SnapshotEntry.from_entity(instance)
 
         return snapshot
 
