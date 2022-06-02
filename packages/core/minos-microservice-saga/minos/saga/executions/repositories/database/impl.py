@@ -36,6 +36,11 @@ class DatabaseSagaExecutionRepository(SagaExecutionRepository, DatabaseMixin[Sag
             database_key = ("saga",)
         super().__init__(*args, database_key=database_key, **kwargs)
 
+    async def _setup(self) -> None:
+        await super()._setup()
+        operation = self.database_operation_factory.build_create()
+        await self.execute_on_database(operation)
+
     async def _store(self, execution: SagaExecution) -> None:
         operation = self.database_operation_factory.build_store(**execution.raw)
         await self.execute_on_database(operation)

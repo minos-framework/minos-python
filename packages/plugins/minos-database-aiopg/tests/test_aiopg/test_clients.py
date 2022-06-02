@@ -15,6 +15,9 @@ from psycopg2 import (
     OperationalError,
     ProgrammingError,
 )
+from psycopg2.extras import (
+    DictRow,
+)
 
 from minos.common import (
     ConnectionException,
@@ -171,7 +174,7 @@ class TestAiopgDatabaseClient(AiopgTestCase):
         async with AiopgDatabaseClient.from_config(self.config) as client:
             await client.execute(self.operation)
             observed = await client.fetch_one()
-        self.assertIsInstance(observed, tuple)
+        self.assertIsInstance(observed, DictRow)
 
     async def test_fetch_one_raises_programming_empty(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
@@ -199,7 +202,7 @@ class TestAiopgDatabaseClient(AiopgTestCase):
 
         self.assertGreater(len(observed), 0)
         for obs in observed:
-            self.assertIsInstance(obs, tuple)
+            self.assertIsInstance(obs, DictRow)
 
 
 if __name__ == "__main__":
