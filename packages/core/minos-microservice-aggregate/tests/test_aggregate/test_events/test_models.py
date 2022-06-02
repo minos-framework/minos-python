@@ -55,20 +55,17 @@ class TestEvent(AggregateTestCase):
         self.assertEqual("Car", self.diff.simplified_name)
 
     def test_total_ordering(self):
-        observed = [
+        values = [
             Event.from_root_entity(Car(3, "blue", version=4)),
             Event.from_root_entity(Car(3, "blue", version=1)),
             Event.from_root_entity(Car(3, "blue", version=3)),
             Event.from_root_entity(Car(3, "blue", version=2)),
+            Event.from_root_entity(Owner("foo", "bar", version=4, updated_at=current_datetime())),
+            Event.from_root_entity(Owner("foo", "bar", version=3, updated_at=current_datetime())),
         ]
-        observed.sort()
+        observed = sorted(values)
 
-        expected = [
-            Event.from_root_entity(Car(3, "blue", version=1)),
-            Event.from_root_entity(Car(3, "blue", version=2)),
-            Event.from_root_entity(Car(3, "blue", version=3)),
-            Event.from_root_entity(Car(3, "blue", version=4)),
-        ]
+        expected = [values[5], values[4], values[1], values[3], values[2], values[0]]
         self.assertEqual(expected, observed)
 
     def test_from_root_entity(self):

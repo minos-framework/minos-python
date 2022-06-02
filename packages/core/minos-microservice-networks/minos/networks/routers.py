@@ -8,7 +8,6 @@ from abc import (
 )
 from typing import (
     Any,
-    Callable,
 )
 
 from cached_property import (
@@ -24,6 +23,7 @@ from .decorators import (
     BrokerEnrouteDecorator,
     EnrouteDecorator,
     EnrouteFactory,
+    Handler,
     HttpEnrouteDecorator,
     PeriodicEnrouteDecorator,
 )
@@ -42,25 +42,25 @@ class Router(ABC, SetupMixin):
         return cls(config)
 
     @cached_property
-    def routes(self) -> dict[EnrouteDecorator, Callable]:
+    def routes(self) -> dict[EnrouteDecorator, Handler]:
         """Get the routes stored on the router.
 
         :return: A dict with decorators as keys and callbacks as values.
         """
         return self._build_routes()
 
-    def _build_routes(self) -> dict[EnrouteDecorator, Callable]:
+    def _build_routes(self) -> dict[EnrouteDecorator, Handler]:
         routes = self._get_all_routes()
         routes = self._filter_routes(routes)
         return routes
 
-    def _get_all_routes(self) -> dict[EnrouteDecorator, Callable]:
+    def _get_all_routes(self) -> dict[EnrouteDecorator, Handler]:
         builder = EnrouteFactory(*self._config.get_services(), middleware=self._config.get_middleware())
         routes = builder.get_all(config=self._config)
         return routes
 
     @abstractmethod
-    def _filter_routes(self, routes: dict[EnrouteDecorator, Callable]) -> dict[EnrouteDecorator, Callable]:
+    def _filter_routes(self, routes: dict[EnrouteDecorator, Handler]) -> dict[EnrouteDecorator, Handler]:
         raise NotImplementedError
 
     def __eq__(self, other: Any) -> bool:
@@ -80,13 +80,13 @@ class Router(ABC, SetupMixin):
 class HttpRouter(Router, ABC):
     """Http Router base class."""
 
-    routes: dict[HttpEnrouteDecorator, Callable]
+    routes: dict[HttpEnrouteDecorator, Handler]
 
 
 class RestHttpRouter(HttpRouter):
     """Rest Http Router class."""
 
-    def _filter_routes(self, routes: dict[EnrouteDecorator, Callable]) -> dict[EnrouteDecorator, Callable]:
+    def _filter_routes(self, routes: dict[EnrouteDecorator, Handler]) -> dict[EnrouteDecorator, Handler]:
         routes = {
             decorator: callback for decorator, callback in routes.items() if isinstance(decorator, HttpEnrouteDecorator)
         }
@@ -96,7 +96,7 @@ class RestHttpRouter(HttpRouter):
 class BrokerRouter(Router):
     """Broker Router class."""
 
-    def _filter_routes(self, routes: dict[EnrouteDecorator, Callable]) -> dict[EnrouteDecorator, Callable]:
+    def _filter_routes(self, routes: dict[EnrouteDecorator, Handler]) -> dict[EnrouteDecorator, Handler]:
         routes = {
             decorator: callback
             for decorator, callback in routes.items()
@@ -108,7 +108,7 @@ class BrokerRouter(Router):
 class PeriodicRouter(Router):
     """Periodic Router class."""
 
-    def _filter_routes(self, routes: dict[EnrouteDecorator, Callable]) -> dict[EnrouteDecorator, Callable]:
+    def _filter_routes(self, routes: dict[EnrouteDecorator, Handler]) -> dict[EnrouteDecorator, Handler]:
         routes = {
             decorator: callback
             for decorator, callback in routes.items()
