@@ -16,7 +16,8 @@ class TestSagaExecutionDatabaseOperationFactory(unittest.TestCase):
         self.assertTrue(issubclass(SagaExecutionDatabaseOperationFactory, (DatabaseOperationFactory, ABC)))
         # noinspection PyUnresolvedReferences
         self.assertEqual(
-            {"build_store", "build_load", "build_delete"}, SagaExecutionDatabaseOperationFactory.__abstractmethods__
+            {"build_create", "build_store", "build_load", "build_delete"},
+            SagaExecutionDatabaseOperationFactory.__abstractmethods__,
         )
 
 

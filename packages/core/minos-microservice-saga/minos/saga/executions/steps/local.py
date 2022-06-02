@@ -39,6 +39,13 @@ class LocalSagaStepExecution(SagaStepExecution):
         if self.status != SagaStepStatus.Created:
             return context
 
+        context = await self._execute_on_execute(context, *args, **kwargs)
+
+        self.status = SagaStepStatus.Finished
+        return context
+
+    async def _execute_on_execute(self, context: SagaContext, *args, **kwargs) -> SagaContext:
+
         self.status = SagaStepStatus.RunningOnExecute
 
         executor = LocalExecutor(*args, **kwargs)
@@ -51,7 +58,8 @@ class LocalSagaStepExecution(SagaStepExecution):
             self.status = SagaStepStatus.ErroredOnExecute
             raise exc
 
-        self.status = SagaStepStatus.Finished
+        self.status = SagaStepStatus.FinishedOnExecute
+
         return context
 
     async def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:

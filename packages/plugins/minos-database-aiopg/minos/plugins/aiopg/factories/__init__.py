@@ -14,6 +14,9 @@ from .networks import (
     AiopgBrokerSubscriberDuplicateValidatorDatabaseOperationFactory,
     AiopgBrokerSubscriberQueueDatabaseOperationFactory,
 )
+from .saga import (
+    AiopgSagaExecutionDatabaseOperationFactory,
+)
 from .transactions import (
     AiopgTransactionDatabaseOperationFactory,
 )

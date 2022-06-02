@@ -29,7 +29,7 @@ class SagaStatus(str, Enum):
         if isinstance(raw, cls):
             return raw
 
-        # noinspection PyTypeChecker
+        # noinspection PyTypeChecker,PyUnresolvedReferences
         return next(obj for obj in cls if obj.value == raw)
 
     @property
@@ -41,7 +41,7 @@ class SagaStatus(str, Enum):
         return self.value
 
 
-class SagaStepStatus(Enum):
+class SagaStepStatus(str, Enum):
     """Saga Step Status class."""
 
     Created = "created"
@@ -50,12 +50,11 @@ class SagaStepStatus(Enum):
     ErroredOnExecute = "errored-on-execute"
     PausedByOnExecute = "paused-by-on-execute"
     ErroredByOnExecute = "errored-by-on-execute"
-    RunningOnFailure = "running-on-failure"
-    PausedOnFailure = "paused-on-failure"
-    ErroredOnFailure = "errored-on-failure"
     RunningOnSuccess = "running-on-success"
+    FinishedOnSuccess = "finished-on-success"
     ErroredOnSuccess = "errored-on-success"
     RunningOnError = "running-on-error"
+    FinishedOnError = "finished-on-error"
     ErroredOnError = "errored-on-error"
     Finished = "finished"
 
@@ -69,6 +68,7 @@ class SagaStepStatus(Enum):
         if isinstance(raw, cls):
             return raw
 
+        # noinspection PyTypeChecker,PyUnresolvedReferences
         return next(obj for obj in cls if obj.value == raw)
 
     @property

@@ -4,6 +4,9 @@ from __future__ import (
 
 import logging
 import warnings
+from asyncio import (
+    shield,
+)
 from pathlib import (
     Path,
 )
@@ -95,7 +98,7 @@ class SetupMixin(Object):
         """
         if not self._already_setup:
             logger.debug(f"Setting up a {type(self).__name__!r} instance...")
-            await self._setup()
+            await shield(self._setup())
             self._already_setup = True
 
     async def _setup(self) -> None:
@@ -111,7 +114,7 @@ class SetupMixin(Object):
         """
         if self._already_setup:
             logger.debug(f"Destroying a {type(self).__name__!r} instance...")
-            await self._destroy()
+            await shield(self._destroy())
             self._already_setup = False
 
     async def _destroy(self) -> None:
