@@ -7,15 +7,17 @@ from unittest import (
 from minos.common import (
     ConfigV2,
     PoolFactory,
+    classname,
 )
 from tests.utils import (
     BASE_PATH,
+    FakeAggregate,
     FakeBrokerPublisher,
     FakeBrokerSubscriber,
     FakeBrokerSubscriberBuilder,
     FakeCustomInjection,
+    FakeDeltaRepository,
     FakeDiscoveryConnector,
-    FakeEventRepository,
     FakeSagaManager,
     FakeSnapshotRepository,
     FakeTransactionRepository,
@@ -38,14 +40,19 @@ class TestConfigV2Parameterized(unittest.TestCase):
             PoolFactory,
             FakeBrokerPublisher,
             FakeBrokerSubscriberBuilder(FakeBrokerSubscriber),
-            FakeEventRepository,
-            FakeSnapshotRepository,
-            FakeTransactionRepository,
             FakeDiscoveryConnector,
             FakeSagaManager,
+            FakeDeltaRepository,
+            FakeSnapshotRepository,
+            FakeTransactionRepository,
+            FakeAggregate,
             FakeCustomInjection,
         ]
         self.assertEqual(expected, config.get_injections())
+
+    def test_aggregate_broker_publisher_str(self):
+        config = ConfigV2(self.file_path, aggregate_publisher=classname(str))
+        self.assertEqual(str, config.get_aggregate()["publisher"])
 
     @mock.patch.dict(os.environ, {"MINOS_DATABASES_DEFAULT_DATABASE": "foo"})
     def test_overwrite_with_parameter_priority(self):

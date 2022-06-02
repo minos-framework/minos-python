@@ -18,15 +18,14 @@ from minos.saga import (
     SagaStepStatus,
 )
 from tests.utils import (
+    DeleteOrderSaga,
     Foo,
     SagaTestCase,
     handle_ticket_error,
     handle_ticket_error_raises,
     handle_ticket_success,
-    handle_ticket_success_raises,
     send_create_ticket,
     send_create_ticket_raises,
-    send_delete_ticket,
 )
 
 
@@ -56,7 +55,7 @@ class TestRemoteSagaStepExecution(SagaTestCase):
         self.assertEqual(0, rollback_mock.call_count)
 
     async def test_on_execute_raises(self):
-        step = RemoteSagaStep(send_create_ticket_raises).on_failure(send_delete_ticket)
+        step = RemoteSagaStep(send_create_ticket_raises).on_failure(DeleteOrderSaga.send_delete_ticket)
         context = SagaContext()
         execution = RemoteSagaStepExecution(step)
         rollback_mock = AsyncMock()
@@ -111,7 +110,7 @@ class TestRemoteSagaStepExecution(SagaTestCase):
         self.assertEqual(0, rollback_mock.call_count)
 
     async def test_on_success_raises(self):
-        step = RemoteSagaStep(send_create_ticket).on_success(handle_ticket_success_raises)
+        step = RemoteSagaStep(send_create_ticket).on_success(DeleteOrderSaga.handle_ticket_success_raises)
         context = SagaContext()
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
@@ -167,7 +166,7 @@ class TestRemoteSagaStepExecution(SagaTestCase):
         self.assertEqual(1, rollback_mock.call_count)
 
     async def test_rollback(self):
-        step = RemoteSagaStep(send_create_ticket).on_failure(send_delete_ticket)
+        step = RemoteSagaStep(send_create_ticket).on_failure(DeleteOrderSaga.send_delete_ticket)
         context = SagaContext()
         execution = RemoteSagaStepExecution(step)
 
@@ -184,7 +183,7 @@ class TestRemoteSagaStepExecution(SagaTestCase):
         self.assertEqual(0, self.publish_mock.call_count)
 
     async def test_rollback_raises(self):
-        step = RemoteSagaStep(send_create_ticket).on_failure(send_delete_ticket)
+        step = RemoteSagaStep(send_create_ticket).on_failure(DeleteOrderSaga.send_delete_ticket)
         context = SagaContext()
         execution = RemoteSagaStepExecution(step)
 

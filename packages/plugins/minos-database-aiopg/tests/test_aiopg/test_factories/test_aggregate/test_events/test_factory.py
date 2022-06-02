@@ -5,7 +5,7 @@ from uuid import (
 
 from minos.aggregate import (
     Action,
-    EventDatabaseOperationFactory,
+    DeltaDatabaseOperationFactory,
 )
 from minos.common import (
     ComposedDatabaseOperation,
@@ -13,16 +13,16 @@ from minos.common import (
 )
 from minos.plugins.aiopg import (
     AiopgDatabaseOperation,
-    AiopgEventDatabaseOperationFactory,
+    AiopgDeltaDatabaseOperationFactory,
 )
 
 
-class TestAiopgEventDatabaseOperationFactory(unittest.TestCase):
+class TestAiopgDeltaDatabaseOperationFactory(unittest.TestCase):
     def setUp(self) -> None:
-        self.factory = AiopgEventDatabaseOperationFactory()
+        self.factory = AiopgDeltaDatabaseOperationFactory()
 
     def test_is_subclass(self):
-        self.assertTrue(issubclass(AiopgEventDatabaseOperationFactory, EventDatabaseOperationFactory))
+        self.assertTrue(issubclass(AiopgDeltaDatabaseOperationFactory, DeltaDatabaseOperationFactory))
 
     def test_build_table_name(self):
         self.assertEqual("aggregate_event", self.factory.build_table_name())

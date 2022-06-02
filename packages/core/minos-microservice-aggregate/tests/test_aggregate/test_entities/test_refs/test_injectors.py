@@ -19,7 +19,7 @@ from tests.utils import (
 
 class TestRefInjector(AggregateTestCase):
     async def test_simple(self):
-        model = await Car.create(3, "test")
+        model = Car(3, "test")
         mapper = {model.uuid: model}
 
         expected = model
@@ -28,7 +28,7 @@ class TestRefInjector(AggregateTestCase):
         self.assertEqual(expected, observed)
 
     async def test_list(self):
-        model = await Car.create(3, "test")
+        model = Car(3, "test")
         mapper = {model.uuid: model}
 
         expected = [model, model, model]
@@ -37,7 +37,7 @@ class TestRefInjector(AggregateTestCase):
         self.assertEqual(expected, observed)
 
     async def test_dict(self):
-        model = await Car.create(3, "test")
+        model = Car(3, "test")
         mapper = {model.uuid: model}
 
         expected = {model: model}

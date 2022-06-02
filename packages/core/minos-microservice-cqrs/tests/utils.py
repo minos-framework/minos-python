@@ -7,9 +7,11 @@ from pathlib import (
 )
 
 from minos.aggregate import (
-    ExternalEntity,
+    Entity,
     Ref,
-    RootEntity,
+)
+from minos.common import (
+    Injectable,
 )
 from minos.cqrs import (
     CommandService,
@@ -23,6 +25,11 @@ from minos.networks import (
 )
 
 BASE_PATH = Path(__file__).parent
+
+
+@Injectable("aggregate")
+class FakeAggregate:
+    """For testing purposes."""
 
 
 class FakeService(Service):
@@ -45,13 +52,7 @@ class FakeCommandService(CommandService):
         """For testing purpose"""
 
 
-class Foo(RootEntity):
+class Foo(Entity):
     """For testing purposes"""
 
-    bar: Ref[Bar]
-
-
-class Bar(ExternalEntity):
-    """For testing purposes"""
-
-    name: str
+    bar: Ref["Bar"]

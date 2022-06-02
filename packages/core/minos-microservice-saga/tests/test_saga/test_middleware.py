@@ -6,9 +6,6 @@ from uuid import (
     uuid4,
 )
 
-from minos.aggregate import (
-    TransactionStatus,
-)
 from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
     BrokerRequest,
@@ -17,6 +14,9 @@ from minos.networks import (
 )
 from minos.saga import (
     transactional_command,
+)
+from minos.transactions import (
+    TransactionStatus,
 )
 from tests.utils import (
     SagaTestCase,

@@ -16,71 +16,72 @@ from minos.common import (
 )
 
 
+# noinspection PyPep8Naming
 class TestRefExtractor(unittest.TestCase):
     def test_simple(self):
-        mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int})
+        Foo = ModelType.build("Foo", {"uuid": UUID, "version": int})
         value = Ref(uuid4())
 
-        expected = {"Foo": {value}}
-        observed = RefExtractor(value, Ref[mt_foo]).build()
+        expected = {Foo: {value}}
+        observed = RefExtractor(value, Ref[Foo]).build()
 
         self.assertEqual(expected, observed)
 
     def test_list(self):
-        mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int})
+        Foo = ModelType.build("Foo", {"uuid": UUID, "version": int})
         value = [Ref(uuid4()), Ref(uuid4())]
 
-        expected = {"Foo": set(value)}
-        observed = RefExtractor(value, list[Ref[mt_foo]]).build()
+        expected = {Foo: set(value)}
+        observed = RefExtractor(value, list[Ref[Foo]]).build()
 
         self.assertEqual(expected, observed)
 
     def test_dict(self):
-        mt_key = ModelType.build("Key", {"uuid": UUID, "version": int})
-        mt_value = ModelType.build("Value", {"uuid": UUID, "version": int})
+        Key = ModelType.build("Key", {"uuid": UUID, "version": int})
+        Value = ModelType.build("Value", {"uuid": UUID, "version": int})
         value = {Ref(uuid4()): Ref(uuid4()), Ref(uuid4()): Ref(uuid4())}
 
-        expected = {"Key": set(value.keys()), "Value": set(value.values())}
-        observed = RefExtractor(value, dict[Ref[mt_key], Ref[mt_value]]).build()
+        expected = {Key: set(value.keys()), Value: set(value.values())}
+        observed = RefExtractor(value, dict[Ref[Key], Ref[Value]]).build()
 
         self.assertEqual(expected, observed)
 
     def test_model(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-        mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": Ref[mt_bar]})
+        Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
+        Foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": Ref[Bar]})
 
-        value = mt_foo(uuid=uuid4(), version=1, another=Ref(uuid4()))
+        value = Foo(uuid=uuid4(), version=1, another=Ref(uuid4()))
 
-        expected = {"Bar": {value.another}}
-        observed = RefExtractor(value, mt_foo).build()
+        expected = {Bar: {value.another}}
+        observed = RefExtractor(value, Foo).build()
 
         self.assertEqual(expected, observed)
 
     def test_model_without_kind(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-        mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": Ref[mt_bar]})
+        Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
+        Foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": Ref[Bar]})
 
-        value = mt_foo(uuid=uuid4(), version=1, another=Ref(uuid4()))
+        value = Foo(uuid=uuid4(), version=1, another=Ref(uuid4()))
 
-        expected = RefExtractor(value, mt_foo).build()
+        expected = RefExtractor(value, Foo).build()
         observed = RefExtractor(value).build()
 
         self.assertEqual(expected, observed)
 
     def test_optional(self):
-        mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int})
+        Foo = ModelType.build("Foo", {"uuid": UUID, "version": int})
         value = Ref(uuid4())
 
-        expected = {"Foo": {value}}
-        observed = RefExtractor(value, Optional[Ref[mt_foo]]).build()
+        expected = {Foo: {value}}
+        observed = RefExtractor(value, Optional[Ref[Foo]]).build()
 
         self.assertEqual(expected, observed)
 
     def test_model_cls_by_type_hints(self):
-        mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int})
+        Foo = ModelType.build("Foo", {"uuid": UUID, "version": int})
 
-        value = Ref(mt_foo(uuid4(), 1))
-        self.assertEqual(mt_foo, value.data_cls)
+        value = Ref(Foo(uuid4(), 1))
+        self.assertEqual(Foo, value.data_cls)
 
     def test_model_cls_none(self):
         value = Ref(uuid4())
