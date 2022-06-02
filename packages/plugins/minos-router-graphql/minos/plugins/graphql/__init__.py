@@ -2,7 +2,7 @@
 
 __author__ = "Minos Framework Devs"
 __email__ = "hey@minos.run"
-__version__ = "0.8.0.dev1"
+__version__ = "0.8.0.dev2"
 
 from .builders import (
     GraphQLSchemaBuilder,
