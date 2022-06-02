@@ -24,7 +24,7 @@ class TestInMemorySnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
     def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
-            InMemorySnapshotRepository(event_repository=None)
+            InMemorySnapshotRepository(delta_repository=None)
 
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker

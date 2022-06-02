@@ -159,7 +159,11 @@ class SagaRollbackExecutionStepException(SagaStepExecutionException):
 
 
 class AlreadyCommittedException(SagaException):
-    """Exception to be raised when trying to modifying an already committed saga."""
+    """Exception to be raised when trying to modify an already committed saga."""
+
+
+class OrderPrecedenceException(SagaException):
+    """Exception to be raised when ordering precedence of steps is not satisfied."""
 
 
 class ExecutorException(SagaException):
