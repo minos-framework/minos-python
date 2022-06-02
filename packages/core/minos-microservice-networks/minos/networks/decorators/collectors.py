@@ -5,9 +5,7 @@ from inspect import (
 )
 from typing import (
     Any,
-    Callable,
     Optional,
-    Type,
 )
 
 from minos.common import (
@@ -84,7 +82,7 @@ class EnrouteCollector:
         # noinspection PyTypeChecker
         return self._get_items({PeriodicEventEnrouteDecorator})
 
-    def _get_items(self, expected_types: set[Type[EnrouteDecorator]]) -> dict[str, set[EnrouteDecorator]]:
+    def _get_items(self, expected_types: set[type[EnrouteDecorator]]) -> dict[str, set[EnrouteDecorator]]:
         items = dict()
         for fn, decorators in self.get_all().items():
             decorators = {decorator for decorator in decorators if type(decorator) in expected_types}
@@ -97,7 +95,7 @@ class EnrouteCollector:
 
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
-        fn: Callable = getattr(self.decorated, "__get_enroute__", self._get_all)
+        fn = getattr(self.decorated, "__get_enroute__", self._get_all)
         return fn(config=self.config)
 
     # noinspection PyUnusedLocal

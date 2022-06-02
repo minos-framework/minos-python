@@ -81,12 +81,11 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         if self.status == SagaStepStatus.Created:
             self.inner = await self._create_inner(context, *args, **kwargs)
 
-        self.status = SagaStepStatus.RunningOnExecute
-
         if self.inner is not None:
             context = await self._execute_inner(context, *args, **kwargs)
 
         self.status = SagaStepStatus.Finished
+
         return context
 
     async def _create_inner(
@@ -95,6 +94,8 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         from ...executions import (
             SagaExecution,
         )
+
+        self.status = SagaStepStatus.RunningOnExecute
 
         executor = Executor(execution_uuid=execution_uuid)
         self.related_services.add(get_service_name())
@@ -108,12 +109,15 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         if definition is None and self.definition.else_then_alternative is not None:
             definition = self.definition.else_then_alternative.saga
 
-        if definition is None:
-            return None
+        execution = None
+        if definition is not None:
+            execution = SagaExecution.from_definition(
+                definition, context=context, user=user, uuid=execution_uuid, *args, **kwargs
+            )
 
-        return SagaExecution.from_definition(
-            definition, context=context, user=user, uuid=execution_uuid, *args, **kwargs
-        )
+        self.status = SagaStepStatus.FinishedOnExecute
+
+        return execution
 
     async def _execute_inner(
         self, context: SagaContext, user: Optional[UUID] = None, execution_uuid: Optional[UUID] = None, *args, **kwargs
@@ -125,6 +129,8 @@ class ConditionalSagaStepExecution(SagaStepExecution):
             execution.user = user
         execution.context = context
 
+        self.status = SagaStepStatus.RunningOnSuccess
+
         try:
             with suppress(SagaExecutionAlreadyExecutedException):
                 await self.inner.execute(*args, **(kwargs | {"autocommit": False}))
@@ -134,6 +140,8 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         except SagaFailedExecutionStepException as exc:
             self.status = SagaStepStatus.ErroredByOnExecute
             raise exc
+
+        self.status = SagaStepStatus.FinishedOnSuccess
 
         return execution.context
 

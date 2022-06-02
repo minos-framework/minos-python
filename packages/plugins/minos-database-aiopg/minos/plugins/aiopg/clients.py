@@ -27,6 +27,9 @@ from psycopg2 import (
     OperationalError,
     ProgrammingError,
 )
+from psycopg2.extras import (
+    DictCursor,
+)
 
 from minos.common import (
     CircuitBreakerMixin,
@@ -180,7 +183,7 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
         if not await self.is_connected():
             await self.recreate()
 
-        self._cursor = await self._connection.cursor(timeout=self._cursor_timeout)
+        self._cursor = await self._connection.cursor(timeout=self._cursor_timeout, cursor_factory=DictCursor)
         try:
             await self._cursor.execute(operation=operation, parameters=parameters)
         except OperationalError as exc:

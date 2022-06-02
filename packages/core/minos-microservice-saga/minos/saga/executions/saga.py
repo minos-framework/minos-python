@@ -69,6 +69,19 @@ class SagaExecution:
         *args,
         **kwargs,
     ):
+        """Initialize a Saga Execution.
+
+        :param definition: The ``Saga`` definition.
+        :param uuid: The identifier of the execution.
+        :param context: The execution context.
+        :param status: The status of the execution.
+        :param steps: The executed steps of the execution.
+        :param paused_step: The paused step of the execution.
+        :param already_rollback: ``True`` if already rollback of ``False`` otherwise.
+        :param user: The user that launched the execution.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        """
         definition.validate()  # If not valid, raises an exception.
 
         if steps is None:
@@ -94,7 +107,7 @@ class SagaExecution:
         if isinstance(raw, cls):
             return raw
 
-        raw = raw.copy()
+        raw = dict(raw)
 
         current = raw | kwargs
         current["definition"] = Saga.from_raw(current["definition"])
@@ -313,8 +326,8 @@ class SagaExecution:
         :return: A ``dict`` instance.
         """
         return {
-            "definition": self.definition.raw,
             "uuid": str(self.uuid),
+            "definition": self.definition.raw,
             "status": self.status.raw,
             "executed_steps": [step.raw for step in self.executed_steps],
             "paused_step": None if self.paused_step is None else self.paused_step.raw,

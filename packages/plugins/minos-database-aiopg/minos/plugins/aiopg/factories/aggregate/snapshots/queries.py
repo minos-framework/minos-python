@@ -31,6 +31,7 @@ from minos.aggregate.queries import (
     _AndCondition,
     _ComposedCondition,
     _Condition,
+    _ContainsCondition,
     _EqualCondition,
     _FalseCondition,
     _GreaterCondition,
@@ -144,6 +145,8 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
             return SQL("FALSE")
         if isinstance(condition, _LikeCondition):
             return self._build_condition_like(condition)
+        if isinstance(condition, _ContainsCondition):
+            return self._build_condition_contains(condition)
         if isinstance(condition, _SimpleCondition):
             return self._build_condition_simple(condition)
 
@@ -184,7 +187,7 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
             name = Placeholder(name)
             return SQL("(data#>{field} {operator} {name}::jsonb)").format(field=field, operator=operator, name=name)
 
-    def _build_condition_like(self, condition: _SimpleCondition) -> Composable:
+    def _build_condition_like(self, condition: _LikeCondition) -> Composable:
         field = condition.field
 
         parameter = AvroDataEncoder(condition.parameter).build()
@@ -203,6 +206,21 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
             field = Literal("{{{}}}".format(field.replace(".", ",")))
             name = Placeholder(name)
             return SQL("(data#>>{field} LIKE {name})").format(field=field, name=name)
+
+    def _build_condition_contains(self, condition: _ContainsCondition) -> Composable:
+        field = condition.field
+
+        parameter = AvroDataEncoder(condition.parameter).build()
+
+        if field in self._FIXED_FIELDS_MAPPER:
+            raise ValueError(f"Cannot use 'contains' over non-list field '{field}'")
+        else:
+            name = self.generate_random_str()
+            self._parameters[name] = Json(parameter)
+
+            field = Literal("{{{}}}".format(field.replace(".", ",")))
+            name = Placeholder(name)
+            return SQL("(data#>{field} @> {name}::jsonb)").format(field=field, name=name)
 
     def _build_ordering(self, ordering: _Ordering) -> Composable:
         field = ordering.by

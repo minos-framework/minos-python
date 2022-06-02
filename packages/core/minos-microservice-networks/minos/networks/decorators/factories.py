@@ -5,7 +5,6 @@ from collections import (
     defaultdict,
 )
 from collections.abc import (
-    Awaitable,
     Callable,
     Collection,
 )
@@ -17,6 +16,7 @@ from inspect import (
     isawaitable,
 )
 from typing import (
+    Awaitable,
     Optional,
     Union,
 )
@@ -25,6 +25,9 @@ from minos.common import (
     import_module,
 )
 
+from ..decorators import (
+    Handler,
+)
 from ..exceptions import (
     MinosRedefinedEnrouteDecoratorException,
 )
@@ -43,14 +46,16 @@ from .definitions import (
     RestEnrouteDecorator,
 )
 
-Handler = Callable[[Request], Awaitable[Optional[Response]]]
+Middleware = Callable[[Request, Handler], Union[Optional[Response], Awaitable[Optional[Response]]]]
 
 
 class EnrouteFactory:
     """Enroute factory class."""
 
     def __init__(
-        self, *classes: Union[str, type], middleware: Optional[Union[str, Callable, list[Union[str, Callable]]]] = None
+        self,
+        *classes: Union[str, type],
+        middleware: Optional[Union[str, Middleware, list[Union[str, Middleware]]]] = None,
     ):
         if middleware is None:
             middleware = tuple()
