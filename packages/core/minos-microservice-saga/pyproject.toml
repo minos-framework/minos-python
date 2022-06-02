@@ -43,7 +43,7 @@ minos-microservice-transactions = { path = "../minos-microservice-transactions",
 black = "^22.3"
 isort = "^5.8.0"
 pytest = "^7.1.2"
-coverage = "^6.3"
+coverage = "^6.4"
 flake8 = "^4.0.1"
 
 [build-system]
