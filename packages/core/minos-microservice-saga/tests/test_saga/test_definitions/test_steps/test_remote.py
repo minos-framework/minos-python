@@ -7,16 +7,81 @@ from minos.saga import (
     MultipleOnFailureException,
     MultipleOnSuccessException,
     RemoteSagaStep,
+    RemoteSagaStepDecoratorMeta,
+    RemoteSagaStepDecoratorWrapper,
+    SagaContext,
     SagaOperation,
+    SagaRequest,
     SagaStep,
     UndefinedOnExecuteException,
 )
 from tests.utils import (
+    DeleteOrderSaga,
     handle_ticket_error,
     handle_ticket_success,
     send_create_ticket,
-    send_delete_ticket,
 )
+
+
+class TestRemoteSagaStepDecoratorMeta(unittest.TestCase):
+    def test_constructor(self):
+        # noinspection PyUnusedLocal
+        @RemoteSagaStep()
+        def _fn(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        self.assertIsInstance(_fn, RemoteSagaStepDecoratorWrapper)
+        meta = _fn.meta
+        self.assertIsInstance(meta, RemoteSagaStepDecoratorMeta)
+        self.assertEqual(RemoteSagaStep(_fn), meta.definition)
+
+    def test_on_failure(self):
+        # noinspection PyUnusedLocal
+        @RemoteSagaStep()
+        def _fn(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        # noinspection PyUnusedLocal
+        @_fn.on_failure()
+        def _fn2(context: SagaContext) -> SagaRequest:
+            """For testing purposes"""
+
+        self.assertIsInstance(_fn, RemoteSagaStepDecoratorWrapper)
+        meta = _fn.meta
+        self.assertIsInstance(meta, RemoteSagaStepDecoratorMeta)
+        self.assertEqual(RemoteSagaStep(_fn, on_failure=_fn2), meta.definition)
+
+    def test_on_success(self):
+        # noinspection PyUnusedLocal
+        @RemoteSagaStep()
+        def _fn(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        # noinspection PyUnusedLocal
+        @_fn.on_success()
+        def _fn2(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        self.assertIsInstance(_fn, RemoteSagaStepDecoratorWrapper)
+        meta = _fn.meta
+        self.assertIsInstance(meta, RemoteSagaStepDecoratorMeta)
+        self.assertEqual(RemoteSagaStep(_fn, on_success=_fn2), meta.definition)
+
+    def test_on_error(self):
+        # noinspection PyUnusedLocal
+        @RemoteSagaStep()
+        def _fn(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        # noinspection PyUnusedLocal
+        @_fn.on_error()
+        def _fn2(context: SagaContext) -> SagaContext:
+            """For testing purposes"""
+
+        self.assertIsInstance(_fn, RemoteSagaStepDecoratorWrapper)
+        meta = _fn.meta
+        self.assertIsInstance(meta, RemoteSagaStepDecoratorMeta)
+        self.assertEqual(RemoteSagaStep(_fn, on_error=_fn2), meta.definition)
 
 
 class TestRemoteSagaStep(unittest.TestCase):
@@ -33,16 +98,18 @@ class TestRemoteSagaStep(unittest.TestCase):
             RemoteSagaStep(send_create_ticket).on_execute(send_create_ticket)
 
     def test_on_failure_constructor(self):
-        step = RemoteSagaStep(on_failure=send_delete_ticket)
-        self.assertEqual(SagaOperation(send_delete_ticket), step.on_failure_operation)
+        step = RemoteSagaStep(on_failure=DeleteOrderSaga.send_delete_ticket)
+        self.assertEqual(SagaOperation(DeleteOrderSaga.send_delete_ticket), step.on_failure_operation)
 
     def test_on_failure_method(self):
-        step = RemoteSagaStep().on_failure(send_delete_ticket)
-        self.assertEqual(SagaOperation(send_delete_ticket), step.on_failure_operation)
+        step = RemoteSagaStep().on_failure(DeleteOrderSaga.send_delete_ticket)
+        self.assertEqual(SagaOperation(DeleteOrderSaga.send_delete_ticket), step.on_failure_operation)
 
     def test_on_failure_multiple_raises(self):
         with self.assertRaises(MultipleOnFailureException):
-            RemoteSagaStep().on_failure(send_delete_ticket).on_failure(send_delete_ticket)
+            RemoteSagaStep().on_failure(DeleteOrderSaga.send_delete_ticket).on_failure(
+                DeleteOrderSaga.send_delete_ticket
+            )
 
     def test_on_success_constructor(self):
         step = RemoteSagaStep(on_success=handle_ticket_success)
@@ -74,20 +141,21 @@ class TestRemoteSagaStep(unittest.TestCase):
 
     def test_validate_raises_non_on_execute(self):
         with self.assertRaises(UndefinedOnExecuteException):
-            RemoteSagaStep().on_failure(send_delete_ticket).validate()
+            RemoteSagaStep().on_failure(DeleteOrderSaga.send_delete_ticket).validate()
 
     def test_raw(self):
         step = (
             RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
+            .on_failure(DeleteOrderSaga.send_delete_ticket)
         )
 
         expected = {
             "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+            "order": None,
             "on_execute": {"callback": "tests.utils.send_create_ticket"},
-            "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+            "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_ticket"},
             "on_success": {"callback": "tests.utils.handle_ticket_success"},
             "on_error": {"callback": "tests.utils.handle_ticket_error"},
         }
@@ -97,7 +165,7 @@ class TestRemoteSagaStep(unittest.TestCase):
         raw = {
             "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
             "on_execute": {"callback": "tests.utils.send_create_ticket"},
-            "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+            "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_ticket"},
             "on_success": {"callback": "tests.utils.handle_ticket_success"},
             "on_error": {"callback": "tests.utils.handle_ticket_error"},
         }
@@ -106,7 +174,7 @@ class TestRemoteSagaStep(unittest.TestCase):
             RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
+            .on_failure(DeleteOrderSaga.send_delete_ticket)
         )
         self.assertEqual(expected, SagaStep.from_raw(raw))
 
@@ -115,7 +183,7 @@ class TestRemoteSagaStep(unittest.TestCase):
             RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
+            .on_failure(DeleteOrderSaga.send_delete_ticket)
         )
         observed = SagaStep.from_raw(expected)
         self.assertEqual(expected, observed)
@@ -125,21 +193,21 @@ class TestRemoteSagaStep(unittest.TestCase):
             RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
+            .on_failure(DeleteOrderSaga.send_delete_ticket)
         )
         another = (
             RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
+            .on_failure(DeleteOrderSaga.send_delete_ticket)
         )
         self.assertEqual(another, base)
 
         another = (
-            RemoteSagaStep(send_delete_ticket)
+            RemoteSagaStep(DeleteOrderSaga.send_delete_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
+            .on_failure(DeleteOrderSaga.send_delete_ticket)
         )
         self.assertNotEqual(another, base)
 
@@ -147,7 +215,7 @@ class TestRemoteSagaStep(unittest.TestCase):
             RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_error)
             .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
+            .on_failure(DeleteOrderSaga.send_delete_ticket)
         )
         self.assertNotEqual(another, base)
 
@@ -155,7 +223,7 @@ class TestRemoteSagaStep(unittest.TestCase):
             RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_success)
-            .on_failure(send_delete_ticket)
+            .on_failure(DeleteOrderSaga.send_delete_ticket)
         )
         self.assertNotEqual(another, base)
 

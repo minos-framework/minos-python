@@ -2,11 +2,6 @@ from pathlib import (
     Path,
 )
 
-from minos.aggregate import (
-    InMemoryEventRepository,
-    InMemorySnapshotRepository,
-    InMemoryTransactionRepository,
-)
 from minos.common import (
     DatabaseClientPool,
     Lock,
@@ -20,6 +15,9 @@ from minos.networks import (
     BrokerClientPool,
     InMemoryBrokerPublisher,
     InMemoryBrokerSubscriberBuilder,
+)
+from minos.transactions import (
+    InMemoryTransactionRepository,
 )
 
 BASE_PATH = Path(__file__).parent
@@ -44,22 +42,11 @@ class LmdbTestCase(DatabaseMinosTestCase):
         transaction_repository = InMemoryTransactionRepository(
             lock_pool=pool_factory.get_pool("lock"),
         )
-        event_repository = InMemoryEventRepository(
-            broker_publisher=broker_publisher,
-            transaction_repository=transaction_repository,
-            lock_pool=pool_factory.get_pool("lock"),
-        )
-        snapshot_repository = InMemorySnapshotRepository(
-            event_repository=event_repository,
-            transaction_repository=transaction_repository,
-        )
         return [
             pool_factory,
             broker_publisher,
             broker_subscriber_builder,
             transaction_repository,
-            event_repository,
-            snapshot_repository,
         ]
 
 
