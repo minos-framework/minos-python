@@ -17,8 +17,8 @@ from tests.utils import (
     FakeBrokerSubscriberBuilder,
     FakeCustomInjection,
     FakeDatabasePool,
+    FakeDeltaRepository,
     FakeDiscoveryConnector,
-    FakeEventRepository,
     FakeHttpConnector,
     FakeHttpPort,
     FakeLockPool,
@@ -56,7 +56,7 @@ class TestConfigV1(unittest.TestCase):
             FakeHttpConnector,
             FakeBrokerPublisher,
             FakeBrokerSubscriberBuilder,
-            FakeEventRepository,
+            FakeDeltaRepository,
             FakeSnapshotRepository,
             FakeTransactionRepository,
             FakeDiscoveryConnector,
@@ -237,7 +237,7 @@ class TestConfigV1(unittest.TestCase):
 
     def test_database_event(self):
         config = ConfigV1(self.file_path, with_environment=False)
-        database_config = config.get_database_by_name("event")
+        database_config = config.get_database_by_name("delta")
         self.assertEqual("order_db", database_config["database"])
         self.assertEqual("minos", database_config["user"])
         self.assertEqual("min0s", database_config["password"])

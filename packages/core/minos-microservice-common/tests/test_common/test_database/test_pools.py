@@ -28,10 +28,10 @@ class TestDatabaseClientPool(CommonTestCase, DatabaseMinosTestCase):
         super().setUp()
         self.pool = DatabaseClientPool.from_config(self.config)
 
-    def test_constructor(self):
+    async def test_constructor(self):
         builder = DatabaseClientBuilder()
-        pool = DatabaseClientPool(builder)
-        self.assertEqual(builder, pool.client_builder)
+        async with DatabaseClientPool(builder) as pool:
+            self.assertEqual(builder, pool.client_builder)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -41,15 +41,15 @@ class TestDatabaseClientPool(CommonTestCase, DatabaseMinosTestCase):
         await self.pool.destroy()
         await super().asyncTearDown()
 
-    def test_from_config(self):
-        pool = DatabaseClientPool.from_config(self.config, key="event")
-        self.assertIsInstance(pool.client_builder, DatabaseClientBuilder)
-        self.assertEqual(MockedDatabaseClient, pool.client_builder.instance_cls)
+    async def test_from_config(self):
+        async with DatabaseClientPool.from_config(self.config, key="event") as pool:
+            self.assertIsInstance(pool.client_builder, DatabaseClientBuilder)
+            self.assertEqual(MockedDatabaseClient, pool.client_builder.instance_cls)
 
-    def test_from_config_client_builder(self):
+    async def test_from_config_client_builder(self):
         config = Config(CONFIG_FILE_PATH, databases_default_client=classname(DatabaseClientBuilder))
-        pool = DatabaseClientPool.from_config(config)
-        self.assertIsInstance(pool.client_builder, DatabaseClientBuilder)
+        async with DatabaseClientPool.from_config(config) as pool:
+            self.assertIsInstance(pool.client_builder, DatabaseClientBuilder)
 
     def test_from_config_client_none(self):
         config = Config(CONFIG_FILE_PATH, databases_default_client=None)

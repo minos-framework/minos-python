@@ -36,10 +36,16 @@ from .publishers import (
     BrokerPublisherBuilder,
     BrokerPublisherQueue,
     BrokerPublisherQueueDatabaseOperationFactory,
+    BrokerPublisherTransactionDatabaseOperationFactory,
+    BrokerPublisherTransactionEntry,
+    BrokerPublisherTransactionRepository,
     DatabaseBrokerPublisherQueue,
+    DatabaseBrokerPublisherTransactionRepository,
     InMemoryBrokerPublisher,
     InMemoryBrokerPublisherQueue,
+    InMemoryBrokerPublisherTransactionRepository,
     QueuedBrokerPublisher,
+    TransactionalBrokerPublisher,
 )
 from .subscribers import (
     BrokerSubscriber,

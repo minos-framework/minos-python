@@ -8,6 +8,7 @@ on:
   pull_request:
     paths:
       - 'packages/core/minos-microservice-networks/**'
+      - 'packages/core/minos-microservice-transactions/**'
       - 'packages/core/minos-microservice-common/**'
 
 jobs:
