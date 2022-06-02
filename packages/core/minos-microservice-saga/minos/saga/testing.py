@@ -35,6 +35,10 @@ from .executions import (
 class MockedSagaExecutionDatabaseOperationFactory(SagaExecutionDatabaseOperationFactory):
     """For testing purposes"""
 
+    def build_create(self) -> DatabaseOperation:
+        """For testing purposes"""
+        return MockedDatabaseOperation("create_table")
+
     def build_store(self, uuid: UUID, **kwargs) -> DatabaseOperation:
         """For testing purposes"""
         return MockedDatabaseOperation("create_table")

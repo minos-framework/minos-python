@@ -16,6 +16,7 @@ from .factories import (
     AiopgDeltaDatabaseOperationFactory,
     AiopgLockDatabaseOperationFactory,
     AiopgManagementDatabaseOperationFactory,
+    AiopgSagaExecutionDatabaseOperationFactory,
     AiopgSnapshotDatabaseOperationFactory,
     AiopgSnapshotQueryDatabaseOperationBuilder,
     AiopgTransactionDatabaseOperationFactory,
