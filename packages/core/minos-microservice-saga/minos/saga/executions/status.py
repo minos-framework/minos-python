@@ -10,7 +10,7 @@ from typing import (
 )
 
 
-class SagaStatus(Enum):
+class SagaStatus(str, Enum):
     """Saga Status class."""
 
     Created = "created"
@@ -29,6 +29,7 @@ class SagaStatus(Enum):
         if isinstance(raw, cls):
             return raw
 
+        # noinspection PyTypeChecker
         return next(obj for obj in cls if obj.value == raw)
 
     @property

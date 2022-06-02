@@ -1,0 +1,11 @@
+version: '3.9'
+services:
+    postgres:
+        image: postgres:alpine
+        restart: always
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: minos
+            POSTGRES_PASSWORD: min0s
+            POSTGRES_DB: order_db

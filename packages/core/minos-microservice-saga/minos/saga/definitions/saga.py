@@ -1,21 +1,37 @@
+"""Saga definitions module."""
+
 from __future__ import (
     annotations,
 )
 
 import warnings
+from collections.abc import (
+    Iterable,
+)
+from inspect import (
+    getmembers,
+)
+from operator import (
+    attrgetter,
+)
 from typing import (
     Any,
-    Iterable,
     Optional,
-    Type,
+    Protocol,
     TypeVar,
     Union,
+    runtime_checkable,
+)
+
+from cached_property import (
+    cached_property,
 )
 
 from ..exceptions import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
     EmptySagaException,
+    OrderPrecedenceException,
     SagaNotCommittedException,
 )
 from .operations import (
@@ -26,11 +42,52 @@ from .steps import (
     LocalSagaStep,
     RemoteSagaStep,
     SagaStep,
+    SagaStepDecoratorWrapper,
 )
 from .types import (
     LocalCallback,
     RequestCallBack,
 )
+
+
+@runtime_checkable
+class SagaDecoratorWrapper(Protocol):
+    """Saga Decorator Wrapper class."""
+
+    meta: SagaDecoratorMeta
+
+
+class SagaDecoratorMeta:
+    """Saga Decorator Meta class."""
+
+    _inner: type
+    _definition: Saga
+
+    def __init__(self, func: type, saga: Saga):
+        self._inner = func
+        self._definition = saga
+
+    @cached_property
+    def definition(self) -> Saga:
+        """Get the saga definition.
+
+        :return: A ``Saga`` instance.
+        """
+        steps = getmembers(self._inner, predicate=lambda x: isinstance(x, SagaStepDecoratorWrapper))
+        steps = list(map(lambda member: member[1].meta.definition, steps))
+        for step in steps:
+            if step.order is None:
+                raise OrderPrecedenceException(f"The {step!r} step does not have 'order' value.")
+        steps.sort(key=attrgetter("order"))
+
+        for step in steps:
+            self._definition.add_step(step)
+        self._definition.commit()
+
+        return self._definition
+
+
+TP = TypeVar("TP", bound=type)
 
 
 class Saga:
@@ -40,17 +97,34 @@ class Saga:
     """
 
     # noinspection PyUnusedLocal
-    def __init__(self, *args, steps: list[SagaStep] = None, committed: bool = False, commit: None = None, **kwargs):
+    def __init__(
+        self, *args, steps: list[SagaStep] = None, committed: Optional[bool] = None, commit: None = None, **kwargs
+    ):
+        self.steps = list()
+        self.committed = False
+
         if steps is None:
             steps = list()
+        for step in steps:
+            self.add_step(step)
 
-        self.steps = steps
+        if committed is None:
+            committed = len(steps)
         self.committed = committed
 
         if commit is not None:
             warnings.warn(f"Commit callback is being deprecated. Use {self.local_step!r} instead", DeprecationWarning)
             self.local_step(commit)
             self.committed = True
+
+    def __call__(self, type_: TP) -> Union[TP, SagaDecoratorWrapper]:
+        """Decorate the given type.
+
+        :param type_: The type to be decorated.
+        :return: The decorated type.
+        """
+        type_.meta = SagaDecoratorMeta(type_, self)
+        return type_
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], Saga], **kwargs) -> Saga:
@@ -77,7 +151,7 @@ class Saga:
         :param step: The step to be added. If `None` is provided then a new one will be created.
         :return: A ``SagaStep`` instance.
         """
-        return self._add_step(ConditionalSagaStep, step)
+        return self.add_step(step, ConditionalSagaStep)
 
     def local_step(
         self, step: Optional[Union[LocalCallback, SagaOperation[LocalCallback], LocalSagaStep]] = None, **kwargs
@@ -90,12 +164,12 @@ class Saga:
         """
         if step is not None and not isinstance(step, SagaStep) and not isinstance(step, SagaOperation):
             step = SagaOperation(step, **kwargs)
-        return self._add_step(LocalSagaStep, step)
+        return self.add_step(step, LocalSagaStep)
 
     def step(
         self, step: Optional[Union[RequestCallBack, SagaOperation[RequestCallBack], RemoteSagaStep]] = None, **kwargs
     ) -> RemoteSagaStep:
-        """Add a new remote step step.
+        """Add a new remote step.
 
         :param step: The step to be added. If `None` is provided then a new one will be created.
         :param kwargs: Additional named parameters.
@@ -107,7 +181,7 @@ class Saga:
     def remote_step(
         self, step: Optional[Union[RequestCallBack, SagaOperation[RequestCallBack], RemoteSagaStep]] = None, **kwargs
     ) -> RemoteSagaStep:
-        """Add a new remote step step.
+        """Add a new remote step.
 
         :param step: The step to be added. If `None` is provided then a new one will be created.
         :param kwargs: Additional named parameters.
@@ -115,9 +189,15 @@ class Saga:
         """
         if step is not None and not isinstance(step, SagaStep) and not isinstance(step, SagaOperation):
             step = SagaOperation(step, **kwargs)
-        return self._add_step(RemoteSagaStep, step)
+        return self.add_step(step, RemoteSagaStep)
 
-    def _add_step(self, step_cls: Type[T], step: Optional[Union[SagaOperation, T]]) -> T:
+    def add_step(self, step: Optional[Union[SagaOperation, T]], step_cls: type[T] = SagaStep) -> T:
+        """Add a new step.
+
+        :param step: The step to be added.
+        :param step_cls: The step class (for validation purposes).
+        :return: The added step.
+        """
         if self.committed:
             raise AlreadyCommittedException("It is not possible to add more steps to an already committed saga.")
 
@@ -129,8 +209,20 @@ class Saga:
             if step.saga is not None:
                 raise AlreadyOnSagaException()
             step.saga = self
+
         else:
             step = step_cls(step, saga=self)
+
+        if step.order is None:
+            if self.steps:
+                step.order = self.steps[-1].order + 1
+            else:
+                step.order = 1
+
+        if self.steps and step.order <= self.steps[-1].order:
+            raise OrderPrecedenceException(
+                f"Unsatisfied precedence constraints. Previous: {self.steps[-1].order} Current: {step.order} "
+            )
 
         self.steps.append(step)
         return step

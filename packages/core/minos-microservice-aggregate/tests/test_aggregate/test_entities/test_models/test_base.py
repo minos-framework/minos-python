@@ -23,7 +23,7 @@ class TestEntity(unittest.TestCase):
     def test_default(self):
         entity = OrderItem("foo")
         self.assertIsInstance(entity, DeclarativeModel)
-        self.assertIsNot(entity.uuid, NULL_UUID)
+        self.assertEqual(entity.uuid, NULL_UUID)
         self.assertIsInstance(entity.uuid, UUID)
         self.assertEqual("foo", entity.name)
 
@@ -31,7 +31,7 @@ class TestEntity(unittest.TestCase):
         uuid = uuid4()
         entity = OrderItem("foo", uuid=uuid)
         self.assertIsInstance(entity, DeclarativeModel)
-        self.assertIsNot(entity.uuid, NULL_UUID)
+        self.assertNotEqual(entity.uuid, NULL_UUID)
         self.assertEqual(uuid, entity.uuid)
         self.assertEqual("foo", entity.name)
 

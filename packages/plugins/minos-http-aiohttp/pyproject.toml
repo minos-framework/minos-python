@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-http-aiohttp"
-version = "0.7.0"
+version = "0.8.0.dev1"
 description = "The aiohttp plugin of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
@@ -31,8 +31,8 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.7.0"
-minos-microservice-networks = "^0.7.0"
+minos-microservice-common = { version ="^0.8.0*", allow-prereleases = true }
+minos-microservice-networks = { version ="^0.8.0*", allow-prereleases = true }
 aiohttp = "^3.8.1"
 orjson = "^3.6.7"
 cached-property = "^1.5.2"

@@ -17,6 +17,7 @@ from uuid import (
 )
 
 from minos.common import (
+    Model,
     TypeHintBuilder,
     is_model_type,
 )
@@ -36,7 +37,7 @@ class RefExtractor:
         self.type_ = type_
         self.as_uuids = as_uuids
 
-    def build(self) -> dict[str, set[UUID]]:
+    def build(self) -> dict[type[Model], set[UUID]]:
         """Run the model reference extractor.
 
         :return: A dictionary in which the keys are the class names and the values are the identifiers.
@@ -49,7 +50,7 @@ class RefExtractor:
 
         return ans
 
-    def _build(self, value: Any, type_: type, ans: dict[str, set[Ref]]) -> None:
+    def _build(self, value: Any, type_: type, ans: dict[type[Model], set[Ref]]) -> None:
         if get_origin(type_) is Union:
             type_ = next((t for t in get_args(type_) if get_origin(t) is Ref), type_)
 
@@ -66,14 +67,13 @@ class RefExtractor:
                 cls = args[0]
             if cls is None and len(args := get_args(type_.type_hints["data"])):
                 cls = args[0]
-            name = cls.__name__
-            ans[name].add(value)
+            ans[cls].add(value)
 
         elif is_model_type(value):
             # noinspection PyUnresolvedReferences
             for field in value.fields.values():
                 self._build(field.value, field.type, ans)
 
-    def _build_iterable(self, value: Iterable, value_: type, ans: dict[str, set[Ref]]) -> None:
+    def _build_iterable(self, value: Iterable, type_: type, ans: dict[type[Model], set[Ref]]) -> None:
         for sub_value in value:
-            self._build(sub_value, value_, ans)
+            self._build(sub_value, type_, ans)

@@ -1,29 +1,17 @@
 from abc import (
     ABC,
 )
-from contextlib import (
-    suppress,
-)
 from functools import (
     partial,
 )
-from inspect import (
-    getmembers,
-    isfunction,
-    ismethod,
-)
-from typing import (
-    Any,
-)
 
+from minos.aggregate import (
+    Aggregate,
+)
 from minos.common import (
-    Config,
     Inject,
-    NotProvidedException,
 )
 from minos.networks import (
-    EnrouteDecorator,
-    HandlerWrapper,
     Request,
     WrappedRequest,
 )
@@ -39,26 +27,9 @@ from .handlers import (
 class Service(ABC):
     """Base Service class"""
 
-    def __init__(self, **kwargs):
-        self._kwargs = kwargs
-
-    def __getattr__(self, item: str) -> Any:
-        if item != "_kwargs" and item in self._kwargs:
-            return self._kwargs[item]
-
-        with suppress(NotProvidedException):
-            return Inject.resolve_by_name(item)
-
-        raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} field.")
-
-    @classmethod
-    def __get_enroute__(cls, config: Config) -> dict[str, set[EnrouteDecorator]]:
-        result = dict()
-        for name, fn in getmembers(cls, predicate=lambda x: ismethod(x) or isfunction(x)):
-            if not isinstance(fn, HandlerWrapper):
-                continue
-            result[name] = fn.meta.decorators
-        return result
+    @Inject()
+    def __init__(self, aggregate: Aggregate, **kwargs):
+        self.aggregate = aggregate
 
     @staticmethod
     def _pre_event_handle(request: Request) -> Request:

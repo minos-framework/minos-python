@@ -11,8 +11,12 @@ from minos.saga import (
     EmptySagaException,
     EmptySagaStepException,
     LocalSagaStep,
+    OrderPrecedenceException,
     RemoteSagaStep,
     Saga,
+    SagaContext,
+    SagaDecoratorMeta,
+    SagaDecoratorWrapper,
     SagaException,
     SagaExecution,
     SagaNotCommittedException,
@@ -21,11 +25,48 @@ from minos.saga import (
 )
 from tests.utils import (
     ADD_ORDER,
+    CONDITIONAL_ORDER_SAGA,
+    DELETE_ORDER,
+    ConditionalOrderSaga,
+    DeleteOrderSaga,
     create_payment,
     send_create_order,
-    send_delete_order,
-    send_delete_ticket,
 )
+
+
+class TestSagaClassMeta(unittest.TestCase):
+    def test_constructor(self):
+        @Saga()
+        class _Foo:
+            """For testing purposes."""
+
+            @LocalSagaStep(order=1)
+            def step(self, context: SagaContext) -> SagaContext:
+                """For testing purposes."""
+
+        self.assertIsInstance(_Foo, SagaDecoratorWrapper)
+
+        meta = _Foo.meta
+        self.assertIsInstance(meta, SagaDecoratorMeta)
+        self.assertEqual(meta.definition, Saga().local_step(_Foo.step).commit())
+
+    def test_definition_raises_order(self):
+        @Saga()
+        class _Foo:
+            """For testing purposes."""
+
+            @LocalSagaStep()
+            def step(self, context: SagaContext) -> SagaContext:
+                """For testing purposes."""
+
+        with self.assertRaises(OrderPrecedenceException):
+            _Foo.meta.definition
+
+    def test_equal(self):
+        self.assertEqual(DeleteOrderSaga.meta.definition, DELETE_ORDER)
+
+    def test_equal_conditional(self):
+        self.assertEqual(ConditionalOrderSaga.meta.definition, CONDITIONAL_ORDER_SAGA)
 
 
 class TestSaga(unittest.TestCase):
@@ -38,7 +79,7 @@ class TestSaga(unittest.TestCase):
             warnings.simplefilter("ignore", DeprecationWarning)
             saga = Saga(commit=create_payment)
 
-        self.assertEqual([LocalSagaStep(SagaOperation(create_payment))], saga.steps)
+        self.assertEqual([LocalSagaStep(SagaOperation(create_payment), order=1)], saga.steps)
         self.assertEqual(True, saga.committed)
 
     def test_commit(self):
@@ -55,7 +96,7 @@ class TestSaga(unittest.TestCase):
             # noinspection PyTypeChecker
             observed = saga.commit(create_payment)
         self.assertEqual(saga, observed)
-        self.assertEqual([LocalSagaStep(SagaOperation(create_payment))], saga.steps)
+        self.assertEqual([LocalSagaStep(SagaOperation(create_payment), order=1)], saga.steps)
         self.assertEqual(True, saga.committed)
 
     def test_commit_raises(self):
@@ -67,8 +108,16 @@ class TestSaga(unittest.TestCase):
         saga = Saga(committed=True)
         self.assertTrue(saga.committed)
 
+    def test_committed_true_steps(self):
+        saga = Saga(steps=[LocalSagaStep(create_payment)])
+        self.assertTrue(saga.committed)
+
     def test_committed_false(self):
         saga = Saga()
+        self.assertFalse(saga.committed)
+
+    def test_committed_false_steps(self):
+        saga = Saga(steps=[LocalSagaStep(create_payment)], committed=False)
         self.assertFalse(saga.committed)
 
     def test_conditional(self):
@@ -104,13 +153,13 @@ class TestSaga(unittest.TestCase):
     def test_local_operation(self):
         saga = Saga()
         step = saga.local_step(SagaOperation(create_payment))
-        self.assertEqual(LocalSagaStep(on_execute=SagaOperation(create_payment)), step)
+        self.assertEqual(LocalSagaStep(on_execute=SagaOperation(create_payment), order=1), step)
         self.assertEqual(saga, step.saga)
 
     def test_local_callback(self):
         saga = Saga()
         step = saga.local_step(create_payment)
-        self.assertEqual(LocalSagaStep(on_execute=SagaOperation(create_payment)), step)
+        self.assertEqual(LocalSagaStep(on_execute=SagaOperation(create_payment), order=1), step)
         self.assertEqual(saga, step.saga)
 
     def test_local_empty(self):
@@ -136,6 +185,7 @@ class TestSaga(unittest.TestCase):
         saga.remote_step = mock
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
             step = saga.step()
 
         self.assertEqual(1, mock.call_count)
@@ -150,14 +200,14 @@ class TestSaga(unittest.TestCase):
 
     def test_remote_operation(self):
         saga = Saga()
-        step = saga.remote_step(SagaOperation(send_delete_ticket))
-        self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
+        step = saga.remote_step(SagaOperation(DeleteOrderSaga.send_delete_ticket))
+        self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(DeleteOrderSaga.send_delete_ticket), order=1), step)
         self.assertEqual(saga, step.saga)
 
     def test_remote_callback(self):
         saga = Saga()
-        step = saga.remote_step(send_delete_ticket)
-        self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
+        step = saga.remote_step(DeleteOrderSaga.send_delete_ticket)
+        self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(DeleteOrderSaga.send_delete_ticket), order=1), step)
         self.assertEqual(saga, step.saga)
 
     def test_remote_empty(self):
@@ -178,31 +228,49 @@ class TestSaga(unittest.TestCase):
 
     def test_empty_step_raises(self):
         with self.assertRaises(SagaException):
-            Saga().remote_step(send_create_order).on_failure(send_delete_order).remote_step().commit()
+            Saga().remote_step(send_create_order).on_failure(DeleteOrderSaga.send_delete_order).remote_step().commit()
 
     def test_duplicate_operation_raises(self):
         with self.assertRaises(SagaException):
-            Saga().remote_step(send_create_order).on_failure(send_delete_order).on_failure(send_delete_ticket).commit()
+            Saga().remote_step(send_create_order).on_failure(DeleteOrderSaga.send_delete_order).on_failure(
+                DeleteOrderSaga.send_delete_ticket
+            ).commit()
 
     def test_missing_send_raises(self):
         with self.assertRaises(SagaException):
-            Saga().remote_step().on_failure(send_delete_ticket).commit()
+            Saga().remote_step().on_failure(DeleteOrderSaga.send_delete_ticket).commit()
 
     def test_build_execution(self):
-        saga = Saga().remote_step(send_create_order).on_failure(send_delete_order).commit()
+        saga = Saga().remote_step(send_create_order).on_failure(DeleteOrderSaga.send_delete_order).commit()
         execution = SagaExecution.from_definition(saga)
         self.assertIsInstance(execution, SagaExecution)
 
     def test_add_step(self):
         step = RemoteSagaStep(send_create_order)
-        saga = Saga().remote_step(step).commit()
+        saga = Saga().add_step(step).commit()
 
         self.assertEqual([step], saga.steps)
 
-    def test_add_step_raises(self):
+    def test_add_step_raises_duplicated(self):
         step = RemoteSagaStep(send_create_order, saga=Saga())
         with self.assertRaises(AlreadyOnSagaException):
-            Saga().remote_step(step)
+            Saga().add_step(step)
+
+    def test_add_step_raises_precedence_lower(self):
+        step1 = RemoteSagaStep(send_create_order, order=2)
+        step2 = RemoteSagaStep(send_create_order, order=1)
+        saga = Saga()
+        saga.add_step(step1)
+        with self.assertRaises(OrderPrecedenceException):
+            saga.add_step(step2)
+
+    def test_add_step_raises_precedence_equal(self):
+        step1 = RemoteSagaStep(send_create_order, order=1)
+        step2 = RemoteSagaStep(send_create_order, order=1)
+        saga = Saga()
+        saga.add_step(step1)
+        with self.assertRaises(OrderPrecedenceException):
+            saga.add_step(step2)
 
     def test_raw(self):
         saga = ADD_ORDER
@@ -211,22 +279,25 @@ class TestSaga(unittest.TestCase):
             "steps": [
                 {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                    "order": 1,
                     "on_execute": {"callback": "tests.utils.send_create_order"},
-                    "on_success": {"callback": "tests.utils.handle_order_success"},
+                    "on_success": {"callback": "tests.utils.DeleteOrderSaga.handle_order_success"},
                     "on_error": None,
-                    "on_failure": {"callback": "tests.utils.send_delete_order"},
+                    "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_order"},
                 },
                 {
                     "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                    "order": 2,
                     "on_execute": {"callback": "tests.utils.create_payment"},
                     "on_failure": {"callback": "tests.utils.delete_payment"},
                 },
                 {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                    "order": 3,
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
                     "on_error": {"callback": "tests.utils.handle_ticket_error"},
-                    "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+                    "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_ticket"},
                 },
             ],
         }
@@ -238,22 +309,25 @@ class TestSaga(unittest.TestCase):
             "steps": [
                 {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                    "order": 1,
                     "on_execute": {"callback": "tests.utils.send_create_order"},
-                    "on_success": {"callback": "tests.utils.handle_order_success"},
+                    "on_success": {"callback": "tests.utils.DeleteOrderSaga.handle_order_success"},
                     "on_error": None,
-                    "on_failure": {"callback": "tests.utils.send_delete_order"},
+                    "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_order"},
                 },
                 {
                     "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                    "order": 2,
                     "on_execute": {"callback": "tests.utils.create_payment"},
                     "on_failure": {"callback": "tests.utils.delete_payment"},
                 },
                 {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                    "order": 3,
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
                     "on_error": {"callback": "tests.utils.handle_ticket_error"},
-                    "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+                    "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_ticket"},
                 },
             ],
         }
@@ -275,7 +349,7 @@ class TestSaga(unittest.TestCase):
             Saga(steps=[RemoteSagaStep()]).validate()
 
         with self.assertRaises(SagaNotCommittedException):
-            Saga(steps=[LocalSagaStep(create_payment)]).validate()
+            Saga(steps=[LocalSagaStep(create_payment)], committed=False).validate()
 
 
 if __name__ == "__main__":

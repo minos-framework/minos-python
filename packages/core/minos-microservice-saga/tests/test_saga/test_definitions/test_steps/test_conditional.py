@@ -5,10 +5,18 @@ from unittest.mock import (
 
 from minos.saga import (
     ConditionalSagaStep,
+    ConditionalSagaStepDecoratorMeta,
+    ConditionalSagaStepDecoratorWrapper,
     ElseThenAlternative,
+    ElseThenAlternativeDecoratorMeta,
+    ElseThenAlternativeDecoratorWrapper,
     EmptySagaStepException,
     IfThenAlternative,
+    IfThenAlternativeDecoratorMeta,
+    IfThenAlternativeDecoratorWrapper,
     MultipleElseThenException,
+    OrderPrecedenceException,
+    SagaContext,
     SagaOperation,
     SagaStep,
 )
@@ -21,11 +29,63 @@ from tests.utils import (
 )
 
 
+class TestConditionalSagaStepDecoratorMeta(unittest.TestCase):
+    def test_constructor(self):
+        # noinspection PyUnusedLocal
+        @ConditionalSagaStep()
+        class _MyCondition:
+            """For testing purposes."""
+
+        self.assertIsInstance(_MyCondition, ConditionalSagaStepDecoratorWrapper)
+        meta = _MyCondition.meta
+        self.assertIsInstance(meta, ConditionalSagaStepDecoratorMeta)
+        self.assertEqual(ConditionalSagaStep(), meta.definition)
+
+    def test_with_alternatives(self):
+        # noinspection PyUnusedLocal
+        @ConditionalSagaStep()
+        class _MyCondition:
+            """For testing purposes."""
+
+            @IfThenAlternative(ADD_ORDER, order=1)
+            def if_fn1(self, context: SagaContext) -> bool:
+                """For testing purposes."""
+
+            @IfThenAlternative(DELETE_ORDER, order=2)
+            def if_fn2(self, context: SagaContext) -> bool:
+                """For testing purposes."""
+
+            @ElseThenAlternative(CREATE_PAYMENT)
+            def else_(self):
+                """For testing purposes."""
+
+        self.assertIsInstance(_MyCondition, ConditionalSagaStepDecoratorWrapper)
+        meta = _MyCondition.meta
+        self.assertIsInstance(meta, ConditionalSagaStepDecoratorMeta)
+        expected = ConditionalSagaStep(
+            [IfThenAlternative(ADD_ORDER, _MyCondition.if_fn1), IfThenAlternative(DELETE_ORDER, _MyCondition.if_fn2)],
+            ElseThenAlternative(CREATE_PAYMENT),
+        )
+        self.assertEqual(expected, meta.definition)
+
+    def test_raises_order(self):
+        @ConditionalSagaStep()
+        class _MyCondition:
+            """For testing purposes."""
+
+            @IfThenAlternative(ADD_ORDER)
+            def if_fn1(self, context: SagaContext) -> bool:
+                """For testing purposes."""
+
+        with self.assertRaises(OrderPrecedenceException):
+            _MyCondition.meta.definition
+
+
 class TestConditionalSagaStep(unittest.TestCase):
     def setUp(self) -> None:
         self.if_then = [
-            IfThenAlternative(add_order_condition, ADD_ORDER),
-            IfThenAlternative(delete_order_condition, DELETE_ORDER),
+            IfThenAlternative(ADD_ORDER, add_order_condition),
+            IfThenAlternative(DELETE_ORDER, delete_order_condition),
         ]
         self.else_then = ElseThenAlternative(CREATE_PAYMENT)
 
@@ -35,11 +95,41 @@ class TestConditionalSagaStep(unittest.TestCase):
         self.assertEqual(self.else_then, step.else_then_alternative)
 
     def test_if_then(self):
-        observed = (
-            ConditionalSagaStep().if_then(add_order_condition, ADD_ORDER).if_then(delete_order_condition, DELETE_ORDER)
-        )
+        step = ConditionalSagaStep()
+        step.if_then(add_order_condition, ADD_ORDER)
+        step.if_then(delete_order_condition, DELETE_ORDER)
+
         expected = ConditionalSagaStep(if_then=self.if_then)
-        self.assertEqual(expected, observed)
+        self.assertEqual(expected, step)
+
+    def test_if_then_with_order(self):
+        alternative1 = IfThenAlternative(ADD_ORDER, add_order_condition, order=1)
+        alternative2 = IfThenAlternative(DELETE_ORDER, delete_order_condition, order=2)
+
+        step = ConditionalSagaStep()
+        step.if_then(alternative1)
+        step.if_then(alternative2)
+
+        expected = ConditionalSagaStep(if_then=self.if_then)
+        self.assertEqual(expected, step)
+
+    def test_if_then_raises_precedence_lower(self):
+        alternative1 = IfThenAlternative(ADD_ORDER, add_order_condition, order=2)
+        alternative2 = IfThenAlternative(DELETE_ORDER, delete_order_condition, order=1)
+
+        step = ConditionalSagaStep()
+        step.if_then(alternative1)
+        with self.assertRaises(OrderPrecedenceException):
+            step.if_then(alternative2)
+
+    def test_if_then_raises_precedence_equal(self):
+        alternative1 = IfThenAlternative(ADD_ORDER, add_order_condition, order=1)
+        alternative2 = IfThenAlternative(DELETE_ORDER, delete_order_condition, order=1)
+
+        step = ConditionalSagaStep()
+        step.if_then(alternative1)
+        with self.assertRaises(OrderPrecedenceException):
+            step.if_then(alternative2)
 
     def test_else_then(self):
         observed = ConditionalSagaStep().else_then(CREATE_PAYMENT)
@@ -64,10 +154,11 @@ class TestConditionalSagaStep(unittest.TestCase):
             ConditionalSagaStep().validate()
 
     def test_raw(self):
-        step = ConditionalSagaStep(if_then=self.if_then, else_then=self.else_then)
+        step = ConditionalSagaStep(if_then=self.if_then, else_then=self.else_then, order=3)
 
         expected = {
             "cls": "minos.saga.definitions.steps.conditional.ConditionalSagaStep",
+            "order": 3,
             "else_then": self.else_then.raw,
             "if_then": [self.if_then[0].raw, self.if_then[1].raw],
         }
@@ -113,9 +204,22 @@ class TestConditionalSagaStep(unittest.TestCase):
         self.assertNotEqual(another, base)
 
 
+class TestIfThenAlternativeMeta(unittest.TestCase):
+    def test_constructor(self):
+        # noinspection PyUnusedLocal
+        @IfThenAlternative(saga=ADD_ORDER)
+        def _fn(context: SagaContext) -> bool:
+            """For testing purposes"""
+
+        self.assertIsInstance(_fn, IfThenAlternativeDecoratorWrapper)
+        meta = _fn.meta
+        self.assertIsInstance(meta, IfThenAlternativeDecoratorMeta)
+        self.assertEqual(IfThenAlternative(ADD_ORDER, _fn), meta.alternative)
+
+
 class TestIfThenAlternative(unittest.TestCase):
     def setUp(self) -> None:
-        self.alternative = IfThenAlternative(add_order_condition, ADD_ORDER)
+        self.alternative = IfThenAlternative(ADD_ORDER, add_order_condition, order=3)
 
     def test_condition(self):
         self.assertEqual(SagaOperation(add_order_condition), self.alternative.condition)
@@ -129,13 +233,13 @@ class TestIfThenAlternative(unittest.TestCase):
             self.assertEqual(1, mock.call_count)
 
     def test_raw(self):
-        expected = {"condition": {"callback": "tests.utils.add_order_condition"}, "saga": ADD_ORDER.raw}
+        expected = {"order": 3, "condition": {"callback": "tests.utils.add_order_condition"}, "saga": ADD_ORDER.raw}
 
         self.assertEqual(expected, self.alternative.raw)
 
     def test_from_raw(self):
         observed = IfThenAlternative.from_raw(
-            {"condition": {"callback": "tests.utils.add_order_condition"}, "saga": ADD_ORDER.raw}
+            {"order": 3, "condition": {"callback": "tests.utils.add_order_condition"}, "saga": ADD_ORDER.raw}
         )
         self.assertEqual(self.alternative, observed)
 
@@ -144,14 +248,27 @@ class TestIfThenAlternative(unittest.TestCase):
         self.assertEqual(self.alternative, observed)
 
     def test_equals(self):
-        another = IfThenAlternative(add_order_condition, ADD_ORDER)
+        another = IfThenAlternative(ADD_ORDER, add_order_condition)
         self.assertEqual(another, self.alternative)
 
-        another = IfThenAlternative(delete_order_condition, ADD_ORDER)
+        another = IfThenAlternative(ADD_ORDER, delete_order_condition)
         self.assertNotEqual(another, self.alternative)
 
-        another = IfThenAlternative(add_order_condition, DELETE_ORDER)
+        another = IfThenAlternative(DELETE_ORDER, add_order_condition)
         self.assertNotEqual(another, self.alternative)
+
+
+class TestElseThenAlternativeMeta(unittest.TestCase):
+    def test_constructor(self):
+        # noinspection PyUnusedLocal
+        @ElseThenAlternative(saga=ADD_ORDER)
+        def _fn():
+            """For testing purposes"""
+
+        self.assertIsInstance(_fn, ElseThenAlternativeDecoratorWrapper)
+        meta = _fn.meta
+        self.assertIsInstance(meta, ElseThenAlternativeDecoratorMeta)
+        self.assertEqual(ElseThenAlternative(saga=ADD_ORDER), meta.alternative)
 
 
 class TestElseThenAlternative(unittest.TestCase):
@@ -178,6 +295,10 @@ class TestElseThenAlternative(unittest.TestCase):
     def test_from_raw_already(self):
         observed = ElseThenAlternative.from_raw(self.alternative)
         self.assertEqual(self.alternative, observed)
+
+    def test_repr(self):
+        alternative = ElseThenAlternative(CREATE_PAYMENT)
+        self.assertEqual(f"ElseThenAlternative({CREATE_PAYMENT!r},)", repr(alternative))
 
     def test_equals(self):
         another = ElseThenAlternative(CREATE_PAYMENT)

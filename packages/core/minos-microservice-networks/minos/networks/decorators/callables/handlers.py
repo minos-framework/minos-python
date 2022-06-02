@@ -21,7 +21,6 @@ from typing import (
     TYPE_CHECKING,
     Optional,
     Protocol,
-    Type,
     Union,
     runtime_checkable,
 )
@@ -57,7 +56,7 @@ class HandlerWrapper(Protocol):
     """Handler Wrapper class."""
 
     meta: HandlerMeta
-    check: Type[CheckDecorator]
+    check: type[CheckDecorator]
     __call__: Handler
 
 
@@ -114,11 +113,10 @@ class HandlerMeta:
 
         _wrapper.meta = self
         _wrapper.check = self.check
-        _wrapper.__decorators__ = self.decorators  # FIXME: This attribute should be removed in future versions.
 
         return _wrapper
 
-    @cached_property
+    @property
     def sync_wrapper(self) -> HandlerWrapper:
         """Get the sync ``HandlerWrapper`` instance.
 
@@ -139,7 +137,6 @@ class HandlerMeta:
 
         _wrapper.meta = self
         _wrapper.check = self.check
-        _wrapper.__decorators__ = self.decorators  # FIXME: This attribute should be removed in future versions.
 
         return _wrapper
 
@@ -157,7 +154,7 @@ class HandlerMeta:
         self.decorators.add(decorator)
 
     @cached_property
-    def check(self) -> Type[CheckDecorator]:
+    def check(self) -> type[CheckDecorator]:
         """Get the check decorator.
 
         :return: A ``CheckDecorator`` type.

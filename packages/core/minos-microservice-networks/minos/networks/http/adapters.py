@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import logging
-from collections.abc import (
-    Callable,
-)
 from typing import (
     Any,
 )
@@ -17,6 +14,7 @@ from minos.common import (
 )
 
 from ..decorators import (
+    Handler,
     HttpEnrouteDecorator,
 )
 from ..exceptions import (
@@ -44,16 +42,17 @@ class HttpAdapter(SetupMixin):
     @staticmethod
     def _routers_from_config(config: Config, **kwargs) -> list[HttpRouter]:
         classes = config.get_routers()
+        # noinspection PyTypeChecker
         classes = tuple((class_ if not isinstance(class_, str) else import_module(class_)) for class_ in classes)
         classes = filter(lambda router: issubclass(router, HttpRouter), classes)
         routers = [router.from_config(config) for router in classes]
         return routers
 
     @property
-    def routes(self) -> dict[HttpEnrouteDecorator, Callable]:
+    def routes(self) -> dict[HttpEnrouteDecorator, Handler]:
         """Get routes.
 
-        :return: A ``dict`` with ``HttpEnrouteDecorator`` and ``Callable`` as values.
+        :return: A ``dict`` with ``HttpEnrouteDecorator`` and ``Handler`` as values.
         """
         routes = dict()
         for router in self._routers:
