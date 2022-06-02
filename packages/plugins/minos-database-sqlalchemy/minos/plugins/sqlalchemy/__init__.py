@@ -9,11 +9,8 @@ from .clients import (
 )
 from .factories import (
     SqlAlchemyManagementDatabaseOperationFactory,
+    SqlAlchemySnapshotTableFactory,
 )
 from .operations import (
     SqlAlchemyDatabaseOperation,
-)
-
-from .snapshots import (
-    SqlAlchemySnapshotTableFactory,
 )
