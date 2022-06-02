@@ -19,6 +19,7 @@ from uuid import (
 )
 
 from minos.common import (
+    NULL_UUID,
     DataDecoder,
     DataEncoder,
     DeclarativeModel,
@@ -41,11 +42,17 @@ class EntitySet(IncrementalSet[T]):
     data: dict[str, T]
 
     def __init__(self, data: Optional[Iterable[T]] = None, *args, **kwargs):
-        if data is None:
-            data = dict()
-        elif not isinstance(data, dict):
-            data = {str(entity.uuid): entity for entity in data}
-        DeclarativeModel.__init__(self, data, *args, **kwargs)
+        DeclarativeModel.__init__(self, dict(), *args, **kwargs)
+
+        if isinstance(data, dict):
+            iterable = data.values()
+        elif data is not None:
+            iterable = data
+        else:
+            iterable = tuple()
+
+        for entity in iterable:
+            self.add(entity)
 
     def add(self, entity: T) -> None:
         """Add an entity.
@@ -53,17 +60,19 @@ class EntitySet(IncrementalSet[T]):
         :param entity: The entity to be added.
         :return: This method does not return anything.
         """
+        if entity.uuid == NULL_UUID:
+            raise ValueError(f"The given entity must have a non-null uuid. Obtained entity: {entity!r}")
         self.data[str(entity.uuid)] = entity
 
-    def discard(self, entity: T) -> None:
+    def discard(self, uuid: Union[T, UUID]) -> None:
         """Discard an entity.
 
-        :param entity: The entity to be discarded.
+        :param uuid: The entity to be discarded.
         :return: This method does not return anything.
         """
-        if not isinstance(entity, UUID):
-            entity = entity.uuid
-        self.data.pop(str(entity), None)
+        if not isinstance(uuid, UUID):
+            uuid = uuid.uuid
+        self.data.pop(str(uuid), None)
 
     def get(self, uuid: UUID) -> T:
         """Get an entity by identifier.
@@ -73,12 +82,12 @@ class EntitySet(IncrementalSet[T]):
         """
         return self.data[str(uuid)]
 
-    def __contains__(self, entity: Union[T, UUID]) -> bool:
-        if not isinstance(entity, UUID):
-            if not hasattr(entity, "uuid"):
+    def __contains__(self, uuid: Union[T, UUID]) -> bool:
+        if not isinstance(uuid, UUID):
+            if not hasattr(uuid, "uuid"):
                 return False
-            entity = entity.uuid
-        return str(entity) in self.data
+            uuid = uuid.uuid
+        return str(uuid) in self.data
 
     def __iter__(self) -> Iterator[T]:
         yield from self.data.values()

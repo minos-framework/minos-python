@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-python"
-version = "0.7.0"
+version = "0.8.0.dev1"
 description = ""
 authors = ["Minos Framework Devs <hey@minos.run>"]
 license = "MIT"
@@ -9,6 +9,7 @@ license = "MIT"
 python = "^3.9"
 minos-microservice-common = { path = "packages/core/minos-microservice-common", develop = true }
 minos-microservice-networks = { path = "packages/core/minos-microservice-networks", develop = true }
+minos-microservice-transactions = { path = "packages/core/minos-microservice-transactions", develop = true }
 minos-microservice-aggregate = { path = "packages/core/minos-microservice-aggregate", develop = true }
 minos-microservice-saga = { path = "packages/core/minos-microservice-saga", develop = true }
 minos-microservice-cqrs = { path = "packages/core/minos-microservice-cqrs", develop = true }

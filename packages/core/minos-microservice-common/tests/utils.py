@@ -182,8 +182,8 @@ class FakeSagaManager:
     """For testing purposes."""
 
 
-@Injectable("event_repository")
-class FakeEventRepository:
+@Injectable("delta_repository")
+class FakeDeltaRepository:
     """For testing purposes."""
 
 
@@ -194,4 +194,9 @@ class FakeSnapshotRepository:
 
 @Injectable("transaction_repository")
 class FakeTransactionRepository:
+    """For testing purposes."""
+
+
+@Injectable("aggregate")
+class FakeAggregate:
     """For testing purposes."""

@@ -29,6 +29,7 @@ Minos is a framework which helps you create [reactive](https://www.reactivemanif
    minos.cqrs
    minos.networks
    minos.saga
+   minos.transactions
    minos.plugins.kafka
    minos.plugins.rabbitmq
    minos.plugins.minos_discovery
