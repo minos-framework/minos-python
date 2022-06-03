@@ -31,8 +31,8 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = { version ="^0.8.0*", allow-prereleases = true }
-minos-microservice-networks = { version ="^0.8.0*", allow-prereleases = true }
+minos-microservice-common = "^0.8.0.dev"
+minos-microservice-networks = "^0.8.0.dev"
 aiokafka = "^0.7.0"
 cached-property = "^1.5.2"
 kafka-python = "^2.0.2"

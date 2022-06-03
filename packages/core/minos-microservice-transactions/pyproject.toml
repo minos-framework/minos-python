@@ -31,7 +31,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = { version ="^0.8.0*", allow-prereleases = true }
+minos-microservice-common = "^0.8.0.dev"
 cached-property = "^1.5.2"
 
 [tool.poetry.dev-dependencies]

@@ -31,11 +31,11 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = { version ="^0.8.0*", allow-prereleases = true }
-minos-microservice-networks = { version ="^0.8.0*", allow-prereleases = true }
-minos-microservice-aggregate = { version ="^0.8.0*", allow-prereleases = true }
-minos-microservice-transactions = { version ="^0.8.0*", allow-prereleases = true }
-minos-microservice-saga = { version ="^0.8.0*", allow-prereleases = true }
+minos-microservice-common = "^0.8.0.dev"
+minos-microservice-networks = "^0.8.0.dev"
+minos-microservice-aggregate = "^0.8.0.dev"
+minos-microservice-transactions = "^0.8.0.dev"
+minos-microservice-saga = "^0.8.0.dev"
 aiopg = "^1.2.1"
 psycopg2-binary = "^2.9.3"
 

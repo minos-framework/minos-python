@@ -32,8 +32,8 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = { version ="^0.8.0*", allow-prereleases = true }
-minos-microservice-networks = { version ="^0.8.0*", allow-prereleases = true }
+minos-microservice-common = "^0.8.0.dev"
+minos-microservice-networks = "^0.8.0.dev"
 httpx = "^0.22.0"
 pytz = "^2022.1"
 PyJWT = "^2.3.0"
