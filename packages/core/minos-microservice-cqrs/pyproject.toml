@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-microservice-cqrs"
-version = "0.8.0.dev1"
+version = "0.8.0.dev2"
 description = "The CQRS pattern of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
@@ -31,9 +31,9 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-aggregate = { version ="^0.8.0*", allow-prereleases = true }
-minos-microservice-common = { version ="^0.8.0*", allow-prereleases = true }
-minos-microservice-networks = { version ="^0.8.0*", allow-prereleases = true }
+minos-microservice-aggregate = "^0.8.0.dev"
+minos-microservice-common = "^0.8.0.dev"
+minos-microservice-networks = "^0.8.0.dev"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }
