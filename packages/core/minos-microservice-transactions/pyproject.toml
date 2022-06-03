@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-microservice-transactions"
-version = "0.8.0.dev1"
+version = "0.8.0.dev2"
 description = "The transactions core of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"
@@ -31,7 +31,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = { version ="^0.8.0*", allow-prereleases = true }
+minos-microservice-common = "^0.8.0.dev"
 cached-property = "^1.5.2"
 
 [tool.poetry.dev-dependencies]
