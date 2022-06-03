@@ -65,6 +65,13 @@ repos:
                 files: ^packages/plugins/minos-database-lmdb/
                 language: system
 
+            -   id: minos-database-sqlalchemy-check
+                pass_filenames: false
+                entry: make --directory=packages/plugins/minos-database-sqlalchemy check
+                name: Check minos-database-sqlalchemy
+                files: ^packages/plugins/minos-database-sqlalchemy/
+                language: system
+
             -   id: minos-discovery-minos-check
                 pass_filenames: false
                 entry: make --directory=packages/plugins/minos-discovery-minos check

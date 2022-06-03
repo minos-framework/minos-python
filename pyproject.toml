@@ -17,6 +17,7 @@ minos-broker-kafka = { path = "packages/plugins/minos-broker-kafka", develop = t
 minos-broker-rabbitmq = { path = "packages/plugins/minos-broker-rabbitmq", develop = true }
 minos-database-aiopg = { path = "packages/plugins/minos-database-aiopg", develop = true }
 minos-database-lmdb = { path = "packages/plugins/minos-database-lmdb", develop = true }
+minos-database-sqlalchemy = { path = "packages/plugins/minos-database-sqlalchemy", develop = true }
 minos-discovery-minos = { path = "packages/plugins/minos-discovery-minos", develop = true }
 minos-discovery-kong = { path = "packages/plugins/minos-discovery-kong", develop = true }
 minos-http-aiohttp = { path = "packages/plugins/minos-http-aiohttp", develop = true }
