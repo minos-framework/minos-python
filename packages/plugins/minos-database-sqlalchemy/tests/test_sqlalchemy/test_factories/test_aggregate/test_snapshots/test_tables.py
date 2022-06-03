@@ -44,7 +44,7 @@ class TestSqlAlchemySnapshotTableFactory(SqlAlchemyTestCase):
 
         create_operation = SqlAlchemyDatabaseOperation(metadata.create_all)
         drop_operation = SqlAlchemyDatabaseOperation(metadata.drop_all)
-        get_tables_operation = SqlAlchemyDatabaseOperation(lambda sync_conn: inspect(sync_conn).get_table_names())
+        get_tables_operation = SqlAlchemyDatabaseOperation(lambda connectable: inspect(connectable).get_table_names())
 
         async with SqlAlchemyDatabaseClient.from_config(self.config) as client:
             observed = set(await client.connection.run_sync(get_tables_operation.statement))
