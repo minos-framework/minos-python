@@ -7,9 +7,14 @@ from datetime import (
     date,
     datetime,
     time,
+    timedelta,
+)
+from enum import (
+    Enum,
 )
 from typing import (
     Any,
+    get_args,
 )
 from uuid import (
     UUID,
@@ -20,15 +25,22 @@ from sqlalchemy import (
     Column,
     Date,
     DateTime,
+)
+from sqlalchemy import Enum as EnumType
+from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    Interval,
     LargeBinary,
     MetaData,
     PrimaryKeyConstraint,
     String,
     Table,
     Time,
+)
+from sqlalchemy_utils import (
+    UUIDType,
 )
 
 from minos.aggregate import (
@@ -38,6 +50,11 @@ from minos.aggregate import (
 from minos.common import (
     NULL_UUID,
     ModelType,
+    is_optional,
+)
+
+from ....types import (
+    EncodedType,
 )
 
 logger = logging.getLogger(__name__)
@@ -82,27 +99,37 @@ class SqlAlchemySnapshotTableFactory:
     @staticmethod
     def _build_column(name: str, type_: type) -> Column:
         foreign_key = None
-        if type_ is UUID:
-            column_type = String()
-        elif type_ is str:
-            column_type = String()
-        elif type_ is int:
-            column_type = Integer()
-        elif type_ is bool:
-            column_type = Boolean()
-        elif type_ is datetime:
-            column_type = DateTime()
-        elif type_ is float:
-            column_type = Float()
-        elif type_ is date:
-            column_type = Date()
-        elif type_ is time:
-            column_type = Time()
-        elif type_ is Ref:
-            column_type, foreign_key = String(), ForeignKey(f"{Ref.data_cls.__name__}.uuid")
-        else:
-            column_type = LargeBinary()
-
         nullable = False
+
+        if is_optional(type_, strict=True):
+            nullable = True
+            type_ = get_args(type_)[0]
+
+        if issubclass(type_, Enum):
+            column_type = EnumType(type_)
+        elif issubclass(type_, bool):
+            column_type = Boolean()
+        elif issubclass(type_, int):
+            column_type = Integer()
+        elif issubclass(type_, float):
+            column_type = Float()
+        elif issubclass(type_, str):
+            column_type = String()
+        elif issubclass(type_, bytes):
+            column_type = LargeBinary()
+        elif issubclass(type_, datetime):
+            column_type = DateTime()
+        elif issubclass(type_, timedelta):
+            column_type = Interval()
+        elif issubclass(type_, date):
+            column_type = Date()
+        elif issubclass(type_, time):
+            column_type = Time()
+        elif issubclass(type_, Ref):
+            column_type, foreign_key = String(), ForeignKey(f"{Ref.data_cls.__name__}.uuid")
+        elif issubclass(type_, UUID):
+            column_type = UUIDType(binary=False)
+        else:
+            column_type = EncodedType()
 
         return Column(name, column_type, foreign_key, nullable=nullable)

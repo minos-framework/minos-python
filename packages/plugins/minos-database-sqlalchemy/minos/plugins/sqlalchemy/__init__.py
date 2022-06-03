@@ -14,3 +14,6 @@ from .factories import (
 from .operations import (
     SqlAlchemyDatabaseOperation,
 )
+from .types import (
+    EncodedType,
+)

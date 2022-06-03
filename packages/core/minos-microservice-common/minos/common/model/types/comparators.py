@@ -14,6 +14,9 @@ from typing import (
     get_origin,
 )
 
+from .constants import (
+    NoneType,
+)
 from .generics import (
     unpack_typevar,
 )
@@ -110,3 +113,24 @@ def is_model_subclass(type_: type) -> bool:
 def is_type_subclass(type_: type) -> bool:
     """Check if the given type field is subclass of ``type``."""
     return issubclass(type(type_), type(type))
+
+
+def is_optional(type_: type, strict: bool = False) -> bool:
+    """TODO
+
+    :param type_: TODO
+    :param strict: TODO
+    :return: TODO
+    """
+    if not get_origin(type_) is Union:
+        return False
+
+    args = get_args(type_)
+
+    if NoneType not in args:
+        return False
+
+    if strict and not len(args) == 2:
+        return False
+
+    return True
