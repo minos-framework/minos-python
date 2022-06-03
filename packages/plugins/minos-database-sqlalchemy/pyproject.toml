@@ -34,6 +34,7 @@ python = "^3.9"
 minos-microservice-common = { version ="^0.8.0*", allow-prereleases = true }
 minos-microservice-aggregate = { version ="^0.8.0*", allow-prereleases = true }
 SQLAlchemy = "^1.4.36"
+SQLAlchemy-Utils = "^0.38.2"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../../core/minos-microservice-common", develop = true }
