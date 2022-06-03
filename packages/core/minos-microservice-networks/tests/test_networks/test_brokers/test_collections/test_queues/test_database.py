@@ -75,9 +75,6 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
         ]
 
         queue = DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory)
-        await queue.setup()
-        await queue.enqueue(messages[0])
-        await queue.enqueue(messages[1])
 
         with patch.object(
             MockedDatabaseClient,
@@ -90,6 +87,9 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
                 cycle([FakeAsyncIterator([(0,)])]),
             ),
         ):
+            await queue.setup()
+            await queue.enqueue(messages[0])
+            await queue.enqueue(messages[1])
 
             observed = list()
             async for message in queue:
@@ -110,11 +110,11 @@ class TestDatabaseBrokerQueue(NetworksTestCase, DatabaseMinosTestCase):
             "fetch_all",
             return_value=FakeAsyncIterator([[1, messages[0].avro_bytes], [2, bytes()], [3, messages[1].avro_bytes]]),
         ):
-            async with DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory) as queue:
-                queue._get_count = AsyncMock(side_effect=[3, 0])
+            queue = DatabaseBrokerQueue.from_config(self.config, operation_factory=self.operation_factory)
+            queue._get_count = AsyncMock(side_effect=[3, 0])
 
-                async with queue:
-                    observed = [await queue.dequeue(), await queue.dequeue()]
+            async with queue:
+                observed = [await queue.dequeue(), await queue.dequeue()]
 
         self.assertEqual(messages, observed)
 

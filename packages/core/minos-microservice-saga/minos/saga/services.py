@@ -4,6 +4,7 @@ from datetime import (
 )
 
 from minos.common import (
+    UUID_REGEX,
     Config,
     Inject,
     current_datetime,
@@ -12,12 +13,14 @@ from minos.networks import (
     BrokerRequest,
     EnrouteDecorator,
     Request,
+    Response,
     ResponseException,
     enroute,
 )
 from minos.saga import (
     SagaManager,
     SagaResponse,
+    SagaStatus,
 )
 from minos.transactions import (
     TransactionNotFoundException,
@@ -42,18 +45,46 @@ class SagaService:
     def __get_enroute__(cls, config: Config) -> dict[str, set[EnrouteDecorator]]:
         name = config.get_name()
         return {
-            cls.__reply__.__name__: {enroute.broker.command(f"{config.get_name()}Reply")},
-            cls.__reserve__.__name__: {enroute.broker.command(f"_Reserve{name.title()}Transaction")},
-            cls.__reject__.__name__: {enroute.broker.command(f"_Reject{name.title()}Transaction")},
-            cls.__commit__.__name__: {enroute.broker.command(f"_Commit{name.title()}Transaction")},
-            cls.__reject_blocked__.__name__: {enroute.periodic.event("* * * * *")},
+            cls._handle_reply.__name__: {
+                enroute.broker.command(f"{config.get_name()}Reply"),
+            },
+            cls._handle_get.__name__: {
+                enroute.broker.command(f"_Get{name.title()}SagaExecution"),
+                enroute.rest.command(f"/{name}s/saga/executions/{{uuid:{UUID_REGEX.pattern}}}", "GET"),
+            },
+            cls._handle_reserve.__name__: {
+                enroute.broker.command(f"_Reserve{name.title()}Transaction"),
+            },
+            cls._handle_reject.__name__: {
+                enroute.broker.command(f"_Reject{name.title()}Transaction"),
+            },
+            cls._handle_commit.__name__: {
+                enroute.broker.command(f"_Commit{name.title()}Transaction"),
+            },
+            cls._handle_reject_blocked.__name__: {
+                enroute.periodic.event("* * * * *"),
+            },
         }
 
-    async def __reply__(self, request: BrokerRequest) -> None:
+    async def _handle_reply(self, request: BrokerRequest) -> None:
         response = SagaResponse.from_message(request.raw)
         await self.saga_manager.run(response=response, pause_on_disk=True, raise_on_error=False, return_execution=False)
 
-    async def __reserve__(self, request: Request) -> None:
+    async def _handle_get(self, request: Request) -> Response:
+        if request.has_params:
+            uuid = (await request.params())["uuid"]
+        else:
+            uuid = (await request.content())["uuid"]
+
+        execution = await self.saga_manager.get(uuid)
+
+        content = {"uuid": execution.uuid, "status": execution.status}
+        if execution.status == SagaStatus.Finished:
+            content["context"] = execution.context
+
+        return Response(content)
+
+    async def _handle_reserve(self, request: Request) -> None:
         uuid = await request.content()
 
         try:
@@ -66,7 +97,7 @@ class SagaService:
         except TransactionRepositoryConflictException:
             raise ResponseException("The transaction could not be reserved.")
 
-    async def __reject__(self, request: Request) -> None:
+    async def _handle_reject(self, request: Request) -> None:
         uuid = await request.content()
 
         try:
@@ -82,7 +113,7 @@ class SagaService:
         except TransactionRepositoryConflictException as exc:
             raise ResponseException(f"{exc!s}")
 
-    async def __commit__(self, request: Request) -> None:
+    async def _handle_commit(self, request: Request) -> None:
         uuid = await request.content()
 
         try:
@@ -96,7 +127,7 @@ class SagaService:
             raise ResponseException(f"{exc!s}")
 
     # noinspection PyUnusedLocal
-    async def __reject_blocked__(self, request: Request) -> None:
+    async def _handle_reject_blocked(self, request: Request) -> None:
         status_in = (TransactionStatus.RESERVED,)
         updated_at_lt = current_datetime() - timedelta(minutes=1)
         async for transaction in self.transaction_repository.select(status_in=status_in, updated_at_lt=updated_at_lt):

@@ -1,4 +1,5 @@
 import unittest
+import uuid
 from unittest.mock import (
     MagicMock,
     patch,
@@ -29,19 +30,19 @@ class TestSagaExecution(SagaTestCase):
         self.broker_publisher.send = self.publish_mock
 
     def test_from_raw(self):
-        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_definition(ADD_ORDER, user=self.user)
         observed = SagaExecution.from_raw(expected)
         self.assertEqual(expected, observed)
 
     def test_from_raw_without_user(self):
-        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_definition(ADD_ORDER)
         observed = SagaExecution.from_raw(expected)
         self.assertEqual(expected, observed)
 
     def test_created(self):
-        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             execution = SagaExecution.from_definition(ADD_ORDER, user=self.user)
 
         expected = {
@@ -52,22 +53,25 @@ class TestSagaExecution(SagaTestCase):
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                        "order": 1,
                         "on_execute": {"callback": "tests.utils.send_create_order"},
-                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_success": {"callback": "tests.utils.DeleteOrderSaga.handle_order_success"},
                         "on_error": None,
-                        "on_failure": {"callback": "tests.utils.send_delete_order"},
+                        "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_order"},
                     },
                     {
                         "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                        "order": 2,
                         "on_execute": {"callback": "tests.utils.create_payment"},
                         "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                        "order": 3,
                         "on_execute": {"callback": "tests.utils.send_create_ticket"},
                         "on_success": {"callback": "tests.utils.handle_ticket_success"},
                         "on_error": {"callback": "tests.utils.handle_ticket_error"},
-                        "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+                        "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_ticket"},
                     },
                 ],
             },
@@ -84,7 +88,7 @@ class TestSagaExecution(SagaTestCase):
         self.assertEqual(expected, observed)
 
     def test_created_without_user(self):
-        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             execution = SagaExecution.from_definition(ADD_ORDER)
 
         expected = {
@@ -95,22 +99,25 @@ class TestSagaExecution(SagaTestCase):
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                        "order": 1,
                         "on_execute": {"callback": "tests.utils.send_create_order"},
-                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_success": {"callback": "tests.utils.DeleteOrderSaga.handle_order_success"},
                         "on_error": None,
-                        "on_failure": {"callback": "tests.utils.send_delete_order"},
+                        "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_order"},
                     },
                     {
                         "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                        "order": 2,
                         "on_execute": {"callback": "tests.utils.create_payment"},
                         "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                        "order": 3,
                         "on_execute": {"callback": "tests.utils.send_create_ticket"},
                         "on_success": {"callback": "tests.utils.handle_ticket_success"},
                         "on_error": {"callback": "tests.utils.handle_ticket_error"},
-                        "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+                        "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_ticket"},
                     },
                 ],
             },
@@ -135,22 +142,25 @@ class TestSagaExecution(SagaTestCase):
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                        "order": 1,
                         "on_execute": {"callback": "tests.utils.send_create_order"},
-                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_success": {"callback": "tests.utils.DeleteOrderSaga.handle_order_success"},
                         "on_error": None,
-                        "on_failure": {"callback": "tests.utils.send_delete_order"},
+                        "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_order"},
                     },
                     {
                         "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                        "order": 2,
                         "on_execute": {"callback": "tests.utils.create_payment"},
                         "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                        "order": 3,
                         "on_execute": {"callback": "tests.utils.send_create_ticket"},
                         "on_success": {"callback": "tests.utils.handle_ticket_success"},
                         "on_error": {"callback": "tests.utils.handle_ticket_error"},
-                        "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+                        "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_ticket"},
                     },
                 ],
             },
@@ -159,10 +169,11 @@ class TestSagaExecution(SagaTestCase):
                 "cls": "minos.saga.executions.steps.remote.RemoteSagaStepExecution",
                 "definition": {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                    "order": 1,
                     "on_execute": {"callback": "tests.utils.send_create_order"},
-                    "on_success": {"callback": "tests.utils.handle_order_success"},
+                    "on_success": {"callback": "tests.utils.DeleteOrderSaga.handle_order_success"},
                     "on_error": {"callback": "tests.utils.handle_ticket_error"},
-                    "on_failure": {"callback": "tests.utils.send_delete_order"},
+                    "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_order"},
                 },
                 "status": "paused-by-on-execute",
                 "already_rollback": False,
@@ -172,7 +183,7 @@ class TestSagaExecution(SagaTestCase):
             "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
         }
 
-        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_definition(ADD_ORDER, user=self.user)
             with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute()
@@ -189,22 +200,25 @@ class TestSagaExecution(SagaTestCase):
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                        "order": 1,
                         "on_execute": {"callback": "tests.utils.send_create_order"},
-                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_success": {"callback": "tests.utils.DeleteOrderSaga.handle_order_success"},
                         "on_error": None,
-                        "on_failure": {"callback": "tests.utils.send_delete_order"},
+                        "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_order"},
                     },
                     {
                         "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                        "order": 2,
                         "on_execute": {"callback": "tests.utils.create_payment"},
                         "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                        "order": 3,
                         "on_execute": {"callback": "tests.utils.send_create_ticket"},
                         "on_success": {"callback": "tests.utils.handle_ticket_success"},
                         "on_error": {"callback": "tests.utils.handle_ticket_error"},
-                        "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+                        "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_ticket"},
                     },
                 ],
             },
@@ -213,10 +227,11 @@ class TestSagaExecution(SagaTestCase):
                     "cls": "minos.saga.executions.steps.remote.RemoteSagaStepExecution",
                     "definition": {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                        "order": 1,
                         "on_execute": {"callback": "tests.utils.send_create_order"},
-                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_success": {"callback": "tests.utils.DeleteOrderSaga.DeleteOrderSaga"},
                         "on_error": None,
-                        "on_failure": {"callback": "tests.utils.send_delete_order"},
+                        "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_order"},
                     },
                     "status": "finished",
                     "related_services": ["ticket", "order"],
@@ -226,6 +241,7 @@ class TestSagaExecution(SagaTestCase):
                     "cls": "minos.saga.executions.steps.local.LocalSagaStepExecution",
                     "definition": {
                         "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                        "order": 2,
                         "on_execute": {"callback": "tests.utils.create_payment"},
                         "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
@@ -238,10 +254,11 @@ class TestSagaExecution(SagaTestCase):
                 "cls": "minos.saga.executions.steps.remote.RemoteSagaStepExecution",
                 "definition": {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                    "order": 3,
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
                     "on_error": {"callback": "tests.utils.handle_ticket_error"},
-                    "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+                    "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_ticket"},
                 },
                 "status": "paused-by-on-execute",
                 "already_rollback": False,
@@ -252,7 +269,7 @@ class TestSagaExecution(SagaTestCase):
             "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
         }
 
-        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+        with patch.object(uuid, "uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_definition(ADD_ORDER, user=self.user)
             with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute()

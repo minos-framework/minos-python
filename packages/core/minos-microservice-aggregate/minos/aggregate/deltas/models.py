@@ -63,7 +63,9 @@ class Delta(DeclarativeModel):
         return self.name.rsplit(".", 1)[-1]
 
     def __lt__(self, other: Any) -> bool:
-        return isinstance(other, type(self)) and self.version < other.version
+        return isinstance(other, type(self)) and (
+            (self.uuid == other.uuid and self.version < other.version) or (self.created_at < other.created_at)
+        )
 
     def __getitem__(self, item: str) -> Any:
         try:

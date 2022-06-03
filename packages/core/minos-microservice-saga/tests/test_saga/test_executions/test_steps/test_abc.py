@@ -8,10 +8,10 @@ from minos.saga import (
     SagaStepExecution,
 )
 from tests.utils import (
+    DeleteOrderSaga,
     handle_ticket_error,
     handle_ticket_success,
     send_create_ticket,
-    send_delete_ticket,
 )
 
 
@@ -24,7 +24,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
                 "on_execute": {"callback": "tests.utils.send_create_ticket"},
                 "on_success": {"callback": "tests.utils.handle_ticket_success"},
                 "on_error": {"callback": "tests.utils.handle_ticket_error"},
-                "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+                "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_ticket"},
             },
             "status": "created",
         }
@@ -32,7 +32,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
             RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
+            .on_failure(DeleteOrderSaga.send_delete_ticket)
         )
         observed = RemoteSagaStepExecution.from_raw(raw)
         self.assertEqual(expected, observed)
@@ -46,7 +46,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
                 "on_execute": {"callback": "tests.utils.send_create_ticket"},
                 "on_success": {"callback": "tests.utils.handle_ticket_success"},
                 "on_error": {"callback": "tests.utils.handle_ticket_error"},
-                "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+                "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_ticket"},
             },
             "status": "created",
         }
@@ -54,7 +54,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
             RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
+            .on_failure(DeleteOrderSaga.send_delete_ticket)
         )
         observed = SagaStepExecution.from_raw(raw)
         self.assertEqual(expected, observed)
@@ -64,7 +64,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
             RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
+            .on_failure(DeleteOrderSaga.send_delete_ticket)
         )
         observed = SagaStepExecution.from_raw(expected)
         self.assertEqual(expected, observed)
@@ -84,7 +84,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
             RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
+            .on_failure(DeleteOrderSaga.send_delete_ticket)
         )
         execution = RemoteSagaStepExecution(definition)
 
@@ -93,10 +93,11 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
             "cls": "minos.saga.executions.steps.remote.RemoteSagaStepExecution",
             "definition": {
                 "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
+                "order": None,
                 "on_execute": {"callback": "tests.utils.send_create_ticket"},
                 "on_success": {"callback": "tests.utils.handle_ticket_success"},
                 "on_error": {"callback": "tests.utils.handle_ticket_error"},
-                "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+                "on_failure": {"callback": "tests.utils.DeleteOrderSaga.send_delete_ticket"},
             },
             "related_services": [],
             "status": "created",

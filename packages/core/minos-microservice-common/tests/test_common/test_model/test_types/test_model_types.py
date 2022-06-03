@@ -49,27 +49,35 @@ class TestModelType(unittest.TestCase):
 
     def test_lt(self):
         one = ModelType.build("Foo", {"text": int}, namespace_="bar")
-        two = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
-        self.assertLess(one, two)
+        two = ModelType.build("Foo", {"text": int})
+        three = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        self.assertLess(one, three)
+        self.assertLess(two, three)
 
     def test_le(self):
         one = ModelType.build("Foo", {"text": int}, namespace_="bar")
-        two = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int, "number": int})
         three = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
-        self.assertLessEqual(one, two)
-        self.assertLessEqual(two, three)
+        four = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        self.assertLessEqual(one, four)
+        self.assertLessEqual(two, four)
+        self.assertLessEqual(three, four)
 
     def test_gt(self):
         one = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
         two = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        three = ModelType.build("Foo", {"text": int})
         self.assertGreater(one, two)
+        self.assertGreater(one, three)
 
     def test_ge(self):
         one = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
         two = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
         three = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        four = ModelType.build("Foo", {"text": int, "number": int})
         self.assertGreaterEqual(one, two)
-        self.assertGreaterEqual(two, three)
+        self.assertGreaterEqual(one, three)
+        self.assertGreaterEqual(one, four)
 
     def test_equal(self):
         one = ModelType.build("Foo", {"text": int}, namespace_="bar")

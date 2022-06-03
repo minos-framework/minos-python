@@ -10,6 +10,9 @@ from minos.aggregate import (
     Entity,
     Ref,
 )
+from minos.common import (
+    Injectable,
+)
 from minos.cqrs import (
     CommandService,
     QueryService,
@@ -22,6 +25,11 @@ from minos.networks import (
 )
 
 BASE_PATH = Path(__file__).parent
+
+
+@Injectable("aggregate")
+class FakeAggregate:
+    """For testing purposes."""
 
 
 class FakeService(Service):

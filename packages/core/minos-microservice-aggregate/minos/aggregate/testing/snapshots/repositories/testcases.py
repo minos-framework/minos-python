@@ -52,6 +52,16 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
 
     snapshot_repository: SnapshotRepository
 
+    class NumbersList(Entity):
+        """For testing purposes"""
+
+        numbers: list[int]
+
+    class Number(Entity):
+        """For testing purposes"""
+
+        value: int
+
     class Owner(Entity):
         """For testing purposes"""
 
@@ -377,6 +387,52 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
                 created_at=observed[1].created_at,
                 updated_at=observed[1].updated_at,
             ),
+        ]
+        self.assertEqual(expected, observed)
+
+    async def test_find_contains(self):
+        a = FieldDiffContainer([FieldDiff("numbers", list[int], [1, 2, 3])])
+        b = FieldDiffContainer([FieldDiff("numbers", list[int], [4, 5, 6])])
+        c = FieldDiffContainer([FieldDiff("numbers", list[int], [3, 8, 9])])
+        await self.delta_repository.create(
+            DeltaEntry(name=self.NumbersList.classname, data=a.avro_bytes, uuid=self.uuid_1)
+        )
+        await self.delta_repository.create(
+            DeltaEntry(name=self.NumbersList.classname, data=b.avro_bytes, uuid=self.uuid_2)
+        )
+        await self.delta_repository.create(
+            DeltaEntry(name=self.NumbersList.classname, data=c.avro_bytes, uuid=self.uuid_3)
+        )
+        await self.synchronize()
+
+        condition = Condition.CONTAINS("numbers", 3)
+
+        iterable = self.snapshot_repository.find(self.NumbersList, condition, ordering=Ordering.ASC("updated_at"))
+        observed = [v async for v in iterable]
+
+        expected = [
+            await self.snapshot_repository.get(self.NumbersList, self.uuid_1),
+            await self.snapshot_repository.get(self.NumbersList, self.uuid_3),
+        ]
+        self.assertEqual(expected, observed)
+
+    async def test_find_equal(self):
+        a = FieldDiffContainer([FieldDiff("value", int, 1)])
+        b = FieldDiffContainer([FieldDiff("value", int, 2)])
+        c = FieldDiffContainer([FieldDiff("value", int, 1)])
+        await self.delta_repository.create(DeltaEntry(name=self.Number.classname, data=a.avro_bytes, uuid=self.uuid_1))
+        await self.delta_repository.create(DeltaEntry(name=self.Number.classname, data=b.avro_bytes, uuid=self.uuid_2))
+        await self.delta_repository.create(DeltaEntry(name=self.Number.classname, data=c.avro_bytes, uuid=self.uuid_3))
+        await self.synchronize()
+
+        condition = Condition.EQUAL("value", 1)
+
+        iterable = self.snapshot_repository.find(self.Number, condition, ordering=Ordering.ASC("updated_at"))
+        observed = [v async for v in iterable]
+
+        expected = [
+            await self.snapshot_repository.get(self.Number, self.uuid_1),
+            await self.snapshot_repository.get(self.Number, self.uuid_3),
         ]
         self.assertEqual(expected, observed)
 

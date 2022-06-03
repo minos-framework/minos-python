@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos-microservice-transactions"
-version = "0.0.0"
+version = "0.8.0.dev1"
 description = "The transactions core of the Minos Framework"
 readme = "README.md"
 repository = "https://github.com/minos-framework/minos-python"

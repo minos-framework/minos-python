@@ -40,7 +40,6 @@ kafka-python = "^2.0.2"
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../../core/minos-microservice-common", develop = true }
 minos-microservice-networks = { path = "../../core/minos-microservice-networks", develop = true }
-minos-microservice-transactions = { path = "../../core/minos-microservice-transactions", develop = true }
 black = "^22.1"
 isort = "^5.8.0"
 pytest = "^6.2.4"
