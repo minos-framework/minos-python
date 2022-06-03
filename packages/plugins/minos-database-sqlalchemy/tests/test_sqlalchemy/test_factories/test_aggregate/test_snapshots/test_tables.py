@@ -44,19 +44,20 @@ class TestSqlAlchemySnapshotTableFactory(SqlAlchemyTestCase):
 
         create_operation = SqlAlchemyDatabaseOperation(metadata.create_all)
         drop_operation = SqlAlchemyDatabaseOperation(metadata.drop_all)
+        get_tables_operation = SqlAlchemyDatabaseOperation(lambda sync_conn: inspect(sync_conn).get_table_names())
 
         async with SqlAlchemyDatabaseClient.from_config(self.config) as client:
-            observed = set(await client.connection.run_sync(lambda sync_conn: inspect(sync_conn).get_table_names()))
+            observed = set(await client.connection.run_sync(get_tables_operation.statement))
             self.assertEqual(set(), observed)
 
             await client.execute(create_operation)
 
-            observed = set(await client.connection.run_sync(lambda sync_conn: inspect(sync_conn).get_table_names()))
+            observed = set(await client.connection.run_sync(get_tables_operation.statement))
             self.assertEqual({_Bar.__name__, _Foo.__name__}, observed)
 
             await client.execute(drop_operation)
 
-            observed = set(await client.connection.run_sync(lambda sync_conn: inspect(sync_conn).get_table_names()))
+            observed = set(await client.connection.run_sync(get_tables_operation.statement))
             self.assertEqual(set(), observed)
 
 
