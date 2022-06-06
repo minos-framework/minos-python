@@ -29,7 +29,6 @@ from sqlalchemy import (
 from sqlalchemy import Enum as EnumType
 from sqlalchemy import (
     Float,
-    ForeignKey,
     Integer,
     Interval,
     LargeBinary,
@@ -75,7 +74,7 @@ class SqlAlchemySnapshotTableFactory:
     @classmethod
     def _build_one(cls, type_: type[Entity], metadata: MetaData) -> Table:
         if not isinstance(type_, type) or not issubclass(type_, Entity):
-            raise ValueError("TODO")
+            raise ValueError(f"The `type_` param must be a subclass of {Entity!r}. Obtained: {type_!r}")
 
         mt = ModelType.from_model(type_)
 
@@ -92,13 +91,12 @@ class SqlAlchemySnapshotTableFactory:
             column = cls._build_column(name, type_)
             columns.append(column)
 
-        column = Column("transaction_uuid", String, nullable=False, default=str(NULL_UUID))
+        column = Column("transaction_uuid", UUIDType, nullable=False, default=str(NULL_UUID))
         columns.append(column)
         return columns
 
     @staticmethod
     def _build_column(name: str, type_: type) -> Column:
-        foreign_key = None
         nullable = False
 
         if is_optional(type_, strict=True):
@@ -125,11 +123,11 @@ class SqlAlchemySnapshotTableFactory:
             column_type = Date()
         elif issubclass(type_, time):
             column_type = Time()
-        elif issubclass(type_, Ref):
-            column_type, foreign_key = String(), ForeignKey(f"{Ref.data_cls.__name__}.uuid")
+        elif issubclass(type_, Ref) or (isinstance(type_, ModelType) and issubclass(type_.model_cls, Ref)):
+            column_type = UUIDType(binary=False)
         elif issubclass(type_, UUID):
             column_type = UUIDType(binary=False)
         else:
             column_type = EncodedType()
 
-        return Column(name, column_type, foreign_key, nullable=nullable)
+        return Column(name, column_type, nullable=nullable)
