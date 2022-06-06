@@ -111,6 +111,8 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
             await self.recreate()
         try:
             self._result = await wait_for(self._execute_operation(operation), self._result_timeout)
+        except ProgrammingError as exc:
+            raise ProgrammingException(str(exc))
         except (OperationalError, TimeoutError) as exc:
             raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
         except IntegrityError as exc:
@@ -134,10 +136,10 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
         try:
             async for row in self._result:
                 yield row
-        except OperationalError as exc:
-            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
         except ProgrammingError as exc:
             raise ProgrammingException(str(exc))
+        except OperationalError as exc:
+            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
 
     async def recreate(self):
         """TODO"""

@@ -220,6 +220,12 @@ class TestSqlAlchemyDatabaseClient(SqlAlchemyTestCase):
             mock.call_args_list,
         )
 
+    async def test_execute_raises_programming(self):
+        async with SqlAlchemyDatabaseClient.from_config(self.config) as client:
+            with patch.object(AsyncConnection, "stream", side_effect=ProgrammingError("", dict(), None)):
+                with self.assertRaises(ProgrammingException):
+                    await client.execute(self.operation)
+
     async def test_fetch_one(self):
         async with SqlAlchemyDatabaseClient.from_config(self.config) as client:
             await client.execute(self.operation)

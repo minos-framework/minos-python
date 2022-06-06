@@ -186,6 +186,8 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
         self._cursor = await self._connection.cursor(timeout=self._cursor_timeout, cursor_factory=DictCursor)
         try:
             await self._cursor.execute(operation=operation, parameters=parameters)
+        except ProgrammingError as exc:
+            raise ProgrammingException(str(exc))
         except OperationalError as exc:
             raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
         except IntegrityError as exc:
