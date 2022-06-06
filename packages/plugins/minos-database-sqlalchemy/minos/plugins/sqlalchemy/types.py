@@ -6,6 +6,9 @@ from sqlalchemy import (
     LargeBinary,
     TypeDecorator,
 )
+from sqlalchemy.engine import (
+    Dialect,
+)
 
 from minos.common import (
     AvroDataDecoder,
@@ -13,6 +16,7 @@ from minos.common import (
     AvroSchemaDecoder,
     AvroSchemaEncoder,
     MinosAvroProtocol,
+    TypeHintBuilder,
 )
 
 
@@ -23,12 +27,15 @@ class EncodedType(TypeDecorator):
 
     cache_ok = True
 
-    def process_bind_param(self, value: Any, dialect) -> bytes:
+    def process_bind_param(self, value: Any, dialect: Dialect) -> bytes:
+        """TODO"""
         data = AvroDataEncoder().build(value)
-        schema = AvroSchemaEncoder().build(value)
+        type_ = TypeHintBuilder(value).build()
+        schema = AvroSchemaEncoder().build(type_)
         return MinosAvroProtocol.encode(data, schema)
 
-    def process_result_value(self, value: bytes, dialect) -> Any:
+    def process_result_value(self, value: bytes, dialect: Dialect) -> Any:
+        """TODO"""
         schema = MinosAvroProtocol.decode_schema(value)
         type_ = AvroSchemaDecoder().build(schema)
 
