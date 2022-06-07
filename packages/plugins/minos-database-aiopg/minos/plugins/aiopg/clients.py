@@ -104,6 +104,44 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
         await super()._destroy()
         await self.close()
 
+    async def _reset(self, **kwargs) -> None:
+        await self._destroy_cursor()
+
+    # noinspection PyUnusedLocal
+    async def _execute(self, operation: AiopgDatabaseOperation) -> None:
+        if not isinstance(operation, AiopgDatabaseOperation):
+            raise ValueError(f"The operation must be a {AiopgDatabaseOperation!r} instance. Obtained: {operation!r}")
+
+        fn = partial(self._execute_operation, operation=operation.query, parameters=operation.parameters)
+        await self.with_circuit_breaker(fn)
+
+    async def _execute_operation(self, operation: str, parameters: dict):
+        if not await self.is_connected():
+            await self.recreate()
+
+        self._cursor = await self._connection.cursor(timeout=self._cursor_timeout, cursor_factory=DictCursor)
+        try:
+            await self._cursor.execute(operation=operation, parameters=parameters)
+        except ProgrammingError as exc:
+            raise ProgrammingException(str(exc))
+        except OperationalError as exc:
+            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
+        except IntegrityError as exc:
+            raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
+
+    # noinspection PyUnusedLocal
+    async def _fetch_all(self) -> AsyncIterator[tuple]:
+        if self._cursor is None:
+            raise ProgrammingException("An operation must be executed before fetching any value.")
+
+        try:
+            async for row in self._cursor:
+                yield row
+        except ProgrammingError as exc:
+            raise ProgrammingException(str(exc))
+        except OperationalError as exc:
+            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
+
     async def recreate(self) -> None:
         """Recreate the database connection.
 
@@ -114,30 +152,25 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
         self._connection = await self.with_circuit_breaker(self._connect)
         logger.debug(f"Created {self.database!r} database connection identified by {id(self._connection)}!")
 
-    async def _connect(self) -> Connection:
-        try:
-            return await aiopg.connect(
-                timeout=self._connection_timeout,
-                host=self.host,
-                port=self.port,
-                dbname=self.database,
-                user=self.user,
-                password=self.password,
-            )
-        except (OperationalError, TimeoutError) as exc:
-            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
-
     async def close(self) -> None:
         """Close database connection.
 
         :return: This method does not return anything.
         """
+        await self._destroy_cursor()
+
         if await self.is_connected():
             await self._connection.close()
 
         if self._connection is not None:
             logger.debug(f"Destroyed {self.database!r} database connection identified by {id(self._connection)}!")
             self._connection = None
+
+    async def _destroy_cursor(self) -> None:
+        if self._cursor is not None:
+            if not self._cursor.closed:
+                self._cursor.close()
+            self._cursor = None
 
     async def is_connected(self) -> bool:
         """Check if the client is connected.
@@ -155,49 +188,18 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
 
         return not self._connection.closed
 
-    async def _reset(self, **kwargs) -> None:
-        await self._destroy_cursor(**kwargs)
-
-    # noinspection PyUnusedLocal
-    async def _fetch_all(self) -> AsyncIterator[tuple]:
-        if self._cursor is None:
-            raise ProgrammingException("An operation must be executed before fetching any value.")
-
+    async def _connect(self) -> Connection:
         try:
-            async for row in self._cursor:
-                yield row
-        except ProgrammingError as exc:
-            raise ProgrammingException(str(exc))
-        except OperationalError as exc:
+            return await aiopg.connect(
+                timeout=self._connection_timeout,
+                host=self.host,
+                port=self.port,
+                dbname=self.database,
+                user=self.user,
+                password=self.password,
+            )
+        except (OperationalError, TimeoutError) as exc:
             raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
-
-    # noinspection PyUnusedLocal
-    async def _execute(self, operation: AiopgDatabaseOperation) -> None:
-        if not isinstance(operation, AiopgDatabaseOperation):
-            raise ValueError(f"The operation must be a {AiopgDatabaseOperation!r} instance. Obtained: {operation!r}")
-
-        fn = partial(self._execute_cursor, operation=operation.query, parameters=operation.parameters)
-        await self.with_circuit_breaker(fn)
-
-    async def _execute_cursor(self, operation: str, parameters: dict):
-        if not await self.is_connected():
-            await self.recreate()
-
-        self._cursor = await self._connection.cursor(timeout=self._cursor_timeout, cursor_factory=DictCursor)
-        try:
-            await self._cursor.execute(operation=operation, parameters=parameters)
-        except ProgrammingError as exc:
-            raise ProgrammingException(str(exc))
-        except OperationalError as exc:
-            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
-        except IntegrityError as exc:
-            raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
-
-    async def _destroy_cursor(self, **kwargs):
-        if self._cursor is not None:
-            if not self._cursor.closed:
-                self._cursor.close()
-            self._cursor = None
 
     @property
     def cursor(self) -> Optional[Cursor]:
