@@ -175,7 +175,10 @@ class DeltaRepository(ABC, TransactionalMixin):
 
                 return False
 
-        from minos.aggregate import RefExtractor
+        from minos.aggregate import (
+            RefExtractor,
+        )
+
         references: dict[type[Union[Entity, ...]]] = RefExtractor(entry.delta).build()
 
         for type_, values in references.items():

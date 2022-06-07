@@ -1,10 +1,12 @@
-from datetime import datetime
 import unittest
 from abc import (
     ABC,
 )
 from collections.abc import (
     AsyncIterator,
+)
+from datetime import (
+    datetime,
 )
 from unittest.mock import (
     AsyncMock,
@@ -290,7 +292,6 @@ class TestDeltaRepository(AggregateTestCase):
 
         # entry = DeltaEntry(uuid, "example.Car", 1, bytes(), 1, Action.CREATE, datetime.now(), transaction_uuid)
         entry = DeltaEntry(uuid, "example.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=transaction_uuid)
-
 
         self.assertTrue(await self.delta_repository.validate(entry))
 
