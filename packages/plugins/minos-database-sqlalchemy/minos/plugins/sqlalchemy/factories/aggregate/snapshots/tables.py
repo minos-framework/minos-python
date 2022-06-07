@@ -60,11 +60,15 @@ logger = logging.getLogger(__name__)
 
 
 class SqlAlchemySnapshotTableFactory:
-    """TODO"""
+    """SqlAlchemy Snapshot Table Factory class."""
 
     @classmethod
     def build(cls, *types: type[Entity]) -> MetaData:
-        """TODO"""
+        """Build a metadata instance from a sequence of types.
+
+        :param types: The sequence of ``Entity`` types.
+        :return: A ``MetaData`` instance.
+        """
         metadata = MetaData()
 
         for type_ in types:
