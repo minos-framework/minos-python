@@ -23,7 +23,7 @@ from minos.common import (
 
 
 class SqlAlchemyDatabaseOperation(DatabaseOperation):
-    """TODO"""
+    """SqlAlchemy Database Operation class."""
 
     def __init__(
         self,
