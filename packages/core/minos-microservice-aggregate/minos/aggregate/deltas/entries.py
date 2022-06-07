@@ -18,7 +18,7 @@ from uuid import (
 
 from minos.common import (
     NULL_UUID,
-    import_module,
+    import_module, NULL_DATETIME,
 )
 from minos.transactions import (
     TransactionEntry,
@@ -63,7 +63,7 @@ class DeltaEntry:
         data: Union[bytes, memoryview] = bytes(),
         id: Optional[int] = None,
         action: Optional[Union[str, Action]] = None,
-        created_at: Optional[datetime] = None,
+        created_at: Optional[datetime] = NULL_DATETIME,
         transaction_uuid: UUID = NULL_UUID,
     ):
         if isinstance(data, memoryview):
