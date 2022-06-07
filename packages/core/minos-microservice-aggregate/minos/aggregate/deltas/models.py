@@ -16,7 +16,8 @@ from operator import (
 from typing import (
     TYPE_CHECKING,
     Any,
-    Union, )
+    Union,
+)
 from uuid import (
     UUID,
 )
