@@ -20,6 +20,9 @@ from minos.networks import (
     InMemoryBrokerPublisher,
     InMemoryBrokerSubscriberBuilder,
 )
+from minos.saga import (
+    SagaManager,
+)
 from minos.transactions import (
     InMemoryTransactionRepository,
 )
@@ -55,6 +58,11 @@ class AiopgTestCase(DatabaseMinosTestCase):
             delta_repository=delta_repository,
             transaction_repository=transaction_repository,
         )
+        saga_manager = SagaManager.from_config(
+            self.config,
+            database_pool=pool_factory.get_pool("database"),
+            broker_pool=pool_factory.get_pool("broker"),
+        )
         return [
             pool_factory,
             broker_publisher,
@@ -62,6 +70,7 @@ class AiopgTestCase(DatabaseMinosTestCase):
             transaction_repository,
             delta_repository,
             snapshot_repository,
+            saga_manager,
         ]
 
 

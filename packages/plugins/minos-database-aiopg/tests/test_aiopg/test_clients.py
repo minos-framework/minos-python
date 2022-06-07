@@ -170,6 +170,12 @@ class TestAiopgDatabaseClient(AiopgTestCase):
             mock.call_args_list,
         )
 
+    async def test_execute_raises_programming(self):
+        async with AiopgDatabaseClient.from_config(self.config) as client:
+            with patch.object(Cursor, "execute", side_effect=ProgrammingError):
+                with self.assertRaises(ProgrammingException):
+                    await client.execute(self.operation)
+
     async def test_fetch_one(self):
         async with AiopgDatabaseClient.from_config(self.config) as client:
             await client.execute(self.operation)
