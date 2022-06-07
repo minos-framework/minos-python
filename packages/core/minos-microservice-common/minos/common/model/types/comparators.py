@@ -116,11 +116,11 @@ def is_type_subclass(type_: type) -> bool:
 
 
 def is_optional(type_: type, strict: bool = False) -> bool:
-    """TODO
+    """Check if the given type is optional.
 
-    :param type_: TODO
-    :param strict: TODO
-    :return: TODO
+    :param type_: The ``type`` instance to be evaluated.
+    :param strict: If ``True`` only returns ``True`` is the given type is strictly ``Union[T, None]``.
+    :return: ``True`` if the type is optional or ``False`` otherwise.
     """
     if not get_origin(type_) is Union:
         return False

@@ -9,6 +9,7 @@ from minos.common import (
     Model,
     ModelType,
     TypeHintComparator,
+    is_optional,
 )
 from tests.model_classes import (
     Car,
@@ -135,6 +136,25 @@ class TestTypeHintComparator(unittest.TestCase):
         one = ModelType.build("tests.model_classes.Foo", {"text": int})
         two = ModelType.build("tests.model_classes.Foo", {"text": float})
         self.assertFalse(TypeHintComparator(Optional[one], Optional[two]).match())
+
+
+class TestIsOptional(unittest.TestCase):
+    def test_is_optional_true(self):
+        self.assertTrue(is_optional(Optional[int]))
+        self.assertTrue(is_optional(Union[int, None]))
+        self.assertTrue(is_optional(Union[int, str, None]))
+
+    def test_is_optional_false(self):
+        self.assertFalse(is_optional(int))
+        self.assertFalse(is_optional(Union[int]))
+        self.assertFalse(is_optional(Union[int, str]))
+
+    def test_is_optional_strict_true(self):
+        self.assertTrue(is_optional(Optional[int], strict=True))
+        self.assertTrue(is_optional(Union[int, None], strict=True))
+
+    def test_is_optional_strict_false(self):
+        self.assertFalse(is_optional(Union[int, str, None], strict=True))
 
 
 if __name__ == "__main__":
