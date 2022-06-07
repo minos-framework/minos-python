@@ -16,8 +16,7 @@ from operator import (
 from typing import (
     TYPE_CHECKING,
     Any,
-    Union, Optional,
-)
+    Union, )
 from uuid import (
     UUID,
 )
@@ -25,13 +24,12 @@ from uuid import (
 from minos.common import (
     DeclarativeModel,
 )
-
-from ..actions import (
-    Action,
-)
 from .fields import (
     FieldDiff,
     FieldDiffContainer,
+)
+from ..actions import (
+    Action,
 )
 
 if TYPE_CHECKING:
@@ -51,8 +49,6 @@ class Delta(DeclarativeModel):
     version: int
     action: Action
     created_at: datetime
-    #created_at: Optional[datetime] = None,
-
     fields_diff: FieldDiffContainer
 
     @property
