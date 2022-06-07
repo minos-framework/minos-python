@@ -83,18 +83,13 @@ class SagaExecutionRepositoryTestCase(MinosTestCase, ABC):
     def setUp(self) -> None:
         super().setUp()
         self.saga_execution_repository = self.build_saga_execution_repository()
+        self.execution = SagaExecution.from_definition(_SAGA)
+        self.another = SagaExecution.from_definition(_SAGA)
 
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
-
         await self.saga_execution_repository.setup()
-
-        execution = SagaExecution.from_definition(_SAGA)
-        await execution.execute(autocommit=False)
-
-        self.execution = execution
-
-        self.another = SagaExecution.from_definition(_SAGA)
+        await self.execution.execute(autocommit=False)
 
     async def asyncTearDown(self):
         await self.saga_execution_repository.destroy()
