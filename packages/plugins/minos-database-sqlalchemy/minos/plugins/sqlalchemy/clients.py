@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 
 class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
-    """TODO"""
+    """SqlAlchemy Database Client class."""
 
     _engine: AsyncEngine
     _connection: Optional[AsyncConnection]
@@ -142,21 +142,21 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
             raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
 
     async def recreate(self):
-        """TODO"""
+        """Recreate the database connection.
+
+        :return: This method does not return anything.
+        """
         await self.close()
 
         self._connection = await self.with_circuit_breaker(self._connect)
 
         logger.debug(f"Created {self.url!r} connection identified by {id(self._connection)}!")
 
-    async def _connect(self) -> AsyncConnection:
-        try:
-            return await wait_for(self._engine.connect(), self._connection_timeout)
-        except (OperationalError, TimeoutError) as exc:
-            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
-
     async def close(self) -> None:
-        """TODO"""
+        """Close database connection.
+
+        :return: This method does not return anything.
+        """
         await self._destroy_result()
 
         if await self.is_connected():
@@ -181,22 +181,40 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
 
         return not self._connection.closed
 
+    async def _connect(self) -> AsyncConnection:
+        try:
+            return await wait_for(self._engine.connect(), self._connection_timeout)
+        except (OperationalError, TimeoutError) as exc:
+            raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
+
     @property
     def url(self) -> str:
-        """TODO"""
+        """Get the url.
+
+        :return: A ``str``.
+        """
         return self._engine.url
 
     @property
     def engine(self) -> AsyncEngine:
-        """TODO"""
+        """Get the engine.
+
+        :return: An ``AsyncEngine``.
+        """
         return self._engine
 
     @property
     def connection(self) -> Optional[AsyncConnection]:
-        """TODO"""
+        """Get the connection if available.
+
+        :return: An ``AsyncConnection`` or ``None``.
+        """
         return self._connection
 
     @property
     def result(self) -> Optional[AsyncResult]:
-        """TODO"""
+        """Get the result if available.
+
+        :return: An ``AsyncResult`` instance or ``None``.
+        """
         return self._result
