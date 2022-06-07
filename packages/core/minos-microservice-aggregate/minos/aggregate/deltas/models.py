@@ -16,7 +16,7 @@ from operator import (
 from typing import (
     TYPE_CHECKING,
     Any,
-    Union,
+    Union, Optional,
 )
 from uuid import (
     UUID,
@@ -51,6 +51,7 @@ class Delta(DeclarativeModel):
     version: int
     action: Action
     created_at: datetime
+    #created_at: Optional[datetime] = None,
 
     fields_diff: FieldDiffContainer
 

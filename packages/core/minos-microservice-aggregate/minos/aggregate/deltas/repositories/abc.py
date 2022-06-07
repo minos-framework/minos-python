@@ -175,6 +175,16 @@ class DeltaRepository(ABC, TransactionalMixin):
 
                 return False
 
+        from minos.aggregate import RefExtractor
+        references: dict[type[Union[Entity, ...]]] = RefExtractor(entry.delta).build()
+
+        for type_, values in references.items():
+            if issubclass(type_, Entity):
+                for uuid in values:
+                    async for e in self.select(name=type_, uuid=uuid, transaction_uuid_in=tuple(transaction_uuids)):
+                        if e.action.is_delete:
+                            return False
+
         return True
 
     @abstractmethod

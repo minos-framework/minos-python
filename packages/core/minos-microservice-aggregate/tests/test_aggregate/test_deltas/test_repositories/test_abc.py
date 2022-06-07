@@ -1,3 +1,4 @@
+from datetime import datetime
 import unittest
 from abc import (
     ABC,
@@ -254,7 +255,42 @@ class TestDeltaRepository(AggregateTestCase):
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
-        entry = DeltaEntry(uuid, "example.Car")
+        entry = DeltaEntry(uuid, "example.Car", 1, bytes(), 1, Action.CREATE, datetime.now(), transaction_uuid)
+
+        self.assertTrue(await self.delta_repository.validate(entry))
+
+        self.assertEqual(
+            [call(uuid=uuid, transaction_uuid_in=(transaction_uuid,))],
+            select_delta_mock.call_args_list,
+        )
+
+        self.assertEqual(
+            [
+                call(
+                    destination_uuid=NULL_UUID,
+                    uuid_ne=None,
+                    status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING),
+                )
+            ],
+            select_transaction_mock.call_args_list,
+        )
+
+    async def test_validate_refs(self):
+        uuid = uuid4()
+        transaction_uuid = uuid4()
+
+        deltas = []
+        transactions = [TransactionEntry(transaction_uuid, TransactionStatus.RESERVING)]
+
+        select_delta_mock = MagicMock(return_value=FakeAsyncIterator(deltas))
+        self.delta_repository.select = select_delta_mock
+
+        select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
+        self.transaction_repository.select = select_transaction_mock
+
+        # entry = DeltaEntry(uuid, "example.Car", 1, bytes(), 1, Action.CREATE, datetime.now(), transaction_uuid)
+        entry = DeltaEntry(uuid, "example.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=transaction_uuid)
+
 
         self.assertTrue(await self.delta_repository.validate(entry))
 
