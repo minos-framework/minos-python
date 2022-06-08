@@ -85,7 +85,7 @@ class SetupMixin(Object):
 
     @classmethod
     def _from_config(cls: Type[S], config: Config, **kwargs) -> S:
-        return cls(**kwargs)
+        return cls(**kwargs, config=config)
 
     async def __aenter__(self: S) -> S:
         await self.setup()

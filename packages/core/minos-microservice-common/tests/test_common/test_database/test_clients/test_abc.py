@@ -231,6 +231,12 @@ class TestDatabaseClient(CommonTestCase):
             _LockDatabaseOperationFactory,
         )
 
+    def test_get_factory_from_config(self):
+        self.assertIsInstance(
+            _DatabaseClient.get_factory(LockDatabaseOperationFactory, config=self.config),
+            _LockDatabaseOperationFactory,
+        )
+
     def test_get_factory_raises(self):
         with self.assertRaises(ValueError):
             _DatabaseClient.get_factory(_DatabaseOperationFactory),

@@ -169,9 +169,9 @@ class TestSnapshotEntry(AggregateTestCase):
 
         expected = {
             "created_at": created_at,
-            "data": json.dumps(self.data),
+            "data": self.data,
             "name": name,
-            "schema": MinosJsonBinaryProtocol.encode(self.schema),
+            "schema": self.schema,
             "transaction_uuid": transaction_uuid,
             "updated_at": updated_at,
             "uuid": self.uuid,

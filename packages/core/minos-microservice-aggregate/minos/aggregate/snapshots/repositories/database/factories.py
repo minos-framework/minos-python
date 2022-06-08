@@ -11,6 +11,7 @@ from datetime import (
 from typing import (
     Any,
     Optional,
+    Union,
 )
 from uuid import (
     UUID,
@@ -51,8 +52,8 @@ class SnapshotDatabaseOperationFactory(DatabaseOperationFactory, ABC):
         uuid: UUID,
         name: str,
         version: int,
-        schema: bytes,
-        data: dict[str, Any],
+        schema: Optional[Union[list[dict[str, Any]], dict[str, Any]]],
+        data: Optional[dict[str, Any]],
         created_at: datetime,
         updated_at: datetime,
         transaction_uuid: UUID,

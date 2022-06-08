@@ -1,3 +1,4 @@
+import json
 from collections.abc import (
     Iterable,
 )
@@ -7,6 +8,7 @@ from datetime import (
 from typing import (
     Any,
     Optional,
+    Union,
 )
 from uuid import (
     UUID,
@@ -22,6 +24,7 @@ from minos.aggregate.queries import (
 from minos.common import (
     ComposedDatabaseOperation,
     DatabaseOperation,
+    MinosJsonBinaryProtocol,
 )
 
 from ....clients import (
@@ -112,8 +115,8 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         uuid: UUID,
         name: str,
         version: int,
-        schema: bytes,
-        data: dict[str, Any],
+        schema: Optional[Union[list[dict[str, Any]], dict[str, Any]]],
+        data: Optional[dict[str, Any]],
         created_at: datetime,
         updated_at: datetime,
         transaction_uuid: UUID,
@@ -130,6 +133,10 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         :param transaction_uuid: The transaction identifier.
         :return: A ``DatabaseOperation`` instance.
         """
+        if schema is not None:
+            schema = MinosJsonBinaryProtocol.encode(schema)
+        if data is not None:
+            data = json.dumps(data)
 
         return AiopgDatabaseOperation(
             f"""

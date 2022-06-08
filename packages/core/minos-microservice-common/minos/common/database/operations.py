@@ -13,6 +13,10 @@ from typing import (
     Optional,
 )
 
+from ..setup import (
+    SetupMixin,
+)
+
 
 class DatabaseOperation(ABC):
     """Database Operation base class."""
@@ -30,5 +34,5 @@ class ComposedDatabaseOperation(DatabaseOperation):
         self.operations = tuple(operations)
 
 
-class DatabaseOperationFactory(ABC):
+class DatabaseOperationFactory(SetupMixin, ABC):
     """Database Operation Factory base class."""

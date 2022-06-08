@@ -26,6 +26,12 @@ class TestDatabaseMixin(CommonTestCase, DatabaseMinosTestCase):
             database = DatabaseMixin(pool)
             self.assertEqual(pool, database.database_pool)
 
+    async def test_constructor_from_config(self):
+        async with DatabaseClientPool.from_config(self.config) as pool:
+            # noinspection PyTypeChecker
+            database = DatabaseMixin.from_config(self.config, database_pool=pool)
+            self.assertEqual(pool, database.database_pool)
+
     async def test_constructor_with_pool_factory(self):
         async with PoolFactory(self.config, {"database": DatabaseClientPool}) as pool_factory:
             # noinspection PyTypeChecker

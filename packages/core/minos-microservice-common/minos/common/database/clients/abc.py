@@ -178,16 +178,22 @@ class DatabaseClient(ABC, BuildableMixin):
         cls._factories[base] = impl
 
     @classmethod
-    def get_factory(cls, base: type[DatabaseOperationFactory]) -> DatabaseOperationFactory:
+    def get_factory(
+        cls, base: type[DatabaseOperationFactory], *, config: Optional[Config] = None, **kwargs
+    ) -> DatabaseOperationFactory:
         """Get an operation factory implementation for an operation factory interface.
 
         :param base: The operation factory interface.
+        :param config: The configuration object.
         :return: The operation factory implementation.
         """
         if not hasattr(cls, "_factories") or base not in cls._factories:
             raise ValueError(f"{cls!r} does not contain any registered factory implementation for {base!r}")
 
-        return cls._factories[base]()
+        if config is not None:
+            return cls._factories[base].from_config(config, **kwargs)
+
+        return cls._factories[base](**kwargs)
 
 
 class DatabaseClientBuilder(Builder[DatabaseClient]):

@@ -47,7 +47,7 @@ class TestAiopgSnapshotDatabaseOperationFactory(unittest.TestCase):
             uuid=uuid4(),
             name="Foo",
             version=34243,
-            schema=bytes(),
+            schema={"type": "foo"},
             data={"foo": "bar"},
             created_at=current_datetime(),
             updated_at=current_datetime(),

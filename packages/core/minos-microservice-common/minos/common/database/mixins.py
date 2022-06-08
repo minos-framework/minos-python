@@ -66,7 +66,7 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
             if operation_factory_cls is None:
                 operation_factory_cls = self._get_generic_operation_factory()
             if operation_factory_cls is not None:
-                operation_factory = self.database_client_cls.get_factory(operation_factory_cls)
+                operation_factory = self.database_client_cls.get_factory(operation_factory_cls, **kwargs)
 
         self._operation_factory = operation_factory
 
