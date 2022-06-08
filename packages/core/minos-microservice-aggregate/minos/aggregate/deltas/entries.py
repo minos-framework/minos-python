@@ -59,10 +59,10 @@ class DeltaEntry:
         self,
         uuid: UUID,
         name: str,
-        version: Optional[int] = None,
+        version: Optional[int] = 0,
         data: Union[bytes, memoryview] = bytes(),
-        id: Optional[int] = None,
-        action: Optional[Union[str, Action]] = None,
+        id: Optional[int] = 0,
+        action: Optional[Union[str, Action]] = Action.CREATE,
         created_at: Optional[datetime] = NULL_DATETIME,
         transaction_uuid: UUID = NULL_UUID,
     ):
@@ -110,7 +110,7 @@ class DeltaEntry:
         :param kwargs: Additional named arguments.
         :return: A new ``DeltaEntry`` instance.
         """
-        return cls(**(another.as_raw() | kwargs | {"id": None}))
+        return cls(**(another.as_raw() | kwargs | {"id": 0}))
 
     def as_raw(self) -> dict[str, Any]:
         """Get a raw representation of the instance.

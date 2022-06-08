@@ -15,7 +15,7 @@ from minos.aggregate import (
 )
 from minos.common import (
     NULL_UUID,
-    current_datetime,
+    current_datetime, NULL_DATETIME,
 )
 from minos.transactions import (
     TransactionEntry,
@@ -36,9 +36,9 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("example.Car", entry.name)
         self.assertEqual(0, entry.version)
         self.assertEqual(bytes("car", "utf-8"), entry.data)
-        self.assertEqual(None, entry.id)
-        self.assertEqual(None, entry.action)
-        self.assertEqual(None, entry.created_at)
+        self.assertEqual(0, entry.id)
+        self.assertEqual(Action.CREATE, entry.action)
+        self.assertEqual(NULL_DATETIME, entry.created_at)
         self.assertEqual(NULL_UUID, entry.transaction_uuid)
 
     # noinspection SpellCheckingInspection
@@ -74,11 +74,11 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         entry = DeltaEntry.from_delta(delta)
         self.assertEqual(self.uuid, entry.uuid)
         self.assertEqual("tests.utils.Car", entry.name)
-        self.assertEqual(None, entry.version)
+        self.assertEqual(0, entry.version)
         self.assertEqual(fields_diff, FieldDiffContainer.from_avro_bytes(entry.data))
-        self.assertEqual(None, entry.id)
+        self.assertEqual(0, entry.id)
         self.assertEqual(Action.CREATE, entry.action)
-        self.assertEqual(None, entry.created_at)
+        self.assertEqual(NULL_DATETIME, entry.created_at)
         self.assertEqual(NULL_UUID, entry.transaction_uuid)
 
     async def test_from_delta_with_transaction(self):
@@ -90,11 +90,11 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         entry = DeltaEntry.from_delta(delta, transaction=transaction)
         self.assertEqual(self.uuid, entry.uuid)
         self.assertEqual("tests.utils.Car", entry.name)
-        self.assertEqual(None, entry.version)
+        self.assertEqual(0, entry.version)
         self.assertEqual(fields_diff, FieldDiffContainer.from_avro_bytes(entry.data))
-        self.assertEqual(None, entry.id)
+        self.assertEqual(0, entry.id)
         self.assertEqual(Action.CREATE, entry.action)
-        self.assertEqual(None, entry.created_at)
+        self.assertEqual(NULL_DATETIME, entry.created_at)
         self.assertEqual(self.transaction_uuid, entry.transaction_uuid)
 
     async def test_from_another(self):
@@ -148,15 +148,15 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
 
     def test_id_setup(self):
         entry = DeltaEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
-        self.assertEqual(None, entry.id)
+        self.assertEqual(0, entry.id)
         entry.id = 5678
         self.assertEqual(5678, entry.id)
 
     def test_action_setup(self):
         entry = DeltaEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
-        self.assertEqual(None, entry.action)
-        entry.action = Action.CREATE
         self.assertEqual(Action.CREATE, entry.action)
+        entry.action = Action.UPDATE
+        self.assertEqual(Action.UPDATE, entry.action)
 
     def test_equals(self):
         a = DeltaEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
