@@ -23,6 +23,7 @@ from aiopg import (
     Cursor,
 )
 from psycopg2 import (
+    DataError,
     IntegrityError,
     OperationalError,
     ProgrammingError,
@@ -35,6 +36,7 @@ from minos.common import (
     CircuitBreakerMixin,
     ConnectionException,
     DatabaseClient,
+    DataException,
     IntegrityException,
     ProgrammingException,
 )
@@ -124,6 +126,8 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
             await self._cursor.execute(operation=operation, parameters=parameters)
         except ProgrammingError as exc:
             raise ProgrammingException(str(exc))
+        except DataError as exc:
+            raise DataException(str(exc))
         except OperationalError as exc:
             raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
         except IntegrityError as exc:
@@ -141,6 +145,8 @@ class AiopgDatabaseClient(DatabaseClient, CircuitBreakerMixin):
             raise ProgrammingException(str(exc))
         except OperationalError as exc:
             raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
+
+        await self._destroy_cursor()
 
     async def recreate(self) -> None:
         """Recreate the database connection.

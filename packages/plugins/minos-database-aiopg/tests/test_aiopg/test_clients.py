@@ -11,6 +11,7 @@ from aiopg import (
     Cursor,
 )
 from psycopg2 import (
+    DataError,
     IntegrityError,
     OperationalError,
     ProgrammingError,
@@ -22,6 +23,7 @@ from psycopg2.extras import (
 from minos.common import (
     ConnectionException,
     DatabaseOperation,
+    DataException,
     IntegrityException,
     ProgrammingException,
 )
@@ -174,6 +176,12 @@ class TestAiopgDatabaseClient(AiopgTestCase):
         async with AiopgDatabaseClient.from_config(self.config) as client:
             with patch.object(Cursor, "execute", side_effect=ProgrammingError):
                 with self.assertRaises(ProgrammingException):
+                    await client.execute(self.operation)
+
+    async def test_execute_raises_data(self):
+        async with AiopgDatabaseClient.from_config(self.config) as client:
+            with patch.object(Cursor, "execute", side_effect=DataError):
+                with self.assertRaises(DataException):
                     await client.execute(self.operation)
 
     async def test_fetch_one(self):
