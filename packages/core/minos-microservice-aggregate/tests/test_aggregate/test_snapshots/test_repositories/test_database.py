@@ -57,17 +57,17 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             "fetch_one",
             side_effect=[
                 ProgrammingException(""),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
             ],
         ):
             with patch.object(
@@ -78,13 +78,9 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                         FakeAsyncIterator([]),
                         FakeAsyncIterator(
                             [
-                                tuple(
-                                    SnapshotEntry.from_entity(
-                                        SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_1, version=1)
-                                    )
-                                    .as_raw()
-                                    .values()
-                                )
+                                SnapshotEntry.from_entity(
+                                    SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_1, version=1)
+                                ).as_raw()
                             ]
                         ),
                     ],
@@ -131,7 +127,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator([tuple(entry.as_raw().values()) for entry in entries]),
+                return_value=FakeAsyncIterator([(entry.as_raw()) for entry in entries]),
             ):
                 await super().test_dispatch()
 
@@ -169,7 +165,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator([tuple(entry.as_raw().values()) for entry in entries]),
+                return_value=FakeAsyncIterator([(entry.as_raw()) for entry in entries]),
             ):
                 await super().test_dispatch_first_transaction()
 
@@ -204,7 +200,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator([tuple(entry.as_raw().values()) for entry in entries]),
+                return_value=FakeAsyncIterator([(entry.as_raw()) for entry in entries]),
             ):
                 await super().test_dispatch_second_transaction()
 
@@ -242,7 +238,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator([tuple(entry.as_raw().values()) for entry in entries]),
+                return_value=FakeAsyncIterator([(entry.as_raw()) for entry in entries]),
             ):
                 await super().test_dispatch_third_transaction()
 
@@ -263,8 +259,8 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             "fetch_one",
             side_effect=[
                 ProgrammingException(""),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
                 (9999,),
             ],
         ):
@@ -275,17 +271,15 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                     FakeAsyncIterator([]),
                     FakeAsyncIterator(
                         [
-                            tuple(
+                            (
                                 SnapshotEntry.from_entity(
                                     SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_1, version=5)
-                                )
-                                .as_raw()
-                                .values()
+                                ).as_raw()
                             )
                         ]
                     ),
                     FakeAsyncIterator([]),
-                    FakeAsyncIterator([tuple(entry.as_raw().values()) for entry in entries]),
+                    FakeAsyncIterator([(entry.as_raw()) for entry in entries]),
                 ],
             ):
                 await super().test_dispatch_ignore_previous_version()
@@ -296,19 +290,19 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             "fetch_one",
             side_effect=[
                 (0,),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
-                (current_datetime(), current_datetime()),
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
+                {"created_at": current_datetime(), "updated_at": current_datetime},
                 (11,),
-                (current_datetime(), current_datetime()),
+                {"created_at": current_datetime(), "updated_at": current_datetime},
                 (12,),
                 (12,),
             ],
@@ -324,9 +318,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                ),
+                return_value=FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
             ):
                 await super().test_find_by_uuid()
 
@@ -340,11 +332,9 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 side_effect=[
-                    FakeAsyncIterator(
-                        [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                    ),
-                    FakeAsyncIterator([tuple(SnapshotEntry.from_entity(entities[0]).as_raw().values())]),
-                    FakeAsyncIterator([tuple(SnapshotEntry.from_entity(entities[1]).as_raw().values())]),
+                    FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
+                    FakeAsyncIterator([SnapshotEntry.from_entity(entities[0]).as_raw()]),
+                    FakeAsyncIterator([SnapshotEntry.from_entity(entities[1]).as_raw()]),
                 ],
             ):
                 await super().test_find_contains()
@@ -359,11 +349,9 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 side_effect=[
-                    FakeAsyncIterator(
-                        [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                    ),
-                    FakeAsyncIterator([tuple(SnapshotEntry.from_entity(entities[0]).as_raw().values())]),
-                    FakeAsyncIterator([tuple(SnapshotEntry.from_entity(entities[1]).as_raw().values())]),
+                    FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
+                    FakeAsyncIterator([SnapshotEntry.from_entity(entities[0]).as_raw()]),
+                    FakeAsyncIterator([SnapshotEntry.from_entity(entities[1]).as_raw()]),
                 ],
             ):
                 await super().test_find_equal()
@@ -377,9 +365,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                ),
+                return_value=FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
             ):
                 await super().test_find_with_transaction()
 
@@ -389,9 +375,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                ),
+                return_value=FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
             ):
                 await super().test_find_with_transaction_delete()
 
@@ -404,9 +388,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                ),
+                return_value=FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
             ):
                 await super().test_find_with_transaction_reverted()
 
@@ -419,9 +401,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                ),
+                return_value=FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
             ):
                 await super().test_find_streaming_true()
 
@@ -434,9 +414,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                ),
+                return_value=FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
             ):
                 await super().test_find_with_duplicates()
 
@@ -446,9 +424,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                ),
+                return_value=FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
             ):
                 await super().test_find_empty()
 
@@ -460,9 +436,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                ),
+                return_value=FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
             ):
                 await super().test_find_one()
 
@@ -486,7 +460,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 side_effect=lambda: FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
+                    [SnapshotEntry.from_entity(entity).as_raw() for entity in entities]
                 ),
             ):
                 await super().test_get_all()
@@ -499,9 +473,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                ),
+                return_value=FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
             ):
                 await super().test_get()
 
@@ -511,9 +483,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                ),
+                return_value=FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
             ):
                 await super().test_get_with_transaction()
 
@@ -524,13 +494,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 "fetch_all",
                 side_effect=[
                     FakeAsyncIterator(
-                        [
-                            tuple(
-                                SnapshotEntry(self.uuid_1, classname(SnapshotRepositoryTestCase.Car), 1)
-                                .as_raw()
-                                .values()
-                            )
-                        ]
+                        [SnapshotEntry(self.uuid_1, classname(SnapshotRepositoryTestCase.Car), 1).as_raw()]
                     ),
                     FakeAsyncIterator([]),
                 ],
@@ -543,7 +507,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
                 DatabaseClient,
                 "fetch_all",
                 return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry(self.uuid_1, classname(SnapshotRepositoryTestCase.Car), 1).as_raw().values())]
+                    [SnapshotEntry(self.uuid_1, classname(SnapshotRepositoryTestCase.Car), 1).as_raw()]
                 ),
             ):
                 await super().test_get_with_transaction_raises()
@@ -557,9 +521,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                ),
+                return_value=FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
             ):
                 await super().test_find()
 
@@ -572,9 +534,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
             with patch.object(
                 DatabaseClient,
                 "fetch_all",
-                return_value=FakeAsyncIterator(
-                    [tuple(SnapshotEntry.from_entity(entity).as_raw().values()) for entity in entities]
-                ),
+                return_value=FakeAsyncIterator([SnapshotEntry.from_entity(entity).as_raw() for entity in entities]),
             ):
                 await super().test_find_all()
 

@@ -19,6 +19,7 @@ from minos.aggregate import (
 from minos.common import (
     AvroSchemaEncoder,
     MinosJsonBinaryProtocol,
+    ModelType,
 )
 from tests.utils import (
     AggregateTestCase,
@@ -48,6 +49,18 @@ class TestSnapshotEntry(AggregateTestCase):
         self.assertEqual(self.data, entry.data)
         self.assertEqual(None, entry.created_at)
         self.assertEqual(None, entry.updated_at)
+
+    def test_constructor_with_kwargs(self):
+        entry = SnapshotEntry(self.uuid, "example.Car", 0, self.schema, foo="bar", foobar="foobar")
+        self.assertEqual({"foo": "bar", "foobar": "foobar"}, entry.data)
+
+    def test_constructor_with_data_and_kwargs(self):
+        entry = SnapshotEntry(self.uuid, "example.Car", 0, self.schema, {"foo": "bar"}, foobar="foobar")
+        self.assertEqual({"foo": "bar", "foobar": "foobar"}, entry.data)
+
+    def test_constructor_with_data_str(self):
+        entry = SnapshotEntry(self.uuid, "example.Car", 0, self.schema, json.dumps({"foo": "bar", "foobar": "foobar"}))
+        self.assertEqual({"foo": "bar", "foobar": "foobar"}, entry.data)
 
     def test_constructor_with_bytes_schema(self):
         raw = MinosJsonBinaryProtocol.encode(self.schema)
@@ -122,6 +135,15 @@ class TestSnapshotEntry(AggregateTestCase):
 
         with self.assertRaises(AlreadyDeletedException):
             entry.build()
+
+    def test_build_type_from_schema(self):
+        entry = SnapshotEntry(self.uuid, "...", 0, Car.avro_schema)
+        self.assertEqual(ModelType.from_model(Car), entry.build_type())
+
+    def test_build_type_from_classname(self):
+        # noinspection PyTypeChecker
+        entry = SnapshotEntry(self.uuid, Car.classname, 0)
+        self.assertEqual(ModelType.from_model(Car), entry.build_type())
 
     def test_repr(self):
         name = "example.Car"

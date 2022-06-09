@@ -116,7 +116,7 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         )
 
         async for row in self.execute_on_database_and_fetch_all(operation, streaming_mode=streaming_mode):
-            yield SnapshotEntry(*row)
+            yield SnapshotEntry(**row)
 
     async def is_synced(self, name: str, **kwargs) -> bool:
         """Check if the snapshot has the latest version of a ``Entity`` instance.
@@ -214,7 +214,8 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         operation = self.database_operation_factory.build_submit(**snapshot_entry.as_raw())
         response = await self.execute_on_database_and_fetch_one(operation)
 
-        snapshot_entry.created_at, snapshot_entry.updated_at = response
+        snapshot_entry.created_at = response["created_at"]
+        snapshot_entry.updated_at = response["updated_at"]
 
         return snapshot_entry
 

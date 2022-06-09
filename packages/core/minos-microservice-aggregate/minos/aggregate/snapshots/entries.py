@@ -19,6 +19,8 @@ from uuid import (
 
 from minos.common import (
     NULL_UUID,
+    AvroDataDecoder,
+    AvroSchemaDecoder,
     MinosJsonBinaryProtocol,
     import_module,
 )
@@ -53,6 +55,7 @@ class SnapshotEntry:
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
         transaction_uuid: UUID = NULL_UUID,
+        **kwargs,
     ):
         if isinstance(schema, memoryview):
             schema = schema.tobytes()
@@ -61,6 +64,12 @@ class SnapshotEntry:
 
         if isinstance(data, str):
             data = json.loads(data)
+        if kwargs:
+            if not data:
+                data = kwargs.copy()
+            else:
+                data = data.copy()
+                data |= kwargs
 
         self.uuid = uuid
         self.name = name
@@ -155,9 +164,6 @@ class SnapshotEntry:
         :param kwargs: Additional named arguments.
         :return: A ``Entity`` instance.
         """
-        from ..entities import (
-            Entity,
-        )
 
         if self.data is None:
             raise AlreadyDeletedException(f"The {self.uuid!r} identifier belongs to an already deleted instance.")
@@ -169,8 +175,28 @@ class SnapshotEntry:
             "updated_at": self.updated_at,
         }
         data |= kwargs
-        instance = Entity.from_avro(self.schema, data)
+
+        type_ = self.build_type()
+
+        data_decoder = AvroDataDecoder()
+        instance = data_decoder.build(data, type_)
+
         return instance
+
+    def build_type(self) -> type[Entity]:
+        """Build the entity type.
+
+        :return: A ``type`` instance.
+        """
+
+        if self.schema:
+            schema_decoder = AvroSchemaDecoder()
+            type_ = schema_decoder.build(self.schema)
+        else:
+            type_ = import_module(self.name)
+
+        # noinspection PyTypeChecker
+        return type_
 
     @property
     def type_(self) -> type[Entity]:
