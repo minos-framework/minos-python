@@ -17,3 +17,7 @@ class IntegrityException(DatabaseClientException):
 
 class ProgrammingException(DatabaseClientException):
     """Exception to be raised when an integrity check is not satisfied."""
+
+
+class DataException(DatabaseClientException):
+    """Exception to be raised when the given data does not meet the expected data type."""

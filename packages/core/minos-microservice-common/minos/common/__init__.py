@@ -25,6 +25,7 @@ from .database import (
     DatabaseMixin,
     DatabaseOperation,
     DatabaseOperationFactory,
+    DataException,
     IntegrityException,
     LockDatabaseOperationFactory,
     ManagementDatabaseOperationFactory,

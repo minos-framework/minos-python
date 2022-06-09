@@ -5,6 +5,7 @@ from .abc import (
 from .exceptions import (
     ConnectionException,
     DatabaseClientException,
+    DataException,
     IntegrityException,
     ProgrammingException,
 )

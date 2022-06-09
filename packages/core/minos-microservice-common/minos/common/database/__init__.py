@@ -3,6 +3,7 @@ from .clients import (
     DatabaseClient,
     DatabaseClientBuilder,
     DatabaseClientException,
+    DataException,
     IntegrityException,
     ProgrammingException,
 )

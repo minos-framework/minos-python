@@ -9,6 +9,7 @@ from typing import (
     Generic,
     Optional,
     TypeVar,
+    Union,
     get_args,
     get_origin,
 )
@@ -117,7 +118,7 @@ class DatabaseMixin(SetupMixin, Generic[GenericDatabaseOperationFactory]):
     # noinspection PyUnusedLocal
     async def execute_on_database_and_fetch_all(
         self, operation: DatabaseOperation, streaming_mode: Optional[bool] = None
-    ) -> AsyncIterator[tuple]:
+    ) -> AsyncIterator[Union[tuple, dict]]:
         """Submit an Operation and return an asynchronous iterator.
 
         :param operation: The operation to be executed.
