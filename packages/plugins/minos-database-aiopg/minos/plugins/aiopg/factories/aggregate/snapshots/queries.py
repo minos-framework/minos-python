@@ -26,6 +26,7 @@ from psycopg2.sql import (
 from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
+# noinspection PyProtectedMember
 from minos.aggregate.queries import (
     _FALSE_CONDITION,
     _AndCondition,
@@ -53,7 +54,7 @@ from minos.common import (
 )
 
 
-# noinspection SqlResolve,SqlNoDataSourceInspection
+# noinspection SqlResolve,SqlNoDataSourceInspection,SqlDialectInspection
 class AiopgSnapshotQueryDatabaseOperationBuilder:
     """Aiopg Snapshot Query Database Operation Builder class.
 
@@ -248,7 +249,10 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
         """
         return str(uuid4())
 
-    _COMPOSED_MAPPER = {_AndCondition: SQL(" AND "), _OrCondition: SQL(" OR ")}
+    _COMPOSED_MAPPER = {
+        _AndCondition: SQL(" AND "),
+        _OrCondition: SQL(" OR "),
+    }
 
     _SIMPLE_MAPPER = {
         _LowerCondition: SQL("<"),
