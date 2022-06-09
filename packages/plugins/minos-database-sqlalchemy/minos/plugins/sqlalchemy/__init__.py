@@ -9,6 +9,8 @@ from .clients import (
 )
 from .factories import (
     SqlAlchemyManagementDatabaseOperationFactory,
+    SqlAlchemySnapshotDatabaseOperationFactory,
+    SqlAlchemySnapshotQueryDatabaseOperationBuilder,
     SqlAlchemySnapshotTableFactory,
 )
 from .operations import (

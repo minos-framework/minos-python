@@ -8,6 +8,7 @@ from datetime import (
     datetime,
     time,
     timedelta,
+    timezone,
 )
 from enum import (
     Enum,
@@ -120,7 +121,7 @@ class SqlAlchemySnapshotTableFactory:
         elif issubclass(type_, bytes):
             column_type = LargeBinary()
         elif issubclass(type_, datetime):
-            column_type = DateTime()
+            column_type = DateTime(timezone=timezone.utc)
         elif issubclass(type_, timedelta):
             column_type = Interval()
         elif issubclass(type_, date):
