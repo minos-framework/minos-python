@@ -20,6 +20,7 @@ from sqlalchemy.engine import (
     URL,
 )
 from sqlalchemy.exc import (
+    DataError,
     IntegrityError,
     OperationalError,
     ProgrammingError,
@@ -35,6 +36,7 @@ from minos.common import (
     CircuitBreakerMixin,
     ConnectionException,
     DatabaseClient,
+    DataException,
     IntegrityException,
     ProgrammingException,
 )
@@ -113,21 +115,23 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
             self._result = await wait_for(self._execute_operation(operation), self._result_timeout)
         except ProgrammingError as exc:
             raise ProgrammingException(str(exc))
+        except DataError as exc:
+            raise DataException(str(exc))
         except (OperationalError, TimeoutError) as exc:
             raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
         except IntegrityError as exc:
             raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
 
     async def _execute_operation(self, operation: SqlAlchemyDatabaseOperation) -> Optional[AsyncResult]:
+        result = None
         if isinstance(operation.statement, Callable):
             await self._connection.run_sync(operation.statement)
-            return None
-
-        if not operation.stream:
+        elif not operation.stream:
             await self._connection.execute(statement=operation.statement, parameters=operation.parameters)
-            return None
+        else:
+            result = await self._connection.stream(statement=operation.statement, parameters=operation.parameters)
 
-        return await self._connection.stream(statement=operation.statement, parameters=operation.parameters)
+        return result
 
     async def _fetch_all(self, *args, **kwargs) -> AsyncIterator[Any]:
         if self._result is None:
@@ -140,6 +144,8 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
             raise ProgrammingException(str(exc))
         except OperationalError as exc:
             raise ConnectionException(f"There was not possible to connect to the database: {exc!r}")
+
+        await self._destroy_result()
 
     async def recreate(self):
         """Recreate the database connection.
@@ -169,6 +175,8 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
         await self.engine.dispose()
 
     async def _destroy_result(self) -> None:
+        if self._connection is not None:
+            await self._connection.commit()
         self._result = None
 
     async def is_connected(self) -> bool:

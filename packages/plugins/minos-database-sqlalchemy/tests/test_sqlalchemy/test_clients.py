@@ -18,6 +18,7 @@ from sqlalchemy.engine import (
     Row,
 )
 from sqlalchemy.exc import (
+    DataError,
     IntegrityError,
     OperationalError,
     ProgrammingError,
@@ -31,6 +32,7 @@ from sqlalchemy.ext.asyncio import (
 from minos.common import (
     ConnectionException,
     DatabaseOperation,
+    DataException,
     IntegrityException,
     ProgrammingException,
 )
@@ -224,6 +226,12 @@ class TestSqlAlchemyDatabaseClient(SqlAlchemyTestCase):
         async with SqlAlchemyDatabaseClient.from_config(self.config) as client:
             with patch.object(AsyncConnection, "stream", side_effect=ProgrammingError("", dict(), None)):
                 with self.assertRaises(ProgrammingException):
+                    await client.execute(self.operation)
+
+    async def test_execute_raises_data(self):
+        async with SqlAlchemyDatabaseClient.from_config(self.config) as client:
+            with patch.object(AsyncConnection, "stream", side_effect=DataError("", dict(), None)):
+                with self.assertRaises(DataException):
                     await client.execute(self.operation)
 
     async def test_fetch_one(self):
