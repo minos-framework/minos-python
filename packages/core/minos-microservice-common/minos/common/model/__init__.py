@@ -32,6 +32,8 @@ from .types import (
     TypeHintBuilder,
     TypeHintComparator,
     TypeHintParser,
+    is_model_subclass,
     is_model_type,
     is_optional,
+    is_type_subclass,
 )

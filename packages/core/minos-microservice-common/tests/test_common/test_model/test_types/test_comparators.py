@@ -9,7 +9,9 @@ from minos.common import (
     Model,
     ModelType,
     TypeHintComparator,
+    is_model_subclass,
     is_optional,
+    is_type_subclass,
 )
 from tests.model_classes import (
     Car,
@@ -155,6 +157,30 @@ class TestIsOptional(unittest.TestCase):
 
     def test_is_optional_strict_false(self):
         self.assertFalse(is_optional(Union[int, str, None], strict=True))
+
+
+class TestIsModelSubclass(unittest.TestCase):
+    def test_is_optional_true(self):
+        self.assertTrue(is_model_subclass(Car))
+        self.assertTrue(is_model_subclass(Car[int]))
+
+    def test_is_optional_false(self):
+        self.assertFalse(is_model_subclass(int))
+        self.assertFalse(is_model_subclass(float))
+        self.assertFalse(is_model_subclass(Union[int, str]))
+
+
+class TestIsTypeSubclass(unittest.TestCase):
+    def test_is_optional_true(self):
+        self.assertTrue(is_type_subclass(Car))
+        self.assertTrue(is_type_subclass(int))
+
+    def test_is_optional_false(self):
+        # noinspection PyTypeChecker
+        self.assertFalse(is_type_subclass(56))
+        self.assertFalse(is_type_subclass(list[int]))
+        self.assertFalse(is_type_subclass(Car[int]))
+        self.assertFalse(is_type_subclass(Union[int, str]))
 
 
 if __name__ == "__main__":
