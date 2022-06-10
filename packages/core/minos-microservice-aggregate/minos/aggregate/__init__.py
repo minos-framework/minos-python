@@ -34,6 +34,7 @@ from .entities import (
     RefExtractor,
     RefInjector,
     RefResolver,
+    is_ref_subclass,
 )
 from .exceptions import (
     AggregateException,

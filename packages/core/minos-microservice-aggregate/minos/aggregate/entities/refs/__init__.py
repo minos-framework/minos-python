@@ -1,3 +1,6 @@
+from .comparators import (
+    is_ref_subclass,
+)
 from .extractors import (
     RefExtractor,
 )

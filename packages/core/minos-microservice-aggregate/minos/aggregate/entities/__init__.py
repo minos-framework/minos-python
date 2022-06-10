@@ -9,6 +9,7 @@ from .refs import (
     RefExtractor,
     RefInjector,
     RefResolver,
+    is_ref_subclass,
 )
 from .repositories import (
     EntityRepository,
