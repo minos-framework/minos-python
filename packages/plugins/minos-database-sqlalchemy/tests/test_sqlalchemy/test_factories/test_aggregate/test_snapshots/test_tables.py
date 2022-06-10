@@ -8,9 +8,6 @@ from datetime import (
 from enum import (
     Enum,
 )
-from typing import (
-    Optional,
-)
 from uuid import (
     UUID,
 )
@@ -67,11 +64,11 @@ class TestSqlAlchemySnapshotTableFactory(SqlAlchemyTestCase):
 
         self.assertEqual({_Foo.__name__, _Bar.__name__}, observed.tables.keys())
         self.assertEqual(
-            {"uuid", "version", "created_at", "updated_at", "bar", "transaction_uuid"},
+            {"uuid", "version", "created_at", "updated_at", "bar", "transaction_uuid", "deleted"},
             set(observed.tables[_Foo.__name__].columns.keys()),
         )
         self.assertEqual(
-            {"uuid", "version", "created_at", "updated_at", "foo", "transaction_uuid"},
+            {"uuid", "version", "created_at", "updated_at", "foo", "transaction_uuid", "deleted"},
             set(observed.tables[_Bar.__name__].columns.keys()),
         )
 
@@ -84,7 +81,6 @@ class TestSqlAlchemySnapshotTableFactory(SqlAlchemyTestCase):
 
         self.assertIsInstance(observed.type, UUIDType)
         self.assertTrue(observed.primary_key)
-        self.assertFalse(observed.nullable)
 
     def test_build_version(self):
         class _Foo(Entity):
@@ -95,7 +91,6 @@ class TestSqlAlchemySnapshotTableFactory(SqlAlchemyTestCase):
 
         self.assertIsInstance(observed.type, Integer)
         self.assertFalse(observed.primary_key)
-        self.assertFalse(observed.nullable)
 
     def test_build_created_at(self):
         class _Foo(Entity):
@@ -106,7 +101,6 @@ class TestSqlAlchemySnapshotTableFactory(SqlAlchemyTestCase):
 
         self.assertIsInstance(observed.type, DateTime)
         self.assertFalse(observed.primary_key)
-        self.assertFalse(observed.nullable)
 
     def test_build_updated_at(self):
         class _Foo(Entity):
@@ -117,7 +111,6 @@ class TestSqlAlchemySnapshotTableFactory(SqlAlchemyTestCase):
 
         self.assertIsInstance(observed.type, DateTime)
         self.assertFalse(observed.primary_key)
-        self.assertFalse(observed.nullable)
 
     def test_build_transaction_uuid(self):
         class _Foo(Entity):
@@ -128,18 +121,16 @@ class TestSqlAlchemySnapshotTableFactory(SqlAlchemyTestCase):
 
         self.assertIsInstance(observed.type, UUIDType)
         self.assertTrue(observed.primary_key)
-        self.assertFalse(observed.nullable)
 
-    def test_build_optional(self):
+    def test_build_deleted(self):
         class _Foo(Entity):
-            bar: Optional[int]
+            ...
 
         metadata = SqlAlchemySnapshotTableFactory.build(_Foo)
-        observed = metadata.tables[_Foo.__name__].columns["bar"]
+        observed = metadata.tables[_Foo.__name__].columns["deleted"]
 
-        self.assertIsInstance(observed.type, Integer)
-        self.assertFalse(observed.primary_key)
-        self.assertTrue(observed.nullable)
+        self.assertIsInstance(observed.type, Boolean)
+        self.assertTrue(observed.default)
 
     def test_build_column_types(self):
         class _Enum(Enum):

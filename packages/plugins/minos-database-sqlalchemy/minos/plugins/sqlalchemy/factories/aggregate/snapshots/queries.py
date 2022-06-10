@@ -124,7 +124,7 @@ class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
         # statement = statement.filter(table.c[self.condition.field] == self.condition.parameter)
 
         if self.exclude_deleted:
-            pass  # FIXME
+            statement = statement.filter(table.c.deleted.is_(False))
 
         if self.ordering is not None:
             statement = statement.order_by(self._build_ordering(self.ordering, table))

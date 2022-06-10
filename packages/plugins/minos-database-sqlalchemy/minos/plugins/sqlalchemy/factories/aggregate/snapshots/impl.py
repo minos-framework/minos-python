@@ -114,7 +114,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         transaction_uuids = set(transaction_uuids)
 
         operations = list()
-        for table in self.entities_metadata.tables:
+        for table in self.entities_metadata.tables.values():
             statement = delete(table).filter(table.c.transaction_uuid.in_(transaction_uuids))
             operation = SqlAlchemyDatabaseOperation(statement)
             operations.append(operation)
@@ -137,13 +137,23 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         simplified_name = name.rsplit(".", 1)[-1]
         table = self.entities_metadata.tables[simplified_name]
 
-        values = data | {
-            "uuid": uuid,
-            "version": version,
-            "created_at": created_at,
-            "updated_at": updated_at,
-            "transaction_uuid": transaction_uuid,
-        }
+        if data is not None:
+            values = data | {
+                "uuid": uuid,
+                "version": version,
+                "created_at": created_at,
+                "updated_at": updated_at,
+                "transaction_uuid": transaction_uuid,
+            }
+        else:
+            values = {
+                "uuid": uuid,
+                "version": version,
+                "created_at": created_at,
+                "updated_at": updated_at,
+                "transaction_uuid": transaction_uuid,
+                "deleted": True,
+            }
 
         statement = (
             insert(table)

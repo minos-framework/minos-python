@@ -46,6 +46,7 @@ from sqlalchemy_utils import (
 from minos.aggregate import (
     Entity,
     Ref,
+    is_ref_subclass,
 )
 from minos.common import (
     NULL_UUID,
@@ -96,16 +97,18 @@ class SqlAlchemySnapshotTableFactory:
             column = cls._build_column(name, type_)
             columns.append(column)
 
-        column = Column("transaction_uuid", UUIDType, nullable=False, default=str(NULL_UUID))
-        columns.append(column)
+        columns.extend(
+            [
+                Column("transaction_uuid", UUIDType(), nullable=False, default=str(NULL_UUID)),
+                Column("deleted", Boolean(), nullable=False, default=False),
+            ]
+        )
+
         return columns
 
     @staticmethod
     def _build_column(name: str, type_: type) -> Column:
-        nullable = False
-
-        if is_optional(type_, strict=True):
-            nullable = True
+        if is_optional(type_, strict=True):  # FIXME: The nullable constraint should be set to False.
             type_ = get_args(type_)[0]
 
         if issubclass(type_, Enum):
@@ -128,11 +131,11 @@ class SqlAlchemySnapshotTableFactory:
             column_type = Date()
         elif issubclass(type_, time):
             column_type = Time()
-        elif issubclass(type_, Ref) or (isinstance(type_, ModelType) and issubclass(type_.model_cls, Ref)):
+        elif is_ref_subclass(type_) or (isinstance(type_, ModelType) and issubclass(type_.model_cls, Ref)):
             column_type = UUIDType(binary=False)
         elif issubclass(type_, UUID):
             column_type = UUIDType(binary=False)
         else:
             column_type = EncodedType()
 
-        return Column(name, column_type, nullable=nullable)
+        return Column(name, column_type)

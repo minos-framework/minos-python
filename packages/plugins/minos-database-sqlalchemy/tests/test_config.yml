@@ -11,3 +11,9 @@ databases:
     port: 5432
 pools:
   database: minos.common.DatabaseClientPool
+aggregate:
+  entities:
+    - minos.aggregate.testing.SnapshotRepositoryTestCase.NumbersList
+    - minos.aggregate.testing.SnapshotRepositoryTestCase.Number
+    - minos.aggregate.testing.SnapshotRepositoryTestCase.Owner
+    - minos.aggregate.testing.SnapshotRepositoryTestCase.Car
