@@ -55,6 +55,7 @@ class SnapshotEntry:
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
         transaction_uuid: UUID = NULL_UUID,
+        deleted: bool = False,
         **kwargs,
     ):
         if isinstance(schema, memoryview):
@@ -64,7 +65,8 @@ class SnapshotEntry:
 
         if isinstance(data, str):
             data = json.loads(data)
-        if kwargs:
+
+        if not deleted and kwargs:
             if not data:
                 data = kwargs.copy()
             else:
