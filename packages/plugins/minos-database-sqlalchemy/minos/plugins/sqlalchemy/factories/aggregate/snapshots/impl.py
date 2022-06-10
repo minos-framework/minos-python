@@ -115,7 +115,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
 
         operations = list()
         for table in self.entities_metadata.tables:
-            statement = delete(table).where(table.c.transaction_uuid.in_(transaction_uuids))
+            statement = delete(table).filter(table.c.transaction_uuid.in_(transaction_uuids))
             operation = SqlAlchemyDatabaseOperation(statement)
             operations.append(operation)
 
@@ -201,7 +201,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
                             (table.c.value > value, table.c.value),
                             else_=value,
                         )
-                    ).where(table.c.id.is_(True))
+                    ).filter(table.c.id.is_(True))
                 },
             )
         )
@@ -211,7 +211,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
     def build_query_offset(self) -> DatabaseOperation:
         """TODO"""
         table = self.offset_metadata.tables[self.build_offset_table_name()]
-        statement = select(table.c.value).where(table.c.id.is_(True))
+        statement = select(table.c.value).filter(table.c.id.is_(True))
         return SqlAlchemyDatabaseOperation(statement)
 
 
