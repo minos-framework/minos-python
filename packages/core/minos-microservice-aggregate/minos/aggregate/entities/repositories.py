@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 import logging
 from collections.abc import (
     AsyncIterator,
@@ -43,30 +47,26 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=Entity)
 
+GenericDeltaRepository = TypeVar("GenericDeltaRepository", bound=DeltaRepository)
+GenericSnapshotRepository = TypeVar("GenericSnapshotRepository", bound=SnapshotRepository)
+
 
 class EntityRepository:
     """Entity Repository class."""
 
-    _delta_repository: DeltaRepository
-    _snapshot_repository: SnapshotRepository
+    _delta: GenericDeltaRepository
+    _snapshot: GenericSnapshotRepository
 
     # noinspection PyUnusedLocal
     @Inject()
-    def __init__(
-        self,
-        delta_repository: DeltaRepository,
-        snapshot_repository: SnapshotRepository,
-        *args,
-        **kwargs,
-    ):
-
-        if delta_repository is None:
+    def __init__(self, delta: DeltaRepository, snapshot: SnapshotRepository, *args, **kwargs):
+        if delta is None:
             raise NotProvidedException(f"A {DeltaRepository!r} instance is required.")
-        if snapshot_repository is None:
+        if snapshot is None:
             raise NotProvidedException(f"A {SnapshotRepository!r} instance is required.")
 
-        self._delta_repository = delta_repository
-        self._snapshot_repository = snapshot_repository
+        self._delta = delta
+        self._snapshot = snapshot
 
     async def get(self, type_: type[T], uuid: UUID, **kwargs) -> T:
         """Get one instance from the database based on its identifier.
@@ -76,7 +76,7 @@ class EntityRepository:
         :return: A ``Entity`` instance.
         """
         # noinspection PyTypeChecker
-        return await self._snapshot_repository.get(type_, uuid, **kwargs)
+        return await self._snapshot.get(type_, uuid, **kwargs)
 
     def get_all(
         self,
@@ -95,7 +95,7 @@ class EntityRepository:
         :return: A ``Entity`` instance.
         """
         # noinspection PyTypeChecker
-        return self._snapshot_repository.get_all(type_, ordering, limit, **kwargs)
+        return self._snapshot.get_all(type_, ordering, limit, **kwargs)
 
     async def find_one(self, type_: type[T], condition: _Condition, **kwargs) -> T:
         """Find a ``Entity`` instance based on a ``Condition``.
@@ -105,7 +105,7 @@ class EntityRepository:
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Entity`` instances.
         """
-        return await self._snapshot_repository.find_one(type_, condition, **kwargs)
+        return await self._snapshot.find_one(type_, condition, **kwargs)
 
     def find(
         self,
@@ -125,7 +125,7 @@ class EntityRepository:
             instances that meet the given condition.
         :return: An asynchronous iterator of ``Entity`` instances.
         """
-        return self._snapshot_repository.find(type_, condition, ordering, limit, **kwargs)
+        return self._snapshot.find(type_, condition, ordering, limit, **kwargs)
 
     async def create(self, type_or_instance: Union[T, type[T]], *args, **kwargs) -> tuple[T, Delta]:
         """Create a new ``Entity`` instance.
@@ -163,7 +163,7 @@ class EntityRepository:
                 )
 
         delta = Delta.from_entity(instance)
-        entry = await self._delta_repository.submit(delta)
+        entry = await self._delta.submit(delta)
 
         self._update_from_repository_entry(instance, entry)
 
@@ -199,7 +199,7 @@ class EntityRepository:
         if not len(delta.fields_diff):
             return instance
 
-        entry = await self._delta_repository.submit(delta)
+        entry = await self._delta.submit(delta)
 
         self._update_from_repository_entry(instance, entry)
 
@@ -247,7 +247,7 @@ class EntityRepository:
         :return: This method does not return anything.
         """
         delta = Delta.from_entity(instance, action=Action.DELETE)
-        entry = await self._delta_repository.submit(delta)
+        entry = await self._delta.submit(delta)
 
         self._update_from_repository_entry(instance, entry)
         return entry.delta
@@ -259,3 +259,19 @@ class EntityRepository:
         if entry.action.is_create:
             instance.created_at = entry.created_at
         instance.updated_at = entry.created_at
+
+    @property
+    def delta(self) -> GenericDeltaRepository:
+        """Get the delta repository.
+
+        :return: A ``DeltaRepository`` instance.
+        """
+        return self._delta
+
+    @property
+    def snapshot(self) -> GenericSnapshotRepository:
+        """Get the snapshot repository.
+
+        :return: A ``SnapshotRepository`` instance.
+        """
+        return self._snapshot

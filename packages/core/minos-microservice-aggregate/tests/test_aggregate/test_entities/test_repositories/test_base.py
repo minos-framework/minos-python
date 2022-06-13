@@ -33,11 +33,17 @@ class TestEntityRepository(AggregateTestCase):
         super().setUp()
         self.repository = EntityRepository()
 
+    def test_delta(self):
+        self.assertEqual(self.delta_repository, self.repository.delta)
+
+    def test_snapshot(self):
+        self.assertEqual(self.snapshot_repository, self.repository.snapshot)
+
     def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):
-            EntityRepository(delta_repository=None)
+            EntityRepository(delta=None)
         with self.assertRaises(NotProvidedException):
-            EntityRepository(snapshot_repository=None)
+            EntityRepository(snapshot=None)
 
     async def test_create_from_type(self):
         observed, _ = await self.repository.create(Car, doors=3, color="blue")
