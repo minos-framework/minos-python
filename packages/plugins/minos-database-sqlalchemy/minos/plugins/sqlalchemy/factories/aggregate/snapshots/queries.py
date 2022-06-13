@@ -113,18 +113,11 @@ class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
         return query
 
     def _build(self) -> Executable:
-        # if not (isinstance(self.condition, _EqualCondition)):
-        #     raise ValueError("TODO")
-
-        table = self._build_select_from()
+        table = self.get_table()
 
         statement = select(table)
 
         statement = statement.filter(self._build_condition(self.condition, table))
-        # statement = statement.filter(table.c[self.condition.field] == self.condition.parameter)
-
-        if self.exclude_deleted:
-            statement = statement.filter(table.c.deleted.is_(False))
 
         if self.ordering is not None:
             statement = statement.order_by(self._build_ordering(self.ordering, table))
@@ -134,7 +127,8 @@ class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
 
         return statement
 
-    def _build_select_from(self) -> Subquery:
+    def get_table(self) -> Subquery:
+        """TODO"""
 
         simplified_name = self.name.rsplit(".", 1)[-1]
         table = self.tables[simplified_name]
@@ -151,8 +145,13 @@ class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
             select(union, literal(self.name).label("name"))
             .order_by(union.c.uuid, desc(union.c.transaction_index))
             .distinct(union.c.uuid)
-        ).subquery()
-        return statement
+        )
+
+        if self.exclude_deleted:
+            subquery = statement.subquery()
+            statement = select(subquery).filter(subquery.c.deleted.is_(False))
+
+        return statement.subquery()
 
     def _build_condition(self, condition: _Condition, table: Subquery) -> ClauseElement:
         if isinstance(condition, _NotCondition):
