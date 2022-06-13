@@ -26,11 +26,15 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import (
     insert,
 )
+from sqlalchemy.sql import (
+    Subquery,
+)
 
 from minos.aggregate import (
     SnapshotDatabaseOperationFactory,
 )
 from minos.aggregate.queries import (
+    Condition,
     _Condition,
     _Ordering,
 )
@@ -195,6 +199,17 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         operation = SqlAlchemyDatabaseOperation(statement)
 
         return operation
+
+    def get_table(self, name: str, transaction_uuids: tuple[UUID, ...], exclude_deleted: bool) -> Subquery:
+        """TODO"""
+        builder = SqlAlchemySnapshotQueryDatabaseOperationBuilder(
+            name=name,
+            condition=Condition.TRUE,
+            transaction_uuids=transaction_uuids,
+            exclude_deleted=exclude_deleted,
+            tables=self.entities_metadata.tables,
+        )
+        return builder.get_table()
 
     def build_submit_offset(self, value: int) -> DatabaseOperation:
         """TODO"""

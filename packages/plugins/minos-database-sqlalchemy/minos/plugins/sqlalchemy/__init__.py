@@ -11,6 +11,7 @@ from .factories import (
     SqlAlchemyManagementDatabaseOperationFactory,
     SqlAlchemySnapshotDatabaseOperationFactory,
     SqlAlchemySnapshotQueryDatabaseOperationBuilder,
+    SqlAlchemySnapshotRepository,
     SqlAlchemySnapshotTableFactory,
 )
 from .operations import (
