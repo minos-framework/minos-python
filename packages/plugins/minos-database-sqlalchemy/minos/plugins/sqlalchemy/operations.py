@@ -11,7 +11,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.engine import (
-    Connectable,
+    Connection,
 )
 from sqlalchemy.sql import (
     Executable,
@@ -27,7 +27,7 @@ class SqlAlchemyDatabaseOperation(DatabaseOperation):
 
     def __init__(
         self,
-        statement: Union[Callable[[Connectable, ...], ...], str, Executable],
+        statement: Union[Callable[[Connection, ...], ...], str, Executable],
         parameters: Optional[dict[str, Any]] = None,
         stream: Optional[bool] = None,
         *args,

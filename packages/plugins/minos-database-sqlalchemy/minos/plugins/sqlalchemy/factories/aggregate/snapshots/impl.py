@@ -21,10 +21,16 @@ from sqlalchemy import (
     Table,
     case,
     delete,
-    select,
-)
-from sqlalchemy.dialects.postgresql import (
     insert,
+    select,
+    update,
+)
+from sqlalchemy.engine import (
+    Connection,
+    Result,
+)
+from sqlalchemy.exc import (
+    IntegrityError,
 )
 from sqlalchemy.sql import (
     Subquery,
@@ -159,20 +165,21 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
                 "deleted": True,
             }
 
-        statement = (
-            insert(table)
-            .values(values)
-            .on_conflict_do_update(
-                index_elements=(
-                    "uuid",
-                    "transaction_uuid",
-                ),
-                set_=values,
-            )
-            .returning(table.c.created_at, table.c.updated_at)
-        )
+        def _statement(conn: Connection) -> Result:
+            try:
+                statement = insert(table).values(values).returning(table.c.created_at, table.c.updated_at)
+                with conn.begin_nested():
+                    return conn.execute(statement)
+            except IntegrityError:
+                statement = (
+                    update(table)
+                    .filter(table.c.uuid == uuid, table.c.transaction_uuid == transaction_uuid)
+                    .values(values)
+                    .returning(table.c.created_at, table.c.updated_at)
+                )
+                return conn.execute(statement)
 
-        return SqlAlchemyDatabaseOperation(statement)
+        return SqlAlchemyDatabaseOperation(_statement)
 
     def build_query(
         self,
@@ -215,23 +222,33 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         """TODO"""
         table = self.offset_metadata.tables[self.build_offset_table_name()]
 
-        statement = (
-            insert(table)
-            .values(id=True, value=value)
-            .on_conflict_do_update(
-                index_elements=("id",),
-                set_={
-                    "value": select(
-                        case(
-                            (table.c.value > value, table.c.value),
-                            else_=value,
-                        )
-                    ).filter(table.c.id.is_(True))
-                },
-            )
-        )
+        def _statement(conn: Connection) -> Result:
+            try:
+                statement = insert(table).values(id=True, value=value)
+                with conn.begin_nested():
+                    return conn.execute(statement)
+            except IntegrityError:
+                statement = (
+                    update(table)
+                    .filter(table.c.id.is_(True))
+                    .values(
+                        {
+                            "value": (
+                                select(
+                                    case(
+                                        (table.c.value > value, table.c.value),
+                                        else_=value,
+                                    )
+                                )
+                                .filter(table.c.id.is_(True))
+                                .scalar_subquery()
+                            )
+                        }
+                    )
+                )
+                return conn.execute(statement)
 
-        return SqlAlchemyDatabaseOperation(statement)
+        return SqlAlchemyDatabaseOperation(_statement)
 
     def build_query_offset(self) -> DatabaseOperation:
         """TODO"""
