@@ -19,6 +19,9 @@ from typing import (
 from sqlalchemy.engine import (
     URL,
 )
+from sqlalchemy.engine.result import (
+    ResultInternal,
+)
 from sqlalchemy.exc import (
     DataError,
     IntegrityError,
@@ -123,13 +126,18 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
             raise IntegrityException(f"The requested operation raised a integrity error: {exc!r}")
 
     async def _execute_operation(self, operation: SqlAlchemyDatabaseOperation) -> Optional[AsyncResult]:
-        result = None
         if isinstance(operation.statement, Callable):
-            await self._connection.run_sync(operation.statement)
+            result = await self._connection.run_sync(operation.statement)
         elif not operation.stream:
-            await self._connection.execute(statement=operation.statement, parameters=operation.parameters)
+            result = await self._connection.execute(statement=operation.statement, parameters=operation.parameters)
         else:
             result = await self._connection.stream(statement=operation.statement, parameters=operation.parameters)
+
+        if isinstance(result, ResultInternal) and not isinstance(result, AsyncResult):
+            result = AsyncResult(result)
+
+        if not isinstance(result, AsyncResult):
+            return None
 
         return result
 

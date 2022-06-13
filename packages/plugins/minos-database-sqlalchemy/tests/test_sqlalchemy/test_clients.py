@@ -15,6 +15,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.engine import (
     URL,
+    Result,
     Row,
 )
 from sqlalchemy.exc import (
@@ -150,12 +151,14 @@ class TestSqlAlchemyDatabaseClient(SqlAlchemyTestCase):
         self.assertEqual([call(meta.create_all)], execute_mock.call_args_list)
 
     async def test_execute_clause(self):
-        sentinel = object()
+        sentinel = Result(None)
         operation = SqlAlchemyDatabaseOperation(insert(foo).values([{"bar": "one"}, {"bar": "two"}, {"bar": "three"}]))
         async with SqlAlchemyDatabaseClient(**self.config.get_default_database()) as client:
             with patch.object(AsyncConnection, "stream", return_value=sentinel) as execute_mock:
                 await client.execute(operation)
-            self.assertEqual(sentinel, client.result)
+            self.assertIsInstance(client.result, AsyncResult)
+            # noinspection PyUnresolvedReferences
+            self.assertEqual(sentinel, client.result._real_result)
 
         self.assertEqual(
             [call(statement=operation.statement, parameters=operation.parameters)], execute_mock.call_args_list
@@ -175,11 +178,13 @@ class TestSqlAlchemyDatabaseClient(SqlAlchemyTestCase):
         )
 
     async def test_execute_str(self):
-        sentinel = object()
+        sentinel = Result(None)
         async with SqlAlchemyDatabaseClient.from_config(self.config) as client:
             with patch.object(AsyncConnection, "stream", return_value=sentinel) as execute_mock:
                 await client.execute(self.operation)
-            self.assertEqual(sentinel, client.result)
+            self.assertIsInstance(client.result, AsyncResult)
+            # noinspection PyUnresolvedReferences
+            self.assertEqual(sentinel, client.result._real_result)
         self.assertEqual(
             [call(statement=self.operation.statement, parameters=self.operation.parameters)],
             execute_mock.call_args_list,
