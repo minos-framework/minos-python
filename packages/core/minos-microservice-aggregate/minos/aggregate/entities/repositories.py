@@ -197,7 +197,7 @@ class EntityRepository:
         previous = await self.get(type(instance), instance.uuid)
         delta = instance.diff(previous)
         if not len(delta.fields_diff):
-            return instance
+            return instance, None
 
         entry = await self._delta_repository.submit(delta)
 
