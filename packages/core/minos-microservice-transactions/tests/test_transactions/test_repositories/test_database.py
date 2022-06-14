@@ -1,5 +1,7 @@
 import unittest
 from unittest.mock import (
+    MagicMock,
+    call,
     patch,
 )
 
@@ -28,6 +30,14 @@ class TestDatabaseTransactionRepository(TransactionsTestCase, TransactionReposit
 
     def build_transaction_repository(self) -> TransactionRepository:
         return DatabaseTransactionRepository.from_config(self.config)
+
+    def test_get_pool_call(self):
+        get_pool_mock = MagicMock(side_effect=self.pool_factory.get_pool)
+        self.pool_factory.get_pool = get_pool_mock
+
+        self.build_transaction_repository()
+
+        self.assertIn(call(type_="database", identifier="transaction"), get_pool_mock.call_args_list)
 
     async def test_submit(self):
         with patch.object(
