@@ -107,7 +107,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
 
         :return: A ``str`` value.
         """
-        return "snapshot_aux_offset"
+        return "aggregate_snapshot_aux_offset"
 
     def build_create(self) -> DatabaseOperation:
         """TODO"""

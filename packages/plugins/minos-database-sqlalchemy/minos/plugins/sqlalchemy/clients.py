@@ -34,6 +34,9 @@ from sqlalchemy.ext.asyncio import (
     AsyncResult,
     create_async_engine,
 )
+from sqlalchemy.pool import (
+    NullPool,
+)
 
 from minos.common import (
     CircuitBreakerMixin,
@@ -84,7 +87,7 @@ class SqlAlchemyDatabaseClient(DatabaseClient, CircuitBreakerMixin):
             port=kwargs.get("port"),
             database=kwargs.get("database"),
         )
-        self._engine = create_async_engine(url, pool_size=1)
+        self._engine = create_async_engine(url, poolclass=NullPool)
         self._connection_timeout = connection_timeout
         self._result_timeout = result_timeout
 
