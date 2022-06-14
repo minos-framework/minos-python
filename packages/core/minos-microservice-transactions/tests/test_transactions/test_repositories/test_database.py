@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import (
-    patch,
     MagicMock,
     call,
+    patch,
 )
 
 from minos.common import (
