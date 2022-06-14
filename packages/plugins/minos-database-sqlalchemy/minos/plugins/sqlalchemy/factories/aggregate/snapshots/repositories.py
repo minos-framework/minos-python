@@ -1,5 +1,6 @@
 from typing import (
     Optional,
+    Union,
 )
 
 from sqlalchemy.sql import (
@@ -31,7 +32,10 @@ class SqlAlchemySnapshotRepository(DatabaseSnapshotRepository):
     database_operation_factory: SqlAlchemySnapshotDatabaseOperationFactory
 
     async def get_table(
-        self, name: type[Entity], transaction: Optional[TransactionEntry] = None, exclude_deleted: bool = True
+        self,
+        name: Union[type[Entity], ModelType, str],
+        transaction: Optional[TransactionEntry] = None,
+        exclude_deleted: bool = True,
     ) -> Subquery:
         """TODO"""
 
