@@ -116,7 +116,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("example.Car", entry.name)
         self.assertEqual(0, entry.version)
         self.assertEqual(bytes("car", "utf-8"), entry.data)
-        self.assertEqual(None, entry.id)
+        self.assertEqual(0, entry.id)
         self.assertEqual(Action.CREATE, entry.action)
         self.assertEqual(created_at, entry.created_at)
         self.assertEqual(transaction_uuid, entry.transaction_uuid)
