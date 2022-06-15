@@ -80,7 +80,7 @@ class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
     def __init__(
         self,
         tables: dict[str, Table],
-        name: str,
+        type_: str,
         condition: Optional[_Condition] = None,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
@@ -89,7 +89,7 @@ class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
     ):
         if not isinstance(transaction_uuids, tuple):
             transaction_uuids = tuple(transaction_uuids)
-        self.name = name
+        self.type_ = type_
         self.condition = condition
         self.ordering = ordering
         self.limit = limit
@@ -115,7 +115,7 @@ class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
     def _build(self) -> Executable:
         table = self.get_table()
 
-        statement = select(table)
+        statement = select(table, literal(self.type_).label("_type"))
 
         if self.condition is not None:
             statement = statement.filter(self._build_condition(self.condition, table))
@@ -131,26 +131,22 @@ class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
     def get_table(self) -> Subquery:
         """TODO"""
 
-        simplified_name = self.name.rsplit(".", 1)[-1]
+        simplified_name = self.type_.rsplit(".", 1)[-1]
         table = self.tables[simplified_name]
 
         parts = list()
-        for index, transaction_uuid in enumerate(self.transaction_uuids, start=1):
-            part = select(table, literal(index).label("transaction_index")).filter(
-                table.columns["transaction_uuid"] == transaction_uuid
-            )
+        for index, uuid in enumerate(self.transaction_uuids, start=1):
+            part = select(table, literal(index).label("_index")).filter(table.columns["_transaction_uuid"] == uuid)
             parts.append(part)
 
         union = union_all(*parts).subquery()
         statement = (
-            select(union, literal(self.name).label("name"))
-            .order_by(union.columns["uuid"], desc(union.columns["transaction_index"]))
-            .distinct(union.columns["uuid"])
+            select(union).order_by(union.columns["uuid"], desc(union.columns["_index"])).distinct(union.columns["uuid"])
         )
 
         if self.exclude_deleted:
             subquery = statement.subquery()
-            statement = select(subquery).filter(subquery.columns["deleted"].is_(False))
+            statement = select(subquery).filter(subquery.columns["_deleted"].is_(False))
 
         return statement.subquery()
 

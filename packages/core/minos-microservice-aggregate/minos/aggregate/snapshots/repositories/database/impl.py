@@ -116,7 +116,11 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         )
 
         async for row in self.execute_on_database_and_fetch_all(operation, streaming_mode=streaming_mode):
-            yield SnapshotEntry(**row)
+            yield self._build_entry(**row)
+
+    # noinspection PyMethodMayBeStatic
+    def _build_entry(self, **kwargs) -> SnapshotEntry:
+        return SnapshotEntry(**kwargs)
 
     async def is_synced(self, name: str, **kwargs) -> bool:
         """Check if the snapshot has the latest version of a ``Entity`` instance.

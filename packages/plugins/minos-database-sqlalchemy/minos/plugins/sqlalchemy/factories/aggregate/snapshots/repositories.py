@@ -2,6 +2,9 @@ from typing import (
     Optional,
     Union,
 )
+from uuid import (
+    UUID,
+)
 
 from sqlalchemy.sql import (
     Subquery,
@@ -10,6 +13,7 @@ from sqlalchemy.sql import (
 from minos.aggregate import (
     DatabaseSnapshotRepository,
     Entity,
+    SnapshotEntry,
 )
 from minos.common import (
     NULL_UUID,
@@ -53,3 +57,6 @@ class SqlAlchemySnapshotRepository(DatabaseSnapshotRepository):
             transaction_uuids = await transaction.uuids
 
         return self.database_operation_factory.get_table(name, transaction_uuids, exclude_deleted)
+
+    def _build_entry(self, _type: str, _transaction_uuid: UUID, _deleted: bool, **kwargs) -> SnapshotEntry:
+        return SnapshotEntry(name=_type, transaction_uuid=_transaction_uuid, deleted=_deleted, **kwargs)

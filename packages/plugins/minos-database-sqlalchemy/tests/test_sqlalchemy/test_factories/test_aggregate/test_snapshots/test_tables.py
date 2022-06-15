@@ -64,11 +64,11 @@ class TestSqlAlchemySnapshotTableFactory(SqlAlchemyTestCase):
 
         self.assertEqual({_Foo.__name__, _Bar.__name__}, observed.tables.keys())
         self.assertEqual(
-            {"uuid", "version", "created_at", "updated_at", "bar", "transaction_uuid", "deleted"},
+            {"uuid", "version", "created_at", "updated_at", "bar", "_transaction_uuid", "_deleted"},
             set(observed.tables[_Foo.__name__].columns.keys()),
         )
         self.assertEqual(
-            {"uuid", "version", "created_at", "updated_at", "foo", "transaction_uuid", "deleted"},
+            {"uuid", "version", "created_at", "updated_at", "foo", "_transaction_uuid", "_deleted"},
             set(observed.tables[_Bar.__name__].columns.keys()),
         )
 
@@ -117,7 +117,7 @@ class TestSqlAlchemySnapshotTableFactory(SqlAlchemyTestCase):
             ...
 
         metadata = SqlAlchemySnapshotTableFactory.build(_Foo)
-        observed = metadata.tables[_Foo.__name__].columns["transaction_uuid"]
+        observed = metadata.tables[_Foo.__name__].columns["_transaction_uuid"]
 
         self.assertIsInstance(observed.type, UUIDType)
         self.assertTrue(observed.primary_key)
@@ -127,7 +127,7 @@ class TestSqlAlchemySnapshotTableFactory(SqlAlchemyTestCase):
             ...
 
         metadata = SqlAlchemySnapshotTableFactory.build(_Foo)
-        observed = metadata.tables[_Foo.__name__].columns["deleted"]
+        observed = metadata.tables[_Foo.__name__].columns["_deleted"]
 
         self.assertIsInstance(observed.type, Boolean)
         self.assertTrue(observed.default)

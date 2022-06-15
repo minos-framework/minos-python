@@ -86,7 +86,7 @@ class SqlAlchemySnapshotTableFactory:
 
         columns = cls._build_columns(mt.type_hints)
 
-        table = Table(mt.name, metadata, *columns, PrimaryKeyConstraint("uuid", "transaction_uuid"))
+        table = Table(mt.name, metadata, *columns, PrimaryKeyConstraint("uuid", "_transaction_uuid"))
 
         return table
 
@@ -99,8 +99,8 @@ class SqlAlchemySnapshotTableFactory:
 
         columns.extend(
             [
-                Column("transaction_uuid", UUIDType(), nullable=False, default=str(NULL_UUID)),
-                Column("deleted", Boolean(), nullable=False, default=False),
+                Column("_transaction_uuid", UUIDType(), nullable=False, default=str(NULL_UUID)),
+                Column("_deleted", Boolean(), nullable=False, default=False),
             ]
         )
 
