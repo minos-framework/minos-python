@@ -4,6 +4,9 @@ from collections.abc import (
 from datetime import (
     datetime,
 )
+from functools import (
+    partial,
+)
 from typing import (
     Any,
     Optional,
@@ -165,21 +168,23 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
                 "deleted": True,
             }
 
-        def _statement(conn: Connection) -> Result:
-            try:
-                statement = insert(table).values(values).returning(table.c.created_at, table.c.updated_at)
-                with conn.begin_nested():
-                    return conn.execute(statement)
-            except IntegrityError:
-                statement = (
-                    update(table)
-                    .filter(table.c.uuid == uuid, table.c.transaction_uuid == transaction_uuid)
-                    .values(values)
-                    .returning(table.c.created_at, table.c.updated_at)
-                )
-                return conn.execute(statement)
+        fn = partial(self._submit, table=table, values=values, uuid=uuid, transaction_uuid=transaction_uuid)
+        return SqlAlchemyDatabaseOperation(fn)
 
-        return SqlAlchemyDatabaseOperation(_statement)
+    @staticmethod
+    def _submit(conn: Connection, table: Table, values: dict[str, Any], uuid: UUID, transaction_uuid: UUID) -> Result:
+        try:
+            statement = insert(table).values(values).returning(table.c.created_at, table.c.updated_at)
+            with conn.begin_nested():
+                return conn.execute(statement)
+        except IntegrityError:
+            statement = (
+                update(table)
+                .filter(table.c.uuid == uuid, table.c.transaction_uuid == transaction_uuid)
+                .values(values)
+                .returning(table.c.created_at, table.c.updated_at)
+            )
+            return conn.execute(statement)
 
     def build_query(
         self,
@@ -222,33 +227,35 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         """TODO"""
         table = self.offset_metadata.tables[self.build_offset_table_name()]
 
-        def _statement(conn: Connection) -> Result:
-            try:
-                statement = insert(table).values(id=True, value=value)
-                with conn.begin_nested():
-                    return conn.execute(statement)
-            except IntegrityError:
-                statement = (
-                    update(table)
-                    .filter(table.c.id.is_(True))
-                    .values(
-                        {
-                            "value": (
-                                select(
-                                    case(
-                                        (table.c.value > value, table.c.value),
-                                        else_=value,
-                                    )
-                                )
-                                .filter(table.c.id.is_(True))
-                                .scalar_subquery()
-                            )
-                        }
-                    )
-                )
-                return conn.execute(statement)
+        fn = partial(self._submit_offset, table=table, value=value)
+        return SqlAlchemyDatabaseOperation(fn)
 
-        return SqlAlchemyDatabaseOperation(_statement)
+    @staticmethod
+    def _submit_offset(conn: Connection, table: Table, value: int) -> Result:
+        try:
+            statement = insert(table).values(id=True, value=value)
+            with conn.begin_nested():
+                return conn.execute(statement)
+        except IntegrityError:
+            statement = (
+                update(table)
+                .filter(table.c.id.is_(True))
+                .values(
+                    {
+                        "value": (
+                            select(
+                                case(
+                                    (table.c.value > value, table.c.value),
+                                    else_=value,
+                                )
+                            )
+                            .filter(table.c.id.is_(True))
+                            .scalar_subquery()
+                        )
+                    }
+                )
+            )
+            return conn.execute(statement)
 
     def build_query_offset(self) -> DatabaseOperation:
         """TODO"""
