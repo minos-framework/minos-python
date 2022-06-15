@@ -128,7 +128,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
 
         operations = list()
         for table in self.entities_metadata.tables.values():
-            statement = delete(table).filter(table.c.transaction_uuid.in_(transaction_uuids))
+            statement = delete(table).filter(table.columns["transaction_uuid"].in_(transaction_uuids))
             operation = SqlAlchemyDatabaseOperation(statement)
             operations.append(operation)
 
@@ -174,15 +174,15 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
     @staticmethod
     def _submit(conn: Connection, table: Table, values: dict[str, Any], uuid: UUID, transaction_uuid: UUID) -> Result:
         try:
-            statement = insert(table).values(values).returning(table.c.created_at, table.c.updated_at)
+            statement = insert(table).values(values).returning(table.columns["created_at"], table.columns["updated_at"])
             with conn.begin_nested():
                 return conn.execute(statement)
         except IntegrityError:
             statement = (
                 update(table)
-                .filter(table.c.uuid == uuid, table.c.transaction_uuid == transaction_uuid)
+                .filter(table.columns["uuid"] == uuid, table.columns["transaction_uuid"] == transaction_uuid)
                 .values(values)
-                .returning(table.c.created_at, table.c.updated_at)
+                .returning(table.columns["created_at"], table.columns["updated_at"])
             )
             return conn.execute(statement)
 
@@ -239,17 +239,17 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         except IntegrityError:
             statement = (
                 update(table)
-                .filter(table.c.id.is_(True))
+                .filter(table.columns["id"].is_(True))
                 .values(
                     {
                         "value": (
                             select(
                                 case(
-                                    (table.c.value > value, table.c.value),
+                                    (table.columns["value"] > value, table.columns["value"]),
                                     else_=value,
                                 )
                             )
-                            .filter(table.c.id.is_(True))
+                            .filter(table.columns["id"].is_(True))
                             .scalar_subquery()
                         )
                     }
@@ -260,7 +260,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
     def build_query_offset(self) -> DatabaseOperation:
         """TODO"""
         table = self.offset_metadata.tables[self.build_offset_table_name()]
-        statement = select(table.c.value).filter(table.c.id.is_(True))
+        statement = select(table.columns["value"]).filter(table.columns["id"].is_(True))
         return SqlAlchemyDatabaseOperation(statement)
 
 

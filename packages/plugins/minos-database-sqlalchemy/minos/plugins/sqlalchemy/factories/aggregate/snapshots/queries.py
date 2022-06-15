@@ -81,7 +81,7 @@ class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
         self,
         tables: dict[str, Table],
         name: str,
-        condition: _Condition,
+        condition: Optional[_Condition] = None,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         transaction_uuids: Iterable[UUID, ...] = (NULL_UUID,),
@@ -117,7 +117,8 @@ class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
 
         statement = select(table)
 
-        statement = statement.filter(self._build_condition(self.condition, table))
+        if self.condition is not None:
+            statement = statement.filter(self._build_condition(self.condition, table))
 
         if self.ordering is not None:
             statement = statement.order_by(self._build_ordering(self.ordering, table))
@@ -136,20 +137,20 @@ class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
         parts = list()
         for index, transaction_uuid in enumerate(self.transaction_uuids, start=1):
             part = select(table, literal(index).label("transaction_index")).filter(
-                table.c.transaction_uuid == transaction_uuid
+                table.columns["transaction_uuid"] == transaction_uuid
             )
             parts.append(part)
 
         union = union_all(*parts).subquery()
         statement = (
             select(union, literal(self.name).label("name"))
-            .order_by(union.c.uuid, desc(union.c.transaction_index))
-            .distinct(union.c.uuid)
+            .order_by(union.columns["uuid"], desc(union.columns["transaction_index"]))
+            .distinct(union.columns["uuid"])
         )
 
         if self.exclude_deleted:
             subquery = statement.subquery()
-            statement = select(subquery).filter(subquery.c.deleted.is_(False))
+            statement = select(subquery).filter(subquery.columns["deleted"].is_(False))
 
         return statement.subquery()
 
