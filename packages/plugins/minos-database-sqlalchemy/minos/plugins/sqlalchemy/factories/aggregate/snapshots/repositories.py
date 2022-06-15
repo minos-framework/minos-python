@@ -19,6 +19,7 @@ from minos.common import (
     NULL_UUID,
     ModelType,
     classname,
+    datetime,
 )
 from minos.transactions import (
     TRANSACTION_CONTEXT_VAR,
@@ -58,5 +59,26 @@ class SqlAlchemySnapshotRepository(DatabaseSnapshotRepository):
 
         return self.database_operation_factory.get_table(name, transaction_uuids, exclude_deleted)
 
-    def _build_entry(self, _type: str, _transaction_uuid: UUID, _deleted: bool, **kwargs) -> SnapshotEntry:
-        return SnapshotEntry(name=_type, transaction_uuid=_transaction_uuid, deleted=_deleted, **kwargs)
+    def _build_entry(
+        self,
+        _type: str,
+        _transaction_uuid: UUID,
+        _deleted: bool,
+        uuid: UUID,
+        version: int,
+        created_at: datetime,
+        updated_at: datetime,
+        **data
+    ) -> SnapshotEntry:
+        if _deleted:
+            data = None
+
+        return SnapshotEntry(
+            name=_type,
+            transaction_uuid=_transaction_uuid,
+            uuid=uuid,
+            version=version,
+            created_at=created_at,
+            updated_at=updated_at,
+            data=data,
+        )

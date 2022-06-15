@@ -20,7 +20,9 @@ from uuid import (
 from minos.common import (
     NULL_UUID,
     AvroDataDecoder,
+    AvroDataEncoder,
     AvroSchemaDecoder,
+    AvroSchemaEncoder,
     MinosJsonBinaryProtocol,
     import_module,
 )
@@ -55,8 +57,6 @@ class SnapshotEntry:
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
         transaction_uuid: UUID = NULL_UUID,
-        deleted: bool = False,
-        **kwargs,
     ):
         if isinstance(schema, memoryview):
             schema = schema.tobytes()
@@ -65,13 +65,6 @@ class SnapshotEntry:
 
         if isinstance(data, str):
             data = json.loads(data)
-
-        if not deleted and kwargs:
-            if not data:
-                data = kwargs.copy()
-            else:
-                data = data.copy()
-                data |= kwargs
 
         self.uuid = uuid
         self.name = name
@@ -92,14 +85,19 @@ class SnapshotEntry:
         :param instance: The ``Entity`` instance.
         :return: A new ``SnapshotEntry`` instance.
         """
-        data = {k: v for k, v in instance.avro_data.items() if k not in {"uuid", "version", "created_at", "updated_at"}}
+
+        data = {
+            k: v
+            for k, v in AvroDataEncoder().build(instance).items()
+            if k not in {"uuid", "version", "created_at", "updated_at"}
+        }
 
         # noinspection PyTypeChecker
         return cls(
             uuid=instance.uuid,
             name=instance.classname,
             version=instance.version,
-            schema=instance.avro_schema,
+            schema=AvroSchemaEncoder().build(instance),
             data=data,
             created_at=instance.created_at,
             updated_at=instance.updated_at,
@@ -195,7 +193,7 @@ class SnapshotEntry:
             schema_decoder = AvroSchemaDecoder()
             type_ = schema_decoder.build(self.schema)
         else:
-            type_ = import_module(self.name)
+            type_ = self.type_
 
         # noinspection PyTypeChecker
         return type_
