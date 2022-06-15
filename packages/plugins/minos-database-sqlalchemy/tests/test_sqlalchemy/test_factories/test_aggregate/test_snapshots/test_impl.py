@@ -56,7 +56,7 @@ class TestSqlAlchemySnapshotDatabaseOperationFactory(SqlAlchemyTestCase):
     def test_build_submit(self):
         operation = self.factory.build_submit(
             uuid=uuid4(),
-            name="Car",
+            type_="Car",
             version=34243,
             schema={"type": "foo"},
             data={"owner": "bar"},
@@ -73,7 +73,7 @@ class TestSqlAlchemySnapshotDatabaseOperationFactory(SqlAlchemyTestCase):
 
     def test_build_query(self):
         operation = self.factory.build_query(
-            name="Car",
+            type_="Car",
             condition=Condition.EQUAL("owner", "bar"),
             ordering=Ordering.ASC("doors"),
             limit=2342,

@@ -128,7 +128,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
 
         operations = list()
         for table in self.entities_metadata.tables.values():
-            statement = delete(table).filter(table.columns["transaction_uuid"].in_(transaction_uuids))
+            statement = delete(table).filter(table.columns["_transaction_uuid"].in_(transaction_uuids))
             operation = SqlAlchemyDatabaseOperation(statement)
             operations.append(operation)
 
@@ -137,7 +137,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
     def build_submit(
         self,
         uuid: UUID,
-        name: str,
+        type_: str,
         version: int,
         schema: Optional[Union[list[dict[str, Any]], dict[str, Any]]],
         data: Optional[dict[str, Any]],
@@ -147,7 +147,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
     ) -> DatabaseOperation:
         """TODO"""
 
-        simplified_name = name.rsplit(".", 1)[-1]
+        simplified_name = type_.rsplit(".", 1)[-1]
         table = self.entities_metadata.tables[simplified_name]
 
         if data is not None:
@@ -156,7 +156,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
                 "version": version,
                 "created_at": created_at,
                 "updated_at": updated_at,
-                "transaction_uuid": transaction_uuid,
+                "_transaction_uuid": transaction_uuid,
             }
         else:
             values = {
@@ -164,8 +164,8 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
                 "version": version,
                 "created_at": created_at,
                 "updated_at": updated_at,
-                "transaction_uuid": transaction_uuid,
-                "deleted": True,
+                "_transaction_uuid": transaction_uuid,
+                "_deleted": True,
             }
 
         fn = partial(self._submit, table=table, values=values, uuid=uuid, transaction_uuid=transaction_uuid)
@@ -180,7 +180,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         except IntegrityError:
             statement = (
                 update(table)
-                .filter(table.columns["uuid"] == uuid, table.columns["transaction_uuid"] == transaction_uuid)
+                .filter(table.columns["uuid"] == uuid, table.columns["_transaction_uuid"] == transaction_uuid)
                 .values(values)
                 .returning(table.columns["created_at"], table.columns["updated_at"])
             )
@@ -188,7 +188,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
 
     def build_query(
         self,
-        name: str,
+        type_: str,
         condition: _Condition,
         ordering: Optional[_Ordering],
         limit: Optional[int],
@@ -198,7 +198,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         """TODO"""
 
         builder = SqlAlchemySnapshotQueryDatabaseOperationBuilder(
-            name=name,
+            type_=type_,
             condition=condition,
             ordering=ordering,
             limit=limit,
@@ -215,7 +215,7 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
     def get_table(self, name: str, transaction_uuids: tuple[UUID, ...], exclude_deleted: bool) -> Subquery:
         """TODO"""
         builder = SqlAlchemySnapshotQueryDatabaseOperationBuilder(
-            name=name,
+            type_=name,
             condition=Condition.TRUE,
             transaction_uuids=transaction_uuids,
             exclude_deleted=exclude_deleted,
