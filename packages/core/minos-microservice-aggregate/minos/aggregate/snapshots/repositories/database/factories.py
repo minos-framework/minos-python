@@ -50,7 +50,7 @@ class SnapshotDatabaseOperationFactory(DatabaseOperationFactory, ABC):
     def build_submit(
         self,
         uuid: UUID,
-        name: str,
+        type_: str,
         version: int,
         schema: Optional[Union[list[dict[str, Any]], dict[str, Any]]],
         data: Optional[dict[str, Any]],
@@ -61,7 +61,7 @@ class SnapshotDatabaseOperationFactory(DatabaseOperationFactory, ABC):
         """Build the insert database operation.
 
         :param uuid: The identifier of the entity.
-        :param name: The name of the entity.
+        :param type_: The name of the entity.
         :param version: The version of the entity.
         :param schema: The schema of the entity.
         :param data: The data of the entity.
@@ -74,7 +74,7 @@ class SnapshotDatabaseOperationFactory(DatabaseOperationFactory, ABC):
     @abstractmethod
     def build_query(
         self,
-        name: str,
+        type_: str,
         condition: _Condition,
         ordering: Optional[_Ordering],
         limit: Optional[int],
@@ -83,7 +83,7 @@ class SnapshotDatabaseOperationFactory(DatabaseOperationFactory, ABC):
     ) -> DatabaseOperation:
         """Build the query database operation.
 
-        :param name: Class name of the ``Entity``.
+        :param type_: Class name of the ``Entity``.
         :param condition: The condition that must be satisfied by the ``Entity`` instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.

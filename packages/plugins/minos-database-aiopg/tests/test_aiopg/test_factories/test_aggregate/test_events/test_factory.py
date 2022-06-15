@@ -39,7 +39,7 @@ class TestAiopgDeltaDatabaseOperationFactory(unittest.TestCase):
             transaction_uuids=[uuid4(), uuid4()],
             uuid=uuid4(),
             action=Action.CREATE,
-            name="Foo",
+            type_="Foo",
             version=3,
             data=bytes(),
             created_at=current_datetime(),
@@ -51,7 +51,7 @@ class TestAiopgDeltaDatabaseOperationFactory(unittest.TestCase):
     def test_build_query(self):
         operation = self.factory.build_query(
             uuid=uuid4(),
-            name="Foo",
+            type_="Foo",
             version=423453,
             version_lt=234,
             version_gt=342,

@@ -77,18 +77,18 @@ class InMemorySnapshotRepository(SnapshotRepository):
 
     async def _find_entries(
         self,
-        name: str,
+        type_: str,
         condition: _Condition,
         ordering: Optional[_Ordering],
         limit: Optional[int],
         exclude_deleted: bool,
         **kwargs,
     ) -> AsyncIterator[SnapshotEntry]:
-        uuids = {v.uuid async for v in self._delta_repository.select(name=name)}
+        uuids = {v.uuid async for v in self._delta_repository.select(type_=type_)}
 
         entries = list()
         for uuid in uuids:
-            entry = await self._get(name, uuid, **kwargs)
+            entry = await self._get(type_, uuid, **kwargs)
 
             try:
                 instance = entry.build()
@@ -131,10 +131,10 @@ class InMemorySnapshotRepository(SnapshotRepository):
 
     # noinspection PyMethodOverriding
     async def _get(
-        self, name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs
+        self, type_: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs
     ) -> SnapshotEntry:
         transaction_uuids = await self._get_transaction_uuids(transaction)
-        entries = await self._get_delta_entries(name, uuid, transaction_uuids)
+        entries = await self._get_delta_entries(type_, uuid, transaction_uuids)
         return self._build_instance(entries, **kwargs)
 
     async def _get_transaction_uuids(self, transaction: Optional[TransactionEntry]) -> tuple[UUID, ...]:
@@ -151,10 +151,10 @@ class InMemorySnapshotRepository(SnapshotRepository):
 
         return transaction_uuids
 
-    async def _get_delta_entries(self, name: str, uuid: UUID, transaction_uuids: tuple[UUID, ...]) -> list[DeltaEntry]:
+    async def _get_delta_entries(self, type_: str, uuid: UUID, transaction_uuids: tuple[UUID, ...]) -> list[DeltaEntry]:
         entries = [
             v
-            async for v in self._delta_repository.select(name=name, uuid=uuid)
+            async for v in self._delta_repository.select(type_=type_, uuid=uuid)
             if v.transaction_uuid in transaction_uuids
         ]
 

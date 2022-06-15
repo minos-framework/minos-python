@@ -185,7 +185,7 @@ class DeltaRepository(ABC, TransactionalMixin):
     async def select(
         self,
         uuid: Optional[UUID] = None,
-        name: Optional[Union[str, type[Entity]]] = None,
+        type_: Optional[Union[str, type[Entity]]] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
         version_gt: Optional[int] = None,
@@ -204,7 +204,7 @@ class DeltaRepository(ABC, TransactionalMixin):
         """Perform a selection query of entries stored in to the repository.
 
         :param uuid: The identifier must be equal to the given value.
-        :param name: The classname must be equal to the given value.
+        :param type_: The classname must be equal to the given value.
         :param version: The version must be equal to the given value.
         :param version_lt: The version must be lower than the given value.
         :param version_gt: The version must be greater than the given value.
@@ -220,11 +220,11 @@ class DeltaRepository(ABC, TransactionalMixin):
         :param transaction_uuid_in: The destination transaction identifier must be equal to one of the given values.
         :return: A list of entries.
         """
-        if isinstance(name, type):
-            name = classname(name)
+        if isinstance(type_, type):
+            type_ = classname(type_)
         generator = self._select(
             uuid=uuid,
-            name=name,
+            type_=type_,
             version=version,
             version_lt=version_lt,
             version_gt=version_gt,

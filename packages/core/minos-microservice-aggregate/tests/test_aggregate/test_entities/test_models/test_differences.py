@@ -47,7 +47,7 @@ class TestEntityDifferences(AggregateTestCase):
     def test_diff(self):
         expected = Delta(
             uuid=self.uuid,
-            name=Car.classname,
+            type_=Car.classname,
             version=3,
             action=Action.UPDATE,
             created_at=self.final_datetime,
@@ -59,7 +59,7 @@ class TestEntityDifferences(AggregateTestCase):
     def test_apply_diff(self):
         diff = Delta(
             uuid=self.uuid,
-            name=Car.classname,
+            type_=Car.classname,
             version=3,
             action=Action.UPDATE,
             created_at=self.final_datetime,
@@ -71,7 +71,7 @@ class TestEntityDifferences(AggregateTestCase):
     def test_apply_diff_raises(self):
         diff = Delta(
             uuid=self.uuid_another,
-            name=Car.classname,
+            type_=Car.classname,
             version=3,
             action=Action.UPDATE,
             created_at=current_datetime(),

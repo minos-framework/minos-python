@@ -97,7 +97,7 @@ class TestDeltaRepository(AggregateTestCase):
         mock = AsyncMock(side_effect=lambda x: x)
         self.delta_repository.submit = mock
 
-        entry = DeltaEntry(uuid4(), "example.Car", 0, bytes())
+        entry = DeltaEntry(uuid4(), Car, 0, bytes())
 
         self.assertEqual(entry, await self.delta_repository.create(entry))
 
@@ -109,7 +109,7 @@ class TestDeltaRepository(AggregateTestCase):
         mock = AsyncMock(side_effect=lambda x: x)
         self.delta_repository.submit = mock
 
-        entry = DeltaEntry(uuid4(), "example.Car", 0, bytes())
+        entry = DeltaEntry(uuid4(), Car, 0, bytes())
 
         self.assertEqual(entry, await self.delta_repository.update(entry))
 
@@ -121,7 +121,7 @@ class TestDeltaRepository(AggregateTestCase):
         mock = AsyncMock(side_effect=lambda x: x)
         self.delta_repository.submit = mock
 
-        entry = DeltaEntry(uuid4(), "example.Car", 0, bytes())
+        entry = DeltaEntry(uuid4(), Car, 0, bytes())
 
         self.assertEqual(entry, await self.delta_repository.delete(entry))
 
@@ -146,7 +146,7 @@ class TestDeltaRepository(AggregateTestCase):
         uuid = uuid4()
         delta = Delta(
             uuid=uuid,
-            name="example.Car",
+            type_=classname(Car),
             version=2,
             action=Action.UPDATE,
             created_at=current_datetime(),
@@ -160,7 +160,7 @@ class TestDeltaRepository(AggregateTestCase):
 
         self.assertIsInstance(observed, DeltaEntry)
         self.assertEqual(uuid, observed.uuid)
-        self.assertEqual("example.Car", observed.name)
+        self.assertEqual(Car, observed.type_)
         self.assertEqual(56, observed.version)
         self.assertEqual(field_diff_container, FieldDiffContainer.from_avro_bytes(observed.data))
         self.assertEqual(12, observed.id)
@@ -188,7 +188,7 @@ class TestDeltaRepository(AggregateTestCase):
         uuid = uuid4()
         delta = Delta(
             uuid=uuid,
-            name="example.Car",
+            type_=classname(Car),
             version=2,
             action=Action.UPDATE,
             created_at=current_datetime(),
@@ -202,7 +202,7 @@ class TestDeltaRepository(AggregateTestCase):
 
         self.assertIsInstance(observed, DeltaEntry)
         self.assertEqual(uuid, observed.uuid)
-        self.assertEqual("example.Car", observed.name)
+        self.assertEqual(Car, observed.type_)
         self.assertEqual(56, observed.version)
         self.assertEqual(field_diff_container, FieldDiffContainer.from_avro_bytes(observed.data))
         self.assertEqual(12, observed.id)
@@ -211,7 +211,7 @@ class TestDeltaRepository(AggregateTestCase):
         self.assertEqual(transaction.uuid, observed.transaction_uuid)
 
     async def test_submit_raises_missing_action(self):
-        entry = DeltaEntry(uuid4(), "example.Car", 0, bytes())
+        entry = DeltaEntry(uuid4(), Car, 0, bytes())
         with self.assertRaises(DeltaRepositoryException):
             await self.delta_repository.submit(entry)
 
@@ -220,7 +220,7 @@ class TestDeltaRepository(AggregateTestCase):
 
         self.delta_repository.validate = validate_mock
 
-        entry = DeltaEntry(uuid4(), "example.Car", 0, bytes(), action=Action.CREATE)
+        entry = DeltaEntry(uuid4(), Car, 0, bytes(), action=Action.CREATE)
         with self.assertRaises(DeltaRepositoryConflictException):
             await self.delta_repository.submit(entry)
 
@@ -254,7 +254,7 @@ class TestDeltaRepository(AggregateTestCase):
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
-        entry = DeltaEntry(uuid, "example.Car")
+        entry = DeltaEntry(uuid, Car)
 
         self.assertTrue(await self.delta_repository.validate(entry))
 
@@ -288,7 +288,7 @@ class TestDeltaRepository(AggregateTestCase):
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
-        entry = DeltaEntry(uuid, "example.Car")
+        entry = DeltaEntry(uuid, Car)
         self.assertTrue(await self.delta_repository.validate(entry, transaction_uuid_ne=transaction_uuid))
 
         self.assertEqual(
@@ -312,8 +312,8 @@ class TestDeltaRepository(AggregateTestCase):
         transaction_uuid = uuid4()
 
         deltas = [
-            DeltaEntry(uuid, "example.Car", 1),
-            DeltaEntry(uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
+            DeltaEntry(uuid, Car, 1),
+            DeltaEntry(uuid, Car, 2, transaction_uuid=transaction_uuid),
         ]
         transactions = [TransactionEntry(transaction_uuid, TransactionStatus.RESERVED)]
 
@@ -323,7 +323,7 @@ class TestDeltaRepository(AggregateTestCase):
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
-        entry = DeltaEntry(uuid, "example.Car")
+        entry = DeltaEntry(uuid, Car)
 
         self.assertFalse(await self.delta_repository.validate(entry))
 
@@ -359,14 +359,14 @@ class TestDeltaRepository(AggregateTestCase):
         uuid = uuid4()
 
         transaction_uuid = uuid4()
-        iterable = self.delta_repository.select(uuid=uuid, name=Car, id_gt=56, transaction_uuid=transaction_uuid)
+        iterable = self.delta_repository.select(uuid=uuid, type_=Car, id_gt=56, transaction_uuid=transaction_uuid)
         observed = [a async for a in iterable]
         self.assertEqual(list(range(5)), observed)
 
         self.assertEqual(1, mock.call_count)
         args = call(
             uuid=uuid,
-            name=classname(Car),
+            type_=classname(Car),
             version=None,
             version_lt=None,
             version_gt=None,
@@ -398,14 +398,14 @@ class TestDeltaRepository(AggregateTestCase):
         agg_uuid = uuid4()
 
         select_delta_1 = [
-            DeltaEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            DeltaEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
-            DeltaEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
+            DeltaEntry(agg_uuid, Car, 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            DeltaEntry(agg_uuid, Car, 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
+            DeltaEntry(agg_uuid, Car, 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
         ]
 
         select_delta_2 = [
-            DeltaEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            DeltaEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
+            DeltaEntry(agg_uuid, Car, 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            DeltaEntry(agg_uuid, Car, 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
         ]
 
         select_delta_mock = MagicMock(
@@ -427,9 +427,9 @@ class TestDeltaRepository(AggregateTestCase):
         agg_uuid = uuid4()
 
         async def _fn(*args, **kwargs):
-            yield DeltaEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid)
-            yield DeltaEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid)
-            yield DeltaEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid)
+            yield DeltaEntry(agg_uuid, Car, 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid)
+            yield DeltaEntry(agg_uuid, Car, 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid)
+            yield DeltaEntry(agg_uuid, Car, 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid)
 
         select_mock = MagicMock(side_effect=_fn)
         submit_mock = AsyncMock()
@@ -442,9 +442,9 @@ class TestDeltaRepository(AggregateTestCase):
 
         self.assertEqual(
             [
-                call(DeltaEntry(agg_uuid, "c.Car", 1, bytes(), action=Action.CREATE), transaction_uuid_ne=uuid),
-                call(DeltaEntry(agg_uuid, "c.Car", 3, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
-                call(DeltaEntry(agg_uuid, "c.Car", 2, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
+                call(DeltaEntry(agg_uuid, Car, 1, bytes(), action=Action.CREATE), transaction_uuid_ne=uuid),
+                call(DeltaEntry(agg_uuid, Car, 3, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
+                call(DeltaEntry(agg_uuid, Car, 2, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
             ],
             submit_mock.call_args_list,
         )

@@ -44,7 +44,7 @@ class MockedSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
     def build_submit(
         self,
         uuid: UUID,
-        name: str,
+        type_: str,
         version: int,
         schema: Optional[Union[list[dict[str, Any]], dict[str, Any]]],
         data: Optional[dict[str, Any]],
@@ -57,7 +57,7 @@ class MockedSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
 
     def build_query(
         self,
-        name: str,
+        type_: str,
         condition: _Condition,
         ordering: Optional[_Ordering],
         limit: Optional[int],

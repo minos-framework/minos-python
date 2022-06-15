@@ -21,6 +21,7 @@ from minos.aggregate.testing import (
 from minos.common import (
     DatabaseClient,
     IntegrityException,
+    classname,
     current_datetime,
 )
 from tests.utils import (
@@ -29,7 +30,7 @@ from tests.utils import (
 )
 
 
-class TestDatabaseDeltaRepositorySubmit(AggregateTestCase, DeltaRepositoryTestCase):
+class TestDatabaseDeltaRepository(AggregateTestCase, DeltaRepositoryTestCase):
     __test__ = True
 
     def build_delta_repository(self) -> DeltaRepository:
@@ -40,7 +41,7 @@ class TestDatabaseDeltaRepositorySubmit(AggregateTestCase, DeltaRepositoryTestCa
         fetch_one = [
             (1, self.uuid, 1, current_datetime()),
         ]
-        fetch_all = [(self.uuid, "example.Car", 1, bytes(), 1, Action.CREATE, current_datetime())]
+        fetch_all = [(self.uuid, classname(self.Car), 1, bytes(), 1, Action.CREATE, current_datetime())]
         with patch.object(DatabaseClient, "fetch_one", side_effect=fetch_one):
             with patch.object(DatabaseClient, "fetch_all", return_value=FakeAsyncIterator(fetch_all)):
                 await super().test_generate_uuid()
@@ -49,7 +50,7 @@ class TestDatabaseDeltaRepositorySubmit(AggregateTestCase, DeltaRepositoryTestCa
         fetch_one = [
             (1, self.uuid, 1, current_datetime()),
         ]
-        fetch_all = [(self.uuid, "example.Car", 1, bytes(), 1, Action.CREATE, current_datetime())]
+        fetch_all = [(self.uuid, classname(self.Car), 1, bytes(), 1, Action.CREATE, current_datetime())]
         with patch.object(DatabaseClient, "fetch_one", side_effect=fetch_one):
             with patch.object(DatabaseClient, "fetch_all", return_value=FakeAsyncIterator(fetch_all)):
                 await super().test_submit()
@@ -58,7 +59,7 @@ class TestDatabaseDeltaRepositorySubmit(AggregateTestCase, DeltaRepositoryTestCa
         fetch_one = [
             (1, self.uuid, 3, current_datetime()),
         ]
-        fetch_all = [(self.uuid, "example.Car", 3, bytes(), 1, Action.CREATE, current_datetime())]
+        fetch_all = [(self.uuid, classname(self.Car), 3, bytes(), 1, Action.CREATE, current_datetime())]
         with patch.object(DatabaseClient, "fetch_one", side_effect=fetch_one):
             with patch.object(DatabaseClient, "fetch_all", return_value=FakeAsyncIterator(fetch_all)):
                 await super().test_submit_with_version()
@@ -68,7 +69,7 @@ class TestDatabaseDeltaRepositorySubmit(AggregateTestCase, DeltaRepositoryTestCa
         fetch_one = [
             (1, self.uuid, 1, created_at),
         ]
-        fetch_all = [(self.uuid, "example.Car", 1, bytes(), 1, Action.CREATE, created_at)]
+        fetch_all = [(self.uuid, classname(self.Car), 1, bytes(), 1, Action.CREATE, created_at)]
         with patch.object(DatabaseClient, "fetch_one", side_effect=fetch_one):
             with patch.object(DatabaseClient, "fetch_all", return_value=FakeAsyncIterator(fetch_all)):
                 await super().test_submit_with_created_at()

@@ -41,7 +41,7 @@ class DeltaDatabaseOperationFactory(DatabaseOperationFactory, ABC):
         transaction_uuids: Iterable[UUID],
         uuid: UUID,
         action: Action,
-        name: str,
+        type_: str,
         version: int,
         data: bytes,
         created_at: datetime,
@@ -54,7 +54,7 @@ class DeltaDatabaseOperationFactory(DatabaseOperationFactory, ABC):
         :param transaction_uuids: The sequence of nested transaction in on top of the current delta's transaction.
         :param uuid: The identifier of the entity.
         :param action: The action of the delta.
-        :param name: The name of the entity.
+        :param type_: The name of the entity.
         :param version: The version of the entity
         :param data: The data of the delta.
         :param created_at: The creation datetime.
@@ -69,7 +69,7 @@ class DeltaDatabaseOperationFactory(DatabaseOperationFactory, ABC):
     def build_query(
         self,
         uuid: Optional[UUID] = None,
-        name: Optional[str] = None,
+        type_: Optional[str] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
         version_gt: Optional[int] = None,
@@ -88,7 +88,7 @@ class DeltaDatabaseOperationFactory(DatabaseOperationFactory, ABC):
         """Build the database operation to select rows.
 
         :param uuid: The identifier must be equal to the given value.
-        :param name: The classname must be equal to the given value.
+        :param type_: The classname must be equal to the given value.
         :param version: The version must be equal to the given value.
         :param version_lt: The version must be lower than the given value.
         :param version_gt: The version must be greater than the given value.

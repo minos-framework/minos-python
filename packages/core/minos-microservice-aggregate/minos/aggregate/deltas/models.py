@@ -47,7 +47,7 @@ class Delta(DeclarativeModel):
     """Delta class."""
 
     uuid: UUID
-    name: str
+    type_: str
     version: int
     action: Action
     created_at: datetime
@@ -60,7 +60,7 @@ class Delta(DeclarativeModel):
 
         :return: An string value.
         """
-        return self.name.rsplit(".", 1)[-1]
+        return self.type_.rsplit(".", 1)[-1]
 
     def __lt__(self, other: Any) -> bool:
         return isinstance(other, type(self)) and (
@@ -157,7 +157,7 @@ class Delta(DeclarativeModel):
 
         return cls(
             uuid=new.uuid,
-            name=new.classname,
+            type_=new.classname,
             version=new.version,
             action=action,
             created_at=new.updated_at,
@@ -181,7 +181,7 @@ class Delta(DeclarativeModel):
 
         return cls(
             uuid=instance.uuid,
-            name=instance.classname,
+            type_=instance.classname,
             version=instance.version,
             action=action,
             created_at=instance.updated_at,
@@ -196,7 +196,7 @@ class Delta(DeclarativeModel):
         return [
             type(self)(
                 uuid=self.uuid,
-                name=self.name,
+                type_=self.type_,
                 version=self.version,
                 action=self.action,
                 created_at=self.created_at,

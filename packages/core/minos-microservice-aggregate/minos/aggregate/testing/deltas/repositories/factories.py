@@ -36,7 +36,7 @@ class MockedDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
         transaction_uuids: tuple[UUID],
         uuid: UUID,
         action: Action,
-        name: str,
+        type_: str,
         version: int,
         data: bytes,
         created_at: datetime,
@@ -50,7 +50,7 @@ class MockedDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
     def build_query(
         self,
         uuid: Optional[UUID] = None,
-        name: Optional[str] = None,
+        type_: Optional[str] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
         version_gt: Optional[int] = None,

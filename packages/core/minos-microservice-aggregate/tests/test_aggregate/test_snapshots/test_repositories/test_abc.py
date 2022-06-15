@@ -81,7 +81,7 @@ class TestSnapshotRepository(AggregateTestCase):
 
         self.assertEqual(1, self.find_mock.call_count)
         args = call(
-            name=classname(Car),
+            type_=classname(Car),
             condition=_EqualCondition("uuid", uuid),
             ordering=None,
             limit=None,
@@ -115,7 +115,7 @@ class TestSnapshotRepository(AggregateTestCase):
         self.assertEqual(
             [
                 call(
-                    name=classname(Car),
+                    type_=classname(Car),
                     condition=Condition.TRUE,
                     ordering=Ordering.ASC("name"),
                     limit=10,
@@ -140,7 +140,7 @@ class TestSnapshotRepository(AggregateTestCase):
 
         self.assertEqual(1, self.find_mock.call_count)
         args = call(
-            name=classname(Car),
+            type_=classname(Car),
             condition=Condition.TRUE,
             ordering=Ordering.ASC("name"),
             limit=10,

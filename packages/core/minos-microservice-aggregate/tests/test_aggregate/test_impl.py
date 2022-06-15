@@ -22,6 +22,7 @@ from minos.aggregate import (
 from minos.common import (
     Config,
     NotProvidedException,
+    classname,
     current_datetime,
 )
 from minos.networks import (
@@ -98,7 +99,7 @@ class TestAggregate(AggregateTestCase):
     async def test_publish_domain_event_create(self):
         delta = Delta(
             uuid=uuid4(),
-            name=Car.classname,
+            type_=classname(Car),
             version=1,
             action=Action.CREATE,
             created_at=current_datetime(),
@@ -122,7 +123,7 @@ class TestAggregate(AggregateTestCase):
     async def test_publish_domain_event_update(self):
         delta = Delta(
             uuid=uuid4(),
-            name=Car.classname,
+            type_=classname(Car),
             version=2,
             action=Action.UPDATE,
             created_at=current_datetime(),
@@ -148,7 +149,7 @@ class TestAggregate(AggregateTestCase):
         self.assertEqual(
             Delta(
                 uuid=delta.uuid,
-                name=Car.classname,
+                type_=classname(Car),
                 version=2,
                 action=Action.UPDATE,
                 created_at=delta.created_at,
@@ -162,7 +163,7 @@ class TestAggregate(AggregateTestCase):
         self.assertEqual(
             Delta(
                 uuid=delta.uuid,
-                name=Car.classname,
+                type_=classname(Car),
                 version=2,
                 action=Action.UPDATE,
                 created_at=delta.created_at,
@@ -174,7 +175,7 @@ class TestAggregate(AggregateTestCase):
     async def test_publish_domain_event_delete(self):
         delta = Delta(
             uuid=uuid4(),
-            name=Car.classname,
+            type_=classname(Car),
             version=2,
             action=Action.DELETE,
             created_at=current_datetime(),

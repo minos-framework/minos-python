@@ -18,6 +18,7 @@ from uuid import (
 
 from minos.common import (
     NULL_UUID,
+    classname,
     import_module,
 )
 from minos.transactions import (
@@ -45,7 +46,7 @@ class DeltaEntry:
 
     __slots__ = (
         "uuid",
-        "name",
+        "type_",
         "version",
         "data",
         "id",
@@ -58,7 +59,7 @@ class DeltaEntry:
     def __init__(
         self,
         uuid: UUID,
-        name: str,
+        type_: Union[str, type[Entity]],
         version: Optional[int] = None,
         data: Union[bytes, memoryview] = bytes(),
         id: Optional[int] = None,
@@ -66,13 +67,15 @@ class DeltaEntry:
         created_at: Optional[datetime] = None,
         transaction_uuid: UUID = NULL_UUID,
     ):
+        if isinstance(type_, str):
+            type_ = import_module(type_)
         if isinstance(data, memoryview):
             data = data.tobytes()
         if action is not None and isinstance(action, str):
             action = Action.value_of(action)
 
         self.uuid = uuid
-        self.name = name
+        self.type_ = type_
         self.version = version
         self.data = data
 
@@ -96,7 +99,7 @@ class DeltaEntry:
         # noinspection PyTypeChecker
         return cls(
             uuid=delta.uuid,
-            name=delta.name,
+            type_=delta.type_,
             data=delta.fields_diff.avro_bytes,
             action=delta.action,
             **kwargs,
@@ -119,7 +122,7 @@ class DeltaEntry:
         """
         return {
             "uuid": self.uuid,
-            "name": self.name,
+            "type_": classname(self.type_),
             "version": self.version,
             "data": self.data,
             "id": self.id,
@@ -129,15 +132,6 @@ class DeltaEntry:
         }
 
     @property
-    def type_(self) -> type[Entity]:
-        """Load the concrete ``Entity`` class.
-
-        :return: A ``Type`` object.
-        """
-        # noinspection PyTypeChecker
-        return import_module(self.name)
-
-    @property
     def delta(self) -> Delta:
         """Get the stored ``Delta`` instance.
 
@@ -145,7 +139,7 @@ class DeltaEntry:
         """
         return Delta(
             self.uuid,
-            self.name,
+            classname(self.type_),
             self.version,
             self.action,
             self.created_at,
@@ -172,7 +166,7 @@ class DeltaEntry:
     def __iter__(self) -> Iterable:
         yield from (
             self.uuid,
-            self.name,
+            self.type_,
             self.version,
             self.data,
             self.id,
@@ -184,7 +178,7 @@ class DeltaEntry:
     def __repr__(self):
         return (
             f"{type(self).__name__}("
-            f"uuid={self.uuid!r}, name={self.name!r}, "
+            f"uuid={self.uuid!r}, name={self.type_!r}, "
             f"version={self.version!r}, len(data)={len(self.data)!r}, "
             f"id={self.id!r}, action={self.action!r}, created_at={self.created_at!r}, "
             f"transaction_uuid={self.transaction_uuid!r})"

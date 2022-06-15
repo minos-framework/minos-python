@@ -16,6 +16,7 @@ from minos.aggregate import (
     Ref,
 )
 from minos.common import (
+    classname,
     current_datetime,
 )
 from tests.utils import (
@@ -38,7 +39,7 @@ class TestDelta(AggregateTestCase):
 
         self.diff = Delta(
             uuid=self.uuid,
-            name=Car.classname,
+            type_=classname(Car),
             version=1,
             action=Action.CREATE,
             created_at=self.initial.updated_at,
@@ -75,7 +76,7 @@ class TestDelta(AggregateTestCase):
     def test_from_entity_deleted(self):
         expected = Delta(
             uuid=self.uuid,
-            name=Car.classname,
+            type_=Car.classname,
             version=1,
             action=Action.DELETE,
             created_at=self.initial.updated_at,
@@ -87,7 +88,7 @@ class TestDelta(AggregateTestCase):
     def test_from_difference(self):
         expected = Delta(
             uuid=self.uuid,
-            name=Car.classname,
+            type_=Car.classname,
             version=3,
             action=Action.UPDATE,
             created_at=self.final.updated_at,
@@ -110,7 +111,7 @@ class TestDelta(AggregateTestCase):
     def test_decompose(self):
         aggr = Delta(
             uuid=self.uuid,
-            name=Car.classname,
+            type_=Car.classname,
             version=3,
             action=Action.UPDATE,
             created_at=current_datetime(),
@@ -120,7 +121,7 @@ class TestDelta(AggregateTestCase):
         expected = [
             Delta(
                 uuid=self.uuid,
-                name=Car.classname,
+                type_=Car.classname,
                 version=3,
                 action=Action.UPDATE,
                 created_at=aggr.created_at,
@@ -128,7 +129,7 @@ class TestDelta(AggregateTestCase):
             ),
             Delta(
                 uuid=self.uuid,
-                name=Car.classname,
+                type_=Car.classname,
                 version=3,
                 action=Action.UPDATE,
                 created_at=aggr.created_at,
@@ -144,7 +145,7 @@ class TestDeltaAccessors(unittest.TestCase):
     def setUp(self) -> None:
         self.diff = Delta(
             uuid=uuid4(),
-            name="src.domain.Car",
+            type_=classname(Car),
             version=1,
             action=Action.CREATE,
             created_at=current_datetime(),

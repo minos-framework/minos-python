@@ -22,6 +22,7 @@ from minos.common import (
     AvroDataDecoder,
     AvroSchemaDecoder,
     MinosJsonBinaryProtocol,
+    classname,
     import_module,
 )
 
@@ -48,7 +49,7 @@ class SnapshotEntry:
     def __init__(
         self,
         uuid: UUID,
-        name: str,
+        type_: Union[str, type[Entity]],
         version: int,
         schema: Optional[Union[list[dict[str, Any]], dict[str, Any]], bytes, memoryview] = None,
         data: Optional[Union[dict[str, Any], str]] = None,
@@ -58,6 +59,8 @@ class SnapshotEntry:
         deleted: bool = False,
         **kwargs,
     ):
+        if isinstance(type_, str):
+            type_ = import_module(type_)
         if isinstance(schema, memoryview):
             schema = schema.tobytes()
         if isinstance(schema, bytes):
@@ -74,7 +77,7 @@ class SnapshotEntry:
                 data |= kwargs
 
         self.uuid = uuid
-        self.name = name
+        self.type_ = type_
         self.version = version
 
         self.schema = schema
@@ -97,7 +100,7 @@ class SnapshotEntry:
         # noinspection PyTypeChecker
         return cls(
             uuid=instance.uuid,
-            name=instance.classname,
+            type_=instance.classname,
             version=instance.version,
             schema=instance.avro_schema,
             data=data,
@@ -115,7 +118,7 @@ class SnapshotEntry:
         """
         return cls(
             uuid=entry.uuid,
-            name=entry.name,
+            type_=entry.type_,
             version=entry.version,
             created_at=entry.created_at,
             updated_at=entry.created_at,
@@ -129,7 +132,7 @@ class SnapshotEntry:
         """
         return {
             "uuid": self.uuid,
-            "name": self.name,
+            "type_": classname(self.type_),
             "version": self.version,
             "schema": self.schema,
             "data": self.data,
@@ -195,19 +198,10 @@ class SnapshotEntry:
             schema_decoder = AvroSchemaDecoder()
             type_ = schema_decoder.build(self.schema)
         else:
-            type_ = import_module(self.name)
+            type_ = self.type_
 
         # noinspection PyTypeChecker
         return type_
-
-    @property
-    def type_(self) -> type[Entity]:
-        """Load the concrete ``Entity`` class.
-
-        :return: A ``Type`` object.
-        """
-        # noinspection PyTypeChecker
-        return import_module(self.name)
 
     def __eq__(self, other: SnapshotEntry) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
@@ -215,7 +209,7 @@ class SnapshotEntry:
     def __iter__(self) -> Iterable:
         # noinspection PyRedundantParentheses
         yield from (
-            self.name,
+            self.type_,
             self.version,
             self.schema,
             self.data,
@@ -227,7 +221,7 @@ class SnapshotEntry:
     def __repr__(self):
         name = type(self).__name__
         return (
-            f"{name}(uuid={self.uuid!r}, name={self.name!r}, "
+            f"{name}(uuid={self.uuid!r}, type_={self.type_!r}, "
             f"version={self.version!r}, schema={self.schema!r}, data={self.data!r}, "
             f"created_at={self.created_at!r}, updated_at={self.updated_at!r}, "
             f"transaction_uuid={self.transaction_uuid!r})"

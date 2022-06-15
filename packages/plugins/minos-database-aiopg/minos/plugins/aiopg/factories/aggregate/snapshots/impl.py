@@ -113,7 +113,7 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
     def build_submit(
         self,
         uuid: UUID,
-        name: str,
+        type_: str,
         version: int,
         schema: Optional[Union[list[dict[str, Any]], dict[str, Any]]],
         data: Optional[dict[str, Any]],
@@ -124,7 +124,7 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         """Build the insert database operation.
 
         :param uuid: The identifier of the entity.
-        :param name: The name of the entity.
+        :param type_: The name of the entity.
         :param version: The version of the entity.
         :param schema: The schema of the entity.
         :param data: The data of the entity.
@@ -160,7 +160,7 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
             """.strip(),
             {
                 "uuid": uuid,
-                "name": name,
+                "name": type_,
                 "version": version,
                 "schema": schema,
                 "data": data,
@@ -172,7 +172,7 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
 
     def build_query(
         self,
-        name: str,
+        type_: str,
         condition: _Condition,
         ordering: Optional[_Ordering],
         limit: Optional[int],
@@ -181,7 +181,7 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
     ) -> DatabaseOperation:
         """Build the query database operation.
 
-        :param name: Class name of the ``Entity``.
+        :param type_: Class name of the ``Entity``.
         :param condition: The condition that must be satisfied by the ``Entity`` instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
@@ -195,7 +195,7 @@ class AiopgSnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
         :return: A ``DatabaseOperation`` instance.
         """
         builder = AiopgSnapshotQueryDatabaseOperationBuilder(
-            name=name,
+            name=type_,
             condition=condition,
             ordering=ordering,
             limit=limit,

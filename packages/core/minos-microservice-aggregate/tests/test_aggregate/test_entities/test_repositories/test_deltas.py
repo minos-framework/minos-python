@@ -29,7 +29,7 @@ class TestEntityRepositoryDelta(AggregateTestCase):
         self.assertEqual(
             Delta(
                 uuid=car.uuid,
-                name=Car.classname,
+                type_=Car.classname,
                 version=1,
                 action=Action.CREATE,
                 created_at=car.created_at,
@@ -52,7 +52,7 @@ class TestEntityRepositoryDelta(AggregateTestCase):
         self.assertEqual(
             Delta(
                 uuid=car.uuid,
-                name=Car.classname,
+                type_=Car.classname,
                 version=2,
                 action=Action.UPDATE,
                 created_at=car.updated_at,
@@ -69,7 +69,7 @@ class TestEntityRepositoryDelta(AggregateTestCase):
         self.assertEqual(
             Delta(
                 uuid=car.uuid,
-                name=Car.classname,
+                type_=Car.classname,
                 version=2,
                 action=Action.DELETE,
                 created_at=car.updated_at,

@@ -57,14 +57,14 @@ class SnapshotRepository(ABC, SetupMixin):
 
     async def get(
         self,
-        name: Union[str, type[Entity], ModelType],
+        type_: Union[str, type[Entity], ModelType],
         uuid: UUID,
         transaction: Optional[TransactionEntry] = None,
         **kwargs,
     ) -> Entity:
         """Get a ``Entity`` instance from its identifier.
 
-        :param name: Class name of the ``Entity``.
+        :param type_: Class name of the ``Entity``.
         :param uuid: Identifier of the ``Entity``.
         :param transaction: The transaction within the operation is performed. If not any value is provided, then the
             transaction is extracted from the context var. If not any transaction is being scoped then the query is
@@ -72,14 +72,14 @@ class SnapshotRepository(ABC, SetupMixin):
         :param kwargs: Additional named arguments.
         :return: The ``Entity`` instance.
         """
-        snapshot_entry = await self.get_entry(name, uuid, transaction=transaction, **kwargs)
+        snapshot_entry = await self.get_entry(type_, uuid, transaction=transaction, **kwargs)
         instance = snapshot_entry.build(**kwargs)
         return instance
 
-    async def get_entry(self, name: Union[str, type[Entity], ModelType], uuid: UUID, **kwargs) -> SnapshotEntry:
+    async def get_entry(self, type_: Union[str, type[Entity], ModelType], uuid: UUID, **kwargs) -> SnapshotEntry:
         """Get a ``SnapshotEntry`` from its identifier.
 
-        :param name: Class name of the ``Entity``.
+        :param type_: Class name of the ``Entity``.
         :param uuid: Identifier of the ``Entity``.
         :param kwargs: Additional named arguments.
         :return: The ``SnapshotEntry`` instance.
@@ -87,14 +87,14 @@ class SnapshotRepository(ABC, SetupMixin):
 
         try:
             return await self.find_entries(
-                name, _EqualCondition("uuid", uuid), **kwargs | {"exclude_deleted": False}
+                type_, _EqualCondition("uuid", uuid), **kwargs | {"exclude_deleted": False}
             ).__anext__()
         except StopAsyncIteration:
             raise NotFoundException(f"The instance could not be found: {uuid!s}")
 
     def get_all(
         self,
-        name: Union[str, type[Entity], ModelType],
+        type_: Union[str, type[Entity], ModelType],
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
@@ -103,7 +103,7 @@ class SnapshotRepository(ABC, SetupMixin):
     ) -> AsyncIterator[Entity]:
         """Get all ``Entity`` instances.
 
-        :param name: Class name of the ``Entity``.
+        :param type_: Class name of the ``Entity``.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
@@ -117,7 +117,7 @@ class SnapshotRepository(ABC, SetupMixin):
         :return: An asynchronous iterator that containing the ``Entity`` instances.
         """
         return self.find(
-            name,
+            type_,
             _TRUE_CONDITION,
             ordering=ordering,
             limit=limit,
@@ -128,14 +128,14 @@ class SnapshotRepository(ABC, SetupMixin):
 
     async def find_one(
         self,
-        name: Union[str, type[Entity]],
+        type_: Union[str, type[Entity]],
         condition: _Condition,
         transaction: Optional[TransactionEntry] = None,
         **kwargs,
     ) -> Entity:
         """Find a ``Entity`` instance based on a ``Condition``.
 
-        :param name: Class name of the ``Entity``.
+        :param type_: Class name of the ``Entity``.
         :param condition: The condition that must be satisfied by the ``Entity`` instances.
         :param transaction: The transaction within the operation is performed. If not any value is provided, then the
             transaction is extracted from the context var. If not any transaction is being scoped then the query is
@@ -144,13 +144,13 @@ class SnapshotRepository(ABC, SetupMixin):
         :return: An asynchronous iterator that containing the ``Entity`` instances.
         """
         try:
-            return await self.find(name, condition=condition, limit=1, transaction=transaction, **kwargs).__anext__()
+            return await self.find(type_, condition=condition, limit=1, transaction=transaction, **kwargs).__anext__()
         except StopAsyncIteration:
             raise NotFoundException(f"There are not any instance matching the given condition: {condition}")
 
     async def find(
         self,
-        name: Union[str, type[Entity], ModelType],
+        type_: Union[str, type[Entity], ModelType],
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
@@ -160,7 +160,7 @@ class SnapshotRepository(ABC, SetupMixin):
     ) -> AsyncIterator[Entity]:
         """Find a collection of ``Entity`` instances based on a ``Condition``.
 
-        :param name: Class name of the ``Entity``.
+        :param type_: Class name of the ``Entity``.
         :param condition: The condition that must be satisfied by the ``Entity`` instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
@@ -175,7 +175,7 @@ class SnapshotRepository(ABC, SetupMixin):
         :return: An asynchronous iterator that containing the ``Entity`` instances.
         """
         iterable = self.find_entries(
-            name=name,
+            type_=type_,
             condition=condition,
             ordering=ordering,
             limit=limit,
@@ -188,7 +188,7 @@ class SnapshotRepository(ABC, SetupMixin):
 
     async def find_entries(
         self,
-        name: Union[str, type[Entity], ModelType],
+        type_: Union[str, type[Entity], ModelType],
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
@@ -200,7 +200,7 @@ class SnapshotRepository(ABC, SetupMixin):
     ) -> AsyncIterator[SnapshotEntry]:
         """Find a collection of ``SnapshotEntry`` instances based on a ``Condition``.
 
-        :param name: Class name of the ``Entity``.
+        :param type_: Class name of the ``Entity``.
         :param condition: The condition that must be satisfied by the ``Entity`` instances.
         :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
             is to retrieve them without any order pattern.
@@ -218,10 +218,10 @@ class SnapshotRepository(ABC, SetupMixin):
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Entity`` instances.
         """
-        if isinstance(name, ModelType):
-            name = name.model_cls
-        if isinstance(name, type):
-            name = classname(name)
+        if isinstance(type_, ModelType):
+            type_ = type_.model_cls
+        if isinstance(type_, type):
+            type_ = classname(type_)
 
         if transaction is None:
             transaction = TRANSACTION_CONTEXT_VAR.get()
@@ -230,7 +230,7 @@ class SnapshotRepository(ABC, SetupMixin):
             await self.synchronize(**kwargs)
 
         iterable = self._find_entries(
-            name=name,
+            type_=type_,
             condition=condition,
             ordering=ordering,
             limit=limit,
@@ -245,7 +245,7 @@ class SnapshotRepository(ABC, SetupMixin):
     @abstractmethod
     def _find_entries(
         self,
-        name: str,
+        type_: str,
         condition: _Condition,
         ordering: Optional[_Ordering],
         limit: Optional[int],

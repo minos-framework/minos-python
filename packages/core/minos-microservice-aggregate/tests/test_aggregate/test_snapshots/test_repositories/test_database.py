@@ -246,7 +246,7 @@ class TestDatabaseSnapshotRepository(AggregateTestCase, SnapshotRepositoryTestCa
         entries = [
             SnapshotEntry(
                 uuid=self.uuid_1,
-                name=classname(SnapshotRepositoryTestCase.Car),
+                type_=classname(SnapshotRepositoryTestCase.Car),
                 version=3,
                 schema=SnapshotRepositoryTestCase.Car.avro_schema,
                 data=SnapshotRepositoryTestCase.Car(3, "blue", uuid=self.uuid_1, version=1).avro_data,

@@ -279,7 +279,7 @@ class AiopgSnapshotQueryDatabaseOperationBuilder:
     _SELECT_ENTRIES_QUERY = SQL(
         "SELECT "
         "   t2.uuid, "
-        "   t2.name, "
+        "   t2.name AS type_, "
         "   t2.version, "
         "   t2.schema, "
         "   t2.data, "

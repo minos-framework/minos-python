@@ -19,6 +19,7 @@ from uuid import (
 
 from minos.common import (
     NULL_UUID,
+    classname,
     current_datetime,
 )
 
@@ -66,14 +67,14 @@ class InMemoryDeltaRepository(DeltaRepository):
         return next(self._id_generator) + 1
 
     def _get_next_version_id(self, entry: DeltaEntry) -> int:
-        key = (entry.name, entry.uuid, entry.transaction_uuid)
+        key = (entry.type_, entry.uuid, entry.transaction_uuid)
         self._next_versions[key] += 1
         return self._next_versions[key]
 
     async def _select(
         self,
         uuid: Optional[int] = None,
-        name: Optional[str] = None,
+        type_: Optional[str] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
         version_gt: Optional[int] = None,
@@ -95,7 +96,7 @@ class InMemoryDeltaRepository(DeltaRepository):
         def _fn_filter(entry: DeltaEntry) -> bool:
             if uuid is not None and uuid != entry.uuid:
                 return False
-            if name is not None and name != entry.name:
+            if type_ is not None and type_ != classname(entry.type_):
                 return False
             if version is not None and version != entry.version:
                 return False

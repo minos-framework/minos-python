@@ -37,7 +37,7 @@ from ...operations import (
 )
 
 
-# noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic
+# noinspection SqlNoDataSourceInspection,SqlResolve,PyMethodMayBeStatic,SqlDialectInspection
 class AiopgDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
     """Aiopg Event Database Operation Factory class."""
 
@@ -102,7 +102,7 @@ class AiopgDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
         transaction_uuids: Iterable[UUID],
         uuid: UUID,
         action: Action,
-        name: str,
+        type_: str,
         version: int,
         data: bytes,
         created_at: datetime,
@@ -115,7 +115,7 @@ class AiopgDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
         :param transaction_uuids: The sequence of nested transaction in on top of the current event's transaction.
         :param uuid: The identifier of the entity.
         :param action: The action of the event.
-        :param name: The name of the entity.
+        :param type_: The name of the entity.
         :param version: The version of the entity
         :param data: The data of the event.
         :param created_at: The creation datetime.
@@ -150,7 +150,7 @@ class AiopgDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
         insert_parameters = {
             "uuid": uuid,
             "action": action,
-            "name": name,
+            "name": type_,
             "version": version,
             "data": data,
             "created_at": created_at,
@@ -194,7 +194,7 @@ class AiopgDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
     def build_query(
         self,
         uuid: Optional[UUID] = None,
-        name: Optional[str] = None,
+        type_: Optional[str] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
         version_gt: Optional[int] = None,
@@ -213,7 +213,7 @@ class AiopgDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
         """Build the database operation to select rows.
 
         :param uuid: The identifier must be equal to the given value.
-        :param name: The classname must be equal to the given value.
+        :param type_: The classname must be equal to the given value.
         :param version: The version must be equal to the given value.
         :param version_lt: The version must be lower than the given value.
         :param version_gt: The version must be greater than the given value.
@@ -242,7 +242,7 @@ class AiopgDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
 
         if uuid is not None:
             conditions.append("uuid = %(uuid)s")
-        if name is not None:
+        if type_ is not None:
             conditions.append("name = %(name)s")
         if version is not None:
             conditions.append("version = %(version)s")
@@ -278,7 +278,7 @@ class AiopgDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
             f"{_select_all} WHERE {' AND '.join(conditions)} ORDER BY id;",
             {
                 "uuid": uuid,
-                "name": name,
+                "name": type_,
                 "version": version,
                 "version_lt": version_lt,
                 "version_gt": version_gt,

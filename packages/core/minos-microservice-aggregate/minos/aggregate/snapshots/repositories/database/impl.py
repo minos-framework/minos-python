@@ -97,7 +97,7 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
     # noinspection PyUnusedLocal
     async def _find_entries(
         self,
-        name: str,
+        type_: str,
         condition: _Condition,
         ordering: Optional[_Ordering],
         limit: Optional[int],
@@ -112,20 +112,20 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
             transaction_uuids = await transaction.uuids
 
         operation = self.database_operation_factory.build_query(
-            name, condition, ordering, limit, transaction_uuids, exclude_deleted
+            type_, condition, ordering, limit, transaction_uuids, exclude_deleted
         )
 
         async for row in self.execute_on_database_and_fetch_all(operation, streaming_mode=streaming_mode):
             yield SnapshotEntry(**row)
 
-    async def is_synced(self, name: str, **kwargs) -> bool:
+    async def is_synced(self, type_: str, **kwargs) -> bool:
         """Check if the snapshot has the latest version of a ``Entity`` instance.
 
-        :param name: Class name of the ``Entity`` to be checked.
+        :param type_: Class name of the ``Entity`` to be checked.
         :return: ``True`` if it has the latest version for the identifier or ``False`` otherwise.
         """
         offset = await self._load_offset()
-        iterable = self._delta_repository.select(id_gt=offset, name=name, **kwargs)
+        iterable = self._delta_repository.select(id_gt=offset, type_=type_, **kwargs)
         try:
             await iterable.__anext__()
             return False
@@ -194,10 +194,10 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         # noinspection PyBroadException
         try:
             # noinspection PyTypeChecker
-            previous = await self._select_one_instance(delta.name, delta.uuid, **kwargs)
+            previous = await self._select_one_instance(delta.type_, delta.uuid, **kwargs)
         except NotFoundException:
             # noinspection PyTypeChecker
-            cls = import_module(delta.name)
+            cls = import_module(delta.type_)
             return cls.from_diff(delta, **kwargs)
 
         if previous.version >= delta.version:
@@ -206,8 +206,8 @@ class DatabaseSnapshotRepository(SnapshotRepository, DatabaseMixin[SnapshotDatab
         previous.apply_diff(delta)
         return previous
 
-    async def _select_one_instance(self, name: str, uuid: UUID, **kwargs) -> Entity:
-        snapshot_entry = await self.get_entry(name, uuid, **kwargs)
+    async def _select_one_instance(self, type_: str, uuid: UUID, **kwargs) -> Entity:
+        snapshot_entry = await self.get_entry(type_, uuid, **kwargs)
         return snapshot_entry.build(**kwargs)
 
     async def _submit_entry(self, snapshot_entry: SnapshotEntry) -> SnapshotEntry:

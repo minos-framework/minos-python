@@ -45,7 +45,7 @@ class TestAiopgSnapshotDatabaseOperationFactory(unittest.TestCase):
     def test_build_submit(self):
         operation = self.factory.build_submit(
             uuid=uuid4(),
-            name="Foo",
+            type_="Foo",
             version=34243,
             schema={"type": "foo"},
             data={"foo": "bar"},
@@ -57,7 +57,7 @@ class TestAiopgSnapshotDatabaseOperationFactory(unittest.TestCase):
 
     def test_build_query(self):
         operation = self.factory.build_query(
-            name="Foo",
+            type_="Foo",
             condition=Condition.EQUAL("foo", "bar"),
             ordering=Ordering.ASC("foobar"),
             limit=2342,

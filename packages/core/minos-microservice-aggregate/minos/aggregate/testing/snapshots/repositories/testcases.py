@@ -35,7 +35,6 @@ from minos.aggregate import (
     SnapshotRepository,
 )
 from minos.common import (
-    classname,
     current_datetime,
 )
 from minos.common.testing import (
@@ -95,26 +94,26 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
 
     async def populate(self) -> None:
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
-        name: str = classname(self.Car)
+        type_ = self.Car
 
-        await self.delta_repository.create(DeltaEntry(self.uuid_1, name, 1, diff.avro_bytes))
-        await self.delta_repository.update(DeltaEntry(self.uuid_1, name, 2, diff.avro_bytes))
-        await self.delta_repository.create(DeltaEntry(self.uuid_2, name, 1, diff.avro_bytes))
-        await self.delta_repository.update(DeltaEntry(self.uuid_1, name, 3, diff.avro_bytes))
-        await self.delta_repository.delete(DeltaEntry(self.uuid_1, name, 4))
-        await self.delta_repository.update(DeltaEntry(self.uuid_2, name, 2, diff.avro_bytes))
+        await self.delta_repository.create(DeltaEntry(self.uuid_1, type_, 1, diff.avro_bytes))
+        await self.delta_repository.update(DeltaEntry(self.uuid_1, type_, 2, diff.avro_bytes))
+        await self.delta_repository.create(DeltaEntry(self.uuid_2, type_, 1, diff.avro_bytes))
+        await self.delta_repository.update(DeltaEntry(self.uuid_1, type_, 3, diff.avro_bytes))
+        await self.delta_repository.delete(DeltaEntry(self.uuid_1, type_, 4))
+        await self.delta_repository.update(DeltaEntry(self.uuid_2, type_, 2, diff.avro_bytes))
         await self.delta_repository.update(
-            DeltaEntry(self.uuid_2, name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
+            DeltaEntry(self.uuid_2, type_, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
         await self.delta_repository.delete(
-            DeltaEntry(self.uuid_2, name, 3, bytes(), transaction_uuid=self.transaction_2)
+            DeltaEntry(self.uuid_2, type_, 3, bytes(), transaction_uuid=self.transaction_2)
         )
         await self.delta_repository.update(
-            DeltaEntry(self.uuid_2, name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
+            DeltaEntry(self.uuid_2, type_, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
-        await self.delta_repository.create(DeltaEntry(self.uuid_3, name, 1, diff.avro_bytes))
+        await self.delta_repository.create(DeltaEntry(self.uuid_3, type_, 1, diff.avro_bytes))
         await self.delta_repository.delete(
-            DeltaEntry(self.uuid_2, name, 3, bytes(), transaction_uuid=self.transaction_3)
+            DeltaEntry(self.uuid_2, type_, 3, bytes(), transaction_uuid=self.transaction_3)
         )
         await self.transaction_repository.submit(TransactionEntry(self.transaction_1, TransactionStatus.PENDING))
         await self.transaction_repository.submit(TransactionEntry(self.transaction_2, TransactionStatus.PENDING))
@@ -299,27 +298,26 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
     async def test_dispatch_ignore_previous_version(self):
         await self.populate()
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
-        # noinspection PyTypeChecker
-        name: str = self.Car.classname
+        type_ = self.Car
         condition = Condition.EQUAL("uuid", self.uuid_1)
 
         async def _fn(*args, id_gt: Optional[int] = None, **kwargs):
             if id_gt is not None and id_gt > 0:
                 return
-            yield DeltaEntry(self.uuid_1, name, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())
-            yield DeltaEntry(self.uuid_1, name, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
-            yield DeltaEntry(self.uuid_1, name, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
+            yield DeltaEntry(self.uuid_1, type_, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())
+            yield DeltaEntry(self.uuid_1, type_, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
+            yield DeltaEntry(self.uuid_1, type_, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
 
         self.delta_repository.select = MagicMock(side_effect=_fn)
         await self.snapshot_repository.synchronize()
 
-        observed = [v async for v in self.snapshot_repository.find_entries(name, condition)]
+        observed = [v async for v in self.snapshot_repository.find_entries(type_, condition)]
 
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(
                 uuid=self.uuid_1,
-                name=name,
+                type_=type_,
                 version=3,
                 schema=self.Car.avro_schema,
                 data=self.Car(3, "blue", uuid=self.uuid_1, version=1).avro_data,
@@ -343,7 +341,7 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         # noinspection PyTypeChecker
         entry = DeltaEntry(
             uuid=self.uuid_3,
-            name=self.Car.classname,
+            type_=self.Car.classname,
             data=FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")]).avro_bytes,
         )
         await self.delta_repository.create(entry)
@@ -394,15 +392,9 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         a = FieldDiffContainer([FieldDiff("numbers", list[int], [1, 2, 3])])
         b = FieldDiffContainer([FieldDiff("numbers", list[int], [4, 5, 6])])
         c = FieldDiffContainer([FieldDiff("numbers", list[int], [3, 8, 9])])
-        await self.delta_repository.create(
-            DeltaEntry(name=self.NumbersList.classname, data=a.avro_bytes, uuid=self.uuid_1)
-        )
-        await self.delta_repository.create(
-            DeltaEntry(name=self.NumbersList.classname, data=b.avro_bytes, uuid=self.uuid_2)
-        )
-        await self.delta_repository.create(
-            DeltaEntry(name=self.NumbersList.classname, data=c.avro_bytes, uuid=self.uuid_3)
-        )
+        await self.delta_repository.create(DeltaEntry(type_=self.NumbersList, data=a.avro_bytes, uuid=self.uuid_1))
+        await self.delta_repository.create(DeltaEntry(type_=self.NumbersList, data=b.avro_bytes, uuid=self.uuid_2))
+        await self.delta_repository.create(DeltaEntry(type_=self.NumbersList, data=c.avro_bytes, uuid=self.uuid_3))
         await self.synchronize()
 
         condition = Condition.CONTAINS("numbers", 3)
@@ -420,9 +412,9 @@ class SnapshotRepositoryTestCase(MinosTestCase, ABC):
         a = FieldDiffContainer([FieldDiff("value", int, 1)])
         b = FieldDiffContainer([FieldDiff("value", int, 2)])
         c = FieldDiffContainer([FieldDiff("value", int, 1)])
-        await self.delta_repository.create(DeltaEntry(name=self.Number.classname, data=a.avro_bytes, uuid=self.uuid_1))
-        await self.delta_repository.create(DeltaEntry(name=self.Number.classname, data=b.avro_bytes, uuid=self.uuid_2))
-        await self.delta_repository.create(DeltaEntry(name=self.Number.classname, data=c.avro_bytes, uuid=self.uuid_3))
+        await self.delta_repository.create(DeltaEntry(type_=self.Number, data=a.avro_bytes, uuid=self.uuid_1))
+        await self.delta_repository.create(DeltaEntry(type_=self.Number, data=b.avro_bytes, uuid=self.uuid_2))
+        await self.delta_repository.create(DeltaEntry(type_=self.Number, data=c.avro_bytes, uuid=self.uuid_3))
         await self.synchronize()
 
         condition = Condition.EQUAL("value", 1)
