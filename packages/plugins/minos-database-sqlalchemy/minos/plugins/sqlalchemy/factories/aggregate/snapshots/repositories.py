@@ -1,4 +1,6 @@
 from typing import (
+    Any,
+    AsyncIterator,
     Optional,
     Union,
 )
@@ -7,6 +9,7 @@ from uuid import (
 )
 
 from sqlalchemy.sql import (
+    Executable,
     Subquery,
 )
 
@@ -26,6 +29,9 @@ from minos.transactions import (
     TransactionEntry,
 )
 
+from ....operations import (
+    SqlAlchemyDatabaseOperation,
+)
 from .impl import (
     SqlAlchemySnapshotDatabaseOperationFactory,
 )
@@ -67,6 +73,16 @@ class SqlAlchemySnapshotRepository(DatabaseSnapshotRepository):
             transaction_uuids = await transaction.uuids
 
         return self.database_operation_factory.get_table(name, transaction_uuids, exclude_deleted)
+
+    def execute_statement(self, statement: Executable, **kwargs) -> AsyncIterator[dict[str, Any]]:
+        """Execute given statement and fetch results asynchronously.
+
+        :param statement: The statement to be executed.
+        :param kwargs: Additional named arguments.
+        :return: An ``AsyncIterator`` instance containing ``dict`` instances.
+        """
+        operation = SqlAlchemyDatabaseOperation(statement)
+        return self.execute_on_database_and_fetch_all(operation, **kwargs)
 
     def _build_entry(
         self,
