@@ -211,7 +211,7 @@ class TestDeltaRepository(AggregateTestCase):
         self.assertEqual(transaction.uuid, observed.transaction_uuid)
 
     async def test_submit_raises_missing_action(self):
-        entry = DeltaEntry(uuid4(), "example.Car", 0, bytes())
+        entry = DeltaEntry(uuid4(), "example.Car", 0, bytes(), action=None)
         with self.assertRaises(DeltaRepositoryException):
             await self.delta_repository.submit(entry)
 
