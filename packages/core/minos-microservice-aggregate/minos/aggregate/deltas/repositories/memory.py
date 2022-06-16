@@ -19,7 +19,7 @@ from uuid import (
 
 from minos.common import (
     NULL_UUID,
-    current_datetime,
+    current_datetime, NULL_DATETIME,
 )
 
 from ...exceptions import (
@@ -47,7 +47,7 @@ class InMemoryDeltaRepository(DeltaRepository):
             entry.uuid = uuid4()
 
         next_version = self._get_next_version_id(entry)
-        if entry.version is None:
+        if not entry.version:
             entry.version = next_version
         if entry.version < next_version:
             raise DeltaRepositoryConflictException(
@@ -55,7 +55,7 @@ class InMemoryDeltaRepository(DeltaRepository):
                 await self.offset,
             )
 
-        if entry.created_at is None:
+        if entry.created_at is None or entry.created_at == NULL_DATETIME:
             entry.created_at = current_datetime()
 
         entry.id = self._generate_next_id()

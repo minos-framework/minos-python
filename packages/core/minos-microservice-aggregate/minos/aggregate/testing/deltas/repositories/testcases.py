@@ -25,7 +25,7 @@ from minos.aggregate import (
 )
 from minos.common import (
     NULL_UUID,
-    current_datetime,
+    current_datetime, NULL_DATETIME,
 )
 from minos.common.testing import (
     MinosTestCase,
@@ -200,7 +200,11 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
             self.assertEqual(e.data, o.data)
             self.assertEqual(e.id, o.id)
             self.assertEqual(e.action, o.action)
-            self.assertAlmostEqual(e.created_at or current_datetime(), o.created_at, delta=timedelta(seconds=5))
+            self.assertAlmostEqual(
+                current_datetime() if e.created_at == NULL_DATETIME else e.created_at,
+                o.created_at,
+                delta=timedelta(seconds=5)
+            )
 
     async def test_generate_uuid(self):
         await self.delta_repository.create(DeltaEntry(NULL_UUID, "example.Car", 1, bytes("foo", "utf-8")))
@@ -237,7 +241,7 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
 
     async def test_submit_raises_no_action(self):
         with self.assertRaises(DeltaRepositoryException):
-            await self.delta_repository.submit(DeltaEntry(self.uuid, "example.Car", 1, "foo".encode()))
+            await self.delta_repository.submit(DeltaEntry(self.uuid, "example.Car", 1, "foo".encode(), action=None))
 
     async def test_select_empty(self):
         self.assertEqual([], [v async for v in self.delta_repository.select()])

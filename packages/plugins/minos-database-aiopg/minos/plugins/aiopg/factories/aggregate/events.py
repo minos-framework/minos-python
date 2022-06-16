@@ -133,7 +133,7 @@ class AiopgDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
                 CASE %(uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(uuid)s END,
                 %(name)s,
                 (
-                    SELECT (CASE WHEN %(version)s IS NULL THEN 1 + COALESCE(MAX(t2.version), 0) ELSE %(version)s END)
+                    SELECT (CASE WHEN %(version)s = 0 THEN 1 + COALESCE(MAX(t2.version), 0) ELSE %(version)s END)
                     FROM (
                              SELECT DISTINCT ON (t1.uuid) t1.version
                              FROM ( {from_parts} ) AS t1
