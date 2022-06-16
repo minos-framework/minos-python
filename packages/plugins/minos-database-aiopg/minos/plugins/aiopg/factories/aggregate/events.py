@@ -26,7 +26,8 @@ from minos.aggregate import (
 )
 from minos.common import (
     ComposedDatabaseOperation,
-    DatabaseOperation, NULL_DATETIME,
+    DatabaseOperation,
+    NULL_DATETIME,
 )
 
 from ...clients import (

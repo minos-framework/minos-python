@@ -15,7 +15,8 @@ from minos.aggregate import (
 )
 from minos.common import (
     NULL_UUID,
-    current_datetime, NULL_DATETIME,
+    current_datetime,
+    NULL_DATETIME,
 )
 from minos.transactions import (
     TransactionEntry,
