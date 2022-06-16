@@ -24,9 +24,9 @@ from minos.aggregate import (
     FieldDiffContainer,
 )
 from minos.common import (
+    NULL_DATETIME,
     NULL_UUID,
     current_datetime,
-    NULL_DATETIME,
 )
 from minos.common.testing import (
     MinosTestCase,

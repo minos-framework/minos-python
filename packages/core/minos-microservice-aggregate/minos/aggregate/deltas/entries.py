@@ -17,9 +17,9 @@ from uuid import (
 )
 
 from minos.common import (
+    NULL_DATETIME,
     NULL_UUID,
     import_module,
-    NULL_DATETIME,
 )
 from minos.transactions import (
     TransactionEntry,

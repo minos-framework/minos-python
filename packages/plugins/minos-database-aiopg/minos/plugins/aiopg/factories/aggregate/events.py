@@ -25,9 +25,9 @@ from minos.aggregate import (
     DeltaDatabaseOperationFactory,
 )
 from minos.common import (
+    NULL_DATETIME,
     ComposedDatabaseOperation,
     DatabaseOperation,
-    NULL_DATETIME,
 )
 
 from ...clients import (

@@ -18,9 +18,9 @@ from uuid import (
 )
 
 from minos.common import (
+    NULL_DATETIME,
     NULL_UUID,
     current_datetime,
-    NULL_DATETIME,
 )
 
 from ...exceptions import (
