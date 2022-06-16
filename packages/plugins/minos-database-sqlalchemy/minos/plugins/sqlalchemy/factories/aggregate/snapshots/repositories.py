@@ -32,7 +32,7 @@ from .impl import (
 
 
 class SqlAlchemySnapshotRepository(DatabaseSnapshotRepository):
-    """TODO"""
+    """SqlAlchemy Snapshot Repository class."""
 
     database_operation_factory: SqlAlchemySnapshotDatabaseOperationFactory
 
@@ -42,7 +42,16 @@ class SqlAlchemySnapshotRepository(DatabaseSnapshotRepository):
         transaction: Optional[TransactionEntry] = None,
         exclude_deleted: bool = True,
     ) -> Subquery:
-        """TODO"""
+        """Get a table relative to the given ``Entity``.
+
+        :param name: Class name of the ``Entity``.
+        :param transaction: The transaction within the operation is performed. If not any value is provided, then the
+            transaction is extracted from the context var. If not any transaction is being scoped then the query is
+            performed to the global snapshot.
+        :param exclude_deleted: If ``True``, deleted ``Entity`` entries are included, otherwise deleted
+            ``Entity`` entries are filtered.
+        :return: A pre-filtered table as a ``Subquery`` instance.
+        """
 
         if isinstance(name, ModelType):
             name = name.model_cls

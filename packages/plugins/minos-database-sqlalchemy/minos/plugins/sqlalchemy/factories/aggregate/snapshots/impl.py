@@ -70,7 +70,7 @@ from .tables import (
 
 # noinspection SqlNoDataSourceInspection,SqlDialectInspection
 class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactory):
-    """TODO"""
+    """SqlAlchemy Snapshot Database Operation Factory class."""
 
     def __init__(
         self, entities_metadata: Optional[MetaData] = None, offset_metadata: Optional[MetaData] = None, **kwargs
@@ -113,7 +113,10 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         return "aggregate_snapshot_aux_offset"
 
     def build_create(self) -> DatabaseOperation:
-        """TODO"""
+        """Build the database operation to create the snapshot table.
+
+        :return: A ``DatabaseOperation`` instance.
+        """
 
         return ComposedDatabaseOperation(
             [
@@ -123,7 +126,11 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         )
 
     def build_delete(self, transaction_uuids: Iterable[UUID]) -> DatabaseOperation:
-        """TODO"""
+        """Build the database operation to delete rows by transaction identifiers.
+
+        :param transaction_uuids: The transaction identifiers.
+        :return: A ``DatabaseOperation`` instance.
+        """
         transaction_uuids = set(transaction_uuids)
 
         operations = list()
@@ -145,7 +152,18 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         updated_at: datetime,
         transaction_uuid: UUID,
     ) -> DatabaseOperation:
-        """TODO"""
+        """Build the insert database operation.
+
+        :param uuid: The identifier of the entity.
+        :param name: The name of the entity.
+        :param version: The version of the entity.
+        :param schema: The schema of the entity.
+        :param data: The data of the entity.
+        :param created_at: The creation datetime.
+        :param updated_at: The last update datetime.
+        :param transaction_uuid: The transaction identifier.
+        :return: A ``DatabaseOperation`` instance.
+        """
 
         simplified_name = name.rsplit(".", 1)[-1]
         table = self.entities_metadata.tables[simplified_name]
@@ -195,7 +213,21 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         transaction_uuids: tuple[UUID, ...],
         exclude_deleted: bool,
     ) -> DatabaseOperation:
-        """TODO"""
+        """Build the query database operation.
+
+        :param name: Class name of the ``Entity``.
+        :param condition: The condition that must be satisfied by the ``Entity`` instances.
+        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
+            is to retrieve them without any order pattern.
+        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
+            instances that meet the given condition.
+        :param transaction_uuids: The transaction within the operation is performed. If not any value is provided, then
+            the transaction is extracted from the context var. If not any transaction is being scoped then the query is
+            performed to the global snapshot.
+        :param exclude_deleted: If ``True``, deleted ``Entity`` entries are included, otherwise deleted
+            ``Entity`` entries are filtered.
+        :return: A ``DatabaseOperation`` instance.
+        """
 
         builder = SqlAlchemySnapshotQueryDatabaseOperationBuilder(
             type_=name,
@@ -213,7 +245,10 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         return operation
 
     def get_table(self, name: str, transaction_uuids: tuple[UUID, ...], exclude_deleted: bool) -> Subquery:
-        """TODO"""
+        """Get a table relative to the given ``Entity``.
+
+        :return: A pre-filtered table as a ``Subquery`` instance.
+        """
         builder = SqlAlchemySnapshotQueryDatabaseOperationBuilder(
             type_=name,
             condition=Condition.TRUE,
@@ -224,7 +259,11 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
         return builder.get_table()
 
     def build_submit_offset(self, value: int) -> DatabaseOperation:
-        """TODO"""
+        """Build the database operation to store the offset.
+
+        :param value: The value to be stored as the new offset.
+        :return: A ``DatabaseOperation`` instance.
+        """
         table = self.offset_metadata.tables[self.build_offset_table_name()]
 
         fn = partial(self._submit_offset, table=table, value=value)
@@ -258,7 +297,10 @@ class SqlAlchemySnapshotDatabaseOperationFactory(SnapshotDatabaseOperationFactor
             return conn.execute(statement)
 
     def build_query_offset(self) -> DatabaseOperation:
-        """TODO"""
+        """Build the database operation to get the current offset.
+
+        :return: A ``DatabaseOperation`` instance.
+        """
         table = self.offset_metadata.tables[self.build_offset_table_name()]
         statement = select(table.columns["value"]).filter(table.columns["id"].is_(True))
         return SqlAlchemyDatabaseOperation(statement)
