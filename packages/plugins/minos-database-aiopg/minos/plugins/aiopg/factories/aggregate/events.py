@@ -26,7 +26,7 @@ from minos.aggregate import (
 )
 from minos.common import (
     ComposedDatabaseOperation,
-    DatabaseOperation,
+    DatabaseOperation, NULL_DATETIME,
 )
 
 from ...clients import (
@@ -141,7 +141,7 @@ class AiopgDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
                     ) AS t2
                 ),
                 %(data)s,
-                (CASE WHEN %(created_at)s IS NULL THEN NOW() ELSE %(created_at)s END),
+                (CASE WHEN %(created_at)s = %(null_datetime)s THEN NOW() ELSE %(created_at)s END),
                 %(transaction_uuid)s
             )
             RETURNING id, uuid, version, created_at;
@@ -154,6 +154,7 @@ class AiopgDeltaDatabaseOperationFactory(DeltaDatabaseOperationFactory):
             "version": version,
             "data": data,
             "created_at": created_at,
+            "null_datetime": NULL_DATETIME,
             "transaction_uuid": transaction_uuid,
         }
 
