@@ -51,7 +51,7 @@ RT = TypeVar("RT", bound=Entity)
 
 
 @Injectable("aggregate")
-class Aggregate(Generic[RT], SetupMixin):
+class Aggregate(SetupMixin, Generic[RT]):
     """Base Service class"""
 
     transaction_repository: TransactionRepository

@@ -4,6 +4,9 @@ from abc import (
 from functools import (
     partial,
 )
+from typing import (
+    TypeVar,
+)
 
 from minos.aggregate import (
     Aggregate,
@@ -23,9 +26,13 @@ from .handlers import (
     PreEventHandler,
 )
 
+GenericAggregate = TypeVar("GenericAggregate", bound=Aggregate)
+
 
 class Service(ABC):
     """Base Service class"""
+
+    aggregate: GenericAggregate
 
     @Inject()
     def __init__(self, aggregate: Aggregate, **kwargs):
