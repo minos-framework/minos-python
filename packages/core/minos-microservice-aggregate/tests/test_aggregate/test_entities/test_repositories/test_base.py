@@ -12,6 +12,7 @@ from uuid import (
 from minos.aggregate import (
     AlreadyDeletedException,
     Condition,
+    Delta,
     DeltaRepositoryException,
     EntityRepository,
     NotFoundException,
@@ -145,18 +146,22 @@ class TestEntityRepository(AggregateTestCase):
         self.assertEqual(expected, car)
         self.assertEqual(car, await self.repository.get(Car, car.uuid))
 
-        await self.repository.update(car, doors=5)
+        observed, delta = await self.repository.update(car, doors=5)
+        self.assertIsInstance(delta, Delta)
+
         expected = Car(5, "red", uuid=car.uuid, version=3, created_at=car.created_at, updated_at=car.updated_at)
-        self.assertEqual(expected, car)
-        self.assertEqual(car, await self.repository.get(Car, car.uuid))
+        self.assertEqual(expected, observed)
+        self.assertEqual(observed, await self.repository.get(Car, expected.uuid))
 
     async def test_update_no_changes(self):
         car, _ = await self.repository.create(Car, doors=3, color="blue")
 
-        await self.repository.update(car, color="blue")
+        observed, delta = await self.repository.update(car, color="blue")
+        self.assertIsNone(delta)
+
         expected = Car(3, "blue", uuid=car.uuid, version=1, created_at=car.created_at, updated_at=car.updated_at)
-        self.assertEqual(expected, car)
-        self.assertEqual(car, await self.repository.get(Car, car.uuid))
+        self.assertEqual(expected, observed)
+        self.assertEqual(observed, await self.repository.get(Car, expected.uuid))
 
     async def test_update_raises(self):
         with self.assertRaises(DeltaRepositoryException):

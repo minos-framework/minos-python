@@ -33,4 +33,5 @@ from .types import (
     TypeHintComparator,
     TypeHintParser,
     is_model_type,
+    is_optional,
 )

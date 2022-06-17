@@ -35,6 +35,8 @@ sphinx-autodoc-typehints = "^1.18.1"
 sphinxcontrib-apidoc = "^0.3.0"
 sphinx-rtd-theme = "^1.0.0"
 m2r2 = "^0.3.2"
+asyncpg = "^0.25.0"  # minos-database-sqlalchemy
+psycopg2 = "^2.9.3"  # minos-database-sqlalchemy
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

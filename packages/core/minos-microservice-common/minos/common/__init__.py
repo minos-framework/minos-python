@@ -106,6 +106,7 @@ from .model import (
     TypeHintComparator,
     TypeHintParser,
     is_model_type,
+    is_optional,
 )
 from .object import (
     Object,
