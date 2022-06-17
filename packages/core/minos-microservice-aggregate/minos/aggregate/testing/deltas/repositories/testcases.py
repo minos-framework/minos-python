@@ -24,8 +24,9 @@ from minos.aggregate import (
     FieldDiffContainer,
 )
 from minos.common import (
+    NULL_DATETIME,
     NULL_UUID,
-    current_datetime, NULL_DATETIME,
+    current_datetime,
 )
 from minos.common.testing import (
     MinosTestCase,
@@ -206,7 +207,7 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
             self.assertAlmostEqual(
                 current_datetime() if e.created_at == NULL_DATETIME else e.created_at,
                 o.created_at,
-                delta=timedelta(seconds=5)
+                delta=timedelta(seconds=5),
             )
 
     async def test_generate_uuid(self):
