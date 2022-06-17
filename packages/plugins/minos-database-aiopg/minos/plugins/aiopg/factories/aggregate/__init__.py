@@ -1,4 +1,4 @@
-from .events import (
+from .deltas import (
     AiopgDeltaDatabaseOperationFactory,
 )
 from .snapshots import (
