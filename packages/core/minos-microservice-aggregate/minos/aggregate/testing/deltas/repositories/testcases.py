@@ -180,8 +180,9 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
             DeltaEntry(self.uuid_2, CAR_DELTA_NAME, 3, bytes("hola", "utf-8"), transaction_uuid=self.first_transaction)
         )
         await self.delta_repository.update(
-            DeltaEntry(self.uuid_2, CAR_DELTA_NAME, 3, bytes("salut", "utf-8"),
-                       transaction_uuid=self.second_transaction)
+            DeltaEntry(
+                self.uuid_2, CAR_DELTA_NAME, 3, bytes("salut", "utf-8"), transaction_uuid=self.second_transaction
+            )
         )
         await self.delta_repository.update(
             DeltaEntry(self.uuid_2, CAR_DELTA_NAME, 4, bytes("adios", "utf-8"), transaction_uuid=self.first_transaction)
