@@ -29,7 +29,7 @@ from tests.utils import (
 )
 
 
-class TestDatabaseDeltaRepositorySubmit(AggregateTestCase, DeltaRepositoryTestCase):
+class TestDatabaseDeltaRepository(AggregateTestCase, DeltaRepositoryTestCase):
     __test__ = True
 
     def build_delta_repository(self) -> DeltaRepository:
