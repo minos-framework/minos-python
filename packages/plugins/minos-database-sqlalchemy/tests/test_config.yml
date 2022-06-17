@@ -2,8 +2,12 @@ version: 2
 name: order
 databases:
   default:
-    client: minos.common.testing.MockedDatabaseClient
-  snapshot:
     client: minos.plugins.sqlalchemy.SqlAlchemyDatabaseClient
+    driver: postgresql+asyncpg
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
 pools:
   database: minos.common.DatabaseClientPool
