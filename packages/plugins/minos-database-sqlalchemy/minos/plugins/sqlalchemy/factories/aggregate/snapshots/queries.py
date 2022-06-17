@@ -44,6 +44,7 @@ from sqlalchemy.sql.operators import (
 from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
+# noinspection PyProtectedMember
 from minos.aggregate.queries import (
     _FALSE_CONDITION,
     _AndCondition,
@@ -72,10 +73,7 @@ from minos.common import (
 
 # noinspection SqlResolve,SqlNoDataSourceInspection
 class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
-    """SqlAlchemy Snapshot Query Database Operation Builder class.
-
-    This class build postgres-compatible database queries over fields based on a condition, ordering, etc.
-    """
+    """SqlAlchemy Snapshot Query Database Operation Builder class."""
 
     def __init__(
         self,
@@ -100,8 +98,7 @@ class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
     def build(self) -> Executable:
         """Build a query.
 
-        :return: A tuple in which the first value is the sql sentence and the second one is a dictionary containing the
-            query parameters.
+        :return: An ``Executable`` instance..
         """
 
         token = IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
@@ -129,7 +126,10 @@ class SqlAlchemySnapshotQueryDatabaseOperationBuilder:
         return statement
 
     def get_table(self) -> Subquery:
-        """TODO"""
+        """Get a table relative to the given ``Entity``.
+
+        :return: A pre-filtered table as a ``Subquery`` instance.
+        """
 
         simplified_name = self.type_.rsplit(".", 1)[-1]
         table = self.tables[simplified_name]

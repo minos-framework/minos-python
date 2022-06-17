@@ -20,7 +20,7 @@ from tests.utils import (
 
 
 # noinspection SqlNoDataSourceInspection
-class TestDatabaseDeltaRepositorySubmit(AiopgTestCase, DeltaRepositoryTestCase):
+class TestDatabaseDeltaRepository(AiopgTestCase, DeltaRepositoryTestCase):
     __test__ = True
 
     def build_delta_repository(self) -> DeltaRepository:

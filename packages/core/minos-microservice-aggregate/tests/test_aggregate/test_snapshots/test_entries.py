@@ -51,14 +51,6 @@ class TestSnapshotEntry(AggregateTestCase):
         self.assertEqual(None, entry.created_at)
         self.assertEqual(None, entry.updated_at)
 
-    def test_constructor_with_kwargs(self):
-        entry = SnapshotEntry(self.uuid, Car, 0, self.schema, foo="bar", foobar="foobar")
-        self.assertEqual({"foo": "bar", "foobar": "foobar"}, entry.data)
-
-    def test_constructor_with_data_and_kwargs(self):
-        entry = SnapshotEntry(self.uuid, Car, 0, self.schema, {"foo": "bar"}, foobar="foobar")
-        self.assertEqual({"foo": "bar", "foobar": "foobar"}, entry.data)
-
     def test_constructor_with_data_str(self):
         entry = SnapshotEntry(self.uuid, Car, 0, self.schema, json.dumps({"foo": "bar", "foobar": "foobar"}))
         self.assertEqual({"foo": "bar", "foobar": "foobar"}, entry.data)
