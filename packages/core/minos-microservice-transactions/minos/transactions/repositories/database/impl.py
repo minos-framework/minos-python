@@ -31,7 +31,7 @@ class DatabaseTransactionRepository(DatabaseMixin[TransactionDatabaseOperationFa
 
     def __init__(self, *args, database_key: Optional[tuple[str]] = None, **kwargs):
         if database_key is None:
-            database_key = ("aggregate", "transaction")
+            database_key = ("transaction",)
         super().__init__(*args, database_key=database_key, **kwargs)
 
     async def _setup(self) -> None:
