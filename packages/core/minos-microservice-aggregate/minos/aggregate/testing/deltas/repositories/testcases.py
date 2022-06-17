@@ -34,6 +34,8 @@ from minos.transactions import (
     TransactionEntry,
 )
 
+CAR_DELTA_NAME = "example.Car"
+
 
 class DeltaRepositoryTestCase(MinosTestCase, ABC):
     __test__ = False
@@ -57,7 +59,7 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
         self.entries = [
             DeltaEntry(
                 self.uuid_1,
-                "example.Car",
+                CAR_DELTA_NAME,
                 1,
                 bytes("foo", "utf-8"),
                 1,
@@ -66,7 +68,7 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
             ),
             DeltaEntry(
                 self.uuid_1,
-                "example.Car",
+                CAR_DELTA_NAME,
                 2,
                 bytes("bar", "utf-8"),
                 2,
@@ -75,7 +77,7 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
             ),
             DeltaEntry(
                 self.uuid_2,
-                "example.Car",
+                CAR_DELTA_NAME,
                 1,
                 bytes("hello", "utf-8"),
                 3,
@@ -84,7 +86,7 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
             ),
             DeltaEntry(
                 self.uuid_1,
-                "example.Car",
+                CAR_DELTA_NAME,
                 3,
                 bytes("foobar", "utf-8"),
                 4,
@@ -93,7 +95,7 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
             ),
             DeltaEntry(
                 self.uuid_1,
-                "example.Car",
+                CAR_DELTA_NAME,
                 4,
                 bytes(),
                 5,
@@ -102,7 +104,7 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
             ),
             DeltaEntry(
                 self.uuid_2,
-                "example.Car",
+                CAR_DELTA_NAME,
                 2,
                 bytes("bye", "utf-8"),
                 6,
@@ -120,7 +122,7 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
             ),
             DeltaEntry(
                 self.uuid_2,
-                "example.Car",
+                CAR_DELTA_NAME,
                 3,
                 bytes("hola", "utf-8"),
                 8,
@@ -130,7 +132,7 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
             ),
             DeltaEntry(
                 self.uuid_2,
-                "example.Car",
+                CAR_DELTA_NAME,
                 3,
                 bytes("salut", "utf-8"),
                 9,
@@ -140,7 +142,7 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
             ),
             DeltaEntry(
                 self.uuid_2,
-                "example.Car",
+                CAR_DELTA_NAME,
                 4,
                 bytes("adios", "utf-8"),
                 10,
@@ -166,21 +168,22 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
         await self.transaction_repository.submit(TransactionEntry(self.first_transaction))
         await self.transaction_repository.submit(TransactionEntry(self.second_transaction))
 
-        await self.delta_repository.create(DeltaEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
-        await self.delta_repository.update(DeltaEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))
-        await self.delta_repository.create(DeltaEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8")))
-        await self.delta_repository.update(DeltaEntry(self.uuid_1, "example.Car", 3, bytes("foobar", "utf-8")))
-        await self.delta_repository.delete(DeltaEntry(self.uuid_1, "example.Car", 4))
-        await self.delta_repository.update(DeltaEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8")))
+        await self.delta_repository.create(DeltaEntry(self.uuid_1, CAR_DELTA_NAME, 1, bytes("foo", "utf-8")))
+        await self.delta_repository.update(DeltaEntry(self.uuid_1, CAR_DELTA_NAME, 2, bytes("bar", "utf-8")))
+        await self.delta_repository.create(DeltaEntry(self.uuid_2, CAR_DELTA_NAME, 1, bytes("hello", "utf-8")))
+        await self.delta_repository.update(DeltaEntry(self.uuid_1, CAR_DELTA_NAME, 3, bytes("foobar", "utf-8")))
+        await self.delta_repository.delete(DeltaEntry(self.uuid_1, CAR_DELTA_NAME, 4))
+        await self.delta_repository.update(DeltaEntry(self.uuid_2, CAR_DELTA_NAME, 2, bytes("bye", "utf-8")))
         await self.delta_repository.create(DeltaEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8")))
         await self.delta_repository.update(
-            DeltaEntry(self.uuid_2, "example.Car", 3, bytes("hola", "utf-8"), transaction_uuid=self.first_transaction)
+            DeltaEntry(self.uuid_2, CAR_DELTA_NAME, 3, bytes("hola", "utf-8"), transaction_uuid=self.first_transaction)
         )
         await self.delta_repository.update(
-            DeltaEntry(self.uuid_2, "example.Car", 3, bytes("salut", "utf-8"), transaction_uuid=self.second_transaction)
+            DeltaEntry(self.uuid_2, CAR_DELTA_NAME, 3, bytes("salut", "utf-8"),
+                       transaction_uuid=self.second_transaction)
         )
         await self.delta_repository.update(
-            DeltaEntry(self.uuid_2, "example.Car", 4, bytes("adios", "utf-8"), transaction_uuid=self.first_transaction)
+            DeltaEntry(self.uuid_2, CAR_DELTA_NAME, 4, bytes("adios", "utf-8"), transaction_uuid=self.first_transaction)
         )
 
     @abstractmethod
@@ -207,48 +210,48 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
             )
 
     async def test_generate_uuid(self):
-        await self.delta_repository.create(DeltaEntry(NULL_UUID, "example.Car", 1, bytes("foo", "utf-8")))
+        await self.delta_repository.create(DeltaEntry(NULL_UUID, CAR_DELTA_NAME, 1, bytes("foo", "utf-8")))
         observed = [v async for v in self.delta_repository.select()]
         self.assertEqual(1, len(observed))
         self.assertIsInstance(observed[0].uuid, UUID)
         self.assertNotEqual(NULL_UUID, observed[0].uuid)
 
     async def test_submit(self):
-        await self.delta_repository.submit(DeltaEntry(self.uuid, "example.Car", action=Action.CREATE))
-        expected = [DeltaEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.CREATE)]
+        await self.delta_repository.submit(DeltaEntry(self.uuid, CAR_DELTA_NAME, action=Action.CREATE))
+        expected = [DeltaEntry(self.uuid, CAR_DELTA_NAME, 1, bytes(), 1, Action.CREATE)]
         observed = [v async for v in self.delta_repository.select()]
         self.assert_equal_repository_entries(expected, observed)
 
     async def test_submit_with_version(self):
-        await self.delta_repository.submit(DeltaEntry(self.uuid, "example.Car", version=3, action=Action.CREATE))
-        expected = [DeltaEntry(self.uuid, "example.Car", 3, bytes(), 1, Action.CREATE)]
+        await self.delta_repository.submit(DeltaEntry(self.uuid, CAR_DELTA_NAME, version=3, action=Action.CREATE))
+        expected = [DeltaEntry(self.uuid, CAR_DELTA_NAME, 3, bytes(), 1, Action.CREATE)]
         observed = [v async for v in self.delta_repository.select()]
         self.assert_equal_repository_entries(expected, observed)
 
     async def test_submit_with_created_at(self):
         created_at = datetime(2021, 10, 25, 8, 30, tzinfo=timezone.utc)
         await self.delta_repository.submit(
-            DeltaEntry(self.uuid, "example.Car", created_at=created_at, action=Action.CREATE)
+            DeltaEntry(self.uuid, CAR_DELTA_NAME, created_at=created_at, action=Action.CREATE)
         )
-        expected = [DeltaEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.CREATE, created_at=created_at)]
+        expected = [DeltaEntry(self.uuid, CAR_DELTA_NAME, 1, bytes(), 1, Action.CREATE, created_at=created_at)]
         observed = [v async for v in self.delta_repository.select()]
         self.assert_equal_repository_entries(expected, observed)
 
     async def test_submit_raises_duplicate(self):
-        await self.delta_repository.submit(DeltaEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
+        await self.delta_repository.submit(DeltaEntry(self.uuid, CAR_DELTA_NAME, 1, action=Action.CREATE))
         with self.assertRaises(DeltaRepositoryConflictException):
-            await self.delta_repository.submit(DeltaEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
+            await self.delta_repository.submit(DeltaEntry(self.uuid, CAR_DELTA_NAME, 1, action=Action.CREATE))
 
     async def test_submit_raises_no_action(self):
         with self.assertRaises(DeltaRepositoryException):
-            await self.delta_repository.submit(DeltaEntry(self.uuid, "example.Car", 1, "foo".encode(), action=None))
+            await self.delta_repository.submit(DeltaEntry(self.uuid, CAR_DELTA_NAME, 1, "foo".encode(), action=None))
 
     async def test_select_empty(self):
         self.assertEqual([], [v async for v in self.delta_repository.select()])
 
     async def test_offset(self):
         self.assertEqual(0, await self.delta_repository.offset)
-        await self.delta_repository.submit(DeltaEntry(self.uuid, "example.Car", version=3, action=Action.CREATE))
+        await self.delta_repository.submit(DeltaEntry(self.uuid, CAR_DELTA_NAME, version=3, action=Action.CREATE))
         self.assertEqual(1, await self.delta_repository.offset)
 
     async def test_select(self):
@@ -377,5 +380,5 @@ class DeltaRepositoryTestCase(MinosTestCase, ABC):
     async def test_select_combined(self):
         await self.populate()
         expected = [self.entries[2], self.entries[5], self.entries[7], self.entries[8], self.entries[9]]
-        observed = [v async for v in self.delta_repository.select(name="example.Car", uuid=self.uuid_2)]
+        observed = [v async for v in self.delta_repository.select(name=CAR_DELTA_NAME, uuid=self.uuid_2)]
         self.assert_equal_repository_entries(expected, observed)
