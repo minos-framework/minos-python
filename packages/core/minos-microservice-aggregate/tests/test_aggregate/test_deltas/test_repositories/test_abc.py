@@ -62,6 +62,9 @@ class _DeltaRepository(DeltaRepository):
         return 0
 
 
+CAR_DELTA_NAME = "example.Car"
+
+
 class TestDeltaRepository(AggregateTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -97,7 +100,7 @@ class TestDeltaRepository(AggregateTestCase):
         mock = AsyncMock(side_effect=lambda x: x)
         self.delta_repository.submit = mock
 
-        entry = DeltaEntry(uuid4(), "example.Car", 0, bytes())
+        entry = DeltaEntry(uuid4(), CAR_DELTA_NAME, 0, bytes())
 
         self.assertEqual(entry, await self.delta_repository.create(entry))
 
@@ -109,7 +112,7 @@ class TestDeltaRepository(AggregateTestCase):
         mock = AsyncMock(side_effect=lambda x: x)
         self.delta_repository.submit = mock
 
-        entry = DeltaEntry(uuid4(), "example.Car", 0, bytes())
+        entry = DeltaEntry(uuid4(), CAR_DELTA_NAME, 0, bytes())
 
         self.assertEqual(entry, await self.delta_repository.update(entry))
 
@@ -121,7 +124,7 @@ class TestDeltaRepository(AggregateTestCase):
         mock = AsyncMock(side_effect=lambda x: x)
         self.delta_repository.submit = mock
 
-        entry = DeltaEntry(uuid4(), "example.Car", 0, bytes())
+        entry = DeltaEntry(uuid4(), CAR_DELTA_NAME, 0, bytes())
 
         self.assertEqual(entry, await self.delta_repository.delete(entry))
 
@@ -146,7 +149,7 @@ class TestDeltaRepository(AggregateTestCase):
         uuid = uuid4()
         delta = Delta(
             uuid=uuid,
-            name="example.Car",
+            name=CAR_DELTA_NAME,
             version=2,
             action=Action.UPDATE,
             created_at=current_datetime(),
@@ -160,7 +163,7 @@ class TestDeltaRepository(AggregateTestCase):
 
         self.assertIsInstance(observed, DeltaEntry)
         self.assertEqual(uuid, observed.uuid)
-        self.assertEqual("example.Car", observed.name)
+        self.assertEqual(CAR_DELTA_NAME, observed.name)
         self.assertEqual(56, observed.version)
         self.assertEqual(field_diff_container, FieldDiffContainer.from_avro_bytes(observed.data))
         self.assertEqual(12, observed.id)
@@ -188,7 +191,7 @@ class TestDeltaRepository(AggregateTestCase):
         uuid = uuid4()
         delta = Delta(
             uuid=uuid,
-            name="example.Car",
+            name=CAR_DELTA_NAME,
             version=2,
             action=Action.UPDATE,
             created_at=current_datetime(),
@@ -202,7 +205,7 @@ class TestDeltaRepository(AggregateTestCase):
 
         self.assertIsInstance(observed, DeltaEntry)
         self.assertEqual(uuid, observed.uuid)
-        self.assertEqual("example.Car", observed.name)
+        self.assertEqual(CAR_DELTA_NAME, observed.name)
         self.assertEqual(56, observed.version)
         self.assertEqual(field_diff_container, FieldDiffContainer.from_avro_bytes(observed.data))
         self.assertEqual(12, observed.id)
@@ -211,7 +214,7 @@ class TestDeltaRepository(AggregateTestCase):
         self.assertEqual(transaction.uuid, observed.transaction_uuid)
 
     async def test_submit_raises_missing_action(self):
-        entry = DeltaEntry(uuid4(), "example.Car", 0, bytes(), action=None)
+        entry = DeltaEntry(uuid4(), CAR_DELTA_NAME, 0, bytes(), action=None)
         with self.assertRaises(DeltaRepositoryException):
             await self.delta_repository.submit(entry)
 
@@ -220,7 +223,7 @@ class TestDeltaRepository(AggregateTestCase):
 
         self.delta_repository.validate = validate_mock
 
-        entry = DeltaEntry(uuid4(), "example.Car", 0, bytes(), action=Action.CREATE)
+        entry = DeltaEntry(uuid4(), CAR_DELTA_NAME, 0, bytes(), action=Action.CREATE)
         with self.assertRaises(DeltaRepositoryConflictException):
             await self.delta_repository.submit(entry)
 
@@ -254,7 +257,7 @@ class TestDeltaRepository(AggregateTestCase):
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
-        entry = DeltaEntry(uuid, "example.Car")
+        entry = DeltaEntry(uuid, CAR_DELTA_NAME)
 
         self.assertTrue(await self.delta_repository.validate(entry))
 
@@ -288,7 +291,7 @@ class TestDeltaRepository(AggregateTestCase):
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
-        entry = DeltaEntry(uuid, "example.Car")
+        entry = DeltaEntry(uuid, CAR_DELTA_NAME)
         self.assertTrue(await self.delta_repository.validate(entry, transaction_uuid_ne=transaction_uuid))
 
         self.assertEqual(
@@ -312,8 +315,8 @@ class TestDeltaRepository(AggregateTestCase):
         transaction_uuid = uuid4()
 
         deltas = [
-            DeltaEntry(uuid, "example.Car", 1),
-            DeltaEntry(uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
+            DeltaEntry(uuid, CAR_DELTA_NAME, 1),
+            DeltaEntry(uuid, CAR_DELTA_NAME, 2, transaction_uuid=transaction_uuid),
         ]
         transactions = [TransactionEntry(transaction_uuid, TransactionStatus.RESERVED)]
 
@@ -323,7 +326,7 @@ class TestDeltaRepository(AggregateTestCase):
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
-        entry = DeltaEntry(uuid, "example.Car")
+        entry = DeltaEntry(uuid, CAR_DELTA_NAME)
 
         self.assertFalse(await self.delta_repository.validate(entry))
 
