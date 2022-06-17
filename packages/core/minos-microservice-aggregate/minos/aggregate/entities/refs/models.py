@@ -24,6 +24,7 @@ from minos.common import (
     ModelType,
     SchemaDecoder,
     SchemaEncoder,
+    property_or_classproperty,
 )
 
 from ...contextvars import (
@@ -204,13 +205,14 @@ class Ref(DeclarativeModel, UUID, Generic[MT]):
         """
         raise RuntimeError("The 'uuid' must be set through the '__setattr__' method.")  # pragma: no cover
 
-    @property
-    def data_cls(self) -> Optional[type]:
+    # noinspection PyMethodParameters
+    @property_or_classproperty
+    def data_cls(self_or_cls) -> Optional[type]:
         """Get data class if available.
 
         :return: A model type.
         """
-        args = get_args(self.type_hints["data"])
+        args = get_args(self_or_cls.type_hints["data"])
         if args[0] != MT:
             return args[0]
         return None
