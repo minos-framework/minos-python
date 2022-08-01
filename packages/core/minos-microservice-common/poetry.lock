@@ -1,10 +1,10 @@
 [[package]]
 name = "aiomisc"
-version = "15.7.3"
+version = "16.1.8"
 description = "aiomisc - miscellaneous utils for asyncio"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.7, <4"
 
 [package.dependencies]
 colorlog = "*"
@@ -13,9 +13,8 @@ colorlog = "*"
 aiohttp = ["aiohttp"]
 asgi = ["aiohttp-asgi"]
 carbon = ["aiocarbon (>=0.15,<1.0)"]
-contextvars = ["contextvars (>=2.4,<3.0)"]
 cron = ["croniter (>=0.3.34,<0.4.0)"]
-develop = ["aiocontextvars (==0.2.2)", "aiohttp-asgi", "aiohttp (<4)", "async-timeout", "coveralls", "croniter (>=0.3.34,<0.4.0)", "fastapi", "freezegun (<1.1)", "mypy (>=0.782,<1.0)", "pylava", "pytest", "pytest-cov (>=3.0,<4.0)", "pytest-freezegun (>=0.4.2,<0.5.0)", "pytest-rst", "pytest-subtests", "rich", "setproctitle", "sphinx-autobuild", "sphinx-intl", "sphinx (>=3.5.1)", "timeout-decorator", "tox (>=2.4)", "types-croniter"]
+develop = ["aiocontextvars (==0.2.2)", "aiohttp-asgi", "aiohttp (<4)", "async-timeout", "coveralls", "croniter (>=0.3.34,<0.4.0)", "fastapi", "freezegun (<1.1)", "mypy (==0.950)", "pylava", "pytest", "pytest-cov (>=3.0,<4.0)", "pytest-freezegun (>=0.4.2,<0.5.0)", "pytest-rst", "pytest-subtests", "raven-aiohttp", "rich", "setproctitle", "sphinx-autobuild", "sphinx-intl", "sphinx (>=3.5.1)", "timeout-decorator", "tox (>=2.4)", "types-croniter"]
 raven = ["raven-aiohttp"]
 uvloop = ["uvloop (>=0.14,<1)"]
 
@@ -245,8 +244,8 @@ optional = false
 python-versions = ">=3.6"
 
 [package.extras]
-dev = ["pre-commit", "tox"]
-testing = ["pytest", "pytest-benchmark"]
+testing = ["pytest-benchmark", "pytest"]
+dev = ["tox", "pre-commit"]
 
 [[package]]
 name = "py"
@@ -352,12 +351,12 @@ test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "a9c5c5ba881792ac49e650321cd77db64874c6c55089b3d7f14a992a272f50f6"
+content-hash = "3dc8c74405a87713e3bd0fc555084c7bb5ffe782b88d5095a0d5ca64e165bc5f"
 
 [metadata.files]
 aiomisc = [
-    {file = "aiomisc-15.7.3-py3-none-any.whl", hash = "sha256:0403e83268e98d0f2a125a70d13303fe1a2358e36db3daf02df032c7fa4f1525"},
-    {file = "aiomisc-15.7.3.tar.gz", hash = "sha256:ba250a34bd4609ced36111cb50580f57c3d52f3955f953a53ecb2986988baedc"},
+    {file = "aiomisc-16.1.8-py3-none-any.whl", hash = "sha256:1fbef41e41c92da36e91f2553757e70c6381b879647e9e877ffc03f8db29d836"},
+    {file = "aiomisc-16.1.8.tar.gz", hash = "sha256:fef18729a28533f9d401d49bd66fd09311611650e4fd4c36f70d04bbf4e21686"},
 ]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},
