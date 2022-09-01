@@ -1,21 +1,21 @@
 [[package]]
 name = "aiomisc"
-version = "15.7.3"
+version = "16.2.4"
 description = "aiomisc - miscellaneous utils for asyncio"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.7, <4"
 
 [package.dependencies]
 colorlog = "*"
+logging-journald = ">=0.6.2,<0.7.0"
 
 [package.extras]
 aiohttp = ["aiohttp"]
 asgi = ["aiohttp-asgi"]
 carbon = ["aiocarbon (>=0.15,<1.0)"]
-contextvars = ["contextvars (>=2.4,<3.0)"]
 cron = ["croniter (>=0.3.34,<0.4.0)"]
-develop = ["aiocontextvars (==0.2.2)", "aiohttp-asgi", "aiohttp (<4)", "async-timeout", "coveralls", "croniter (>=0.3.34,<0.4.0)", "fastapi", "freezegun (<1.1)", "mypy (>=0.782,<1.0)", "pylava", "pytest", "pytest-cov (>=3.0,<4.0)", "pytest-freezegun (>=0.4.2,<0.5.0)", "pytest-rst", "pytest-subtests", "rich", "setproctitle", "sphinx-autobuild", "sphinx-intl", "sphinx (>=3.5.1)", "timeout-decorator", "tox (>=2.4)", "types-croniter"]
+develop = ["aiocontextvars (==0.2.2)", "aiohttp (<4)", "aiohttp-asgi", "async-timeout", "coveralls", "croniter (>=0.3.34,<0.4.0)", "fastapi", "freezegun (<1.1)", "mypy (==0.950)", "pylava", "pytest", "pytest-cov (>=3.0,<4.0)", "pytest-freezegun (>=0.4.2,<0.5.0)", "pytest-rst (>=0.0.7)", "pytest-subtests", "raven-aiohttp", "rich", "setproctitle", "sphinx (>=3.5.1)", "sphinx-autobuild", "sphinx-intl", "timeout-decorator", "tox (>=2.4)", "types-croniter"]
 raven = ["raven-aiohttp"]
 uvloop = ["uvloop (>=0.14,<1)"]
 
@@ -36,10 +36,10 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [package.extras]
-dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins", "zope.interface", "furo", "sphinx", "sphinx-notfound-page", "pre-commit", "cloudpickle"]
-docs = ["furo", "sphinx", "zope.interface", "sphinx-notfound-page"]
-tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins", "zope.interface", "cloudpickle"]
-tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins", "cloudpickle"]
+dev = ["cloudpickle", "coverage[toml] (>=5.0.2)", "furo", "hypothesis", "mypy", "pre-commit", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "six", "sphinx", "sphinx-notfound-page", "zope.interface"]
+docs = ["furo", "sphinx", "sphinx-notfound-page", "zope.interface"]
+tests = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "six", "zope.interface"]
+tests_no_zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "six"]
 
 [[package]]
 name = "black"
@@ -141,7 +141,7 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-codecs = ["python-snappy", "zstandard", "lz4"]
+codecs = ["lz4", "python-snappy", "zstandard"]
 lz4 = ["lz4"]
 snappy = ["python-snappy"]
 zstandard = ["zstandard"]
@@ -176,10 +176,18 @@ optional = false
 python-versions = ">=3.6.1,<4.0"
 
 [package.extras]
-pipfile_deprecated_finder = ["pipreqs", "requirementslib"]
-requirements_deprecated_finder = ["pipreqs", "pip-api"]
 colors = ["colorama (>=0.4.3,<0.5.0)"]
+pipfile_deprecated_finder = ["pipreqs", "requirementslib"]
 plugins = ["setuptools"]
+requirements_deprecated_finder = ["pip-api", "pipreqs"]
+
+[[package]]
+name = "logging-journald"
+version = "0.6.2"
+description = "Pure python logging handler for writing logs to the journald using native protocol"
+category = "main"
+optional = false
+python-versions = ">=3.7, <4"
 
 [[package]]
 name = "mccabe"
@@ -233,8 +241,8 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-docs = ["furo (>=2021.7.5b38)", "proselint (>=0.10.2)", "sphinx-autodoc-typehints (>=1.12)", "sphinx (>=4)"]
-test = ["appdirs (==1.4.4)", "pytest-cov (>=2.7)", "pytest-mock (>=3.6)", "pytest (>=6)"]
+docs = ["furo (>=2021.7.5b38)", "proselint (>=0.10.2)", "sphinx (>=4)", "sphinx-autodoc-typehints (>=1.12)"]
+test = ["appdirs (==1.4.4)", "pytest (>=6)", "pytest-cov (>=2.7)", "pytest-mock (>=3.6)"]
 
 [[package]]
 name = "pluggy"
@@ -281,7 +289,7 @@ optional = false
 python-versions = ">=3.6.8"
 
 [package.extras]
-diagrams = ["railroad-diagrams", "jinja2"]
+diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pytest"
@@ -345,19 +353,19 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-dev = ["Cython (>=0.29.24,<0.30.0)", "pytest (>=3.6.0)", "Sphinx (>=4.1.2,<4.2.0)", "sphinxcontrib-asyncio (>=0.3.0,<0.4.0)", "sphinx-rtd-theme (>=0.5.2,<0.6.0)", "aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<2.8.0)", "pyOpenSSL (>=19.0.0,<19.1.0)", "mypy (>=0.800)"]
-docs = ["Sphinx (>=4.1.2,<4.2.0)", "sphinxcontrib-asyncio (>=0.3.0,<0.4.0)", "sphinx-rtd-theme (>=0.5.2,<0.6.0)"]
-test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<2.8.0)", "pyOpenSSL (>=19.0.0,<19.1.0)", "mypy (>=0.800)"]
+dev = ["Cython (>=0.29.24,<0.30.0)", "Sphinx (>=4.1.2,<4.2.0)", "aiohttp", "flake8 (>=3.9.2,<3.10.0)", "mypy (>=0.800)", "psutil", "pyOpenSSL (>=19.0.0,<19.1.0)", "pycodestyle (>=2.7.0,<2.8.0)", "pytest (>=3.6.0)", "sphinx-rtd-theme (>=0.5.2,<0.6.0)", "sphinxcontrib-asyncio (>=0.3.0,<0.4.0)"]
+docs = ["Sphinx (>=4.1.2,<4.2.0)", "sphinx-rtd-theme (>=0.5.2,<0.6.0)", "sphinxcontrib-asyncio (>=0.3.0,<0.4.0)"]
+test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "mypy (>=0.800)", "psutil", "pyOpenSSL (>=19.0.0,<19.1.0)", "pycodestyle (>=2.7.0,<2.8.0)"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "a9c5c5ba881792ac49e650321cd77db64874c6c55089b3d7f14a992a272f50f6"
+content-hash = "f6f5f6142a0b4f34b6914f3176fa454952863eb6fb3d50b99e42aa84eb24a322"
 
 [metadata.files]
 aiomisc = [
-    {file = "aiomisc-15.7.3-py3-none-any.whl", hash = "sha256:0403e83268e98d0f2a125a70d13303fe1a2358e36db3daf02df032c7fa4f1525"},
-    {file = "aiomisc-15.7.3.tar.gz", hash = "sha256:ba250a34bd4609ced36111cb50580f57c3d52f3955f953a53ecb2986988baedc"},
+    {file = "aiomisc-16.2.4-py3-none-any.whl", hash = "sha256:3c329583e4de6ac037f4ce56a856826f4d4c80db4bc9475df82351347c312beb"},
+    {file = "aiomisc-16.2.4.tar.gz", hash = "sha256:149e8bd4d508d47d6b2a00ac333d504115995a3ba30333503fcf13504c6eeefc"},
 ]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},
@@ -518,6 +526,9 @@ iniconfig = [
 isort = [
     {file = "isort-5.10.1-py3-none-any.whl", hash = "sha256:6f62d78e2f89b4500b080fe3a81690850cd254227f27f75c3a0c491a1f351ba7"},
     {file = "isort-5.10.1.tar.gz", hash = "sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951"},
+]
+logging-journald = [
+    {file = "logging-journald-0.6.2.tar.gz", hash = "sha256:53a92a02f312c8b0db4e173ac0037fae2d2f9adfef0318051594fae42b1ba6cb"},
 ]
 mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
