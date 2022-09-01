@@ -25,7 +25,7 @@ minos-router-graphql = { path = "packages/plugins/minos-router-graphql", develop
 black = "^22.3"
 isort = "^5.8.0"
 pytest = "^7.1.2"
-coverage = "^6.3"
+coverage = "^6.4"
 flake8 = "^4.0.1"
 Sphinx = "^4.0.1"
 pre-commit = "^2.18.1"
