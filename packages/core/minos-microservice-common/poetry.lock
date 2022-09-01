@@ -15,7 +15,7 @@ asgi = ["aiohttp-asgi"]
 carbon = ["aiocarbon (>=0.15,<1.0)"]
 contextvars = ["contextvars (>=2.4,<3.0)"]
 cron = ["croniter (>=0.3.34,<0.4.0)"]
-develop = ["aiocontextvars (==0.2.2)", "aiohttp-asgi", "aiohttp (<4)", "async-timeout", "coveralls", "croniter (>=0.3.34,<0.4.0)", "fastapi", "freezegun (<1.1)", "mypy (>=0.782,<1.0)", "pylava", "pytest", "pytest-cov (>=3.0,<4.0)", "pytest-freezegun (>=0.4.2,<0.5.0)", "pytest-rst", "pytest-subtests", "rich", "setproctitle", "sphinx-autobuild", "sphinx-intl", "sphinx (>=3.5.1)", "timeout-decorator", "tox (>=2.4)", "types-croniter"]
+develop = ["aiocontextvars (==0.2.2)", "aiohttp (<4)", "aiohttp-asgi", "async-timeout", "coveralls", "croniter (>=0.3.34,<0.4.0)", "fastapi", "freezegun (<1.1)", "mypy (>=0.782,<1.0)", "pylava", "pytest", "pytest-cov (>=3.0,<4.0)", "pytest-freezegun (>=0.4.2,<0.5.0)", "pytest-rst", "pytest-subtests", "rich", "setproctitle", "sphinx (>=3.5.1)", "sphinx-autobuild", "sphinx-intl", "timeout-decorator", "tox (>=2.4)", "types-croniter"]
 raven = ["raven-aiohttp"]
 uvloop = ["uvloop (>=0.14,<1)"]
 
@@ -36,10 +36,10 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [package.extras]
-dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins", "zope.interface", "furo", "sphinx", "sphinx-notfound-page", "pre-commit", "cloudpickle"]
-docs = ["furo", "sphinx", "zope.interface", "sphinx-notfound-page"]
-tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins", "zope.interface", "cloudpickle"]
-tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins", "cloudpickle"]
+dev = ["cloudpickle", "coverage[toml] (>=5.0.2)", "furo", "hypothesis", "mypy", "pre-commit", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "six", "sphinx", "sphinx-notfound-page", "zope.interface"]
+docs = ["furo", "sphinx", "sphinx-notfound-page", "zope.interface"]
+tests = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "six", "zope.interface"]
+tests_no_zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "six"]
 
 [[package]]
 name = "black"
@@ -134,14 +134,14 @@ yaml = ["pyyaml"]
 
 [[package]]
 name = "fastavro"
-version = "1.4.11"
+version = "1.6.0"
 description = "Fast read/write of AVRO files"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-codecs = ["python-snappy", "zstandard", "lz4"]
+codecs = ["lz4", "python-snappy", "zstandard"]
 lz4 = ["lz4"]
 snappy = ["python-snappy"]
 zstandard = ["zstandard"]
@@ -176,10 +176,10 @@ optional = false
 python-versions = ">=3.6.1,<4.0"
 
 [package.extras]
-pipfile_deprecated_finder = ["pipreqs", "requirementslib"]
-requirements_deprecated_finder = ["pipreqs", "pip-api"]
 colors = ["colorama (>=0.4.3,<0.5.0)"]
+pipfile_deprecated_finder = ["pipreqs", "requirementslib"]
 plugins = ["setuptools"]
+requirements_deprecated_finder = ["pip-api", "pipreqs"]
 
 [[package]]
 name = "mccabe"
@@ -233,8 +233,8 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-docs = ["furo (>=2021.7.5b38)", "proselint (>=0.10.2)", "sphinx-autodoc-typehints (>=1.12)", "sphinx (>=4)"]
-test = ["appdirs (==1.4.4)", "pytest-cov (>=2.7)", "pytest-mock (>=3.6)", "pytest (>=6)"]
+docs = ["furo (>=2021.7.5b38)", "proselint (>=0.10.2)", "sphinx (>=4)", "sphinx-autodoc-typehints (>=1.12)"]
+test = ["appdirs (==1.4.4)", "pytest (>=6)", "pytest-cov (>=2.7)", "pytest-mock (>=3.6)"]
 
 [[package]]
 name = "pluggy"
@@ -281,7 +281,7 @@ optional = false
 python-versions = ">=3.6.8"
 
 [package.extras]
-diagrams = ["railroad-diagrams", "jinja2"]
+diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pytest"
@@ -345,9 +345,9 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-dev = ["Cython (>=0.29.24,<0.30.0)", "pytest (>=3.6.0)", "Sphinx (>=4.1.2,<4.2.0)", "sphinxcontrib-asyncio (>=0.3.0,<0.4.0)", "sphinx-rtd-theme (>=0.5.2,<0.6.0)", "aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<2.8.0)", "pyOpenSSL (>=19.0.0,<19.1.0)", "mypy (>=0.800)"]
-docs = ["Sphinx (>=4.1.2,<4.2.0)", "sphinxcontrib-asyncio (>=0.3.0,<0.4.0)", "sphinx-rtd-theme (>=0.5.2,<0.6.0)"]
-test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "psutil", "pycodestyle (>=2.7.0,<2.8.0)", "pyOpenSSL (>=19.0.0,<19.1.0)", "mypy (>=0.800)"]
+dev = ["Cython (>=0.29.24,<0.30.0)", "Sphinx (>=4.1.2,<4.2.0)", "aiohttp", "flake8 (>=3.9.2,<3.10.0)", "mypy (>=0.800)", "psutil", "pyOpenSSL (>=19.0.0,<19.1.0)", "pycodestyle (>=2.7.0,<2.8.0)", "pytest (>=3.6.0)", "sphinx-rtd-theme (>=0.5.2,<0.6.0)", "sphinxcontrib-asyncio (>=0.3.0,<0.4.0)"]
+docs = ["Sphinx (>=4.1.2,<4.2.0)", "sphinx-rtd-theme (>=0.5.2,<0.6.0)", "sphinxcontrib-asyncio (>=0.3.0,<0.4.0)"]
+test = ["aiohttp", "flake8 (>=3.9.2,<3.10.0)", "mypy (>=0.800)", "psutil", "pyOpenSSL (>=19.0.0,<19.1.0)", "pycodestyle (>=2.7.0,<2.8.0)"]
 
 [metadata]
 lock-version = "1.1"
@@ -490,22 +490,23 @@ dependency-injector = [
     {file = "dependency_injector-4.39.1-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:ca126bbed370b8c002c859ebeb76f6d83eba2d7fb5d66f37f47cfc19661d2889"},
 ]
 fastavro = [
-    {file = "fastavro-1.4.11-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:44f01008f95d685edacc4b10366c755d25612df00924349f7d34a29f08522ce3"},
-    {file = "fastavro-1.4.11-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:18f5e736d12e67348f253da8a332d7c3b483ca04f2b6e772befa79d1a46bac9d"},
-    {file = "fastavro-1.4.11-cp310-cp310-win_amd64.whl", hash = "sha256:8dca11bc3191cd7de0a3c4b76a70dac493356a219e96ebcde0def1f06faddef7"},
-    {file = "fastavro-1.4.11-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:7a2a0bf03686f9d860e8f8476be000f5b3e6cc9af6853dbabab2ef9cfa5dc3a0"},
-    {file = "fastavro-1.4.11-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0c17e3decfac260e1be4d02d1903d2483eec2f3ce7f92c9b808a0f6a81572c4b"},
-    {file = "fastavro-1.4.11-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:19ba25c6529f50722a7618cc4ca24c7d265def57fd9f94e4e554e1df8cce38d2"},
-    {file = "fastavro-1.4.11-cp37-cp37m-win_amd64.whl", hash = "sha256:ceaba04da9419f40899a670eb62eb373a127b511bb8e3ae4f6f1f23ec49bd0e4"},
-    {file = "fastavro-1.4.11-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:732eab3a1ae5d2c3f4b52e747c55bcc41c4df0eb7e8a395038080741a3c0a934"},
-    {file = "fastavro-1.4.11-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c03d3c802b71f44e7b3442abae961bba996258244bd222b242ad1e5cb7754e57"},
-    {file = "fastavro-1.4.11-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e7cb7475a9b25b9f8aebe7eb756dafedd0369434571062f3883d894281befd7c"},
-    {file = "fastavro-1.4.11-cp38-cp38-win_amd64.whl", hash = "sha256:ce0776f54591aef90bcd02bd919964abe4c2ad2a10a4336c3a1b66cef289b41c"},
-    {file = "fastavro-1.4.11-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:621e72cc365c9539d7590e7b43e48a62e6bfb4c2de7c16837fed54d113d7312c"},
-    {file = "fastavro-1.4.11-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:842b25782f911ee8c626f9d9fedc2ef01aeac272536fe90ee6d45b2ae7cdb024"},
-    {file = "fastavro-1.4.11-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f8491bfcba25c9d661289f884688e5a4f56f2ee389a240d0ad02692495a9a087"},
-    {file = "fastavro-1.4.11-cp39-cp39-win_amd64.whl", hash = "sha256:c94130a8c8d80073eb0276844915aa5e928ae322024e76dc57943542ccda211c"},
-    {file = "fastavro-1.4.11.tar.gz", hash = "sha256:7c64332ad52de0134be9a933ca986514c3ff85c63d54bc5398c31f0498ac1820"},
+    {file = "fastavro-1.6.0-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:cbaa7e5db05694c70985c7ddc8afd9f7c9aef3e66e78cb18d05c70db221eaa1a"},
+    {file = "fastavro-1.6.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8d18d3540aab5f34bb88ad58d2f45b2c64f10bd04ad126bb79024a1e07d6db2b"},
+    {file = "fastavro-1.6.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d1271f11304951d4b61415480ec53c2d44c297eb00fd2d95098171805a6350d7"},
+    {file = "fastavro-1.6.0-cp310-cp310-win_amd64.whl", hash = "sha256:a80eec11dfc879299f4e20e6c5b19307dc50ec20a6f431fcfe2f29c5ae63c575"},
+    {file = "fastavro-1.6.0-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:77354c17dc36cd21a3127004fd83854e799899b26f42fbe4a8bce3424c493551"},
+    {file = "fastavro-1.6.0-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:209afeb9dcdf624b10f223c17d3469fefd9669bdaceaf5a3fb47cb74a107e443"},
+    {file = "fastavro-1.6.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b78ce36f45cd582c8d8b5c8ade764b378d0f3581c1e62fba895945984dec107a"},
+    {file = "fastavro-1.6.0-cp37-cp37m-win_amd64.whl", hash = "sha256:6ac6db0c8229e5c3f633208e9d7e9e016ee725cbc53a9e5993b4c070c189f506"},
+    {file = "fastavro-1.6.0-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:7511fbf7e1251ae34965894cf59ad982612268a5043fbfeaf309db8f75c25489"},
+    {file = "fastavro-1.6.0-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c039f259c61e75d920b2ce236d676a7dbf122ee136df92133542a99174491392"},
+    {file = "fastavro-1.6.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:970599975812c8df4aba06ac4e4e558211fc645f3ca44a8fab12b0f2152fd959"},
+    {file = "fastavro-1.6.0-cp38-cp38-win_amd64.whl", hash = "sha256:ca4a3b4c39d2b280523111fb4ea09dd114ab78e7ee8adb166804624ce4b7ad98"},
+    {file = "fastavro-1.6.0-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:878b06ac7f6e411c849ceafd2cc7dd9e6eb3f7d4a5268aa6f02eb8460a069082"},
+    {file = "fastavro-1.6.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8b788093cf45763e69cd8ffa2464a518edd13340a48e13c4211f85f25f91c972"},
+    {file = "fastavro-1.6.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a69d35e66812b3aed7204d796c2a0f132d2d5a115d94cc1fb3f5da3577a74d97"},
+    {file = "fastavro-1.6.0-cp39-cp39-win_amd64.whl", hash = "sha256:4eee1bfa7a5d35d252a58c96b727c4645a0e0db3f4c44b94de444d3b086bbc48"},
+    {file = "fastavro-1.6.0.tar.gz", hash = "sha256:64759b161bbacb5fdcbd54bd5cee05d8510836e09290e958937334dbf1bb587f"},
 ]
 flake8 = [
     {file = "flake8-4.0.1-py2.py3-none-any.whl", hash = "sha256:479b1304f72536a55948cb40a32dce8bb0ffe3501e26eaf292c7e60eb5e0428d"},
