@@ -31,7 +31,7 @@ Sphinx = "^4.0.1"
 pre-commit = "^2.18.1"
 sphinx-autodoc-typehints = "^1.18.1"
 sphinxcontrib-apidoc = "^0.3.0"
-sphinx-rtd-theme = "^1.0.0"
+sphinx-rtd-theme = "^1.1.1"
 m2r2 = "^0.3.2"
 
 [build-system]
