@@ -39,7 +39,7 @@ minos-microservice-common = { path = "../minos-microservice-common", develop = t
 black = "^22.3"
 isort = "^5.8.0"
 pytest = "^7.1.2"
-coverage = "^6.3"
+coverage = "^7.2"
 flake8 = "^4.0.1"
 
 [build-system]
