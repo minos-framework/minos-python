@@ -137,8 +137,8 @@ pip install \
   minos-microservice-saga \ 
   minos-broker-kafka \
   minos-http-aiohttp \
-  minos-http-aiopg \
-  minos-http-lmbdb
+  minos-database-aiopg \
+  minos-database-lmdb
 ```
 
 ### Configure a Microservice
