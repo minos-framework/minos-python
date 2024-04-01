@@ -43,7 +43,7 @@ uvloop = "^0.16.0"
 black = "^22.3"
 isort = "^5.8.0"
 pytest = "^7.0.1"
-coverage = "^6.3"
+coverage = "^7.4"
 flake8 = "^4.0.1"
 
 [build-system]
