@@ -37,7 +37,7 @@ orjson = "^3.5.2"
 PyYAML = ">=5.4.1,<7.0.0"
 dependency-injector = "^4.32.2"
 cached-property = "^1.5.2"
-uvloop = "^0.16.0"
+uvloop = ">=0.16,<0.22"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3"
