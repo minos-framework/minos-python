@@ -32,7 +32,7 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.9"
 minos-microservice-common = "^0.7.0"
-crontab = "^0.23.0"
+crontab = ">=0.23,<1.1"
 
 [tool.poetry.dev-dependencies]
 minos-microservice-common = { path = "../minos-microservice-common", develop = true }
