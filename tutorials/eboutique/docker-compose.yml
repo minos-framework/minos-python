@@ -80,7 +80,7 @@ services:
     environment:
       DISCOVERY_SERVICE_DB_HOST: redis
   redis:
-    image: docker.io/bitnami/redis:6.2
+    image: docker.io/soldevelo/redis:6.2
     environment:
     - ALLOW_EMPTY_PASSWORD=yes
     - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
